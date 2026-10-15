@@ -9,8 +9,7 @@ echo.
 
 REM Garante que o Git está inicializado e configurado
 git init > nul 2>&1
-git remote remove origin > nul 2>&1
-git remote add origin https://github.com/jrobertodasc-cmd/Web_Service
+git remote set-url origin https://github.com/jrobertodasc-cmd/Hub_automa-o || git remote add origin https://github.com/jrobertodasc-cmd/Hub_automa-o
 
 REM Adiciona os arquivos e cria o commit
 echo [1/3] Adicionando arquivos ao commit...

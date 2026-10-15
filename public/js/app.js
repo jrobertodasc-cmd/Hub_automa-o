@@ -1,0 +1,33 @@
+/* expedi HUB – comportamento compartilhado. Nenhum dado fictício: tudo vem do backend. */
+const I={logo:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',check:'<path d="M5 12l5 5 9-10"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',box:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h6"/>',truck:'<path d="M2 6h12v10H2zM14 10h4l4 3v3h-8"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',cog:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',link:'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>',home:'<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01"/>'};
+const ic=(n,c='')=>`<svg class="ico ${c}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+document.querySelectorAll('[data-i]').forEach(e=>e.insertAdjacentHTML('afterbegin',ic(e.dataset.i)));
+document.querySelectorAll('.brand').forEach(b=>b.innerHTML=`<i>${ic('logo')}</i>expedi <small>HUB</small>`);
+document.querySelectorAll('[data-toggle-pass]').forEach(b=>b.onclick=()=>{const i=b.parentElement.querySelector('input'),s=i.type==='password';i.type=s?'text':'password';b.lastChild.textContent=s?'Ocultar':'Mostrar'});
+const $=s=>document.querySelector(s),msg=t=>{const m=$('#msg');if(m){m.textContent=t;m.className='show'}};
+/* Login: troque o corpo pelo seu auth.js (Supabase signInWithPassword) */
+$('#loginForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=e.target;if(!f.email.value||!f.password.value)return msg('Informe e-mail e senha.');
+ try{if(window.expediAuth)await window.expediAuth.login(f.email.value,f.password.value,f.remember.checked);else msg('Autenticação não conectada: defina window.expediAuth.login.')}catch(x){msg(x.message||'E-mail ou senha incorretos.')}});
+/* Cadastro */
+const cnpj=$('#cnpj');cnpj?.addEventListener('input',()=>{let v=cnpj.value.replace(/\D/g,'').slice(0,14);cnpj.value=v.replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d)/,'$1-$2')});
+const validCnpj=c=>{c=c.replace(/\D/g,'');if(c.length!==14||/^(\d)\1+$/.test(c))return false;const d=n=>{let s=0,p=n-7;for(let i=0;i<n;i++){s+=c[i]*p--;if(p<2)p=9}const r=s%11;return r<2?0:11-r};return d(12)==c[12]&&d(13)==c[13]};
+$('#regForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=e.target,er=[];
+ if(!validCnpj(f.cnpj.value))er.push('CNPJ inválido.');if(!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(f.password.value))er.push('A senha precisa de 8+ caracteres com letras e números.');
+ if(f.password.value!==f.confirm.value)er.push('As senhas não coincidem.');if(!f.terms.checked)er.push('Aceite os Termos e a Política de Privacidade.');
+ if(er.length)return msg(er.join(' '));
+ try{if(window.expediAuth)await window.expediAuth.register(Object.fromEntries(new FormData(f)));else msg('Cadastro não conectado: defina window.expediAuth.register.')}catch(x){msg(x.message||'Não foi possível criar a conta. Tente novamente.')}});
+/* Planos: preços editáveis aqui */
+const PRECOS={starter:199,pro:399,advanced:699,ess:149,pro:399,esc:899};document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));const a=b.dataset.p==='anual';
+ document.querySelectorAll('[data-plan]').forEach(p=>p.textContent=Math.round(PRECOS[p.dataset.plan]*(a?.85:1)))});
+/* Dashboard: renderLote(lote) recebe o retorno REAL da API. Sem lote => estados vazios e "—". */
+const brl=v=>v==null?'—':Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}),n=v=>v==null?'—':v;
+const NFE={autorizada:['p-ok','Autorizada'],rejeitada:['p-err','Rejeitada'],processando:['p-warn','Processando']},EXP={pronto:['p-info','Pronto para envio'],bloqueado:['p-warn','Bloqueado fiscal'],separacao:['p-n','Em separação'],expedido:['p-ok','Expedido']};
+const pill=(m,k)=>{const x=m[k];return x?`<span class="pill ${x[0]}">${x[1]}</span>`:'—'};
+window.renderLote=lote=>{const p=lote?.pedidos||[],k=lote?.kpis||{};
+ [['k-ped',n(k.pedidos)],['k-exp',n(k.prontos)],['k-nfe',n(k.nfeAutorizadas)],['k-difal',brl(k.difalAReceber)]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v});
+ const al=$('#alert');if(al){const d=k.divergencias||0,r=k.rejeicoes||0;al.classList.toggle('show',d+r>0);const pl=(q,a,b)=>q+' '+(q===1?a:b);$('#alert-t').textContent=`${pl(d+r,'pedido precisa','pedidos precisam')} de atenção: ${pl(d,'divergência','divergências')} e ${pl(r,'rejeição','rejeições')} de NF-e.`}
+ const tb=$('#rows');if(!tb)return;
+ tb.innerHTML=p.length?p.map((x,i)=>`<tr><td><input type="checkbox" aria-label="Selecionar ${n(x.numero)}"></td><td><b>#${n(x.numero)}</b><br><span class="hint">${n(x.canal)}</span></td><td>${n(x.destino)}</td><td>${brl(x.total)}</td><td>${pill(NFE,x.nfe)}</td><td>${brl(x.difal)}<br><span class="hint">${n(x.guia)}</span></td><td>${n(x.transportadora)}</td><td>${pill(EXP,x.expedicao)}</td><td class="menu"><button aria-label="Ações" onclick="this.parentElement.classList.toggle('open')">${ic('more')}</button><ul><li><button data-a="guia" data-i="${i}">Gerar guia</button></li><li><button data-a="danfe" data-i="${i}">Baixar DANFE</button></li><li><button data-a="xml" data-i="${i}">Baixar XML</button></li><li><button data-a="cnab" data-i="${i}">Gerar CNAB</button></li></ul></td></tr>`).join(''):`<tr><td colspan="9"><div class="empty"><b>Nenhum lote enviado ainda</b>Envie uma planilha ou conecte uma loja para ver pedidos e guias aqui.</div></td></tr>`;
+ $('#count').textContent=p.length?`Mostrando ${p.length} pedidos`:''};
+document.addEventListener('click',e=>{if(!e.target.closest('.menu'))document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));const a=e.target.closest('[data-a]');if(a)window.dispatchEvent(new CustomEvent('expedi:acao',{detail:{acao:a.dataset.a,idx:+a.dataset.i}}))});
+if($('#rows'))window.renderLote(window.EXPEDI_LOTE);

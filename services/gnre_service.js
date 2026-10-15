@@ -130,10 +130,14 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
             codigoCampoChave = 107;
         } else if (guia.ufFavorecida === 'SC') {
             codigoCampoChave = 84;
+        } else if (guia.ufFavorecida === 'PB') {
+            codigoCampoChave = 99; // Paraíba exige código 99 para chave da NFe
+        } else if (guia.ufFavorecida === 'SE') {
+            codigoCampoChave = 77; // Sergipe exige código 77 para chave da NFe
         }
 
-        // PE não exige campos adicionais para a receita 100102
-        if (guia.ufFavorecida !== 'PE') {
+        // UFs que não utilizam ou rejeitam campos adicionais na receita 100102
+        if (!['PE', 'RN', 'DF'].includes(guia.ufFavorecida)) {
             if (guia.chaveAcessoNfe) {
                 camposExtras.push({ codigo: codigoCampoChave, valor: guia.chaveAcessoNfe });
             }
@@ -160,26 +164,45 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
         let tipoDoc = guia.tipoDocumentoOrigem || '10';
         let numDoc = guia.documentoOrigem;
 
-        // Estados que exigem CHAVE DO DFe (tipo 24) no documentoOrigem
-        const ufsExigemChaveDocOrigem = ['RJ', 'SC', 'PE'];
-        if (ufsExigemChaveDocOrigem.includes(guia.ufFavorecida)) {
+        // Estados que exigem CHAVE DO DFe no documentoOrigem:
+        // RJ, SC, PE exigem tipo 24. AL, RN e DF exigem tipo 22!
+        if (['RJ', 'SC', 'PE'].includes(guia.ufFavorecida)) {
             tipoDoc = '24';
+            numDoc = guia.chaveAcessoNfe;
+        } else if (['AL', 'RN', 'DF'].includes(guia.ufFavorecida)) {
+            tipoDoc = '22';
             numDoc = guia.chaveAcessoNfe;
         }
 
         let xmlDocOrigem = '';
-        if (numDoc) {
+        // Apenas RS rejeita documentoOrigem na receita 100102 (usa apenas campo extra)
+        const ufsRejeitamDocOrigem = ['RS'];
+        if (!ufsRejeitamDocOrigem.includes(guia.ufFavorecida) && numDoc) {
             xmlDocOrigem = `\n                <documentoOrigem tipo="${tipoDoc}">${numDoc}</documentoOrigem>`;
         }
 
-        // Bloco de referência de apuração (obrigatório em DF, MA, MS e recomendado nas demais)
+        // Convênio (exigido por AL na receita 100102)
+        let xmlConvenio = '';
+        if (guia.ufFavorecida === 'AL') {
+            xmlConvenio = '\n                <convenio>093/15</convenio>';
+        }
+
+        // Bloco de referência de apuração (obrigatório em DF, MA, MS, SE e recomendado nas demais)
         let xmlReferencia = '';
-        if (guia.mesApuracao && guia.anoApuracao) {
+        let mesAp = guia.mesApuracao;
+        let anoAp = guia.anoApuracao;
+        if (guia.ufFavorecida === 'SE') {
+            // Sergipe em contingência exige mês e ano correntes
+            const dObj = new Date();
+            mesAp = String(dObj.getMonth() + 1).padStart(2, '0');
+            anoAp = String(dObj.getFullYear());
+        }
+        if (mesAp && anoAp) {
             xmlReferencia = `
                 <referencia>
                   <periodo>0</periodo>
-                  <mes>${guia.mesApuracao}</mes>
-                  <ano>${guia.anoApuracao}</ano>
+                  <mes>${mesAp}</mes>
+                  <ano>${anoAp}</ano>
                 </referencia>`;
         }
 
@@ -196,6 +219,12 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
                   <razaoSocial>${nomeLimpo}</razaoSocial>
                   <municipio>${mun5Digitos}</municipio>
                 </contribuinteDestinatario>`;
+        }
+
+        // SE exige valor tipo 12 (FECP) na receita 100102 se aplicável
+        let xmlValorFecp = '';
+        if (guia.ufFavorecida === 'SE' && guia.valorFecp) {
+            xmlValorFecp = `\n                <valor tipo="12">${guia.valorFecp}</valor>`;
         }
 
         xmlGuias += `
@@ -216,8 +245,8 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
               <item>
                 <receita>${guia.codigoReceita}</receita>${xmlDocOrigem}${xmlReferencia}
                 <dataVencimento>${guia.dataVencimento || hoje}</dataVencimento>
-                <valor tipo="11">${guia.valor}</valor>
-                <valor tipo="21">${guia.valor}</valor>${xmlDestinatario}${xmlCamposExtras}
+                <valor tipo="11">${guia.valor}</valor>${xmlValorFecp}
+                <valor tipo="21">${guia.valor}</valor>${xmlConvenio}${xmlDestinatario}${xmlCamposExtras}
               </item>
             </itensGNRE>
             <valorGNRE>${guia.valor}</valorGNRE>
@@ -277,7 +306,15 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
         await fs.writeFile(path.join(logsDir, `envio_lote_${timestamp}_${uf || 'geral'}.xml`), soapXml, 'utf-8');
     }
 
-    const response = await sendSoapRequest(urls.recepcao, 'processar', soapXml, agent);
+    let response;
+    for (let tentativa = 1; tentativa <= 3; tentativa++) {
+        response = await sendSoapRequest(urls.recepcao, 'processar', soapXml, agent);
+        if (response.statusCode === 429 || (response.body && response.body.includes('429 Too Many Requests'))) {
+            await new Promise(r => setTimeout(r, 5000));
+            continue;
+        }
+        break;
+    }
     
     if (logsDir) {
         await fs.writeFile(path.join(logsDir, `resposta_lote_${timestamp}_${uf || 'geral'}.xml`), response.body, 'utf-8');

@@ -14,9 +14,44 @@ const parserService = require('./services/parser_service');
 const cnabService = require('./services/cnab_service');
 const gnreService = require('./services/gnre_service');
 const duaEsService = require('./services/dua_es_service');
+const microvixService = require('./services/microvix_service');
+const erpService = require('./services/erp_service');
+const danfeService = require('./services/danfe_service');
+const printService = require('./services/print_service');
+const vndaService = require('./services/vnda_service');
+const syncService = require('./services/sync_service');
+
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Configuração de Segurança: Helmet
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+
+// Rate Limiters para proteção contra abusos e ataques de força bruta
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas requisições enviadas por este IP. Aguarde alguns minutos.' }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas tentativas de login. Aguarde 15 minutos antes de tentar novamente.' }
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
 
 // Configuração do cliente admin do Supabase (para operações do sistema/Storage)
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
@@ -70,6 +105,16 @@ function decrypt(text, secretKey) {
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // ==========================================
@@ -418,13 +463,14 @@ app.post('/api/batch/process', requireAuth, requireActiveSubscription, upload.ar
             }
         }
 
-        // 1. Cria um registro de lote com status 'processando'
+        // 1. Cria um registro de lote com status 'aguardando_aprovacao'
         const { data: batch, error: batchError } = await supabase
             .from('batches')
             .insert({
                 tenant_id: req.tenant.id,
                 environment: req.tenant.environment,
-                status: 'processando'
+                status: 'aguardando_aprovacao',
+                source: source || 'upload'
             })
             .select()
             .single();
@@ -433,17 +479,182 @@ app.post('/api/batch/process', requireAuth, requireActiveSubscription, upload.ar
             throw new Error("Falha ao inicializar lote no banco de dados: " + batchError?.message);
         }
 
-        // 2. Executa o processamento em background (Assíncrono / Non-blocking)
-        runBatchProcessInBackground(batch.id, req.tenant, filesData, paymentDate);
+        // 2. Executa a importação e pré-validação (sem disparar na SEFAZ até o operador autorizar)
+        stageBatchForApproval(batch.id, req.tenant, filesData, paymentDate, source || 'upload');
 
-        // Retorna imediatamente o identificador para o cliente fazer polling
         return res.status(200).json({
-            message: "Processamento do lote iniciado com sucesso.",
-            batch_id: batch.id
+            message: "Notas fiscais importadas com sucesso! Lote aguardando sua autorização para emissão.",
+            batch_id: batch.id,
+            status: 'aguardando_aprovacao'
         });
 
     } catch (err) {
         return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Autorizar Emissão de Lote na SEFAZ (Operador confirma transmissão)
+ */
+app.post('/api/batch/authorize-emission/:batchId', requireAuth, requireActiveSubscription, async (req, res) => {
+    const { batchId } = req.params;
+    const { paymentDate } = req.body;
+    const tenant = req.tenant;
+
+    try {
+        const { data: batch, error: bErr } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('id', batchId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (bErr || !batch) {
+            return res.status(404).json({ error: "Lote não localizado." });
+        }
+
+        if (batch.status !== 'aguardando_aprovacao') {
+            return res.status(400).json({ error: `Este lote não está aguardando aprovação (status atual: ${batch.status}).` });
+        }
+
+        // Dispara a transmissão oficial para a SEFAZ
+        transmitStagedBatchToSefaz(batchId, tenant, paymentDate);
+
+        return res.status(200).json({
+            message: "Emissão autorizada com sucesso! Acompanhe o envio no terminal.",
+            batch_id: batchId
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Descartar / Cancelar Lote que estava aguardando aprovação
+ */
+app.post('/api/batch/discard/:batchId', requireAuth, async (req, res) => {
+    const { batchId } = req.params;
+    const tenant = req.tenant;
+
+    try {
+        // Remove guias pendentes do lote
+        await supabase
+            .from('guides')
+            .delete()
+            .eq('batch_id', batchId)
+            .eq('tenant_id', tenant.id)
+            .eq('status', 'aguardando_aprovacao');
+
+        // Atualiza status do lote para cancelado
+        await supabase
+            .from('batches')
+            .update({ status: 'cancelado' })
+            .eq('id', batchId)
+            .eq('tenant_id', tenant.id);
+
+        if (activeTasks[batchId]) {
+            delete activeTasks[batchId];
+        }
+
+        return res.status(200).json({ message: "Lote descartado com sucesso." });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Autorizar Pagamento Bancário e Gerar Remessa CNAB 240
+ */
+app.post('/api/batch/authorize-payment/:batchId', requireAuth, async (req, res) => {
+    const { batchId } = req.params;
+    const { banco, paymentDate } = req.body;
+    const tenant = req.tenant;
+
+    try {
+        const { data: batch, error: bErr } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('id', batchId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (bErr || !batch) {
+            return res.status(404).json({ error: "Lote não localizado." });
+        }
+
+        const { data: guias, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('batch_id', batchId)
+            .eq('tenant_id', tenant.id);
+
+        if (gErr || !guias || guias.length === 0) {
+            return res.status(400).json({ error: "Nenhuma guia encontrada para este lote." });
+        }
+
+        // Filtra guias que possuem código de barras emitido
+        const guiasValidas = guias.filter(g => g.barcode && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP');
+        if (guiasValidas.length === 0) {
+            return res.status(400).json({
+                error: "Este lote não possui guias com código de barras numérico emitido para pagamento bancário."
+            });
+        }
+
+        const dadosBancarios = {
+            cnpj: tenant.cnpj,
+            razaoSocial: tenant.razao_social,
+            agencia: tenant.bank_agency,
+            conta: tenant.bank_account,
+            dac: tenant.bank_dac
+        };
+
+        const guiasParaCnab = guiasValidas.map(g => ({
+            codigoBarras: g.barcode,
+            valor: g.value,
+            dataVencimento: paymentDate || g.created_at,
+            documentoOrigem: g.nf_number,
+            ufFavorecida: g.uf
+        }));
+
+        const bankChoice = (banco || 'itau').toLowerCase();
+        let cnabContent = '';
+        if (bankChoice === 'bradesco') {
+            cnabContent = cnabService.gerarRemessaBradesco(dadosBancarios, guiasParaCnab, paymentDate);
+        } else if (bankChoice === 'bb') {
+            cnabContent = cnabService.gerarRemessaBB(dadosBancarios, guiasParaCnab, paymentDate);
+        } else {
+            cnabContent = cnabService.gerarRemessaSispag(dadosBancarios, guiasParaCnab, paymentDate);
+        }
+
+        // Salva remessa no Storage
+        const remessaFilename = `remessa_${batchId}.txt`;
+        await supabase.storage
+            .from('tenant-storage')
+            .upload(`${tenant.id}/remessas/${remessaFilename}`, Buffer.from(cnabContent, 'utf-8'), {
+                contentType: 'text/plain',
+                upsert: true
+            });
+
+        // Atualiza status das guias para 'pagamento_autorizado'
+        const ids = guiasValidas.map(g => g.id);
+        await supabase
+            .from('guides')
+            .update({
+                status: 'pagamento_autorizado',
+                paid_at: new Date().toISOString()
+            })
+            .in('id', ids);
+
+        return res.status(200).json({
+            message: `Pagamento de ${guiasValidas.length} guia(s) autorizado com sucesso!`,
+            downloadUrl: `/api/remessa/download/${batchId}?banco=${bankChoice}`,
+            totalGuias: guiasValidas.length,
+            valorTotal: guiasValidas.reduce((a, b) => a + parseFloat(b.value || 0), 0)
+        });
+
+    } catch (err) {
+        console.error("Erro na autorização de pagamento:", err);
+        return res.status(500).json({ error: "Falha ao autorizar pagamento: " + err.message });
     }
 });
 
@@ -715,9 +926,10 @@ app.get('/api/batch/history', requireAuth, async (req, res) => {
     try {
         const { data: batches, error } = await supabase
             .from('batches')
-            .select('*, guides(*)')
+            .select('id, created_at, status, environment, file_count, source, error_message')
             .eq('tenant_id', req.tenant.id)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(50);
 
         if (error) throw error;
         return res.status(200).json(batches);
@@ -742,7 +954,45 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Lote não localizado." });
         }
 
-        // Tenta baixar a remessa do Storage
+        const bankParam = (req.query.banco || 'itau').toLowerCase();
+
+        // Se solicitado Bradesco ou Banco do Brasil, gera na hora para as guias do lote
+        if (bankParam === 'bradesco' || bankParam === 'bb') {
+            const { data: batchGuides } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('batch_id', batch.id)
+                .eq('tenant_id', req.tenant.id);
+
+            const dadosBancarios = {
+                cnpj: req.tenant.cnpj,
+                razaoSocial: req.tenant.razao_social,
+                agencia: req.tenant.bank_agency || '0001',
+                conta: req.tenant.bank_account || '00001',
+                dac: req.tenant.bank_dac || '0',
+                convenio: req.tenant.bank_convenio || ''
+            };
+
+            const mapped = (batchGuides || []).map(g => ({
+                codigoBarras: g.barcode,
+                valor: g.value,
+                dataVencimento: g.due_date || new Date().toISOString().split('T')[0],
+                documentoOrigem: g.nf_number
+            }));
+
+            let cnabText = '';
+            if (bankParam === 'bradesco') {
+                cnabText = cnabService.gerarRemessaBradesco(dadosBancarios, mapped);
+            } else {
+                cnabText = cnabService.gerarRemessaBB(dadosBancarios, mapped);
+            }
+
+            res.setHeader('Content-Type', 'text/plain');
+            res.setHeader('Content-Disposition', `attachment; filename="remessa_${bankParam}_${batch.id}.txt"`);
+            return res.send(cnabText);
+        }
+
+        // Caso padrão (Itaú)
         const remessaPath = `${req.tenant.id}/remessas/remessa_${batch.id}.txt`;
         const { data, error: downloadError } = await supabase.storage
             .from('tenant-storage')
@@ -773,6 +1023,496 @@ app.get('/download/remessa.txt', async (req, res) => {
         return res.sendFile(localPath);
     } catch (e) {
         return res.status(404).send("Arquivo remessa.txt não localizado. Processe um lote primeiro.");
+    }
+});
+
+/**
+ * Upload e Processamento de Arquivo de Retorno Bancário CNAB 240 (.RET)
+ * Realiza a conciliação automática das guias, gravando data de pagamento e autenticação bancária
+ */
+const uploadRetorno = multer({ storage: multer.memoryStorage() });
+app.post('/api/cnab/upload-retorno', requireAuth, uploadRetorno.single('retornoFile'), async (req, res) => {
+    try {
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ error: "Nenhum arquivo de retorno (.RET) foi enviado." });
+        }
+
+        const conteudo = req.file.buffer.toString('utf-8');
+        const resultadoParsing = cnabService.processarRetornoSispag(conteudo);
+
+        const atualizadas = [];
+        const naoLocalizadas = [];
+
+        for (const pag of resultadoParsing.pagamentos) {
+            // Localiza a guia correspondente no tenant
+            let query = supabase.from('guides').select('id, nf_number, uf, value, status').eq('tenant_id', req.tenant.id);
+            
+            if (pag.codigoBarras && pag.codigoBarras.length >= 40) {
+                // Tenta pelo código de barras
+                query = query.eq('barcode', pag.codigoBarras);
+            } else if (pag.nfNumber) {
+                // Fallback pelo número da NF
+                query = query.eq('nf_number', pag.nfNumber);
+            }
+
+            const { data: guiasEncontradas } = await query;
+
+            if (guiasEncontradas && guiasEncontradas.length > 0) {
+                for (const g of guiasEncontradas) {
+                    const updateData = {
+                        status: pag.status === 'PAGO' ? 'PAGA' : (pag.status === 'AGENDADO' ? 'AGENDADA' : 'REJEITADA')
+                    };
+                    if (pag.dataPagamento) {
+                        updateData.paid_at = pag.dataPagamento;
+                    }
+                    if (pag.autenticacao) {
+                        updateData.bank_authentication = pag.autenticacao;
+                    }
+
+                    await supabase.from('guides').update(updateData).eq('id', g.id);
+                    atualizadas.push({
+                        nf: g.nf_number,
+                        uf: g.uf,
+                        valor: pag.valorPago,
+                        status: updateData.status,
+                        autenticacao: pag.autenticacao
+                    });
+                }
+            } else {
+                naoLocalizadas.push({
+                    nf: pag.nfNumber || 'N/D',
+                    codigoBarras: pag.codigoBarras,
+                    valor: pag.valorPago,
+                    status: pag.status
+                });
+            }
+        }
+
+        return res.json({
+            success: true,
+            message: `Retorno processado com sucesso! ${atualizadas.length} guia(s) conciliada(s).`,
+            resumo: {
+                totalNoArquivo: resultadoParsing.totalProcessadas,
+                baixadas: resultadoParsing.baixadas,
+                agendadas: resultadoParsing.agendadas,
+                rejeitadas: resultadoParsing.rejeitadas,
+                conciliadasComSucesso: atualizadas.length,
+                naoLocalizadasNoBanco: naoLocalizadas.length
+            },
+            atualizadas,
+            naoLocalizadas
+        });
+    } catch (err) {
+        console.error("Erro ao processar retorno CNAB 240:", err);
+        return res.status(500).json({ error: `Erro ao processar retorno bancário: ${err.message}` });
+    }
+});
+
+/**
+ * MÓDULO 4: Romaneio de Expedição por Transportadora (Total Express, MT Log, Correios, etc.)
+ * Gera documento para impressão e conferência no galpão antes do carregamento
+ */
+app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
+    try {
+        const { batchId, carrier } = req.query;
+        let query = supabase.from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (batchId) {
+            query = query.eq('batch_id', batchId);
+        }
+        if (carrier && carrier !== 'TODAS') {
+            query = query.eq('carrier_name', carrier);
+        }
+
+        const { data: guias, error } = await query;
+        if (error) throw error;
+
+        // Agrupamento por Transportadora
+        const porTransportadora = {};
+        for (const g of (guias || [])) {
+            const transp = g.carrier_name || 'NÃO DEFINIDA / PRÓPRIA';
+            if (!porTransportadora[transp]) porTransportadora[transp] = [];
+            porTransportadora[transp].push(g);
+        }
+
+        // Gera HTML limpo e profissional para impressão A4 do Romaneio
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
+        const horaHoje = new Date().toLocaleTimeString('pt-BR');
+
+        let html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Romaneio de Expedição - ${escapeHtml(req.tenant.razao_social)}</title>
+    <style>
+        @page { 
+            size: A4 landscape; 
+            margin: 8mm 10mm; 
+        }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            color: #1e293b; 
+            background: #fff; 
+            margin: 0; 
+            padding: 15px; 
+            font-size: 12px; 
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 14px; }
+        .title { font-size: 20px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta { font-size: 11px; color: #475569; line-height: 1.5; text-align: right; }
+        .transp-section { margin-bottom: 20px; }
+        .transp-header { background: #f1f5f9; padding: 8px 14px; border-left: 5px solid #2563eb; font-size: 13px; font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        th { background: #f8fafc; color: #334155; font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid #cbd5e1; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+        td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11.5px; vertical-align: middle; }
+        tr:nth-child(even) { background: #f8fafc; }
+        .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+        .badge-ok { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-sp { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .signatures { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+        .sig-box { width: 42%; border-top: 1.5px solid #0f172a; text-align: center; padding-top: 6px; font-size: 11px; font-weight: 600; color: #334155; }
+        .print-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .print-btn { background: #0f172a; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(15,23,42,0.15); transition: background 0.2s; }
+        .print-btn:hover { background: #1e293b; }
+        @media print { 
+            @page { 
+                size: A4 landscape; 
+                margin: 8mm 10mm; 
+            }
+            body { 
+                padding: 0; 
+                margin: 0; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            .print-bar { 
+                display: none !important; 
+            }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-bar">
+        <button class="print-btn" onclick="window.print()">🖨️ Imprimir Romaneio em Paisagem (Ctrl + P)</button>
+        <span style="color: #475569; font-size: 11.5px;">
+            📄 <strong>Formato:</strong> A4 Paisagem (Horizontal) &nbsp;|&nbsp; Dá o espaço ideal para assinatura das transportadoras e nome completo dos clientes
+        </span>
+    </div>
+    <div class="header">
+        <div>
+            <div class="title">📦 Romaneio de Expedição de Cargas</div>
+            <div style="font-size: 13px; font-weight: 600; margin-top: 4px;">${escapeHtml(req.tenant.razao_social)} (CNPJ: ${escapeHtml(req.tenant.cnpj)})</div>
+        </div>
+        <div class="meta">
+            Data/Hora: ${dataHoje} às ${horaHoje}<br>
+            Total de Pedidos/Notas: <strong>${guias ? guias.length : 0}</strong><br>
+            Filtro: <strong>${escapeHtml(carrier || 'Todas as Transportadoras')}</strong>
+        </div>
+    </div>`;
+
+        const transportadorasNomes = Object.keys(porTransportadora);
+        if (transportadorasNomes.length === 0) {
+            html += `<p style="text-align: center; padding: 40px; color: #64748b;">Nenhuma nota encontrada com os filtros aplicados.</p>`;
+        } else {
+            for (const nomeTransp of transportadorasNomes) {
+                const itens = porTransportadora[nomeTransp];
+                const totalValor = itens.reduce((acc, curr) => acc + parseFloat(curr.value || 0), 0);
+                
+                html += `
+                <div class="transp-section">
+                    <div class="transp-header">
+                        <span>🚚 ${escapeHtml(nomeTransp)} (${itens.length} volume(s))</span>
+                        <span>Total DIFAL: R$ ${totalValor.toFixed(2)}</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 45px; text-align: center;">Item</th>
+                                <th style="width: 90px;">NF-e</th>
+                                <th style="width: 55px; text-align: center;">UF</th>
+                                <th>Destinatário (Cliente)</th>
+                                <th style="width: 110px;">DIFAL (R$)</th>
+                                <th style="width: 150px; text-align: center;">Status da Guia</th>
+                                <th style="width: 220px; text-align: center;">Visto do Motorista / Coleta</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                itens.forEach((g, idx) => {
+                    let statusBadge = '<span class="badge badge-ok">✔ GUIA ANEXADA</span>';
+                    if (g.uf === 'SP') {
+                        statusBadge = '<span class="badge badge-sp">ISENTO / SP</span>';
+                    } else if (!g.barcode) {
+                        statusBadge = '<span class="badge badge-pending">PENDENTE</span>';
+                    } else if (g.status === 'PAGA') {
+                        statusBadge = '<span class="badge badge-ok">✔ PAGA BANCÁRIO</span>';
+                    }
+
+                    html += `
+                        <tr>
+                            <td style="text-align: center; color: #64748b;">${idx + 1}</td>
+                            <td><strong>${escapeHtml(g.nf_number)}</strong></td>
+                            <td style="text-align: center;"><strong>${escapeHtml(g.uf)}</strong></td>
+                            <td><strong>${escapeHtml(g.customer_name || 'CONSUMIDOR FINAL')}</strong></td>
+                            <td>R$ ${parseFloat(g.value || 0).toFixed(2)}</td>
+                            <td style="text-align: center;">${statusBadge}</td>
+                            <td style="border-bottom: 1.5px dotted #cbd5e1;"></td>
+                        </tr>`;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                </div>`;
+            }
+
+            html += `
+            <div class="signatures">
+                <div class="sig-box">
+                    Responsável pela Expedição (Lalua Modas)<br>
+                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Conferência e Liberação de Carga</span>
+                </div>
+                <div class="sig-box">
+                    Motorista / Coletador da Transportadora<br>
+                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Recebimento e Aceite de Volumes</span>
+                </div>
+            </div>`;
+        }
+
+        html += `</body></html>`;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.send(html);
+    } catch (err) {
+        console.error("Erro ao gerar romaneio de expedição:", err);
+        return res.status(500).send("Erro ao gerar romaneio: " + err.message);
+    }
+});
+
+/**
+ * MÓDULO 7: BI Fiscal - Métricas, Distribuição por UF e Exportação Contábil
+ */
+app.get('/api/bi/stats', requireAuth, async (req, res) => {
+    try {
+        const { data: guias, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        let totalGuias = guias ? guias.length : 0;
+        let totalValorDifal = 0;
+        let totalPagas = 0;
+        let valorPago = 0;
+        let totalPendentes = 0;
+
+        const porUf = {};
+        const porTransportadora = {};
+        const porMes = {};
+
+        for (const g of (guias || [])) {
+            const val = parseFloat(g.value || 0);
+            totalValorDifal += val;
+
+            const isPago = g.status === 'PAGA' || !!g.paid_at;
+            if (isPago) {
+                totalPagas++;
+                valorPago += val;
+            } else {
+                totalPendentes++;
+            }
+
+            // Agrupa por UF
+            const uf = g.uf || 'OUTROS';
+            if (!porUf[uf]) porUf[uf] = { count: 0, valor: 0 };
+            porUf[uf].count++;
+            porUf[uf].valor += val;
+
+            // Agrupa por Transportadora
+            const transp = g.carrier_name || 'NÃO DEFINIDA';
+            if (!porTransportadora[transp]) porTransportadora[transp] = { count: 0, valor: 0 };
+            porTransportadora[transp].count++;
+            porTransportadora[transp].valor += val;
+
+            // Agrupa por Mês (YYYY-MM)
+            const d = g.created_at ? g.created_at.substring(0, 7) : 'Sem Data';
+            if (!porMes[d]) porMes[d] = { count: 0, valor: 0 };
+            porMes[d].count++;
+            porMes[d].valor += val;
+        }
+
+        // Ordena UFs por valor decrescente
+        const rankingUf = Object.entries(porUf)
+            .map(([uf, d]) => ({ uf, count: d.count, valor: parseFloat(d.valor.toFixed(2)) }))
+            .sort((a, b) => b.valor - a.valor);
+
+        // Ordena Transportadoras
+        const rankingTransp = Object.entries(porTransportadora)
+            .map(([transp, d]) => ({ transp, count: d.count, valor: parseFloat(d.valor.toFixed(2)) }))
+            .sort((a, b) => b.count - a.count);
+
+        return res.json({
+            tenant: {
+                razaoSocial: req.tenant.razao_social,
+                cnpj: req.tenant.cnpj
+            },
+            resumo: {
+                totalGuias,
+                totalValorDifal: parseFloat(totalValorDifal.toFixed(2)),
+                totalPagas,
+                valorPago: parseFloat(valorPago.toFixed(2)),
+                totalPendentes,
+                valorPendente: parseFloat((totalValorDifal - valorPago).toFixed(2))
+            },
+            rankingUf,
+            rankingTransp,
+            historicoMensal: Object.entries(porMes).map(([mes, d]) => ({ mes, ...d })).sort((a, b) => a.mes.localeCompare(b.mes))
+        });
+    } catch (err) {
+        console.error("Erro ao obter estatísticas de BI:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * Exportação em CSV Contábil formatado para Excel
+ */
+app.get('/api/bi/export-csv', requireAuth, async (req, res) => {
+    try {
+        const { data: guias, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (error) throw error;
+
+        // Cabeçalho CSV com ponto-e-vírgula (padrão Excel Brasil)
+        const cabecalho = [
+            "Número da NF",
+            "UF Favorecida",
+            "Destinatário",
+            "Transportadora",
+            "Valor DIFAL (R$)",
+            "Código de Barras",
+            "Linha Digitável",
+            "Status",
+            "Data de Pagamento",
+            "Autenticação Bancária",
+            "Data de Emissão no Sistema"
+        ].join(";");
+
+        const linhas = (guias || []).map(g => [
+            `"${g.nf_number || ''}"`,
+            `"${g.uf || ''}"`,
+            `"${(g.customer_name || 'CONSUMIDOR FINAL').replace(/"/g, '""')}"`,
+            `"${(g.carrier_name || 'NÃO DEFINIDA').replace(/"/g, '""')}"`,
+            `"${parseFloat(g.value || 0).toFixed(2).replace('.', ',')}"`,
+            `"${g.barcode || ''}"`,
+            `"${g.line_digitizable || ''}"`,
+            `"${g.status || 'EMITIDA'}"`,
+            `"${g.paid_at || ''}"`,
+            `"${(g.bank_authentication || '').replace(/"/g, '""')}"`,
+            `"${g.created_at ? g.created_at.substring(0, 10) : ''}"`
+        ].join(";"));
+
+        const csvContent = "\uFEFF" + [cabecalho, ...linhas].join("\r\n"); // \uFEFF força UTF-8 no Excel
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="relatorio_fiscal_difal_${new Date().toISOString().split('T')[0]}.csv"`);
+        return res.send(csvContent);
+    } catch (err) {
+        console.error("Erro ao exportar CSV fiscal:", err);
+        return res.status(500).send("Erro ao exportar relatório contábil: " + err.message);
+    }
+});
+
+/**
+ * MÓDULO 7.1: Ranking de Peças / Produtos Mais Vendidos por Estado
+ */
+app.get('/api/bi/produtos', requireAuth, async (req, res) => {
+    try {
+        const { uf } = req.query;
+        let query = supabase.from('invoice_items')
+            .select('*')
+            .eq('tenant_id', req.tenant.id);
+
+        if (uf && uf !== 'TODAS') {
+            query = query.eq('uf_destination', uf);
+        }
+
+        const { data: itens, error } = await query;
+        if (error) throw error;
+
+        const porProduto = {};
+        for (const item of (itens || [])) {
+            const desc = item.product_description || 'PRODUTO NÃO IDENTIFICADO';
+            if (!porProduto[desc]) {
+                porProduto[desc] = {
+                    sku: item.product_code || 'SEM_COD',
+                    descricao: desc,
+                    quantidade: 0,
+                    faturamento: 0
+                };
+            }
+            porProduto[desc].quantidade += parseFloat(item.quantity || 1);
+            porProduto[desc].faturamento += parseFloat(item.total_price || 0);
+        }
+
+        const ranking = Object.values(porProduto)
+            .map(p => ({
+                ...p,
+                faturamento: parseFloat(p.faturamento.toFixed(2))
+            }))
+            .sort((a, b) => b.quantidade - a.quantidade);
+
+        return res.json({
+            totalItens: itens ? itens.length : 0,
+            produtosUnicos: ranking.length,
+            ranking
+        });
+    } catch (err) {
+        console.error("Erro ao obter ranking de produtos:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * MÓDULO 7.2: Monitor de Devoluções e Prevenção de Desperdício de GNRE
+ */
+app.get('/api/bi/devolucoes', requireAuth, async (req, res) => {
+    try {
+        const { data: devolucoes, error: devErr } = await supabase
+            .from('return_notes')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('created_at', { ascending: false });
+
+        if (devErr) throw devErr;
+
+        // Guias vinculadas a notas devolvidas
+        const { data: guiasDevolvidas, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .eq('is_returned', true);
+
+        return res.json({
+            totalDevolucoes: devolucoes ? devolucoes.length : 0,
+            devolucoes: devolucoes || [],
+            guiasImpactadas: guiasDevolvidas || []
+        });
+    } catch (err) {
+        console.error("Erro ao buscar devoluções:", err);
+        return res.status(500).json({ error: err.message });
     }
 });
 
@@ -810,6 +1550,70 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
     }
 });
 
+app.get('/api/guide/danfe/:guideId', requireAuth, async (req, res) => {
+    try {
+        const { data: guide, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', req.params.guideId)
+            .eq('tenant_id', req.tenant.id)
+            .single();
+
+        if (error || !guide) {
+            return res.status(404).json({ error: "Guia não encontrada." });
+        }
+
+        const danfePath = guide.danfe_storage_path || `${req.tenant.id}/danfe/danfe_NF_${guide.nf_number}.pdf`;
+
+        const { data, error: downloadError } = await supabase.storage
+            .from('tenant-storage')
+            .download(danfePath);
+
+        if (downloadError || !data) {
+            return res.status(404).json({ error: "DANFE não encontrado para esta nota fiscal." });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${guide.nf_number}.pdf"`);
+        const buffer = Buffer.from(await data.arrayBuffer());
+        return res.send(buffer);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/guide/nfe-xml/:guideId', requireAuth, async (req, res) => {
+    try {
+        const { data: guide, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', req.params.guideId)
+            .eq('tenant_id', req.tenant.id)
+            .single();
+
+        if (error || !guide) {
+            return res.status(404).json({ error: "Guia não encontrada." });
+        }
+
+        const xmlPath = guide.xml_storage_path || `${req.tenant.id}/nfe_xml/nfe_${guide.nf_number}.xml`;
+
+        const { data, error: downloadError } = await supabase.storage
+            .from('tenant-storage')
+            .download(xmlPath);
+
+        if (downloadError || !data) {
+            return res.status(404).json({ error: "XML da NF-e não encontrado para esta nota fiscal." });
+        }
+
+        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="NFe_${guide.nf_number}.xml"`);
+        const buffer = Buffer.from(await data.arrayBuffer());
+        return res.send(buffer);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/guide/download-all/:batchId', requireAuth, async (req, res) => {
     try {
         const { data: guides, error } = await supabase
@@ -825,35 +1629,91 @@ app.get('/api/guide/download-all/:batchId', requireAuth, async (req, res) => {
         const AdmZip = require('adm-zip');
         const zip = new AdmZip();
 
-        // Faz o download de cada guia em paralelo
+        // Faz o download de todos os arquivos (Guia GNRE, DANFE em PDF e XML da NF-e) para cada nota
         await Promise.all(guides.map(async (guide) => {
-            if (!guide.storage_path || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP') {
-                return; // Pula guias de SP pendentes de importação manual na SEFAZ
-            }
-            try {
-                const { data, error: downloadError } = await supabase.storage
-                    .from('tenant-storage')
-                    .download(guide.storage_path);
+            const folder = `NF_${guide.nf_number}`;
 
-                if (!downloadError && data) {
-                    const buffer = Buffer.from(await data.arrayBuffer());
-                    const isPdf = guide.storage_path && guide.storage_path.toLowerCase().endsWith('.pdf');
-                    const extension = isPdf ? 'pdf' : 'html';
-                    const filename = `guia_NF_${guide.nf_number}_${guide.uf}.${extension}`;
-                    zip.addFile(filename, buffer);
+            // 1. Guia GNRE (HTML ou PDF)
+            if (guide.storage_path && guide.barcode !== 'IMPORTAR_NO_SEFAZ_SP') {
+                try {
+                    const { data, error: downloadError } = await supabase.storage
+                        .from('tenant-storage')
+                        .download(guide.storage_path);
+
+                    if (!downloadError && data) {
+                        const buffer = Buffer.from(await data.arrayBuffer());
+                        const isPdf = guide.storage_path.toLowerCase().endsWith('.pdf');
+                        const ext = isPdf ? 'pdf' : 'html';
+                        zip.addFile(`${folder}/guia_GNRE_${guide.uf}.${ext}`, buffer);
+                    }
+                } catch (err) {
+                    console.error(`Erro ao incluir guia ${guide.nf_number} no zip:`, err.message);
+                }
+            }
+
+            // 2. DANFE em PDF
+            const danfePath = guide.danfe_storage_path || `${req.tenant.id}/danfe/danfe_NF_${guide.nf_number}.pdf`;
+            try {
+                const { data: danfeData, error: danfeErr } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(danfePath);
+
+                if (!danfeErr && danfeData) {
+                    const danfeBuffer = Buffer.from(await danfeData.arrayBuffer());
+                    zip.addFile(`${folder}/DANFE_NF_${guide.nf_number}.pdf`, danfeBuffer);
                 }
             } catch (err) {
-                console.error(`Erro ao baixar guia ${guide.id} para o zip:`, err.message);
+                // DANFE pode não existir para guias legadas
+            }
+
+            // 3. XML oficial da NF-e
+            const xmlPath = guide.xml_storage_path || `${req.tenant.id}/nfe_xml/nfe_${guide.nf_number}.xml`;
+            try {
+                const { data: xmlData, error: xmlErr } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(xmlPath);
+
+                if (!xmlErr && xmlData) {
+                    const xmlBuffer = Buffer.from(await xmlData.arrayBuffer());
+                    zip.addFile(`${folder}/NFe_${guide.nf_number}.xml`, xmlBuffer);
+                }
+            } catch (err) {
+                // XML pode não existir para guias legadas
             }
         }));
 
         const zipBuffer = zip.toBuffer();
 
         res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', `attachment; filename="guias_lote_${req.params.batchId}.zip"`);
+        res.setHeader('Content-Disposition', `attachment; filename="pacote_completo_lote_${req.params.batchId}.zip"`);
         return res.send(zipBuffer);
     } catch (err) {
         return res.status(500).json({ error: err.message });
+    }
+});
+
+// Endpoint para gerar e transmitir PDF Mestre Intercalado (DANFE + GNRE em sequência para impressão em 1 clique)
+app.get('/api/guide/print-interleaved/:batchId', requireAuth, async (req, res) => {
+    try {
+        const { data: guides, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('batch_id', req.params.batchId)
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (error || !guides || guides.length === 0) {
+            return res.status(404).json({ error: "Nenhuma guia encontrada para este lote." });
+        }
+
+        const pdfBuffer = await printService.gerarLoteIntercaladoPdf(req.tenant, guides, supabase);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Lote_Impressao_NF_e_GNRE_${req.params.batchId}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar PDF intercalado:", err.message);
+        return res.status(500).json({ error: "Erro ao gerar PDF intercalado: " + err.message });
     }
 });
 
@@ -983,23 +1843,808 @@ app.post('/api/admin/users/reset-password', requireAuth, requireAdmin, async (re
     }
 });
 
-// Serve qualquer rota indefinida para o arquivo frontend padrão (SPA / fallback)
-app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/download')) {
-        return next();
+// ==========================================
+// ROTA: SINCRONIZAÇÃO COM LINX MICROVIX
+// ==========================================
+app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (req, res) => {
+    const tenant = req.tenant;
+
+    // Valida se o tenant tem credenciais Microvix configuradas
+    if (!tenant.microvix_key || !tenant.microvix_cnpj) {
+        return res.status(400).json({
+            error: 'Credenciais Linx Microvix não configuradas para esta empresa. Configure em Empresa > Integrações.'
+        });
     }
-    return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+
+    // 0. Previne execução concorrente / duplicada se houver lote ativo em processamento
+    const { data: lotesAtivos } = await supabase
+        .from('batches')
+        .select('id, created_at')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'processando')
+        .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+        .limit(1);
+
+    if (lotesAtivos && lotesAtivos.length > 0) {
+        return res.status(409).json({
+            error: 'Já existe um lote de emissão sendo processado no momento. Aguarde a finalização para evitar guias duplicadas.'
+        });
+    }
+
+    // Data do filtro (padrão = hoje)
+    const hoje = new Date().toISOString().split('T')[0];
+    const dataInicial = req.body.data_inicial || hoje;
+    const dataFim     = req.body.data_fim     || hoje;
+    const paymentDate = req.body.payment_date  || hoje;
+
+    try {
+        // 1. Descriptografa a senha Microvix com tolerância
+        let microvixPassword = tenant.microvix_password_encrypted || '';
+        if (microvixPassword.includes(':')) {
+            try {
+                const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+                microvixPassword = decrypt(microvixPassword, key);
+            } catch (errKey) {
+                try {
+                    const fallbackKey = getEncryptionKey('undefined');
+                    microvixPassword = decrypt(microvixPassword, fallbackKey);
+                } catch {
+                    return res.status(500).json({ error: 'Falha ao descriptografar senha Microvix. Recadastre as credenciais.' });
+                }
+            }
+        }
+
+        const credentials = {
+            user:     tenant.microvix_user     || 'linx_b2c',
+            password: microvixPassword,
+            chave:    tenant.microvix_key,
+            cnpjEmp:  tenant.microvix_cnpj
+        };
+
+        // 2. Busca NF-e na Linx Microvix
+        console.log(`[Microvix] Consultando NF-e para tenant ${tenant.id} | Período: ${dataInicial} a ${dataFim}`);
+        const notasBrutas = await microvixService.consultarNFe(credentials, dataInicial, dataFim);
+
+        if (!notasBrutas || notasBrutas.length === 0) {
+            return res.status(200).json({
+                message: `Nenhuma nota fiscal encontrada no período ${dataInicial} a ${dataFim}.`,
+                total: 0, novas: 0, duplicadas: 0, batch_id: null
+            });
+        }
+
+        // 3. Deduplica internamente o array retornado pela Linx (evita notas repetidas no mesmo retorno)
+        const notasUnicas = [];
+        const chavesVistas = new Set();
+        const docsVistos = new Set();
+
+        for (const n of notasBrutas) {
+            const ch = (n.chave_nfe || '').trim();
+            const doc = (n.documento || '').trim();
+            if (ch && chavesVistas.has(ch)) continue;
+            if (doc && docsVistos.has(doc)) continue;
+            if (ch) chavesVistas.add(ch);
+            if (doc) docsVistos.add(doc);
+            notasUnicas.push(n);
+        }
+
+        // 4. Verificação robusta contra duplicidade no banco de dados:
+        // Checa tanto por chave_nfe de 44 dígitos quanto por número da NF (nf_number),
+        // cobrindo o histórico onde a chave_nfe estava nula no banco de dados.
+        const todasChaves = notasUnicas.map(n => n.chave_nfe).filter(Boolean);
+        const todosDocumentos = new Set(notasUnicas.map(n => n.documento).filter(Boolean));
+
+        // Também extrai números de NF a partir da chave de 44 dígitos (posições 25 a 34: 0-indexed)
+        todasChaves.forEach(ch => {
+            if (ch.length === 44) {
+                const num = String(parseInt(ch.substring(25, 34), 10));
+                if (num && num !== 'NaN') todosDocumentos.add(num);
+            }
+        });
+
+        const chavesDuplicadas = new Set();
+        const docsDuplicados = new Set();
+
+        // 4.1 Busca por chave_nfe
+        if (todasChaves.length > 0) {
+            const { data: existentesChave } = await supabase
+                .from('guides')
+                .select('chave_nfe, nf_number')
+                .eq('tenant_id', tenant.id)
+                .in('chave_nfe', todasChaves);
+
+            if (existentesChave && existentesChave.length > 0) {
+                existentesChave.forEach(r => {
+                    if (r.chave_nfe) chavesDuplicadas.add(r.chave_nfe.trim());
+                    if (r.nf_number) docsDuplicados.add(r.nf_number.trim());
+                });
+            }
+        }
+
+        // 4.2 Busca por nf_number (para resguardar notas já emitidas no passado)
+        const docsArray = Array.from(todosDocumentos);
+        if (docsArray.length > 0) {
+            const { data: existentesDoc } = await supabase
+                .from('guides')
+                .select('chave_nfe, nf_number')
+                .eq('tenant_id', tenant.id)
+                .in('nf_number', docsArray);
+
+            if (existentesDoc && existentesDoc.length > 0) {
+                existentesDoc.forEach(r => {
+                    if (r.chave_nfe) chavesDuplicadas.add(r.chave_nfe.trim());
+                    if (r.nf_number) docsDuplicados.add(r.nf_number.trim());
+                });
+            }
+        }
+
+        // 4.3 Filtra rigorosamente apenas as notas que NUNCA foram emitidas
+        const notasNovas = notasUnicas.filter(n => {
+            const ch = (n.chave_nfe || '').trim();
+            const doc = (n.documento || '').trim();
+            const docFromChave = ch.length === 44 ? String(parseInt(ch.substring(25, 34), 10)) : '';
+
+            if (ch && chavesDuplicadas.has(ch)) return false;
+            if (doc && docsDuplicados.has(doc)) return false;
+            if (docFromChave && docsDuplicados.has(docFromChave)) return false;
+            return true;
+        });
+
+        const totalDuplicadas = notasBrutas.length - notasNovas.length;
+
+        console.log(`[Microvix] Total Linx: ${notasBrutas.length} | Novas: ${notasNovas.length} | Já importadas/duplicadas: ${totalDuplicadas}`);
+
+        if (notasNovas.length === 0) {
+            return res.status(200).json({
+                message: `Todas as ${notasBrutas.length} notas deste período já foram emitidas anteriormente (duplicadas ignoradas).`,
+                total: notasBrutas.length, novas: 0, duplicadas: totalDuplicadas, batch_id: null
+            });
+        }
+
+        // 5. Filtra XMLs que têm DIFAL (vICMSUFDest > 0) — notas internas ou sem DIFAL não precisam de GNRE
+        const xmlsParaProcessar = [];
+        for (const nota of notasNovas) {
+            const difalMatch = nota.xml.match(/<vICMSUFDest>([^<]+)<\/vICMSUFDest>/);
+            const difalVal   = difalMatch ? parseFloat(difalMatch[1]) : 0;
+            if (difalVal > 0) {
+                xmlsParaProcessar.push({
+                    filename: `linx_nfe_${nota.documento || nota.chave_nfe.substring(0, 9)}.xml`,
+                    content:  nota.xml,
+                    xmlSource: 'linx_microvix'
+                });
+            }
+        }
+
+        const semDifal = notasNovas.length - xmlsParaProcessar.length;
+
+        if (xmlsParaProcessar.length === 0) {
+            return res.status(200).json({
+                message: `${notasNovas.length} notas novas encontradas, mas nenhuma possui DIFAL interestadual para emissão de GNRE.`,
+                total: notasBrutas.length, novas: notasNovas.length, duplicadas: totalDuplicadas,
+                sem_difal: semDifal, batch_id: null
+            });
+        }
+
+        // 6. Verifica limite de emissões do plano
+        const limite = PLAN_LIMITS[tenant.subscription_status] || 0;
+        if (limite > 0) {
+            const inicioMes = new Date();
+            inicioMes.setDate(1);
+            inicioMes.setHours(0, 0, 0, 0);
+
+            const { count } = await supabase
+                .from('guides')
+                .select('id', { count: 'exact', head: true })
+                .eq('tenant_id', tenant.id)
+                .gte('created_at', inicioMes.toISOString());
+
+            if ((count || 0) + xmlsParaProcessar.length > limite) {
+                return res.status(403).json({
+                    error: `Limite do plano atingido: ${count || 0}/${limite} guias este mês. Adicione menos notas ou faça upgrade do plano.`
+                });
+            }
+        }
+
+        // 7. Cria registro do lote no banco
+        const { data: batchData, error: batchError } = await supabase
+            .from('batches')
+            .insert({
+                tenant_id: tenant.id,
+                status: 'aguardando_aprovacao',
+                environment: tenant.environment || 'simulado',
+                source: 'linx_microvix',
+                file_count: xmlsParaProcessar.length
+            })
+            .select('id')
+            .single();
+
+        if (batchError) throw batchError;
+        const batchId = batchData.id;
+
+        // 8. Dispara prǸ-validaǜo e staging em background
+        runBatchProcessInBackground(batchId, tenant, xmlsParaProcessar, paymentDate);
+
+        return res.status(200).json({
+            message: `Notas importadas do Linx Microvix! O lote #${batchId.substring(0, 8)} estǭ pronto e aguardando sua autorizaǜo para emissǜo.`,
+            total:        notasBrutas.length,
+            novas:        notasNovas.length,
+            com_difal:    xmlsParaProcessar.length,
+            sem_difal:    semDifal,
+            duplicadas:   totalDuplicadas,
+            batch_id:     batchId
+        });
+
+    } catch (err) {
+        console.error('[Microvix] Erro na sincronização:', err.message);
+        return res.status(500).json({ error: 'Erro ao sincronizar com Linx Microvix: ' + err.message });
+    }
+});
+
+// Endpoint para salvar credenciais Microvix do tenant
+app.post('/api/microvix/credentials', requireAuth, async (req, res) => {
+    const { microvix_key, microvix_user, microvix_password, microvix_cnpj } = req.body;
+    if (!microvix_key || !microvix_cnpj) {
+        return res.status(400).json({ error: 'Chave API e CNPJ são obrigatórios.' });
+    }
+
+    try {
+        const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+        const encryptedPassword = microvix_password ? encrypt(microvix_password, key) : '';
+
+        const { error } = await supabase
+            .from('tenants')
+            .update({
+                microvix_key,
+                microvix_user:               microvix_user || 'linx_b2c',
+                microvix_password_encrypted: encryptedPassword,
+                microvix_cnpj:               microvix_cnpj.replace(/[^0-9]/g, '')
+            })
+            .eq('id', req.tenant.id);
+
+        if (error) throw error;
+        return res.status(200).json({ message: 'Credenciais Linx Microvix salvas com sucesso!' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // ==========================================
-// MÓDULO AUXILIAR: PROCESSAMENTO EM BACKGROUND
+// ROTAS: CONECTORES ERP (BLING, TINY ERP, OMIE)
 // ==========================================
-function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
-    // Roda em paralelo sem travar o loop principal de requisições
+
+// 1. Status de conexão dos ERPs para o tenant
+app.get('/api/erp/status', requireAuth, async (req, res) => {
+    try {
+        const t = req.tenant;
+        return res.status(200).json({
+            microvix: !!(t.microvix_key && t.microvix_cnpj),
+            bling: !!t.bling_token_encrypted,
+            tiny: !!t.tiny_token_encrypted,
+            omie: !!(t.omie_app_key && t.omie_app_secret_encrypted),
+            vnda: !!t.vnda_token_encrypted
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// ==========================================
+// ROTAS: E-COMMERCE OLIST VNDA (BOAH)
+// ==========================================
+
+// Status da conexão da Vnda
+app.get('/api/vnda/status', requireAuth, async (req, res) => {
+    const t = req.tenant;
+    return res.json({
+        conectado: !!t.vnda_token_encrypted,
+        shop_host: t.vnda_shop_host || 'www.boah.com.br'
+    });
+});
+
+// Salvar credenciais da Vnda
+app.post('/api/vnda/credentials', requireAuth, async (req, res) => {
+    const { token, shop_host } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token da Vnda é obrigatório.' });
+
+    try {
+        const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+        const encToken = encrypt(token.trim(), key);
+        const host = (shop_host || 'www.boah.com.br').trim();
+
+        const { error } = await supabase
+            .from('tenants')
+            .update({
+                vnda_token_encrypted: encToken,
+                vnda_shop_host: host
+            })
+            .eq('id', req.tenant.id);
+
+        if (error) throw error;
+        return res.json({ message: 'Credenciais da Olist Vnda salvas com sucesso!' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Listar pedidos recentes da Vnda
+app.get('/api/vnda/pedidos', requireAuth, async (req, res) => {
+    const t = req.tenant;
+    if (!t.vnda_token_encrypted) {
+        return res.status(400).json({ error: 'Integração Vnda não configurada.' });
+    }
+
+    try {
+        const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+        const token = t.vnda_token_encrypted.includes(':') 
+            ? decrypt(t.vnda_token_encrypted, key) 
+            : t.vnda_token_encrypted;
+        const shopHost = t.vnda_shop_host || 'www.boah.com.br';
+
+        const pedidos = await vndaService.listarPedidos(token, shopHost, {
+            per_page: 30,
+            status: req.query.status || undefined
+        });
+
+        return res.json({ pedidos });
+    } catch (err) {
+        return res.status(500).json({ error: 'Erro ao buscar pedidos da Vnda: ' + err.message });
+    }
+});
+
+// ==========================================
+// MÓDULO: SINCRONIZAÇÃO AUTOMÁTICA (SCHEDULER / WORKER)
+// ==========================================
+// 1. Status do agendador automático
+app.get('/api/sync/status', requireAuth, (req, res) => {
+    return res.status(200).json(syncService.obterStatus());
+});
+
+// 2. Disparo manual imediato da sincronização automática para o tenant logado
+app.post('/api/sync/run', requireAuth, requireActiveSubscription, async (req, res) => {
+    try {
+        const { dataInicial, dataFim, paymentDate } = req.body;
+        const resultado = await syncService.sincronizarTenant(
+            req.tenant, 
+            supabase, 
+            runBatchProcessInBackground, 
+            { dataInicial, dataFim, paymentDate }
+        );
+        return res.status(200).json(resultado);
+    } catch (err) {
+        console.error("Erro ao disparar sincronização manual:", err);
+        return res.status(500).json({ error: "Falha na sincronização: " + err.message });
+    }
+});
+
+// 2. Salvar credenciais de um ERP específico
+app.post('/api/erp/credentials', requireAuth, async (req, res) => {
+    const { erp, bling_token, tiny_token, omie_app_key, omie_app_secret } = req.body;
+    const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+
+    try {
+        const updateData = {};
+        if (erp === 'bling') {
+            if (!bling_token) return res.status(400).json({ error: 'Token do Bling é obrigatório.' });
+            updateData.bling_token_encrypted = encrypt(bling_token.trim(), key);
+        } else if (erp === 'tiny') {
+            if (!tiny_token) return res.status(400).json({ error: 'Token do Tiny ERP é obrigatório.' });
+            updateData.tiny_token_encrypted = encrypt(tiny_token.trim(), key);
+        } else if (erp === 'omie') {
+            if (!omie_app_key || !omie_app_secret) return res.status(400).json({ error: 'App Key e App Secret da Omie são obrigatórios.' });
+            updateData.omie_app_key = omie_app_key.trim();
+            updateData.omie_app_secret_encrypted = encrypt(omie_app_secret.trim(), key);
+        } else {
+            return res.status(400).json({ error: 'ERP inválido especificado. Escolha bling, tiny ou omie.' });
+        }
+
+        const { error } = await supabase
+            .from('tenants')
+            .update(updateData)
+            .eq('id', req.tenant.id);
+
+        if (error) throw error;
+        return res.status(200).json({ message: `Credenciais do ${erp.toUpperCase()} salvas com sucesso!` });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. Sincronização e Importação de Notas Fiscais via ERP (Bling / Tiny / Omie)
+app.post('/api/erp/sync', requireAuth, requireActiveSubscription, async (req, res) => {
+    const tenant = req.tenant;
+    const { erp } = req.body;
+
+    if (!['bling', 'tiny', 'omie'].includes(erp)) {
+        return res.status(400).json({ error: "ERP inválido. Deve ser 'bling', 'tiny' ou 'omie'." });
+    }
+
+    // Previne execução concorrente se houver lote ativo em processamento
+    const { data: lotesAtivos } = await supabase
+        .from('batches')
+        .select('id, created_at')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'processando')
+        .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+        .limit(1);
+
+    if (lotesAtivos && lotesAtivos.length > 0) {
+        return res.status(409).json({
+            error: 'Já existe um lote de emissão sendo processado no momento. Aguarde a finalização para evitar guias duplicadas.'
+        });
+    }
+
+    const hoje = new Date().toISOString().split('T')[0];
+    const dataInicial = req.body.data_inicial || hoje;
+    const dataFim     = req.body.data_fim     || hoje;
+    const paymentDate = req.body.payment_date  || hoje;
+
+    const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+
+    try {
+        let notasBrutas = [];
+
+        if (erp === 'bling') {
+            const tokenEnc = tenant.bling_token_encrypted || req.body.bling_token;
+            if (!tokenEnc) {
+                return res.status(400).json({ error: 'Token da API do Bling v3 não configurado.' });
+            }
+            const token = tokenEnc.includes(':') ? decrypt(tokenEnc, key) : tokenEnc;
+            console.log(`[Bling] Consultando NF-e para tenant ${tenant.id} | ${dataInicial} a ${dataFim}`);
+            notasBrutas = await erpService.consultarNFeBling(token, dataInicial, dataFim);
+
+        } else if (erp === 'tiny') {
+            const tokenEnc = tenant.tiny_token_encrypted || req.body.tiny_token;
+            if (!tokenEnc) {
+                return res.status(400).json({ error: 'API Token do Tiny ERP não configurado.' });
+            }
+            const token = tokenEnc.includes(':') ? decrypt(tokenEnc, key) : tokenEnc;
+            console.log(`[Tiny] Consultando NF-e para tenant ${tenant.id} | ${dataInicial} a ${dataFim}`);
+            notasBrutas = await erpService.consultarNFeTiny(token, dataInicial, dataFim);
+
+        } else if (erp === 'omie') {
+            const appKey = tenant.omie_app_key || req.body.omie_app_key;
+            const secretEnc = tenant.omie_app_secret_encrypted || req.body.omie_app_secret;
+            if (!appKey || !secretEnc) {
+                return res.status(400).json({ error: 'App Key e App Secret da Omie não configurados.' });
+            }
+            const appSecret = secretEnc.includes(':') ? decrypt(secretEnc, key) : secretEnc;
+            console.log(`[Omie] Consultando NF-e para tenant ${tenant.id} | ${dataInicial} a ${dataFim}`);
+            notasBrutas = await erpService.consultarNFeOmie(appKey, appSecret, dataInicial, dataFim);
+        }
+
+        if (!notasBrutas || notasBrutas.length === 0) {
+            return res.status(200).json({
+                message: `Nenhuma nota fiscal encontrada no ${erp.toUpperCase()} no período selecionado (${dataInicial} a ${dataFim}).`,
+                total: 0, novas: 0, duplicadas: 0, batch_id: null
+            });
+        }
+
+        // Deduplica internamente
+        const notasUnicas = [];
+        const chavesVistas = new Set();
+        const docsVistos = new Set();
+
+        for (const n of notasBrutas) {
+            const ch = (n.chave_nfe || '').trim();
+            const doc = (n.documento || '').trim();
+            if (ch && chavesVistas.has(ch)) continue;
+            if (doc && docsVistos.has(doc)) continue;
+            if (ch) chavesVistas.add(ch);
+            if (doc) docsVistos.add(doc);
+            notasUnicas.push(n);
+        }
+
+        // Checa duplicidade no banco
+        const todasChaves = notasUnicas.map(n => n.chave_nfe).filter(Boolean);
+        const todosDocumentos = new Set(notasUnicas.map(n => n.documento).filter(Boolean));
+
+        todasChaves.forEach(ch => {
+            if (ch.length === 44) {
+                const num = String(parseInt(ch.substring(25, 34), 10));
+                if (num && num !== 'NaN') todosDocumentos.add(num);
+            }
+        });
+
+        const chavesDuplicadas = new Set();
+        const docsDuplicados = new Set();
+
+        if (todasChaves.length > 0) {
+            const { data: existentesChave } = await supabase
+                .from('guides')
+                .select('chave_nfe, nf_number')
+                .eq('tenant_id', tenant.id)
+                .in('chave_nfe', todasChaves);
+
+            if (existentesChave) {
+                existentesChave.forEach(r => {
+                    if (r.chave_nfe) chavesDuplicadas.add(r.chave_nfe.trim());
+                    if (r.nf_number) docsDuplicados.add(r.nf_number.trim());
+                });
+            }
+        }
+
+        const docsArray = Array.from(todosDocumentos);
+        if (docsArray.length > 0) {
+            const { data: existentesDoc } = await supabase
+                .from('guides')
+                .select('chave_nfe, nf_number')
+                .eq('tenant_id', tenant.id)
+                .in('nf_number', docsArray);
+
+            if (existentesDoc) {
+                existentesDoc.forEach(r => {
+                    if (r.chave_nfe) chavesDuplicadas.add(r.chave_nfe.trim());
+                    if (r.nf_number) docsDuplicados.add(r.nf_number.trim());
+                });
+            }
+        }
+
+        const notasNovas = notasUnicas.filter(n => {
+            const ch = (n.chave_nfe || '').trim();
+            const doc = (n.documento || '').trim();
+            const docFromChave = ch.length === 44 ? String(parseInt(ch.substring(25, 34), 10)) : '';
+
+            if (ch && chavesDuplicadas.has(ch)) return false;
+            if (doc && docsDuplicados.has(doc)) return false;
+            if (docFromChave && docsDuplicados.has(docFromChave)) return false;
+            return true;
+        });
+
+        const totalDuplicadas = notasBrutas.length - notasNovas.length;
+
+        if (notasNovas.length === 0) {
+            return res.status(200).json({
+                message: `Todas as ${notasBrutas.length} notas deste período já foram emitidas anteriormente no sistema.`,
+                total: notasBrutas.length, novas: 0, duplicadas: totalDuplicadas, batch_id: null
+            });
+        }
+
+        // Filtra XMLs que têm DIFAL (vICMSUFDest > 0)
+        const xmlsParaProcessar = [];
+        for (const nota of notasNovas) {
+            const difalMatch = nota.xml.match(/<vICMSUFDest>([^<]+)<\/vICMSUFDest>/);
+            const difalVal   = difalMatch ? parseFloat(difalMatch[1]) : 0;
+            if (difalVal > 0) {
+                xmlsParaProcessar.push({
+                    filename: `${erp}_nfe_${nota.documento || nota.chave_nfe.substring(0, 9)}.xml`,
+                    content:  nota.xml,
+                    xmlSource: erp
+                });
+            }
+        }
+
+        const semDifal = notasNovas.length - xmlsParaProcessar.length;
+
+        if (xmlsParaProcessar.length === 0) {
+            return res.status(200).json({
+                message: `${notasNovas.length} notas novas encontradas no ${erp.toUpperCase()}, mas nenhuma possui DIFAL interestadual para emissão de GNRE.`,
+                total: notasBrutas.length, novas: notasNovas.length, duplicadas: totalDuplicadas,
+                sem_difal: semDifal, batch_id: null
+            });
+        }
+
+        // Checa limite de plano
+        const limite = PLAN_LIMITS[tenant.subscription_status] || 0;
+        if (limite > 0) {
+            const inicioMes = new Date();
+            inicioMes.setDate(1);
+            inicioMes.setHours(0, 0, 0, 0);
+
+            const { count } = await supabase
+                .from('guides')
+                .select('id', { count: 'exact', head: true })
+                .eq('tenant_id', tenant.id)
+                .gte('created_at', inicioMes.toISOString());
+
+            if ((count || 0) + xmlsParaProcessar.length > limite) {
+                return res.status(403).json({
+                    error: `Limite do plano atingido: ${count || 0}/${limite} guias este mês. Faça upgrade do plano.`
+                });
+            }
+        }
+
+        // Cria lote e inicia background staging
+        const { data: batchData, error: batchError } = await supabase
+            .from('batches')
+            .insert({
+                tenant_id: tenant.id,
+                status: 'aguardando_aprovacao',
+                environment: tenant.environment || 'simulado',
+                source: erp,
+                file_count: xmlsParaProcessar.length
+            })
+            .select('id')
+            .single();
+
+        if (batchError) throw batchError;
+        const batchId = batchData.id;
+
+        runBatchProcessInBackground(batchId, tenant, xmlsParaProcessar, paymentDate);
+
+        return res.status(200).json({
+            message: `Notas importadas do ${erp.toUpperCase()}! O lote #${batchId.substring(0, 8)} estǭ pronto e aguardando sua autorizaǜo para emissǜo.`,
+            total:        notasBrutas.length,
+            novas:        notasNovas.length,
+            com_difal:    xmlsParaProcessar.length,
+            sem_difal:    semDifal,
+            duplicadas:   totalDuplicadas,
+            batch_id:     batchId
+        });
+
+    } catch (err) {
+        console.error(`[${erp.toUpperCase()}] Erro na sincronização:`, err.message);
+        return res.status(500).json({ error: `Erro ao sincronizar com ${erp.toUpperCase()}: ` + err.message });
+    }
+});
+
+// ==========================================
+// MÓDULO DE AUTORIZAÇÃO: PRÉ-VALIDAÇÃO & EMISSÃO SEFAZ
+// ==========================================
+
+/**
+ * 1. Importa os XMLs, valida regras fiscais, calcula DIFAL e deixa o lote aguardando aprovação
+ */
+function stageBatchForApproval(batchId, tenant, filesData, paymentDate, source = 'upload') {
     setImmediate(async () => {
         activeTasks[batchId] = {
             logs: [],
-            progress: 5,
+            progress: 10,
+            status: 'aguardando_aprovacao'
+        };
+
+        const task = activeTasks[batchId];
+        const log = (msg) => {
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            task.logs.push(`[${timestamp}] ${msg}`);
+        };
+
+        try {
+            log(`📥 Importando e pré-validando ${filesData.length} arquivo(s) de nota fiscal...`);
+            task.progress = 20;
+
+            const notasValidas = [];
+            let totalDifal = 0;
+
+            for (const f of filesData) {
+                try {
+                    const dadosNfe = parserService.extrairDadosNfeXML(f.content);
+                    dadosNfe.caminhoOriginal = f.path;
+                    dadosNfe.nomeArquivoOriginal = f.filename;
+                    dadosNfe.xmlSource = f.xmlSource || source;
+                    dadosNfe.xmlContent = f.content;
+
+                    const ch = (dadosNfe.chaveAcessoNfe || '').trim();
+                    const doc = (dadosNfe.documentoOrigem || '').trim();
+
+                    // Checa se já existe guia emitida anteriormente (diferente de aguardando_aprovacao)
+                    let jaExiste = null;
+                    if (ch) {
+                        const { data } = await supabase
+                            .from('guides')
+                            .select('id, nf_number, status')
+                            .eq('tenant_id', tenant.id)
+                            .eq('chave_nfe', ch)
+                            .neq('status', 'aguardando_aprovacao')
+                            .limit(1);
+                        if (data && data.length > 0) jaExiste = data[0];
+                    }
+                    if (!jaExiste && doc) {
+                        const { data } = await supabase
+                            .from('guides')
+                            .select('id, nf_number, status')
+                            .eq('tenant_id', tenant.id)
+                            .eq('nf_number', doc)
+                            .neq('status', 'aguardando_aprovacao')
+                            .limit(1);
+                        if (data && data.length > 0) jaExiste = data[0];
+                    }
+
+                    if (jaExiste) {
+                        log(`   ⏭ NF Nº ${doc} já emitida anteriormente no sistema. Ignorada para evitar duplicidade.`);
+                        continue;
+                    }
+
+                    // Salva XML no Storage para transmissão posterior quando autorizado
+                    let xmlRemotePath = null;
+                    if (f.content) {
+                        xmlRemotePath = `${tenant.id}/lotes_xml/${batchId}/${f.filename || `nfe_${doc}.xml`}`;
+                        await supabase.storage
+                            .from('tenant-storage')
+                            .upload(xmlRemotePath, Buffer.from(f.content, 'utf-8'), {
+                                contentType: 'application/xml; charset=utf-8',
+                                upsert: true
+                            });
+                        dadosNfe.xml_storage_path = xmlRemotePath;
+                    }
+
+                    // Gera DANFE em PDF antecipadamente
+                    let danfeRemotePath = null;
+                    try {
+                        const danfeBuffer = await danfeService.gerarDanfePdf(f.content);
+                        danfeRemotePath = `${tenant.id}/danfe/danfe_NF_${doc}.pdf`;
+                        await supabase.storage
+                            .from('tenant-storage')
+                            .upload(danfeRemotePath, danfeBuffer, {
+                                contentType: 'application/pdf',
+                                upsert: true
+                            });
+                        dadosNfe.danfe_storage_path = danfeRemotePath;
+                    } catch (eDanfe) {}
+
+                    const val = parseFloat(dadosNfe.valor || 0);
+                    totalDifal += val;
+                    notasValidas.push(dadosNfe);
+
+                    log(`   ✔ NF Nº ${dadosNfe.documentoOrigem} (Destino: ${dadosNfe.ufFavorecida}, DIFAL: R$ ${dadosNfe.valor}) pré-validada.`);
+                } catch (err) {
+                    log(`   ⚠ Ignorado arquivo ${f.filename}: ${err.message}`);
+                }
+            }
+
+            if (notasValidas.length === 0) {
+                throw new Error("Nenhuma nota fiscal pendente de emissão foi localizada.");
+            }
+
+            task.progress = 70;
+
+            // Insere as notas em 'guides' vinculadas a este lote com status 'aguardando_aprovacao'
+            const guidesDb = notasValidas.map(n => ({
+                tenant_id: tenant.id,
+                batch_id: batchId,
+                nf_number: n.documentoOrigem,
+                uf: n.ufFavorecida,
+                value: n.valor,
+                status: 'aguardando_aprovacao',
+                customer_name: n.destNome || null,
+                carrier_name: n.carrierName || null,
+                chave_nfe: n.chaveAcessoNfe || null,
+                xml_storage_path: n.xml_storage_path || null,
+                danfe_storage_path: n.danfe_storage_path || null,
+                xml_source: n.xmlSource || source,
+                barcode: null,
+                line_digitizable: null
+            }));
+
+            await supabase.from('guides').insert(guidesDb);
+
+            // Atualiza status do lote para 'aguardando_aprovacao'
+            await supabase
+                .from('batches')
+                .update({
+                    status: 'aguardando_aprovacao',
+                    file_count: notasValidas.length
+                })
+                .eq('id', batchId);
+
+            log(`\n==================================================`);
+            log(`📋 PRÉ-VALIDAÇÃO CONCLUÍDA COM SUCESSO!`);
+            log(`📊 Total: ${notasValidas.length} nota(s) fiscal(is) prontas.`);
+            log(`💰 Total DIFAL: R$ ${totalDifal.toFixed(2)}.`);
+            log(`🛑 AGUARDANDO AUTORIZAÇÃO: Revise as notas no painel e clique em "Autorizar Emissão" para transmitir à SEFAZ.`);
+            log(`==================================================`);
+
+            task.progress = 100;
+            task.status = 'aguardando_aprovacao';
+
+        } catch (err) {
+            log(`❌ Erro na importação: ${err.message}`);
+            task.status = 'erro';
+            task.error = err.message;
+            await supabase
+                .from('batches')
+                .update({ status: 'erro', error_message: err.message })
+                .eq('id', batchId);
+        }
+    });
+}
+
+/**
+ * 2. Transmite o lote já validado para a SEFAZ após a autorização expressa do operador
+ */
+function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
+    setImmediate(async () => {
+        activeTasks[batchId] = {
+            logs: [`[${new Date().toLocaleTimeString('pt-BR')}] 🚀 Emissão autorizada pelo operador! Conectando com a SEFAZ...`],
+            progress: 10,
             status: 'processando'
         };
 
@@ -1010,76 +2655,74 @@ function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
         };
 
         try {
-            log("🧹 Limpando buffers locais antigos...");
-            task.progress = 10;
+            await supabase.from('batches').update({ status: 'processando' }).eq('id', batchId);
 
-            // 1. Baixar certificado PFX
+            // Busca as notas pré-validadas deste lote
+            const { data: stagedGuides, error: gError } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('batch_id', batchId)
+                .eq('tenant_id', tenant.id);
+
+            if (gError || !stagedGuides || stagedGuides.length === 0) {
+                throw new Error("Nenhuma nota pré-validada encontrada para este lote.");
+            }
+
+            // Carrega os XMLs do storage
+            const notasFiscais = [];
+            for (const g of stagedGuides) {
+                let content = null;
+                if (g.xml_storage_path) {
+                    try {
+                        const { data: xData } = await supabase.storage.from('tenant-storage').download(g.xml_storage_path);
+                        if (xData) content = await xData.text();
+                    } catch (e) {}
+                }
+                if (content) {
+                    const dadosNfe = parserService.extrairDadosNfeXML(content);
+                    dadosNfe.guide_id = g.id;
+                    dadosNfe.xmlContent = content;
+                    dadosNfe.xml_storage_path = g.xml_storage_path;
+                    dadosNfe.danfe_storage_path = g.danfe_storage_path;
+                    notasFiscais.push(dadosNfe);
+                }
+            }
+
+            if (notasFiscais.length === 0) {
+                throw new Error("Não foi possível carregar os arquivos XML do lote para transmissão.");
+            }
+
+            // Agente mTLS
             let agent = null;
             if (tenant.environment === 'producao') {
                 log("🔍 Carregando certificado PFX do armazenamento seguro...");
                 if (!tenant.pfx_filename) {
-                    throw new Error("Nenhum certificado digital PFX foi cadastrado na sua conta.");
+                    throw new Error("Nenhum certificado digital PFX cadastrado.");
                 }
-
                 const { data: pfxFile, error: downloadError } = await supabase.storage
                     .from('tenant-storage')
                     .download(`${tenant.id}/certificados/${tenant.pfx_filename}`);
 
                 if (downloadError || !pfxFile) {
-                    throw new Error("Não foi possível carregar o certificado digital do storage: " + (downloadError?.message || 'Arquivo ausente'));
+                    throw new Error("Falha ao baixar certificado: " + (downloadError?.message || 'Arquivo ausente'));
                 }
 
                 const pfxBuffer = Buffer.from(await pfxFile.arrayBuffer());
-                
-                log("🔓 Descriptografando a senha do certificado em memória...");
                 const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
                 const passphrase = decrypt(tenant.pfx_passphrase_encrypted, key);
 
-                log("⚙ Inicializando agente mTLS com a SEFAZ...");
+                log("⚙ Canal mTLS SEFAZ inicializado.");
                 agent = gnreService.createHttpsAgent({ pfxBuffer, passphrase });
             } else {
-                log("🧪 Modo SIMULADO ativado. O certificado digital não é necessário.");
+                log("🧪 Modo SIMULADO ativado.");
             }
 
             task.progress = 25;
 
-            // 2. Extrai notas
-            log(` Lendo ${filesData.length} nota(s) fiscal(is)...`);
-            const notasFiscais = [];
-            for (const f of filesData) {
-                try {
-                    const dadosNfe = parserService.extrairDadosNfeXML(f.content);
-                    dadosNfe.caminhoOriginal = f.path; // Mantém referência para exclusão/arquivamento se local
-                    dadosNfe.nomeArquivoOriginal = f.filename;
-                    notasFiscais.push(dadosNfe);
-                    log(`   ✔ Nota Fiscal Nº ${dadosNfe.documentoOrigem} (UF: ${dadosNfe.ufFavorecida}, DIFAL: R$ ${dadosNfe.valor}) carregada.`);
-                } catch (err) {
-                    log(`   ⚠ Ignorado arquivo ${f.filename}: ${err.message}`);
-                }
-            }
-
-            if (notasFiscais.length === 0) {
-                throw new Error("Nenhum arquivo XML de NF-e válido para processamento.");
-            }
-
-            task.progress = 40;
-
-            // Define datas de vencimento/pagamento (Padrão: Hoje, ou paymentDate se fornecido)
+            // Datas de vencimento/pagamento
             const hoje = new Date().toISOString().split('T')[0];
             const dataAlvo = paymentDate || hoje;
             for (const nota of notasFiscais) {
-                if (nota.ufFavorecida === 'ES') {
-                    // Especial ES: A SEFAZ-ES permite data personalizada no futuro se a nota for do mês corrente.
-                    // Se for do mês anterior (mês atrasado/fechado), ela obriga o vencimento e o pagamento a serem hoje (dia da solicitação).
-                    const dateObj = new Date();
-                    const currentYear = String(dateObj.getFullYear());
-                    const currentMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    if (nota.anoApuracao !== currentYear || nota.mesApuracao !== currentMonth) {
-                        nota.dataVencimento = hoje;
-                        nota.dataPagamento = hoje;
-                        continue;
-                    }
-                }
                 nota.dataVencimento = dataAlvo;
                 nota.dataPagamento = dataAlvo;
             }
@@ -1087,284 +2730,136 @@ function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
             // Agrupa por UF
             const notasPorUf = {};
             for (const n of notasFiscais) {
-                if (!notasPorUf[n.ufFavorecida]) {
-                    notasPorUf[n.ufFavorecida] = [];
-                }
+                if (!notasPorUf[n.ufFavorecida]) notasPorUf[n.ufFavorecida] = [];
                 notasPorUf[n.ufFavorecida].push(n);
             }
 
             const ufs = Object.keys(notasPorUf);
-            log(`🌍 Envio dividido em ${ufs.length} UF(s): ${ufs.join(', ')}`);
+            log(`🌍 Transmitindo para ${ufs.length} UF(s): ${ufs.join(', ')}...`);
 
             const logsDir = process.env.NODE_ENV === 'production' || process.env.VERCEL
                 ? path.join('/tmp', 'xml_logs')
                 : path.join(__dirname, 'xml_logs');
+            await fs.mkdir(logsDir, { recursive: true });
+
             const todasGuias = [];
             const recibosEfetuados = [];
             const errosUf = {};
 
-            task.progress = 50;
-
-            // Processa as UFs sequencialmente para logs ordenados e robustez
             for (let i = 0; i < ufs.length; i++) {
                 const uf = ufs[i];
-                log(`[${uf}] Iniciando transmissão do lote...`);
-                
+                if (i > 0 && tenant.environment === 'producao') {
+                    log(`⏳ Aguardando 3s antes de transmitir para ${uf}...`);
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+                log(`[${uf}] Transmitindo lote de ${notasPorUf[uf].length} guia(s)...`);
+
                 try {
                     let resultadoUf;
                     if (tenant.environment === 'simulado') {
-                        // Modo Simulado
-                        log(`[${uf}] 🧪 Simulando processamento...`);
-                        let xmlGuiasSimuladas = '';
-                        notasPorUf[uf].forEach((nota, idx) => {
+                        const xmlSimulado = notasPorUf[uf].map((nota, idx) => {
                             const valorCentavos = Math.round(parseFloat(nota.valor) * 100);
-                            const valorFormatadoCodBarras = String(valorCentavos).padStart(11, '0');
-                            const codigoBarrasSimulado = `8589${valorFormatadoCodBarras}01352026062010436619000${idx}${nota.documentoOrigem.slice(-3)}`;
-                            
-                            xmlGuiasSimuladas += `
-                              <guia versao="2.00">
-                                <situacaoGuia>0</situacaoGuia>
-                                <TDadosGNRE versao="2.00">
-                                  <ufFavorecida>${nota.ufFavorecida}</ufFavorecida>
-                                  <tipoGnre>0</tipoGnre>
-                                  <contribuinteEmitente>
-                                    <identificacao>
-                                      <CNPJ>${nota.cnpjEmitente}</CNPJ>
-                                    </identificacao>
-                                    <razaoSocial>${tenant.razao_social}</razaoSocial>
-                                    <endereco>RUA MARECHAL ANDREA 82</endereco>
-                                    <municipio>27408</municipio>
-                                    <uf>BA</uf>
-                                    <cep>41810105</cep>
-                                  </contribuinteEmitente>
-                                  <itensGNRE>
-                                    <item>
-                                      <receita>${nota.codigoReceita}</receita>
-                                      <documentoOrigem tipo="10">${nota.documentoOrigem}</documentoOrigem>
-                                      <dataVencimento>${nota.dataVencimento}</dataVencimento>
-                                      <valor tipo="11">${nota.valor}</valor>
-                                      <valor tipo="21">${nota.valor}</valor>
-                                    </item>
-                                  </itensGNRE>
-                                  <valorGNRE>${nota.valor}</valorGNRE>
-                                  <dataPagamento>${nota.dataPagamento}</dataPagamento>
-                                </TDadosGNRE>
-                                <linhaDigitavel>${codigoBarrasSimulado}</linhaDigitavel>
-                                <codigoBarras>${codigoBarrasSimulado}</codigoBarras>
-                              </guia>`;
+                            const codBarras = `8589${String(valorCentavos).padStart(11, '0')}01352026062010436619000${idx}${String(nota.documentoOrigem).slice(-3)}`;
+                            return {
+                                ufFavorecida: nota.ufFavorecida,
+                                documentoOrigem: nota.documentoOrigem,
+                                valor: nota.valor,
+                                linhaDigitavel: codBarras,
+                                codigoBarras: codBarras,
+                                situacaoGuia: '0'
+                            };
                         });
-
-                        const xmlSimulado = `<?xml version="1.0" encoding="utf-8"?>
-                        <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
-                          <soap12:Body>
-                            <gnreRespostaMsg xmlns="http://www.gnre.pe.gov.br/webservice/GnreResultadoLote">
-                              <TResultLote_GNRE xmlns="http://www.gnre.pe.gov.br" versao="2.00">
-                                <ambiente>2</ambiente>
-                                <numeroRecibo>999123456789${uf}</numeroRecibo>
-                                <situacaoProcess>
-                                  <codigo>400</codigo>
-                                  <descricao>Lote Processado</descricao>
-                                </situacaoProcess>
-                                <resultado>${xmlGuiasSimuladas}</resultado>
-                              </TResultLote_GNRE>
-                            </gnreRespostaMsg>
-                          </soap12:Body>
-                        </soap12:Envelope>`.trim();
-
-                        const nomeSim = `resultado_consulta_simulada_${uf}.xml`;
-                        await fs.mkdir(logsDir, { recursive: true });
-                        await fs.writeFile(path.join(logsDir, nomeSim), xmlSimulado, 'utf-8');
-
-                        const guiasExt = parserService.extrairDadosGuiaXML(xmlSimulado);
+                        resultadoUf = { guias: xmlSimulado, recibo: `999123456789${uf}` };
                         log(`[${uf}] 🧪 Simulação concluída com sucesso!`);
-                        resultadoUf = { guias: guiasExt, recibo: `999123456789${uf}` };
-
                     } else if (uf === 'SP') {
-                        // Caso especial São Paulo: gera o XML bruto de lote para upload manual na SEFAZ-SP
-                        log(`[${uf}] 🌐 Detectada UF São Paulo (SP). Gerando arquivo XML de lote para importação manual no portal da SEFAZ-SP...`);
-                        
                         const spXml = gnreService.gerarXmlLoteRaw(notasPorUf[uf], tenant);
-                        const spXmlFilename = `lote_sp_${batchId}.xml`;
-                        const spXmlPath = `${tenant.id}/lotes_sp/${spXmlFilename}`;
-                        
-                        const { error: uploadSpError } = await supabase.storage
+                        const spXmlPath = `${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`;
+                        await supabase.storage
                             .from('tenant-storage')
                             .upload(spXmlPath, Buffer.from(spXml, 'utf-8'), {
                                 contentType: 'application/xml',
                                 upsert: true
                             });
-                            
-                        if (uploadSpError) {
-                            log(`[${uf}] ⚠ Erro ao persistir lote XML no Storage: ${uploadSpError.message}`);
-                        } else {
-                            log(`[${uf}] ✔ Lote XML para São Paulo (SP) persistido com sucesso no Storage.`);
-                        }
 
-                        // Gera guias simuladas com instruções para o usuário
-                        let xmlGuiasSpDraft = [];
-                        notasPorUf[uf].forEach((nota, idx) => {
-                            xmlGuiasSpDraft.push({
-                                ufFavorecida: 'SP',
-                                codigoReceita: nota.codigoReceita,
-                                documentoOrigem: nota.documentoOrigem,
-                                dataVencimento: nota.dataVencimento,
-                                valor: nota.valor,
-                                linhaDigitavel: 'Importar lote XML na SEFAZ-SP',
-                                codigoBarras: 'IMPORTAR_NO_SEFAZ_SP',
-                                situacaoGuia: '0',
-                                error_message: 'Importe o lote XML na SEFAZ-SP e insira os dados manualmente para pagamento ou CNAB'
-                            });
-                        });
-                        
-                        resultadoUf = { guias: xmlGuiasSpDraft, recibo: `XML_SP_${batchId}` };
-
+                        const xmlGuiasSp = notasPorUf[uf].map(n => ({
+                            ufFavorecida: 'SP',
+                            documentoOrigem: n.documentoOrigem,
+                            valor: n.valor,
+                            linhaDigitavel: 'Importar lote XML na SEFAZ-SP',
+                            codigoBarras: 'IMPORTAR_NO_SEFAZ_SP',
+                            situacaoGuia: '0'
+                        }));
+                        resultadoUf = { guias: xmlGuiasSp, recibo: `XML_SP_${batchId}` };
+                        log(`[${uf}] ✔ Lote XML para SP gerado.`);
                     } else if (uf === 'ES') {
-                        // Caso especial Espírito Santo: transmite as guias via WSDL DUA-e e obtém o PDF
-                        log(`[${uf}] 🌐 Detectada UF Espírito Santo (ES). Transmitindo guias via Web Service DUA-e da SEFAZ-ES...`);
-                        
                         let xmlGuiasEs = [];
                         for (const nota of notasPorUf[uf]) {
-                            try {
-                                log(`[${uf}] Enviando pedido de emissão para Nota nº ${nota.documentoOrigem}...`);
-                                const { nDua, nBar } = await duaEsService.transmitirEmissao(nota, agent, tenant.environment);
-                                log(`[${uf}] ✔ DUA nº ${nDua} emitida com sucesso! Baixando arquivo PDF oficial...`);
-                                
-                                const pdfBuffer = await duaEsService.transmitirObterPdf(nDua, nota.destCnpjCpf, agent, tenant.environment);
-                                
-                                const remotePath = `${tenant.id}/guias/guia_NF_${nota.documentoOrigem}.pdf`;
-                                const { error: uploadPdfError } = await supabase.storage
-                                    .from('tenant-storage')
-                                    .upload(remotePath, pdfBuffer, {
-                                        contentType: 'application/pdf',
-                                        upsert: true
-                                    });
-                                    
-                                if (uploadPdfError) {
-                                    log(`[${uf}] ⚠ Erro ao enviar PDF da guia NF ${nota.documentoOrigem} para o Storage: ${uploadPdfError.message}`);
-                                } else {
-                                    log(`[${uf}] ✔ PDF da guia NF ${nota.documentoOrigem} salvo no Storage.`);
-                                }
-                                
-                                xmlGuiasEs.push({
-                                    ufFavorecida: 'ES',
-                                    codigoReceita: '3867', // DIFAL
-                                    documentoOrigem: nota.documentoOrigem,
-                                    dataVencimento: nota.dataVencimento,
-                                    valor: nota.valor,
-                                    linhaDigitavel: nBar,
-                                    codigoBarras: nBar,
-                                    situacaoGuia: '0',
-                                    storage_path: remotePath,
-                                    isPdf: true
+                            log(`[${uf}] Emitindo DUA-e para NF ${nota.documentoOrigem}...`);
+                            const { nDua, nBar } = await duaEsService.transmitirEmissao(nota, agent, tenant.environment);
+                            const pdfBuffer = await duaEsService.transmitirObterPdf(nDua, nota.destCnpjCpf, agent, tenant.environment);
+                            const remotePath = `${tenant.id}/guias/guia_NF_${nota.documentoOrigem}.pdf`;
+                            await supabase.storage
+                                .from('tenant-storage')
+                                .upload(remotePath, pdfBuffer, {
+                                    contentType: 'application/pdf',
+                                    upsert: true
                                 });
-                            } catch (errorGuia) {
-                                log(`[${uf}] ❌ Falha na emissão da Nota nº ${nota.documentoOrigem}: ${errorGuia.message}`);
-                                throw errorGuia;
-                            }
+                            xmlGuiasEs.push({
+                                ufFavorecida: 'ES',
+                                documentoOrigem: nota.documentoOrigem,
+                                valor: nota.valor,
+                                linhaDigitavel: nBar,
+                                codigoBarras: nBar,
+                                situacaoGuia: '0',
+                                storage_path: remotePath,
+                                isPdf: true
+                            });
                         }
-                        
                         resultadoUf = { guias: xmlGuiasEs, recibo: `DUA_ES_${batchId}` };
-
                     } else {
-                        // Envio real para outros estados
                         const recibo = await gnreService.enviarLote(notasPorUf[uf], agent, uf, tenant.environment, tenant, logsDir);
-                        log(`[${uf}] Lote recebido! Recibo nº ${recibo}. Aguardando processamento da SEFAZ...`);
- 
-                        // Salva o recibo no banco imediatamente para caso dê timeout na consulta posterior
-                        const itemRecibo = `${uf}:${recibo}`;
-                        if (!recibosEfetuados.includes(itemRecibo)) {
-                            recibosEfetuados.push(itemRecibo);
-                        }
-                        await supabase
-                            .from('batches')
-                            .update({ receipt: recibosEfetuados.join(', ') })
-                            .eq('id', batchId);
- 
+                        log(`[${uf}] Lote recebido! Recibo ${recibo}. Consultando retorno da SEFAZ...`);
+
                         let dadosGuias = null;
                         let tentativas = 0;
-                        const maxTentativas = 30; // Aumentado de 15 para 30 tentativas (mais tempo para filas lentas)
- 
+                        const maxTentativas = ['RJ', 'SE'].includes(uf) ? 50 : 35;
                         while (tentativas < maxTentativas) {
-                            const segundos = tentativas === 0 ? 8 : 5;
-                            log(`[${uf}] Aguardando ${segundos}s (Tentativa ${tentativas + 1}/${maxTentativas})...`);
-                            await new Promise(r => setTimeout(r, segundos * 1000));
- 
-                            let xmlConsulta = '';
-                            try {
-                                xmlConsulta = await gnreService.consultarLote(recibo, agent, uf, tenant.environment, logsDir);
-                            } catch (err) {
-                                log(`[${uf}] ⚠ Erro de consulta: ${err.message}. Retentando...`);
-                                tentativas++;
-                                continue;
-                            }
- 
+                            const seg = tentativas === 0 ? 8 : 5;
+                            await new Promise(r => setTimeout(r, seg * 1000));
+                            const xmlConsulta = await gnreService.consultarLote(recibo, agent, uf, tenant.environment, logsDir);
                             const sitProcess = parserService.extrairTag(xmlConsulta, 'situacaoProcess');
                             const codSit = sitProcess ? parserService.extrairTag(sitProcess, 'codigo') : null;
                             const descSit = sitProcess ? parserService.extrairTag(sitProcess, 'descricao') : '';
- 
                             const processando = !codSit || ['401', '103', '105'].includes(codSit) || (descSit.toLowerCase().includes('processamento') && !['402', '403', '404'].includes(codSit));
- 
-                            if (processando) {
-                                log(`[${uf}] Lote ainda na fila de processamento governamental...`);
-                                tentativas++;
-                            } else {
-                                log(`[${uf}] Lote processado pelo governo!`);
+                            if (!processando) {
                                 dadosGuias = parserService.extrairDadosGuiaXML(xmlConsulta);
                                 break;
                             }
+                            tentativas++;
                         }
- 
-                        if (!dadosGuias) {
-                            throw new Error("Limite de tempo esgotado aguardando retorno da SEFAZ.");
-                        }
- 
+
+                        if (!dadosGuias) throw new Error("Tempo esgotado aguardando retorno da SEFAZ.");
                         resultadoUf = { guias: dadosGuias, recibo };
                     }
 
                     todasGuias.push(...resultadoUf.guias);
-                    if (resultadoUf.recibo) {
-                        const itemRecibo = `${uf}:${resultadoUf.recibo}`;
-                        if (!recibosEfetuados.includes(itemRecibo)) {
-                            recibosEfetuados.push(itemRecibo);
-                        }
-                    }
-                    log(`[${uf}] Lote concluído. ${resultadoUf.guias.length} guia(s) emitidas.`);
+                    if (resultadoUf.recibo) recibosEfetuados.push(`${uf}:${resultadoUf.recibo}`);
+                    log(`[${uf}] ✔ ${resultadoUf.guias.length} guia(s) emitida(s) com sucesso!`);
 
                 } catch (err) {
-                    log(`[${uf}] ❌ Erro de lote: ${err.message}`);
+                    log(`[${uf}] ❌ Erro: ${err.message}`);
                     errosUf[uf] = err.message;
                 }
 
-                // Incrementa progresso dinamicamente
-                task.progress = Math.round(50 + (30 * ((i + 1) / ufs.length)));
+                task.progress = Math.round(25 + (55 * ((i + 1) / ufs.length)));
             }
 
             if (todasGuias.length === 0) {
-                throw new Error("Nenhuma guia pôde ser emitida. Detalhes: " + JSON.stringify(errosUf));
+                throw new Error("Nenhuma guia pôde ser emitida na SEFAZ. Detalhes: " + JSON.stringify(errosUf));
             }
 
-            // Mapeia chaves de acesso com notas originais (especial para MS/DF)
-            log("🔗 Relacionando guias com as Notas Fiscais originais...");
-            for (const guia of todasGuias) {
-                const notaOriginal = notasFiscais.find(n => 
-                    (n.documentoOrigem && guia.documentoOrigem && n.documentoOrigem === guia.documentoOrigem) ||
-                    (n.chaveAcessoNfe && guia.chaveAcessoNfe && n.chaveAcessoNfe === guia.chaveAcessoNfe)
-                );
-                if (notaOriginal) {
-                    if (!guia.documentoOrigem || guia.documentoOrigem === 'SEM_NUMERO') {
-                        guia.documentoOrigem = notaOriginal.documentoOrigem;
-                    }
-                    if (!guia.chaveAcessoNfe) {
-                        guia.chaveAcessoNfe = notaOriginal.chaveAcessoNfe;
-                    }
-                    if (!guia.ufFavorecida) {
-                        guia.ufFavorecida = notaOriginal.ufFavorecida;
-                    }
-                }
-            }
-
-            // 3. Geração do CNAB 240
-            log("Geração do arquivo de remessa CNAB 240 (Itaú SISPAG)...");
+            // Renderiza e envia visual das guias para o Storage
+            log("Gerando e enviando arquivos visuais das guias...");
             const dadosBancarios = {
                 cnpj: tenant.cnpj,
                 razaoSocial: tenant.razao_social,
@@ -1373,126 +2868,37 @@ function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
                 dac: tenant.bank_dac
             };
 
-            const cnabContent = cnabService.gerarRemessaSispag(dadosBancarios, todasGuias, paymentDate);
-            
-            // Grava remessa.txt física local para compatibilidade
-            const remessaLocalPath = process.env.NODE_ENV === 'production' || process.env.VERCEL
-                ? path.join('/tmp', 'remessa.txt')
-                : path.join(__dirname, 'remessa.txt');
-            await fs.writeFile(remessaLocalPath, cnabContent, 'utf-8');
-
-            // Envia remessa.txt para Supabase Storage
-            const remessaFilename = `remessa_${batchId}.txt`;
-            const { error: uploadCnabError } = await supabase.storage
-                .from('tenant-storage')
-                .upload(`${tenant.id}/remessas/${remessaFilename}`, Buffer.from(cnabContent, 'utf-8'), {
-                    contentType: 'text/plain',
-                    upsert: true
-                });
-
-            if (uploadCnabError) {
-                log(`⚠ Alerta: Não foi possível persistir a remessa no Storage: ${uploadCnabError.message}`);
-            }
-
-            task.progress = 90;
-
-            // 4. Renderiza e faz upload dos arquivos de guias em HTML
-            log("Gerando e enviando arquivos visuais das guias...");
-            const guiasEmitidasDir = process.env.NODE_ENV === 'production' || process.env.VERCEL
-                ? path.join('/tmp', 'guias_emitidas')
-                : path.join(__dirname, 'guias_emitidas');
-            await fs.mkdir(guiasEmitidasDir, { recursive: true });
-
             for (const guia of todasGuias) {
-                if (guia.isPdf) {
-                    continue;
-                }
-                if (guia.codigoBarras === 'IMPORTAR_NO_SEFAZ_SP') {
-                    continue;
-                }
                 const nota = notasFiscais.find(n => n.documentoOrigem === guia.documentoOrigem);
-                const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guia, nota);
-                
-                // Grava visual local
-                const nomeLocal = `guia_NF_${guia.documentoOrigem}.html`;
-                await fs.writeFile(path.join(guiasEmitidasDir, nomeLocal), htmlGuia, 'utf-8');
+                let remotePath = guia.storage_path;
 
-                // Grava visual no Storage do Supabase
-                const remotePath = `${tenant.id}/guias/${nomeLocal}`;
-                const { error: uploadHtmlError } = await supabase.storage
-                    .from('tenant-storage')
-                    .upload(remotePath, Buffer.from(htmlGuia, 'utf-8'), {
-                        contentType: 'text/html',
-                        upsert: true
-                    });
-
-                if (uploadHtmlError) {
-                    log(`⚠ Falha no envio da guia NF ${guia.documentoOrigem} para o Storage: ${uploadHtmlError.message}`);
-                } else {
-                    guia.storage_path = remotePath;
+                if (!guia.isPdf && guia.codigoBarras !== 'IMPORTAR_NO_SEFAZ_SP') {
+                    const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guia, nota);
+                    const nomeLocal = `guia_NF_${guia.documentoOrigem}.html`;
+                    remotePath = `${tenant.id}/guias/${nomeLocal}`;
+                    await supabase.storage
+                        .from('tenant-storage')
+                        .upload(remotePath, Buffer.from(htmlGuia, 'utf-8'), {
+                            contentType: 'text/html',
+                            upsert: true
+                        });
                 }
+
+                // Atualiza a guia no BD para 'aguardando_pagamento'
+                await supabase
+                    .from('guides')
+                    .update({
+                        barcode: guia.codigoBarras,
+                        line_digitizable: guia.linhaDigitavel,
+                        storage_path: remotePath,
+                        status: 'aguardando_pagamento'
+                    })
+                    .eq('batch_id', batchId)
+                    .eq('nf_number', guia.documentoOrigem);
             }
 
-            // 5. Arquiva arquivos XML locais se for produção real
-            if (tenant.environment === 'producao') {
-                log("📦 Arquivando arquivos locais de faturamento...");
-                const xmlGeradosDir = process.env.NODE_ENV === 'production' || process.env.VERCEL
-                    ? path.join('/tmp', 'xml_gerados')
-                    : path.join(__dirname, 'xml_gerados');
-                await fs.mkdir(xmlGeradosDir, { recursive: true });
-
-                for (const guia of todasGuias) {
-                    const nota = notasFiscais.find(n => n.documentoOrigem === guia.documentoOrigem);
-                    if (nota && nota.caminhoOriginal) {
-                        try {
-                            const nameXml = path.basename(nota.nomeArquivoOriginal, '.xml');
-                            const novoCaminho = path.join(xmlGeradosDir, `${nameXml}_sucesso.xml`);
-                            await fs.rename(nota.caminhoOriginal, novoCaminho);
-                        } catch (e) {
-                            log(`⚠ Falha ao arquivar XML local: ${e.message}`);
-                        }
-                    }
-                }
-
-                // Especial Desktop: Se existir a pasta C:\Users\Roberto\Desktop\XML,
-                // movemos automaticamente os XMLs cujas guias foram geradas com sucesso.
-                const desktopXmlDir = 'C:\\Users\\Roberto\\Desktop\\XML';
-                try {
-                    const stat = await fs.stat(desktopXmlDir).catch(() => null);
-                    if (stat && stat.isDirectory()) {
-                        const dateObj = new Date();
-                        const dia = String(dateObj.getDate()).padStart(2, '0');
-                        const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-                        const ano = dateObj.getFullYear();
-                        const targetDir = path.join(desktopXmlDir, 'EMITIDOS', `Lote_${dia}_${mes}_${ano}`);
-                        
-                        await fs.mkdir(targetDir, { recursive: true });
-                        
-                        const files = await fs.readdir(desktopXmlDir);
-                        for (const file of files) {
-                            if (file.toLowerCase().endsWith('.xml')) {
-                                const filePath = path.join(desktopXmlDir, file);
-                                const content = await fs.readFile(filePath, 'utf8').catch(() => '');
-                                const nNFMatch = content.match(/<(?:[a-zA-Z0-9]+:)?nNF>([^<]+)<\/(?:[a-zA-Z0-9]+:)?nNF>/);
-                                if (nNFMatch) {
-                                    const nfNum = nNFMatch[1].trim();
-                                    const foiEmitida = todasGuias.some(g => g.documentoOrigem === nfNum);
-                                    if (foiEmitida) {
-                                        await fs.rename(filePath, path.join(targetDir, file));
-                                        log(`   ✔ XML da Nota Fiscal ${nfNum} arquivado automaticamente em EMITIDOS.`);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (desktopErr) {
-                    console.error("Erro no arquivamento automático do Desktop:", desktopErr.message);
-                }
-            }
-
-            // 6. Atualiza registro do lote e salva guias no BD
-            log("Finalizando persistência de dados no Supabase...");
-            const { error: updateError } = await supabase
+            // Atualiza status do lote para 'sucesso'
+            await supabase
                 .from('batches')
                 .update({
                     status: 'sucesso',
@@ -1500,44 +2906,38 @@ function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
                 })
                 .eq('id', batchId);
 
-            if (updateError) throw updateError;
+            log(`\n==================================================`);
+            log(`🎉 TODAS AS GUIAS FORAM EMITIDAS COM SUCESSO!`);
+            log(`💳 STATUS: Guias emitidas. Aguardando autorização de pagamento bancário.`);
+            log(`==================================================`);
 
-            const guidesDb = todasGuias.map(g => ({
-                tenant_id: tenant.id,
-                batch_id: batchId,
-                nf_number: g.documentoOrigem,
-                uf: g.ufFavorecida,
-                value: g.valor,
-                barcode: g.codigoBarras,
-                line_digitizable: g.linhaDigitavel,
-                storage_path: g.storage_path || null
-            }));
-
-            const { error: guidesError } = await supabase
-                .from('guides')
-                .insert(guidesDb);
-
-            if (guidesError) throw guidesError;
-
-            log("🎉 Processamento do Lote finalizado com sucesso!");
             task.progress = 100;
             task.status = 'sucesso';
 
         } catch (err) {
-            log(`❌ Processamento falhou: ${err.message}`);
+            log(`❌ Erro na transmissão: ${err.message}`);
             task.status = 'erro';
             task.error = err.message;
-
             await supabase
                 .from('batches')
-                .update({
-                    status: 'erro',
-                    error_message: err.message
-                })
+                .update({ status: 'erro', error_message: err.message })
                 .eq('id', batchId);
         }
     });
 }
+
+function runBatchProcessInBackground(batchId, tenant, filesData, paymentDate) {
+    // Mantém compatibilidade: se chamado diretamente, executa pré-validação
+    return stageBatchForApproval(batchId, tenant, filesData, paymentDate);
+}
+
+// Serve qualquer rota indefinida para o arquivo frontend padrão (SPA / fallback)
+app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/download')) {
+        return next();
+    }
+    return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
 // Inicializa o servidor Express apenas localmente (evita travar na Vercel serverless)
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
@@ -1546,6 +2946,13 @@ if (process.env.NODE_ENV !== 'production' && require.main === module) {
         console.log(`🚀 Apex GNRE SaaS rodando localmente na porta ${PORT}`);
         console.log(`🔗 Acesse: http://localhost:${PORT}`);
         console.log(`==================================================\n`);
+
+        // Inicia o Agendador Automático periódico (a cada 30 minutos)
+        try {
+            syncService.iniciarAgendador(supabase, runBatchProcessInBackground, 30);
+        } catch (e) {
+            console.error("Erro ao inicializar agendador automático:", e.message);
+        }
     });
 }
 

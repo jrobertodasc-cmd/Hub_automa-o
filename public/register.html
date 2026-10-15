@@ -1,84 +1,119 @@
-<!-- public/register.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex GNRE - Cadastrar Empresa</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/expedi.css">
+    <title>Criar conta — expedi HUB</title>
 </head>
 <body>
-
-    <div class="auth-wrapper">
-        <div class="card auth-card" style="max-width: 500px;">
-            <div class="auth-header">
-                <h2>Crie sua Conta SaaS</h2>
-                <p>Cadastre sua empresa e automatize o recolhimento de impostos</p>
+    <div class="auth">
+        <aside class="side">
+            <div class="brand"></div>
+            <h2>Sua operação,<br>em movimento.</h2>
+            <p>Automação de expedição logística e fiscal para o seu e-commerce B2C. Tudo em um só hub.</p>
+            <ul>
+                <li>
+                    <i data-i="box"></i>
+                    <div>
+                        <b>Pedidos integrados</b>
+                        <span>Seus canais de venda em uma única operação.</span>
+                    </div>
+                </li>
+                <li>
+                    <i data-i="file"></i>
+                    <div>
+                        <b>Fiscal automatizado</b>
+                        <span>NF-e, DIFAL e guias no mesmo fluxo.</span>
+                    </div>
+                </li>
+                <li>
+                    <i data-i="truck"></i>
+                    <div>
+                        <b>Expedição conectada</b>
+                        <span>Do pedido à etiqueta, sem perder o ritmo.</span>
+                    </div>
+                </li>
+            </ul>
+            <footer>Menos tarefas manuais. Mais controle para sua equipe.</footer>
+        </aside>
+        <div class="main">
+            <div class="top">
+                <a href="#" data-i="help">&nbsp;Central de ajuda</a>
             </div>
+            <form class="card-form" id="regForm" style="max-width:500px" novalidate>
+                <div class="hint" style="color:var(--primary);font-weight:600">Comece seu hub</div>
+                <h1>Sua operação começa aqui.</h1>
+                <p class="lead">Crie sua conta para conectar pedidos, organizar a expedição e simplificar a rotina fiscal do seu e-commerce.</p>
+                <div id="msg" role="alert"></div>
 
-            <form id="register-form">
-                <div class="grid-form" style="grid-template-columns: 1fr;">
-                    <div class="form-group">
-                        <label for="plan">Plano de Assinatura Selecionado</label>
-                        <select id="plan" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); color: var(--text-main); font-family: inherit;">
-                            <option value="trial">Trial Gratuito (10 guias/mês)</option>
-                            <option value="starter">Starter - R$ 199/mês (100 guias/mês)</option>
-                            <option value="pro">Pro - R$ 399/mês (500 guias/mês)</option>
-                            <option value="advanced">Advanced - R$ 699/mês (1500 guias/mês)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="name">Seu Nome Completo</label>
-                        <input type="text" id="name" required placeholder="Ex: Roberto da Silva">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">E-mail Corporativo</label>
-                        <input type="email" id="email" required placeholder="Ex: financeiro@lalua.com.br">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Senha de Acesso</label>
-                        <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cnpj">CNPJ da Empresa</label>
-                        <input type="text" id="cnpj" required placeholder="Ex: 10436619000105" maxlength="14">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="razao_social">Razão Social</label>
-                        <input type="text" id="razao_social" required placeholder="Ex: LALUA MODAS EIRELI">
+                <div class="field">
+                    <label for="nome">Nome completo</label>
+                    <div class="input">
+                        <input id="nome" name="nome" autocomplete="name" placeholder="Como podemos chamar você?" required>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-4" style="width: 100%;">
-                    Finalizar Cadastro
-                </button>
-            </form>
+                <div class="field">
+                    <label for="email">E-mail profissional</label>
+                    <div class="input">
+                        <input id="email" name="email" type="email" autocomplete="email" placeholder="voce@empresa.com.br" required>
+                    </div>
+                </div>
 
-            <div class="auth-footer">
-                Já possui uma conta? <a href="/login.html">Fazer Login</a>
+                <div class="row2">
+                    <div class="field">
+                        <label for="empresa">Empresa</label>
+                        <div class="input">
+                            <input id="empresa" name="empresa" placeholder="Nome da sua empresa" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="cnpj">CNPJ</label>
+                        <div class="input">
+                            <input id="cnpj" name="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row2">
+                    <div class="field">
+                        <label for="pw">Senha</label>
+                        <div class="input">
+                            <input id="pw" name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha" required>
+                            <button type="button" data-toggle-pass data-i="eye"></button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="pw2">Confirmar senha</label>
+                        <div class="input">
+                            <input id="pw2" name="confirm" type="password" autocomplete="new-password" placeholder="Repita sua senha" required>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="hint" style="margin:-8px 0 16px">Use ao menos 8 caracteres, com letras e números.</p>
+
+                <label class="check" style="margin-bottom:16px">
+                    <input type="checkbox" name="terms">
+                    <span>Li e aceito os <a href="#">Termos de uso</a> e a <a href="#">Política de privacidade</a> do expedi HUB.</span>
+                </label>
+
+                <button class="btn pri" style="width:100%" type="submit">Criar conta</button>
+                <p class="note" style="border:0;margin-top:8px;padding-top:8px">Já tem uma conta? <a href="login.html">Entrar</a></p>
+            </form>
+            <div class="foot">
+                © 2026 expedi HUB
+                <span>
+                    <a href="#">Privacidade</a>
+                    <a href="#">Termos de uso</a>
+                </span>
             </div>
         </div>
     </div>
-
-    <div id="toast" class="toast"></div>
-
-    <script src="/js/auth.js?v=3"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const planParam = params.get('plan');
-            if (planParam) {
-                const planSelect = document.getElementById('plan');
-                if (planSelect) {
-                    planSelect.value = planParam;
-                }
-            }
-        });
-    </script>
+    <script src="js/auth-bridge.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

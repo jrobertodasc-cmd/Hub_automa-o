@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Fiscal & Relatórios - Apex GNRE SaaS</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+        .kpi-card.green::after { background: var(--success); }
+        .kpi-card.orange::after { background: var(--warning); }
+        .kpi-card.cyan::after { background: var(--accent); }
+        .kpi-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+        .kpi-value { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) {
+            .chart-row { grid-template-columns: 1fr; }
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .bar-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .bar-track {
+            background: rgba(255, 255, 255, 0.05);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-fill.transp {
+            background: linear-gradient(90deg, #0284c7, #38bdf8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1200px;">
+        <header>
+            <div class="logo-area">
+                <h1>Apex GNRE SaaS</h1>
+                <p>Inteligência Fiscal & Relatórios Gerenciais</p>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-btn">Faturamento</a>
+                <a href="/bi.html" class="nav-btn active" style="color: #38bdf8; font-weight: 600;">📊 BI Fiscal</a>
+                <a href="/profile.html" class="nav-btn">Empresa</a>
+                <a href="/plans.html" class="nav-btn">Planos</a>
+                <button onclick="logout()" class="nav-btn" style="cursor: pointer; border: none; background: transparent;">Sair</button>
+            </div>
+        </header>
+
+        <!-- BARRA DE EXPORTAÇÃO E AÇÕES -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 16px 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+            <div>
+                <h2 style="font-size: 18px; font-weight: 700; color: #fff;">Painel Analítico de DIFAL</h2>
+                <p id="company-info" style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Carregando dados da empresa...</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/api/bi/export-csv" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 600; padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    📥 Exportar para Contabilidade (.CSV Excel)
+                </a>
+                <button onclick="carregarBI()" class="btn btn-secondary" style="padding: 8px 14px;">
+                    🔄 Atualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+            <div class="kpi-card cyan">
+                <span class="kpi-label">Total de Guias Processadas</span>
+                <span id="kpi-total-guias" class="kpi-value">...</span>
+                <span class="kpi-sub">Notas fiscais interestaduais</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Volume Total de DIFAL</span>
+                <span id="kpi-total-valor" class="kpi-value">...</span>
+                <span class="kpi-sub">Total de imposto gerado</span>
+            </div>
+            <div class="kpi-card green">
+                <span class="kpi-label">Guias Baixadas / Pagas</span>
+                <span id="kpi-total-pagas" class="kpi-value">...</span>
+                <span id="kpi-valor-pago" class="kpi-sub">...</span>
+            </div>
+            <div class="kpi-card orange">
+                <span class="kpi-label">Guias Pendentes de Baixa</span>
+                <span id="kpi-total-pendentes" class="kpi-value">...</span>
+                <span id="kpi-valor-pendente" class="kpi-sub">...</span>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS / BARRAS DE DISTRIBUIÇÃO -->
+        <div class="chart-row">
+            <!-- DISTRIBUIÇÃO POR ESTADO (UF) -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🗺️</span> Top Estados de Destino (DIFAL)
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Estados com maior volume financeiro de vendas interestaduais.</p>
+                <div id="ufs-bars-container">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <!-- DISTRIBUIÇÃO POR TRANSPORTADORA -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🚚</span> Cargas por Transportadora
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Distribuição de pedidos entre Total Express, MT Log e Correios.</p>
+                <div id="transp-bars-container">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+        <!-- SEGUNDA LINHA: PEÇAS MAIS VENDIDAS & MONITOR DE DEVOLUÇÕES -->
+        <div class="chart-row">
+            <!-- PEÇAS MAIS VENDIDAS -->
+            <div class="card">
+                <div class="card-title">
+                    <span>👗</span> Peças Mais Vendidas Interestaduais
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Ranking das peças e modelos com maior saída para outros estados.</p>
+                <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Peça / Descrição</th>
+                                <th style="width: 70px; text-align: center;">Qtd</th>
+                                <th style="width: 100px; text-align: right;">Faturamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos-ranking-body">
+                            <tr><td colspan="3" class="text-center" style="color: var(--text-secondary);">Carregando produtos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MONITOR DE DEVOLUÇÕES & CANCELAMENTOS -->
+            <div class="card">
+                <div class="card-title" style="color: #f87171;">
+                    <span>🛡️</span> Prevenção de Desperdício (Devoluções)
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Notas fiscais de devolução detectadas para impedir pagamento indevido de GNRE.</p>
+                
+                <div id="devolucoes-status-container" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 18px; margin-bottom: 16px;">
+                    <strong style="color: #f87171; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                        <span>✔</span> Sistema Ativo e Protegido
+                    </strong>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                        Todas as notas de saída passam pelo verificador de cancelamento e devolução. Se uma nota for devolvida antes da remessa bancária, a guia é <strong>bloqueada automaticamente</strong> para você não pagar imposto à toa.
+                    </p>
+                </div>
+
+                <div class="table-container" style="max-height: 200px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>NF Devolução</th>
+                                <th>NF Venda Original</th>
+                                <th>Valor</th>
+                                <th>Status GNRE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devolucoes-table-body">
+                            <tr><td colspan="4" class="text-center" style="color: var(--text-secondary);">Nenhuma devolução pendente detectada no período.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/js/auth.js?v=3"></script>
+    <script>
+        async function carregarBI() {
+            try {
+                // 1. Carrega Estatísticas Gerais
+                const res = await fetch('/api/bi/stats');
+                if (!res.ok) throw new Error("Falha ao carregar métricas de BI.");
+                const data = await res.json();
+
+                // Empresa
+                document.getElementById('company-info').textContent = 
+                    `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj}`;
+
+                // KPIs
+                document.getElementById('kpi-total-guias').textContent = data.resumo.totalGuias.toLocaleString('pt-BR');
+                document.getElementById('kpi-total-valor').textContent = `R$ ${data.resumo.totalValorDifal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                document.getElementById('kpi-total-pagas').textContent = data.resumo.totalPagas.toLocaleString('pt-BR');
+                document.getElementById('kpi-valor-pago').textContent = `R$ ${data.resumo.valorPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} liquidado`;
+                document.getElementById('kpi-total-pendentes').textContent = data.resumo.totalPendentes.toLocaleString('pt-BR');
+                document.getElementById('kpi-valor-pendente').textContent = `R$ ${data.resumo.valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a pagar`;
+
+                // Ranking UFs
+                const ufsContainer = document.getElementById('ufs-bars-container');
+                const maxValUf = data.rankingUf.length > 0 ? data.rankingUf[0].valor : 1;
+                
+                ufsContainer.innerHTML = data.rankingUf.slice(0, 8).map(u => {
+                    const pct = Math.round((u.valor / maxValUf) * 100);
+                    return `
+                        <div class="bar-item">
+                            <div class="bar-header">
+                                <span>${u.uf} (${u.count} guias)</span>
+                                <span>R$ ${u.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') || '<p style="color: var(--text-secondary);">Nenhum dado disponível.</p>';
+
+                // Ranking Transportadoras
+                const transpContainer = document.getElementById('transp-bars-container');
+                const maxCountTransp = data.rankingTransp.length > 0 ? data.rankingTransp[0].count : 1;
+
+                transpContainer.innerHTML = data.rankingTransp.map(t => {
+                    const pct = Math.round((t.count / maxCountTransp) * 100);
+                    return `
+                        <div class="bar-item">
+                            <div class="bar-header">
+                                <span>🚚 ${t.transp} (${t.count} volumes)</span>
+                                <span>R$ ${t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill transp" style="width: ${pct}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('') || '<p style="color: var(--text-secondary);">Nenhuma transportadora identificada.</p>';
+
+                // 2. Carrega Ranking de Peças / Produtos
+                try {
+                    const prodRes = await fetch('/api/bi/produtos');
+                    if (prodRes.ok) {
+                        const prodData = await prodRes.json();
+                        const pBody = document.getElementById('produtos-ranking-body');
+                        if (prodData.ranking && prodData.ranking.length > 0) {
+                            pBody.innerHTML = prodData.ranking.slice(0, 8).map((p, idx) => `
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600; color: #fff; font-size: 13px;">${p.descricao}</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary);">SKU: ${p.sku}</div>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">${p.quantidade}</td>
+                                    <td style="text-align: right; font-weight: 600; color: #10b981;">R$ ${p.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                            `).join('');
+                        } else {
+                            pBody.innerHTML = `<tr><td colspan="3" class="text-center" style="color: var(--text-secondary);">Nenhuma peça registrada no período.</td></tr>`;
+                        }
+                    }
+                } catch(e) { console.warn("Erro ao carregar produtos:", e); }
+
+                // 3. Carrega Monitor de Devoluções
+                try {
+                    const devRes = await fetch('/api/bi/devolucoes');
+                    if (devRes.ok) {
+                        const devData = await devRes.json();
+                        const devBody = document.getElementById('devolucoes-table-body');
+                        if (devData.devolucoes && devData.devolucoes.length > 0) {
+                            devBody.innerHTML = devData.devolucoes.map(d => `
+                                <tr>
+                                    <td><strong>${d.return_nf_number}</strong></td>
+                                    <td>${d.original_nf_number || 'N/D'}</td>
+                                    <td>R$ ${parseFloat(d.value || 0).toFixed(2)}</td>
+                                    <td><span style="color: #f59e0b; font-weight: 600;">${d.gnre_status}</span></td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+                } catch(e) { console.warn("Erro ao carregar devoluções:", e); }
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar dados do BI: " + err.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarBI);
+    </script>
+</body>
+</html>

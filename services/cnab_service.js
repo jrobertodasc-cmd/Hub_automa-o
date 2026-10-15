@@ -202,6 +202,378 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
     }).join('\r\n') + '\r\n';
 }
 
+/**
+ * Faz o parsing de arquivo de retorno CNAB 240 (Itaú SISPAG Tributos)
+ * Extrai pagamentos efetuados (Segmento O) e autenticações eletrônicas (Segmento Z)
+ * @param {String} conteudoRetorno Conteúdo texto do arquivo .RET
+ * @returns {Object} { totalProcessadas, baixadas, rejeitadas, guias: [...] }
+ */
+function processarRetornoSispag(conteudoRetorno) {
+    if (!conteudoRetorno || typeof conteudoRetorno !== 'string') {
+        throw new Error("Arquivo de retorno vazio ou inválido.");
+    }
+
+    const linhas = conteudoRetorno.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const pagamentos = [];
+    let ultimoPagamento = null;
+
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = linhas[i];
+        if (linha.length < 240) continue;
+
+        const tipoRegistro = linha.substring(7, 8); // pos 008: 0=Header, 1=Header Lote, 3=Detalhe, 5=Trailer Lote, 9=Trailer Arquivo
+        if (tipoRegistro !== '3') continue;
+
+        const segmento = linha.substring(13, 14); // pos 014: O, Z, J, etc.
+
+        if (segmento === 'O') {
+            // Segmento O: Dados do tributo pago
+            const codigoBarras = linha.substring(17, 65).trim();
+            const vencimentoRaw = linha.substring(95, 103).trim();
+            const valorGuiaCentavos = parseInt(linha.substring(121, 136), 10) || 0;
+            const dataPagamentoRaw = linha.substring(136, 144).trim();
+            const valorPagoCentavos = parseInt(linha.substring(144, 159), 10) || 0;
+            const seuNumero = linha.substring(174, 194).trim(); // ex: GNRE-NF-53304
+            const nossoNumero = linha.substring(215, 230).trim();
+            const ocorrencias = linha.substring(230, 240).trim(); // ex: 00 (Pago), BD (Agendado), etc.
+
+            // Extrai o número da NF caso conste no seuNumero
+            let nfNumber = null;
+            const matchNf = seuNumero.match(/(?:NF-?|SEQ-?)(\d+)/i);
+            if (matchNf) {
+                nfNumber = matchNf[1];
+            }
+
+            // Formata datas YYYY-MM-DD
+            const formatarDataIso = (dStr) => {
+                if (!dStr || dStr.length !== 8 || dStr === '00000000') return null;
+                const dia = dStr.substring(0, 2);
+                const mes = dStr.substring(2, 4);
+                const ano = dStr.substring(4, 8);
+                return `${ano}-${mes}-${dia}`;
+            };
+
+            const status = (ocorrencias.startsWith('00') || ocorrencias === '00') ? 'PAGO' :
+                           (ocorrencias.startsWith('BD') ? 'AGENDADO' : 'REJEITADO');
+
+            ultimoPagamento = {
+                codigoBarras,
+                nfNumber,
+                seuNumero,
+                nossoNumero,
+                vencimento: formatarDataIso(vencimentoRaw),
+                dataPagamento: formatarDataIso(dataPagamentoRaw),
+                valorGuia: valorGuiaCentavos / 100,
+                valorPago: valorPagoCentavos > 0 ? (valorPagoCentavos / 100) : (valorGuiaCentavos / 100),
+                ocorrencias,
+                status,
+                autenticacao: null
+            };
+
+            pagamentos.push(ultimoPagamento);
+        } else if (segmento === 'Z') {
+            // Segmento Z: Autenticação bancária do pagamento anterior
+            const autenticacao = linha.substring(14, 78).trim();
+            if (ultimoPagamento && autenticacao) {
+                ultimoPagamento.autenticacao = autenticacao;
+            }
+        }
+    }
+
+    const baixadas = pagamentos.filter(p => p.status === 'PAGO').length;
+    const agendadas = pagamentos.filter(p => p.status === 'AGENDADO').length;
+    const rejeitadas = pagamentos.filter(p => p.status === 'REJEITADO').length;
+
+    return {
+        totalProcessadas: pagamentos.length,
+        baixadas,
+        agendadas,
+        rejeitadas,
+        pagamentos
+    };
+}
+
+/**
+ * Gera remessa CNAB 240 para Bradesco (Multipag / Pag-For Tributos com Código de Barras - Segmento O)
+ */
+function gerarRemessaBradesco(dadosEmpresa, guiasExtraidas, dataPagamentoPersonalizada) {
+    if (!dadosEmpresa || !dadosEmpresa.cnpj) {
+        throw new Error("Dados da empresa inválidos para remessa Bradesco.");
+    }
+
+    const guiasValidas = (guiasExtraidas || []).filter(g => {
+        if (!g.codigoBarras) return false;
+        const limpo = g.codigoBarras.replace(/[^0-9]/g, '');
+        return limpo.length >= 40 && limpo === g.codigoBarras;
+    });
+
+    if (guiasValidas.length === 0) {
+        return "SEM_GUIAS_VALIDAS_PARA_CNAB\r\nNenhuma guia válida encontrada para a remessa Bradesco.";
+    }
+
+    const linhas = [];
+    const agora = new Date();
+    const dataHoje = agora.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+
+    let dataPagamentoFormatada = dataHoje;
+    if (dataPagamentoPersonalizada) {
+        if (dataPagamentoPersonalizada.includes('-')) {
+            const parts = dataPagamentoPersonalizada.split('T')[0].split('-');
+            dataPagamentoFormatada = `${parts[2]}${parts[1]}${parts[0]}`;
+        } else {
+            dataPagamentoFormatada = dataPagamentoPersonalizada.replace(/[^0-9]/g, '');
+        }
+    }
+
+    // 1. Header de Arquivo (Banco 237 - Bradesco)
+    let headerArq = '';
+    headerArq += padZero(237, 3);                                     // 001-003: Bradesco
+    headerArq += padZero(0, 4);                                       // 004-007: Lote 0000
+    headerArq += '0';                                                 // 008-008: Header Arquivo
+    headerArq += padSpace('', 9);                                     // 009-017: Brancos
+    headerArq += '2';                                                 // 018-018: CNPJ
+    headerArq += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ
+    headerArq += padSpace(dadosEmpresa.convenio || '', 20);           // 033-052: Convênio no Bradesco
+    headerArq += padZero(dadosEmpresa.agencia, 5);                    // 053-057: Agência
+    headerArq += padSpace(dadosEmpresa.agenciaDac || '', 1);          // 058-058: Dígito Agência
+    headerArq += padZero(dadosEmpresa.conta, 12);                     // 059-070: Conta
+    headerArq += padZero(dadosEmpresa.dac, 1);                        // 071-071: Dígito Conta
+    headerArq += padSpace('', 1);                                     // 072-072: Dígito Ag/Conta
+    headerArq += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome Empresa
+    headerArq += padSpace("BANCO BRADESCO S.A.", 30);                 // 103-132: Nome do Banco
+    headerArq += padSpace('', 10);                                    // 133-142: Reservado
+    headerArq += '1';                                                 // 143-143: Código Remessa (1)
+    headerArq += padZero(dataHoje, 8);                                // 144-151: Data Geração
+    headerArq += padZero(horaHoje.padEnd(6, '0'), 6);                  // 152-157: Hora Geração
+    headerArq += padZero(0, 9);                                       // 158-166: Sequencial do Arquivo
+    headerArq += padZero(0, 5);                                       // 167-171: Densidade
+    headerArq += padSpace('', 69);                                    // 172-240: Reservado Banco/Empresa
+    linhas.push(headerArq);
+
+    // 2. Header de Lote (Tributos / Código de Barras)
+    let headerLote = '';
+    headerLote += padZero(237, 3);                                    // 001-003: Bradesco
+    headerLote += padZero(1, 4);                                      // 004-007: Lote 0001
+    headerLote += '1';                                                // 008-008: Header de Lote
+    headerLote += 'C';                                                // 009-009: Operação (C=Crédito)
+    headerLote += padZero(22, 2);                                     // 010-011: Serviço (22=Tributos)
+    headerLote += padZero(11, 2);                                     // 012-013: Forma (11=Tributos com Código de Barras)
+    headerLote += padZero(40, 3);                                     // 014-016: Layout do Lote
+    headerLote += padSpace('', 1);                                    // 017-017: Branco
+    headerLote += '2';                                                // 018-018: CNPJ
+    headerLote += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ
+    headerLote += padSpace(dadosEmpresa.convenio || '', 20);          // 033-052: Convênio
+    headerLote += padZero(dadosEmpresa.agencia, 5);                   // 053-057: Agência
+    headerLote += padSpace(dadosEmpresa.agenciaDac || '', 1);         // 058-058: DAC Agência
+    headerLote += padZero(dadosEmpresa.conta, 12);                    // 059-070: Conta
+    headerLote += padZero(dadosEmpresa.dac, 1);                       // 071-071: DAC Conta
+    headerLote += padSpace('', 1);                                    // 072-072: DAC Ag/Conta
+    headerLote += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30);// 073-102: Nome Empresa
+    headerLote += padSpace('', 138);                                  // 103-240: Complemento
+    linhas.push(headerLote);
+
+    let totalLote = 0;
+    let seqLote = 1;
+
+    // 3. Segmento O (Detalhe)
+    guiasValidas.forEach((guia, idx) => {
+        seqLote++;
+        totalLote += parseFloat(guia.valor || 0);
+        let segO = '';
+        segO += padZero(237, 3);                                      // 001-003: Banco
+        segO += padZero(1, 4);                                        // 004-007: Lote
+        segO += '3';                                                  // 008-008: Detalhe
+        segO += padZero(idx + 1, 5);                                  // 009-013: Sequencial
+        segO += 'O';                                                  // 014-014: Segmento O
+        segO += padZero(0, 3);                                        // 015-017: Movimento Inclusão
+        segO += padSpace(guia.codigoBarras, 48);                      // 018-065: Código de Barras
+        segO += padSpace("SEFAZ GNRE TRIBUTOS", 30);                  // 066-095: Órgão
+        segO += padZero(formatarDataCNAB(guia.dataVencimento), 8);    // 096-103: Vencimento
+        segO += 'BRL';                                                // 104-106: Moeda
+        segO += padZero(0, 15);                                       // 107-121: Qtd Moeda
+        const vCentavos = Math.round(parseFloat(guia.valor || 0) * 100);
+        segO += padZero(vCentavos, 15);                               // 122-136: Valor
+        segO += padZero(dataPagamentoFormatada, 8);                   // 137-144: Data Pagamento
+        segO += padZero(0, 15);                                       // 145-159: Valor Pago
+        segO += padSpace('', 15);                                     // 160-174: Reservado
+        const idDoc = guia.documentoOrigem ? `NF-${guia.documentoOrigem}` : `SEQ-${idx + 1}`;
+        segO += padSpace(idDoc, 20);                                  // 175-194: Seu Número
+        segO += padSpace('', 46);                                     // 195-240: Reservado/Ocorrências
+        linhas.push(segO);
+    });
+
+    // 4. Trailer de Lote
+    seqLote++;
+    let trailerLote = '';
+    trailerLote += padZero(237, 3);
+    trailerLote += padZero(1, 4);
+    trailerLote += '5';
+    trailerLote += padSpace('', 9);
+    trailerLote += padZero(seqLote, 6);
+    trailerLote += padZero(Math.round(totalLote * 100), 18);
+    trailerLote += padSpace('', 199);
+    linhas.push(trailerLote);
+
+    // 5. Trailer de Arquivo
+    let trailerArq = '';
+    trailerArq += padZero(237, 3);
+    trailerArq += padZero(9999, 4);
+    trailerArq += '9';
+    trailerArq += padSpace('', 9);
+    trailerArq += padZero(1, 6);
+    trailerArq += padZero(linhas.length + 1, 6);
+    trailerArq += padSpace('', 211);
+    linhas.push(trailerArq);
+
+    return linhas.map((l, i) => {
+        if (l.length !== 240) throw new Error(`Linha ${i} Bradesco com tamanho inválido (${l.length})`);
+        return l;
+    }).join('\r\n') + '\r\n';
+}
+
+/**
+ * Gera remessa CNAB 240 para Banco do Brasil (Código 001 - Tributos com Código de Barras - Segmento O)
+ */
+function gerarRemessaBB(dadosEmpresa, guiasExtraidas, dataPagamentoPersonalizada) {
+    if (!dadosEmpresa || !dadosEmpresa.cnpj) {
+        throw new Error("Dados da empresa inválidos para remessa Banco do Brasil.");
+    }
+
+    const guiasValidas = (guiasExtraidas || []).filter(g => {
+        if (!g.codigoBarras) return false;
+        const limpo = g.codigoBarras.replace(/[^0-9]/g, '');
+        return limpo.length >= 40 && limpo === g.codigoBarras;
+    });
+
+    if (guiasValidas.length === 0) {
+        return "SEM_GUIAS_VALIDAS_PARA_CNAB\r\nNenhuma guia válida encontrada para a remessa Banco do Brasil.";
+    }
+
+    const linhas = [];
+    const agora = new Date();
+    const dataHoje = agora.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+
+    let dataPagamentoFormatada = dataHoje;
+    if (dataPagamentoPersonalizada) {
+        if (dataPagamentoPersonalizada.includes('-')) {
+            const parts = dataPagamentoPersonalizada.split('T')[0].split('-');
+            dataPagamentoFormatada = `${parts[2]}${parts[1]}${parts[0]}`;
+        } else {
+            dataPagamentoFormatada = dataPagamentoPersonalizada.replace(/[^0-9]/g, '');
+        }
+    }
+
+    // 1. Header de Arquivo (Banco 001 - Banco do Brasil)
+    let headerArq = '';
+    headerArq += padZero(1, 3);                                       // 001-003: BB
+    headerArq += padZero(0, 4);                                       // 004-007: Lote 0000
+    headerArq += '0';                                                 // 008-008: Header Arquivo
+    headerArq += padSpace('', 9);                                     // 009-017: Brancos
+    headerArq += '2';                                                 // 018-018: CNPJ
+    headerArq += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ
+    headerArq += padSpace(dadosEmpresa.convenio || '', 20);           // 033-052: Convênio no BB
+    headerArq += padZero(dadosEmpresa.agencia, 5);                    // 053-057: Agência
+    headerArq += padSpace(dadosEmpresa.agenciaDac || '', 1);          // 058-058: Dígito Agência
+    headerArq += padZero(dadosEmpresa.conta, 12);                     // 059-070: Conta
+    headerArq += padZero(dadosEmpresa.dac, 1);                        // 071-071: Dígito Conta
+    headerArq += padSpace('', 1);                                     // 072-072: Dígito Ag/Conta
+    headerArq += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome Empresa
+    headerArq += padSpace("BANCO DO BRASIL S.A.", 30);                // 103-132: Nome do Banco
+    headerArq += padSpace('', 10);                                    // 133-142: Reservado
+    headerArq += '1';                                                 // 143-143: Código Remessa (1)
+    headerArq += padZero(dataHoje, 8);                                // 144-151: Data Geração
+    headerArq += padZero(horaHoje.padEnd(6, '0'), 6);                  // 152-157: Hora Geração
+    headerArq += padZero(0, 9);                                       // 158-166: Sequencial
+    headerArq += padZero(0, 5);                                       // 167-171: Densidade
+    headerArq += padSpace('', 69);                                    // 172-240: Reservado
+    linhas.push(headerArq);
+
+    // 2. Header de Lote (Tributos com Código de Barras)
+    let headerLote = '';
+    headerLote += padZero(1, 3);
+    headerLote += padZero(1, 4);
+    headerLote += '1';
+    headerLote += 'C';
+    headerLote += padZero(20, 2);                                     // 010-011: Tipo Serviço Pagamento
+    headerLote += padZero(11, 2);                                     // 012-013: Forma Lançamento
+    headerLote += padZero(40, 3);
+    headerLote += padSpace('', 1);
+    headerLote += '2';
+    headerLote += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14);
+    headerLote += padSpace(dadosEmpresa.convenio || '', 20);
+    headerLote += padZero(dadosEmpresa.agencia, 5);
+    headerLote += padSpace(dadosEmpresa.agenciaDac || '', 1);
+    headerLote += padZero(dadosEmpresa.conta, 12);
+    headerLote += padZero(dadosEmpresa.dac, 1);
+    headerLote += padSpace('', 1);
+    headerLote += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30);
+    headerLote += padSpace('', 138);
+    linhas.push(headerLote);
+
+    let totalLote = 0;
+    let seqLote = 1;
+
+    // 3. Segmento O (Detalhe)
+    guiasValidas.forEach((guia, idx) => {
+        seqLote++;
+        totalLote += parseFloat(guia.valor || 0);
+        let segO = '';
+        segO += padZero(1, 3);
+        segO += padZero(1, 4);
+        segO += '3';
+        segO += padZero(idx + 1, 5);
+        segO += 'O';
+        segO += padZero(0, 3);
+        segO += padSpace(guia.codigoBarras, 48);
+        segO += padSpace("SEFAZ GNRE TRIBUTOS", 30);
+        segO += padZero(formatarDataCNAB(guia.dataVencimento), 8);
+        segO += 'BRL';
+        segO += padZero(0, 15);
+        const vCentavos = Math.round(parseFloat(guia.valor || 0) * 100);
+        segO += padZero(vCentavos, 15);
+        segO += padZero(dataPagamentoFormatada, 8);
+        segO += padZero(0, 15);
+        segO += padSpace('', 15);
+        const idDoc = guia.documentoOrigem ? `NF-${guia.documentoOrigem}` : `SEQ-${idx + 1}`;
+        segO += padSpace(idDoc, 20);
+        segO += padSpace('', 46);
+        linhas.push(segO);
+    });
+
+    // 4. Trailer de Lote
+    seqLote++;
+    let trailerLote = '';
+    trailerLote += padZero(1, 3);
+    trailerLote += padZero(1, 4);
+    trailerLote += '5';
+    trailerLote += padSpace('', 9);
+    trailerLote += padZero(seqLote, 6);
+    trailerLote += padZero(Math.round(totalLote * 100), 18);
+    trailerLote += padSpace('', 199);
+    linhas.push(trailerLote);
+
+    // 5. Trailer de Arquivo
+    let trailerArq = '';
+    trailerArq += padZero(1, 3);
+    trailerArq += padZero(9999, 4);
+    trailerArq += '9';
+    trailerArq += padSpace('', 9);
+    trailerArq += padZero(1, 6);
+    trailerArq += padZero(linhas.length + 1, 6);
+    trailerArq += padSpace('', 211);
+    linhas.push(trailerArq);
+
+    return linhas.map((l, i) => {
+        if (l.length !== 240) throw new Error(`Linha ${i} BB com tamanho inválido (${l.length})`);
+        return l;
+    }).join('\r\n') + '\r\n';
+}
+
 module.exports = {
-    gerarRemessaSispag
+    gerarRemessaSispag,
+    gerarRemessaBradesco,
+    gerarRemessaBB,
+    processarRetornoSispag
 };

@@ -17,6 +17,7 @@
             </div>
             <div class="nav-links">
                 <a href="/dashboard.html" class="nav-btn">Faturamento</a>
+                <a href="/bi.html" class="nav-btn" style="color: #38bdf8; font-weight: 600;">📊 BI Fiscal</a>
                 <a href="/profile.html" class="nav-btn active">Empresa</a>
                 <a href="/plans.html" class="nav-btn">Planos</a>
                 <a href="/admin.html" id="admin-nav-link" class="nav-btn d-none">Administração</a>
@@ -102,7 +103,155 @@
                     </button>
                 </form>
             </div>
-        </div>
+
+            <!-- CARD DE INTEGRAÇÃO LINX MICROVIX -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">
+                    <span>⚡</span> Integração Linx Microvix (WebAPI B2CConsultaNFe)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Configure os parâmetros para sincronizar as Notas Fiscais emitidas e gerar as GNREs automaticamente.
+                </p>
+
+                <form id="microvix-form">
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="microvix_key">Chave de API Linx (GUID)</label>
+                            <input type="text" id="microvix_key" placeholder="Ex: F68C88F7-37FF-4336-B5C9-D01C2FB09F74" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="microvix_cnpj">CNPJ da Empresa na Linx</label>
+                            <input type="text" id="microvix_cnpj" placeholder="10436619000105" maxlength="14" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="microvix_user">Usuário WebAPI</label>
+                            <input type="text" id="microvix_user" placeholder="Padrão: linx_b2c" value="linx_b2c">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="microvix_password">Nova Senha WebAPI (opcional)</label>
+                            <input type="password" id="microvix_password" placeholder="Preencha apenas para alterar">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary">
+                            Salvar Credenciais Linx
+                        </button>
+                        <span id="microvix-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- BLING ERP -->
+            <div class="card mb-4">
+                <div class="card-title">
+                    <span>🟠</span> Integração Bling ERP (API v3)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Importe automaticamente suas notas fiscais de venda emitidas no Bling para processamento de DIFAL e GNRE.
+                </p>
+
+                <form id="bling-form">
+                    <div class="form-group">
+                        <label for="bling_token">API Key / Access Token (Bling v3)</label>
+                        <input type="password" id="bling_token" placeholder="Cole o token de API v3 gerado no Bling" required>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                            Salvar Credenciais Bling
+                        </button>
+                        <span id="bling-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TINY ERP -->
+            <div class="card mb-4">
+                <div class="card-title">
+                    <span>🔵</span> Integração Tiny ERP / Olist (API 2.0)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Conecte sua conta do Tiny ERP para resgatar XMLs e automatizar guias de partilha de ICMS interestadual.
+                </p>
+
+                <form id="tiny-form">
+                    <div class="form-group">
+                        <label for="tiny_token">API Token (Tiny ERP)</label>
+                        <input type="password" id="tiny_token" placeholder="Token gerado em Configurações > E-commerce > API" required>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                            Salvar Credenciais Tiny
+                        </button>
+                        <span id="tiny-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- OMIE ERP -->
+            <div class="card mb-4">
+                <div class="card-title">
+                    <span>🟢</span> Integração Omie ERP (Webservices)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Configure as chaves do aplicativo Omie para ler as notas fiscais emitidas no faturamento.
+                </p>
+
+                <form id="omie-form">
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="omie_app_key">App Key (Omie)</label>
+                            <input type="text" id="omie_app_key" placeholder="Ex: 383332994972" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="omie_app_secret">App Secret (Omie)</label>
+                            <input type="password" id="omie_app_secret" placeholder="Ex: a9a7c06... (Chave Secreta)" required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #047857);">
+                            Salvar Credenciais Omie
+                        </button>
+                        <span id="omie-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- OLIST VNDA (BOAH) -->
+            <div class="card mb-4">
+                <div class="card-title">
+                    <span>🛍️</span> Integração E-commerce Olist Vnda (Loja Boah)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Sincronização direta com a loja virtual para identificar transportadoras contratadas no checkout (Total Express, Correios, MT Log) e cruzar pedidos com faturamento.
+                </p>
+
+                <form id="vnda-form">
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="vnda_token">Token da API (Bearer)</label>
+                            <input type="password" id="vnda_token" placeholder="Cole o token da VNDA gerado no painel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vnda_shop_host">Domínio da Loja (X-Shop-Host)</label>
+                            <input type="text" id="vnda_shop_host" value="www.boah.com.br" required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                            Salvar Credenciais Vnda
+                        </button>
+                        <span id="vnda-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
     </div>
 
     <div id="toast" class="toast"></div>

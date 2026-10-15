@@ -1,59 +1,93 @@
-<!-- public/login.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex GNRE - Entrar</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/expedi.css">
+    <title>Entrar — expedi HUB</title>
 </head>
 <body>
-
-    <div class="auth-wrapper">
-        <div class="card auth-card">
-            <div class="auth-header">
-                <h2>Apex GNRE SaaS</h2>
-                <p>Entre na sua conta de assinante para emitir guias</p>
-            </div>
-
-            <form id="login-form">
-                <div class="grid-form" style="grid-template-columns: 1fr;">
-                    <div class="form-group">
-                        <label for="email">E-mail Corporativo</label>
-                        <input type="email" id="email" required placeholder="seuemail@empresa.com">
+    <div class="auth">
+        <aside class="side">
+            <div class="brand"></div>
+            <h2>Sua operação,<br>em movimento.</h2>
+            <p>Automação de expedição logística e fiscal para o seu e-commerce B2C. Tudo em um só hub.</p>
+            <ul>
+                <li>
+                    <i data-i="box"></i>
+                    <div>
+                        <b>Pedidos integrados</b>
+                        <span>Seus canais de venda em uma única operação.</span>
                     </div>
+                </li>
+                <li>
+                    <i data-i="file"></i>
+                    <div>
+                        <b>Fiscal automatizado</b>
+                        <span>NF-e, DIFAL e guias no mesmo fluxo.</span>
+                    </div>
+                </li>
+                <li>
+                    <i data-i="truck"></i>
+                    <div>
+                        <b>Expedição conectada</b>
+                        <span>Do pedido à etiqueta, sem perder o ritmo.</span>
+                    </div>
+                </li>
+            </ul>
+            <footer>Menos tarefas manuais. Mais controle para sua equipe.</footer>
+        </aside>
+        <div class="main">
+            <div class="top">
+                <a href="#" data-i="help">&nbsp;Central de ajuda</a>
+            </div>
+            <form class="card-form" id="loginForm" novalidate>
+                <div class="hint" style="color:var(--primary);font-weight:600">Acesse seu hub</div>
+                <h1>Boas-vindas de volta.</h1>
+                <p class="lead">Entre na sua conta para acompanhar pedidos, documentos fiscais e envios.</p>
+                <div id="msg" role="alert"></div>
 
-                    <div class="form-group">
-                        <label for="password">Senha de Acesso</label>
-                        <input type="password" id="password" required placeholder="••••••••">
+                <div class="field">
+                    <label for="email">E-mail</label>
+                    <div class="input">
+                        <input id="email" name="email" type="email" autocomplete="username" placeholder="seuemail@empresa.com.br" required>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-4" style="width: 100%;">
-                    Entrar no Painel
-                </button>
-            </form>
+                <div class="field">
+                    <label for="pw">Senha</label>
+                    <div class="input">
+                        <input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+                        <button type="button" data-toggle-pass data-i="eye">Mostrar</button>
+                    </div>
+                </div>
 
-            <div class="auth-footer">
-                Não tem uma conta? <a href="/register.html">Cadastre sua empresa</a>
+                <div class="row-between">
+                    <label class="check">
+                        <input type="checkbox" name="remember"> Lembrar acesso
+                    </label>
+                    <a href="#">Esqueci minha senha</a>
+                </div>
+
+                <button class="btn pri" style="width:100%" type="submit">Entrar</button>
+
+                <p class="note">
+                    Ainda não tem conta? <a href="plans.html">Conheça os planos</a><br>
+                    Acesso de equipe? Solicite um convite ao administrador da sua empresa.
+                </p>
+            </form>
+            <div class="foot">
+                © 2026 expedi HUB
+                <span>
+                    <a href="#">Privacidade</a>
+                    <a href="#">Termos de uso</a>
+                </span>
             </div>
         </div>
     </div>
-
-    <div id="toast" class="toast"></div>
-
-    <script src="/js/auth.js?v=3"></script>
-    <script>
-        // Prevenir acesso caso já esteja logado
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = localStorage.getItem('sb_access_token');
-            if (token) {
-                const res = await fetch('/api/auth/me');
-                if (res.ok) {
-                    window.location.href = '/dashboard.html';
-                }
-            }
-        });
-    </script>
+    <script src="js/auth-bridge.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

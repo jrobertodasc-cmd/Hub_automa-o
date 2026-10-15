@@ -29,17 +29,26 @@ function extrairDadosNfeXML(xml) {
             throw new Error("Não foi possível extrair todos os dados fiscais essenciais do XML da NF-e.");
         }
 
-        // Extrai dados do destinatário
-        const destCnpjMatch = xml.match(/<dest>[^]*?<CNPJ>([^<]+)<\/CNPJ>/);
-        const destCpfMatch = xml.match(/<dest>[^]*?<CPF>([^<]+)<\/CPF>/);
-        const destCnpjCpf = destCnpjMatch ? destCnpjMatch[1] : (destCpfMatch ? destCpfMatch[1] : null);
-        const destTipoIdentificacao = destCnpjMatch ? "CNPJ" : (destCpfMatch ? "CPF" : null);
+        // Extrai dados do destinatário isolando estritamente o bloco <dest>...</dest>
+        const destBlockMatch = xml.match(/<dest>([\s\S]*?)<\/dest>/);
+        let destCnpjCpf = null;
+        let destTipoIdentificacao = null;
+        let destNome = null;
+        let destMun = null;
 
-        const destNomeMatch = xml.match(/<dest>[^]*?<xNome>([^<]+)<\/xNome>/);
-        const destNome = destNomeMatch ? destNomeMatch[1] : null;
+        if (destBlockMatch) {
+            const destBlock = destBlockMatch[1];
+            const destCnpjMatch = destBlock.match(/<CNPJ>([^<]+)<\/CNPJ>/);
+            const destCpfMatch  = destBlock.match(/<CPF>([^<]+)<\/CPF>/);
+            destCnpjCpf = destCnpjMatch ? destCnpjMatch[1] : (destCpfMatch ? destCpfMatch[1] : null);
+            destTipoIdentificacao = destCnpjMatch ? "CNPJ" : (destCpfMatch ? "CPF" : null);
 
-        const destMunMatch = xml.match(/<dest>[^]*?<cMun>([^<]+)<\/cMun>/);
-        const destMun = destMunMatch ? destMunMatch[1] : null;
+            const destNomeMatch = destBlock.match(/<xNome>([^<]+)<\/xNome>/);
+            destNome = destNomeMatch ? destNomeMatch[1] : null;
+
+            const destMunMatch = destBlock.match(/<cMun>([^<]+)<\/cMun>/);
+            destMun = destMunMatch ? destMunMatch[1] : null;
+        }
 
         // Extrai data de emissao
         const dataEmiMatch = xml.match(/<dhEmi>([^<]+)<\/dhEmi>/);
@@ -51,6 +60,34 @@ function extrairDadosNfeXML(xml) {
         
         const dataEmissaoFormatadaRJ = dhEmi.substring(0, 10);
         const hoje = new Date().toISOString().split('T')[0];
+
+        // Extrai dados da transportadora (<transp> -> <transporta>)
+        const transpMatch = xml.match(/<transp>[\s\S]*?<\/transp>/);
+        let carrierName = 'NÃO INFORMADA / PRÓPRIA';
+        let carrierCnpj = null;
+        if (transpMatch) {
+            const xNomeMatch = transpMatch[0].match(/<xNome>([^<]+)<\/xNome>/);
+            const cnpjTranspMatch = transpMatch[0].match(/<CNPJ>([^<]+)<\/CNPJ>/);
+            if (xNomeMatch) {
+                carrierName = xNomeMatch[1].trim();
+            }
+            if (cnpjTranspMatch) {
+                carrierCnpj = cnpjTranspMatch[1].trim();
+            }
+        }
+
+        // Normalização amigável de nomes comerciais conhecidos (Total Express, MT Log, Gollog, Correios)
+        let carrierDisplay = carrierName;
+        const cNomeUpper = carrierName.toUpperCase();
+        if (cNomeUpper.includes('TEX COURIER') || cNomeUpper.includes('TOTAL EXPRESS') || carrierCnpj === '73939449000193') {
+            carrierDisplay = 'TOTAL EXPRESS';
+        } else if (cNomeUpper.includes('MT LOG') || cNomeUpper.includes('MT-LOG')) {
+            carrierDisplay = 'MT LOG';
+        } else if (cNomeUpper.includes('GOL') || cNomeUpper.includes('GOLLOG')) {
+            carrierDisplay = 'GOL LOG (GOL)';
+        } else if (cNomeUpper.includes('CORREIOS')) {
+            carrierDisplay = 'CORREIOS';
+        }
 
         return {
             ufFavorecida: ufDestMatch[1],
@@ -68,11 +105,77 @@ function extrairDadosNfeXML(xml) {
             destMun,
             anoApuracao: anoApur,
             mesApuracao: mesApur,
-            dataEmissaoRJ: dataEmissaoFormatadaRJ
+            dataEmissaoRJ: dataEmissaoFormatadaRJ,
+            carrierName: carrierDisplay,
+            carrierCnpj: carrierCnpj
         };
     } catch (err) {
         throw new Error(`Falha ao ler XML da NF-e: ${err.message}`);
     }
+}
+
+/**
+ * Extrai todos os itens de produtos/peças contidos no XML da NF-e
+ */
+function extrairItensNfe(xml) {
+    const itens = [];
+    const regexDet = /<det\s+nItem="([0-9]+)">([\s\S]*?)<\/det>/g;
+    let m;
+    while ((m = regexDet.exec(xml)) !== null) {
+        const nItem = parseInt(m[1], 10);
+        const bloco = m[2];
+        const cProd = bloco.match(/<cProd>([^<]+)<\/cProd>/)?.[1] || '';
+        const xProd = bloco.match(/<xProd>([^<]+)<\/xProd>/)?.[1] || 'PRODUTO';
+        const qCom = parseFloat(bloco.match(/<qCom>([^<]+)<\/qCom>/)?.[1] || 1);
+        const vUnCom = parseFloat(bloco.match(/<vUnCom>([^<]+)<\/vUnCom>/)?.[1] || 0);
+        const vProd = parseFloat(bloco.match(/<vProd>([^<]+)<\/vProd>/)?.[1] || 0);
+        const ncm = bloco.match(/<NCM>([^<]+)<\/NCM>/)?.[1] || '';
+
+        itens.push({
+            itemIndex: nItem,
+            cProd: cProd.trim(),
+            xProd: xProd.trim(),
+            quantidade: qCom,
+            precoUnitario: vUnCom,
+            valorTotal: vProd,
+            ncm: ncm.trim()
+        });
+    }
+    return itens;
+}
+
+/**
+ * Identifica se a nota é uma devolução de cliente e extrai as referências
+ */
+function extrairDadosDevolucaoXML(xml) {
+    const tpNF = xml.match(/<tpNF>([^<]+)<\/tpNF>/)?.[1]; // 0=Entrada, 1=Saída
+    const finNFe = xml.match(/<finNFe>([^<]+)<\/finNFe>/)?.[1]; // 4=Devolução
+    const natOp = (xml.match(/<natOp>([^<]+)<\/natOp>/)?.[1] || '').trim();
+    const isDevolucao = finNFe === '4' || tpNF === '0' || natOp.toLowerCase().includes('devolu');
+
+    if (!isDevolucao) return null;
+
+    const returnNfNumber = xml.match(/<nNF>([^<]+)<\/nNF>/)?.[1];
+    const returnChaveNfe = xml.match(/<infNFe\s+[^>]*Id="NFe([^"]+)"/)?.[1];
+    const refNFe = xml.match(/<refNFe>([^<]+)<\/refNFe>/)?.[1] || null;
+    const vNF = parseFloat(xml.match(/<vNF>([^<]+)<\/vNF>/)?.[1] || 0);
+    const dEmi = xml.match(/<dhEmi>([^<]+)<\/dhEmi>/)?.[1] || new Date().toISOString();
+
+    let originalNfNumber = null;
+    if (refNFe && refNFe.length === 44) {
+        originalNfNumber = String(parseInt(refNFe.substring(25, 34), 10));
+    }
+
+    return {
+        isDevolucao: true,
+        returnNfNumber,
+        returnChaveNfe,
+        originalChaveNfe: refNFe,
+        originalNfNumber,
+        natOp,
+        valor: vNF,
+        dataDevolucao: dEmi.substring(0, 10)
+    };
 }
 
 function normalizarDocumentoOrigem(doc) {
@@ -248,5 +351,7 @@ function extrairDadosGuiaXML(xml) {
 module.exports = {
     extrairTag,
     extrairDadosNfeXML,
-    extrairDadosGuiaXML
+    extrairDadosGuiaXML,
+    extrairItensNfe,
+    extrairDadosDevolucaoXML
 };
