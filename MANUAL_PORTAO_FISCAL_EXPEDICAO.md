@@ -63,46 +63,43 @@ O sistema transforma o fluxo em um **Portão Fiscal Contínuo**:
 - **O que faz:**
   - Gera o **Romaneio Oficial da Transportadora em A4 Paisagem**, contendo:
     - Identificação corporativa da empresa e da transportadora;
-    - Indicadores do Portão Fiscal (Total de Volumes, Liberados, Retidos e Total DIFAL);
-    - Tabela completa (Item, Pedido, NF, Destinatário, UF, DIFAL, Status Fiscal, Autenticação Bancária e espaço para visto do motorista);
-    - Assinatura da Expedição e do Motorista Coletador (com RG e Placa).
-  - Unifica no mesmo PDF para cada nota fiscal: **Folha do Romaneio + DANFE + Guia GNRE + Comprovante Oficial Asaas**.
-- **Resultado:** O caminhão viaja com a pasta completa e documentação indiscutível para a SEFAZ.
-
----
-
-### Etapa 4: Interface Final do Portão Fiscal na Doca & Bipagem de Caixas
-- **Frontends:** [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html), [`public/js/dashboard.js`](file:///c:/Users/Roberto/Desktop/Web_Services/public/js/dashboard.js), [`public/profile.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/profile.html).
+    - Indicadores do Portão Fiscal (T### Etapa 4: Interface Final do Portão Fiscal na Doca & Bipagem de Caixas
+- **Frontends:** [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html), [`public/js/dashboard.js`](file:///c:/Users/Roberto/Desktop/Web_Services/public/js/dashboard.js), [`public/aprovar.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/aprovar.html).
 - **O que faz:**
-  - **Bipador de Caixas na Doca:** O operador aponta o leitor de código de barras para a caixa (lendo a DANFE ou o Pedido) e pressiona `ENTER`.
-  - **Modal Instantâneo do Portão Fiscal:**
-    - 🟢 **LIBERADO PARA EMBARQUE:** Borda verde, comprovando quitação bancária (ou isenção SP). Pode carregar no caminhão.
-    - 🔴 **RETIDO NA DOCA — NÃO EMBARCAR:** Alerta vermelho bloqueando a carga se houver DIFAL pendente de pagamento.
-  - **Liberação Nota a Nota (`⚡ Pagar`):** Botão direto na linha da tabela da doca para liquidar uma remessa urgente no Asaas sem precisar processar o lote inteiro.
-  - **Configurações Privadas de Notificação:** Card seguro na tela de Perfil para cadastrar o WhatsApp/e-mail da responsável com total privacidade.
+  - **Bipador Laser de Caixas na Doca:** O operador aponta o leitor de código de barras para a caixa (lendo a DANFE de 44 dígitos) e pressiona `ENTER`.
+  - **Modal Semafórico do Portão Fiscal (Padrão Proposta):**
+    - 🟢 **CARGA LIBERADA PARA EMBARQUE:** Borda verde, som harmônico em Fá Maior (`523Hz` + `659Hz` + `784Hz`), comprovando quitação bancária Asaas (ou isenção de SP).
+    - 🔴 **CARGA RETIDA NA DOCA — PENDÊNCIA SEFAZ:** Alerta sonoro grave dissonante (`180Hz` + `135Hz`) e escudo SEFAZ, indicando DIFAL interestadual pendente.
+  - **Segregação de Alçada Financeira:** O operador na doca **não possui poder para debitar a conta da empresa**. Ao se deparar com uma retenção, ele clica em `"Separar Caixa na Doca & Continuar Bipagem"` e `"Solicitar Liberação à Diretoria no App"`. O débito é feito exclusivamente pela dona em seu smartphone.
+  - **Filtros por Data de Emissão:** Filtros rápidos `[Todas as Datas]`, `[Ontem (15/10)]` e `[Hoje (16/10)]`. Permite auditar notas emitidas no dia anterior que ainda estão na doca aguardando liberação bancária ou coleta.
+  - **Gestão de Cargas Despachadas & Histórico:**
+    - Cargas coletadas saem da visualização ativa da doca e são arquivadas na aba `[🚚 Já Despachadas (Histórico)]`.
+    - Botão `[🚚 Registrar Coleta (Despachar)]` para conferência final da transportadora e assinatura do Romaneio.
+  - **Gestão de Devoluções & Crédito DIFAL:** Modal para vincular NF-e de entrada emitida no Linx quando o consumidor devolve a mercadoria, estornando e compensando o crédito fiscal para evitar bitributação.
 
 ---
 
 ## 3. Guia Operacional do Dia a Dia (Como a Empresa Usa)
 
 ### A. Para a Diretoria / Financeiro (No Celular)
-1. A responsável abre o link **`/aprovar.html`** no navegador do celular (pode clicar em *"Adicionar à tela inicial"* para criar o ícone de aplicativo).
-2. A tela exibe o saldo disponível no Asaas e as guias que a expedição preparou.
-3. A responsável confere o valor total e toca em **"⚡ Autorizar Pagamento via Asaas"**.
-4. Pronto! O débito é efetuado e as notas são liberadas no galpão imediatamente.
+1. A dona abre o link **`/aprovar.html`** no navegador do celular (ou ícone PWA na tela inicial).
+2. A tela exibe o totalizador de volumes aguardando liberação na doca (ex: 12 volumes, R$ 1.840,50) discriminado por transportadora (Total Express, Correios, MT Log).
+3. A dona confere o resumo e clica em **"Confirmar Pagamento e Liberar Doca"**.
+4. Pronto! O Asaas liquida as guias e o status na doca muda para liberado instantaneamente.
 
 ### B. Para o Operador da Expedição / Doca (No Computador do Galpão)
-1. Quando as caixas estiverem prontas na doca, o operador acessa o Painel (**`/dashboard.html`**).
+1. O operador acessa o Cockpit do Portão Fiscal (**`/dashboard.html`**).
 2. **Conferência das Caixas (Bipagem):**
    - O operador clica no campo de busca/bipagem no topo da tabela.
-   - Bipa o código de barras da DANFE (os 44 dígitos) colada na caixa (ou digita a NF e aperta `ENTER`).
-   - O sistema mostra:
-     - 🟢 **VERDE:** O operador joga a caixa no caminhão e aperta `ENTER` para bipar a próxima.
-     - 🔴 **VERMELHO:** A caixa fica separada no chão da doca. Não entra no veículo.
-3. **Impressão do Pacote da Transportadora:**
-   - Com o caminhão pronto, o operador seleciona a transportadora no filtro (ex: `TOTAL EXPRESS`) e clica em **`📦 Combo Expedição (3 em 1)`**.
-   - A impressora emite o maço de documentos: o Romaneio de Coleta para o motorista assinar + todas as DANFEs, Guias e Comprovantes Asaas.
-   - O operador entrega o maço na mão do motorista e libera o caminhão.
+   - Bipa a etiqueta da DANFE colada na caixa (44 dígitos) e aperta `ENTER`.
+   - O sistema emite o feedback sonoro e visual:
+     - 🟢 **VERDE (Som Harmônico):** O operador coloca a caixa na esteira de embarque da transportadora.
+     - 🔴 **VERMELHO (Som de Alerta):** O operador separa a caixa na pilha de pendências físicas e notifica a dona pelo botão de solicitação.
+3. **Emissão de Documentos de Embarque:**
+   - O operador clica no botão azul **`Documentos de Embarque`** para imprimir o Romaneio Oficial e DANFEs das cargas liberadas.
+4. **Registro da Coleta da Transportadora:**
+   - Quando o caminhão da transportadora terminar de ser carregado e o motorista assinar o Romaneio, o operador clica em **`Registrar Coleta (Despachar)`**.
+   - As cargas liberadas são transferidas para a aba **`Já Despachadas (Histórico)`**, zerando o pátio ativo. O motorista recebe a via impressa com os comprovantes bancários autenticados.
 
 ---
 
