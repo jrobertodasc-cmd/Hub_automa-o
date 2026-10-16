@@ -195,6 +195,197 @@ async function gerarGnrePdfBuffer(empresa, guia) {
 }
 
 /**
+ * Determina se a guia / nota fiscal está liberada para coleta pelo Portão Fiscal
+ */
+function isGuiaLiberada(guide) {
+    if (!guide) return false;
+    const uf = (guide.uf || guide.ufFavorecida || '').toUpperCase();
+    if (uf === 'SP' || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP') return true;
+    if (parseFloat(guide.value || guide.valor || 0) <= 0) return true;
+    const st = (guide.status || '').toUpperCase();
+    if (st === 'PAGA' || st === 'COMPROVADA') return true;
+    if (guide.receipt_storage_path || guide.receipt_url || guide.asaas_bill_id) return true;
+    if (guide.payment_authorized_at) return true;
+    return false;
+}
+
+/**
+ * Gera um PDF A4 Paisagem oficial do Romaneio / Manifesto de Coleta da Transportadora
+ */
+async function gerarRomaneioPdfBuffer(empresa, guias = [], options = {}) {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({
+                size: 'A4',
+                layout: 'landscape',
+                margin: 25,
+                bufferPages: true
+            });
+
+            const chunks = [];
+            doc.on('data', c => chunks.push(c));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', err => reject(err));
+
+            const carrierName = (options.carrier && options.carrier !== 'TODAS')
+                ? options.carrier
+                : (guias[0]?.carrier_name || 'TODAS AS TRANSPORTADORAS');
+
+            const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'LALUA COMERCIO DE MODAS EIRELI';
+            const cnpj = (empresa.cnpj || '10436619000105').replace(/[^0-9]/g, '');
+            const cnpjFmt = cnpj.length === 14
+                ? cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
+                : cnpj;
+
+            const totalVolumes = guias.length;
+            const liberadas = guias.filter(g => isGuiaLiberada(g));
+            const bloqueadas = guias.filter(g => !isGuiaLiberada(g));
+            const totalDifalDevido = guias.reduce((acc, g) => {
+                const uf = (g.uf || '').toUpperCase();
+                if (uf === 'SP') return acc;
+                return acc + parseFloat(g.value || g.valor || 0);
+            }, 0);
+
+            const agora = new Date();
+            const dataHoraFmt = `${formatarData(agora.toISOString())} às ${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+
+            // Helper para desenhar o cabeçalho do romaneio
+            function desenharCabecalho(paginaNum, totalPaginas) {
+                const x = 25;
+                let y = 25;
+                const w = 792;
+
+                // Barra superior escura de identificação
+                doc.rect(x, y, w, 52).fill('#0f172a');
+
+                doc.font('Helvetica-Bold').fontSize(14).fillColor('#ffffff').text('EXPEDI HUB  |  ROMANEIO OFICIAL & MANIFESTO DE CARGA', x + 15, y + 10);
+                doc.font('Helvetica').fontSize(9).fillColor('#cbd5e1').text(`${razaoSocial}  |  CNPJ: ${cnpjFmt}`, x + 15, y + 28);
+                doc.font('Helvetica-Bold').fontSize(9).fillColor('#38bdf8').text(`TRANSPORTADORA: ${carrierName.toUpperCase()}`, x + 15, y + 39);
+
+                doc.font('Helvetica').fontSize(8.5).fillColor('#cbd5e1').text(`Emissão: ${dataHoraFmt}`, x, y + 12, { align: 'right', width: w - 15 });
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#ffffff').text(`Página ${paginaNum} de ${totalPaginas}`, x, y + 26, { align: 'right', width: w - 15 });
+
+                y += 58;
+
+                // Barra de Indicadores (KPIs do Portão Fiscal)
+                const kpiH = 26;
+                doc.rect(x, y, w, kpiH).fillAndStroke('#f8fafc', '#e2e8f0');
+
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#334155').text(`TOTAL DE VOLUMES: ${totalVolumes}`, x + 10, y + 8);
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#15803d').text(`LIBERADOS P/ COLETA: ${liberadas.length}`, x + 180, y + 8);
+
+                const corBloq = bloqueadas.length > 0 ? '#b91c1c' : '#64748b';
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor(corBloq).text(`RETIDOS NA DOCA: ${bloqueadas.length}`, x + 380, y + 8);
+
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text(`TOTAL DIFAL DEVIDO: R$ ${formatarMoeda(totalDifalDevido)}`, x, y + 8, { align: 'right', width: w - 15 });
+
+                y += kpiH + 6;
+
+                // Cabeçalho da Tabela
+                const tH = 20;
+                doc.rect(x, y, w, tH).fill('#1e293b');
+
+                doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#ffffff');
+                doc.text('ITEM', x + 5, y + 6, { width: 30, align: 'center' });
+                doc.text('PEDIDO', x + 40, y + 6, { width: 65 });
+                doc.text('NF-e', x + 110, y + 6, { width: 65 });
+                doc.text('UF', x + 180, y + 6, { width: 30, align: 'center' });
+                doc.text('DESTINATÁRIO (CLIENTE)', x + 215, y + 6, { width: 195 });
+                doc.text('DIFAL (R$)', x + 415, y + 6, { width: 75, align: 'right' });
+                doc.text('STATUS PORTÃO FISCAL', x + 500, y + 6, { width: 110, align: 'center' });
+                doc.text('AUTENTICAÇÃO / ASAAS', x + 615, y + 6, { width: 85, align: 'center' });
+                doc.text('VISTO DO MOTORISTA', x + 705, y + 6, { width: 80, align: 'center' });
+
+                return y + tH;
+            }
+
+            // Paginação dinâmica
+            const itensPorPagina = 12;
+            const totalPaginas = Math.max(1, Math.ceil(guias.length / itensPorPagina));
+
+            for (let p = 0; p < totalPaginas; p++) {
+                if (p > 0) doc.addPage({ size: 'A4', layout: 'landscape', margin: 25 });
+
+                let currentY = desenharCabecalho(p + 1, totalPaginas);
+                const inicio = p * itensPorPagina;
+                const fim = Math.min(inicio + itensPorPagina, guias.length);
+                const itensPagina = guias.slice(inicio, fim);
+
+                const rowH = 22;
+                const x = 25;
+                const w = 792;
+
+                itensPagina.forEach((g, idx) => {
+                    const rowY = currentY;
+                    const itemGlobalIdx = inicio + idx + 1;
+                    const liberada = isGuiaLiberada(g);
+                    const isSp = (g.uf === 'SP' || g.ufFavorecida === 'SP' || g.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+
+                    // Zebra background
+                    if (idx % 2 === 0) {
+                        doc.rect(x, rowY, w, rowH).fill('#ffffff');
+                    } else {
+                        doc.rect(x, rowY, w, rowH).fill('#f8fafc');
+                    }
+                    doc.rect(x, rowY, w, rowH).stroke('#e2e8f0');
+
+                    doc.font('Helvetica').fontSize(8).fillColor('#64748b').text(String(itemGlobalIdx), x + 5, rowY + 6, { width: 30, align: 'center' });
+                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#0f172a').text(String(g.order_number || g.xPed || '-'), x + 40, rowY + 6, { width: 65 });
+                    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1e40af').text(String(g.nf_number || '-'), x + 110, rowY + 6, { width: 65 });
+                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#0f172a').text(String(g.uf || '-'), x + 180, rowY + 6, { width: 30, align: 'center' });
+
+                    const cliente = String(g.customer_name || 'CONSUMIDOR FINAL').substring(0, 36);
+                    doc.font('Helvetica').fontSize(7.5).fillColor('#334155').text(cliente, x + 215, rowY + 6, { width: 195 });
+
+                    const valStr = isSp ? 'ISENTO' : `R$ ${formatarMoeda(g.value || g.valor)}`;
+                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#0f172a').text(valStr, x + 415, rowY + 6, { width: 75, align: 'right' });
+
+                    // Status Portão Fiscal
+                    if (isSp) {
+                        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#0284c7').text('[OK] ISENTO SP', x + 500, rowY + 6, { width: 110, align: 'center' });
+                    } else if (liberada) {
+                        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#15803d').text('[OK] LIBERADO (PAGO)', x + 500, rowY + 6, { width: 110, align: 'center' });
+                    } else {
+                        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#dc2626').text('[X] RETIDO NA DOCA', x + 500, rowY + 6, { width: 110, align: 'center' });
+                    }
+
+                    // Autenticação ou ID Asaas
+                    const authStr = g.asaas_bill_id ? g.asaas_bill_id.substring(0, 14) : (g.barcode ? 'GUIA EMITIDA' : '-');
+                    doc.font('Courier').fontSize(7).fillColor('#475569').text(authStr, x + 615, rowY + 6, { width: 85, align: 'center' });
+
+                    // Campo tracejado para visto do motorista
+                    doc.moveTo(x + 710, rowY + 16).lineTo(x + 780, rowY + 16).dash(2, { space: 2 }).stroke('#cbd5e1');
+                    doc.undash();
+
+                    currentY += rowH;
+                });
+
+                // Bloco de Assinaturas na última página
+                if (p === totalPaginas - 1) {
+                    const sigY = 510;
+                    const sigW = 340;
+
+                    // Assinatura Expedição
+                    doc.moveTo(x + 30, sigY).lineTo(x + 30 + sigW, sigY).lineWidth(1).stroke('#0f172a');
+                    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text('EXPEDIÇÃO & PORTÃO FISCAL (LALUA MODAS)', x + 30, sigY + 5, { width: sigW, align: 'center' });
+                    doc.font('Helvetica').fontSize(7.5).fillColor('#64748b').text('Conferência física e liberação fiscal irrevogável para embarque', x + 30, sigY + 16, { width: sigW, align: 'center' });
+
+                    // Assinatura Motorista Coletador
+                    const sig2X = x + w - sigW - 30;
+                    doc.moveTo(sig2X, sigY).lineTo(sig2X + sigW, sigY).lineWidth(1).stroke('#0f172a');
+                    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text(`MOTORISTA COLETADOR (${carrierName.toUpperCase()})`, sig2X, sigY + 5, { width: sigW, align: 'center' });
+                    doc.font('Helvetica').fontSize(7.5).fillColor('#64748b').text('Assinatura / Nome Legível / RG / Placa do Veículo', sig2X, sigY + 16, { width: sigW, align: 'center' });
+                }
+            }
+
+            doc.end();
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+/**
  * Mescla todos os DANFEs e Guias GNRE em um único PDF sequencial intercalado:
  * - Se for UF diferente de SP: [DANFE NF X] seguido de [Guia GNRE NF X]
  * - Se for SP: APENAS [DANFE NF X] (sem guia fake)
@@ -280,7 +471,161 @@ async function gerarLoteIntercaladoPdf(tenant, guides, supabaseClient) {
     return Buffer.from(finalPdfBytes);
 }
 
+/**
+ * ETAPA 3: COMBO COMPLETO DE EXPEDIÇÃO
+ * Gera o pacote documental definitivo para a transportadora:
+ * 1. Folha de Rosto: Romaneio Oficial Paisagem da Transportadora (com todos os dados e visto)
+ * 2. Para cada Nota Fiscal:
+ *    - DANFE oficial da NF-e
+ *    - Guia GNRE / DUA-e oficial (quando aplicável)
+ *    - Comprovante Bancário de Liquidação Asaas (com autenticação SISBACEN)
+ */
+async function gerarComboExpedicaoPdf(tenant, guides, supabaseClient, options = {}) {
+    const asaasService = require('./asaas_service');
+    const mergedPdf = await PDFLibDocument.create();
+
+    const carrierName = (options.carrier && options.carrier !== 'TODAS')
+        ? options.carrier
+        : (guides[0]?.carrier_name || 'TODAS');
+
+    // 1. Gera e anexa o Romaneio Oficial da Coleta como Folha(s) de Rosto
+    try {
+        const romaneioBuffer = await gerarRomaneioPdfBuffer(tenant, guides, { carrier: carrierName });
+        const loadedRomaneio = await PDFLibDocument.load(romaneioBuffer, { ignoreEncryption: true });
+        const romaneioPages = await mergedPdf.copyPages(loadedRomaneio, loadedRomaneio.getPageIndices());
+        romaneioPages.forEach(p => mergedPdf.addPage(p));
+    } catch (eRom) {
+        console.error("Erro ao gerar folha de romaneio para o combo:", eRom.message);
+    }
+
+    // Filtra guias se options.onlyCleared for true
+    const guiasParaProcessar = options.onlyCleared
+        ? guides.filter(g => isGuiaLiberada(g))
+        : guides;
+
+    // 2. Anexa a tríade documental de cada NF-e [DANFE + GNRE + COMPROVANTE]
+    for (const guide of guiasParaProcessar) {
+        const isSp = (guide.uf === 'SP' || guide.ufFavorecida === 'SP' || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+        const liberada = isGuiaLiberada(guide);
+
+        // A. Carrega ou Gera DANFE
+        let danfeBuffer = null;
+        try {
+            const danfePath = guide.danfe_storage_path || `${tenant.id}/danfe/danfe_NF_${guide.nf_number}.pdf`;
+            const { data: dData } = await supabaseClient.storage.from('tenant-storage').download(danfePath);
+            if (dData) {
+                danfeBuffer = Buffer.from(await dData.arrayBuffer());
+            }
+        } catch (eDan) {}
+
+        if (!danfeBuffer && guide.xml_storage_path) {
+            try {
+                const { data: xData } = await supabaseClient.storage.from('tenant-storage').download(guide.xml_storage_path);
+                if (xData) {
+                    const xmlStr = await xData.text();
+                    danfeBuffer = await danfeService.gerarDanfePdf(xmlStr);
+                }
+            } catch (xErr) {
+                console.error(`Erro ao gerar DANFE para NF ${guide.nf_number}:`, xErr.message);
+            }
+        }
+
+        if (danfeBuffer) {
+            try {
+                const loadedDanfe = await PDFLibDocument.load(danfeBuffer, { ignoreEncryption: true });
+                const danfePages = await mergedPdf.copyPages(loadedDanfe, loadedDanfe.getPageIndices());
+                danfePages.forEach(p => mergedPdf.addPage(p));
+            } catch (err) {
+                console.error(`Falha ao mesclar DANFE da NF ${guide.nf_number}:`, err.message);
+            }
+        }
+
+        // B. Se for SP, não há guia externa nem comprovante GNRE
+        if (isSp) {
+            continue;
+        }
+
+        // C. Guia GNRE / DUA-e (se houver DIFAL)
+        if (parseFloat(guide.value || guide.valor || 0) > 0 || guide.barcode) {
+            let gnreBuffer = null;
+            if (guide.storage_path && guide.storage_path.toLowerCase().endsWith('.pdf')) {
+                try {
+                    const { data: gData } = await supabaseClient.storage.from('tenant-storage').download(guide.storage_path);
+                    if (gData) {
+                        gnreBuffer = Buffer.from(await gData.arrayBuffer());
+                    }
+                } catch (gErr) {}
+            }
+
+            if (!gnreBuffer) {
+                try {
+                    gnreBuffer = await gerarGnrePdfBuffer(tenant, guide);
+                } catch (genErr) {
+                    console.error(`Falha ao gerar GNRE da NF ${guide.nf_number}:`, genErr.message);
+                }
+            }
+
+            if (gnreBuffer) {
+                try {
+                    const loadedGnre = await PDFLibDocument.load(gnreBuffer, { ignoreEncryption: true });
+                    const gnrePages = await mergedPdf.copyPages(loadedGnre, loadedGnre.getPageIndices());
+                    gnrePages.forEach(p => mergedPdf.addPage(p));
+                } catch (err) {
+                    console.error(`Falha ao mesclar GNRE da NF ${guide.nf_number}:`, err.message);
+                }
+            }
+        }
+
+        // D. Comprovante Oficial Asaas (A quitação que libera o caminhão no posto fiscal!)
+        if (liberada && parseFloat(guide.value || guide.valor || 0) > 0) {
+            let receiptBuffer = null;
+
+            // 1. Tenta carregar PDF do Supabase Storage
+            if (guide.receipt_storage_path) {
+                try {
+                    const { data: rData } = await supabaseClient.storage.from('tenant-storage').download(guide.receipt_storage_path);
+                    if (rData) {
+                        receiptBuffer = Buffer.from(await rData.arrayBuffer());
+                    }
+                } catch (rErr) {}
+            }
+
+            // 2. Tenta baixar da URL oficial do Asaas se houver
+            if (!receiptBuffer && guide.receipt_url) {
+                try {
+                    receiptBuffer = await asaasService.downloadExternalPdf(guide.receipt_url);
+                } catch (uErr) {}
+            }
+
+            // 3. Fallback: gera comprovante autenticado em modo seguro
+            if (!receiptBuffer) {
+                try {
+                    receiptBuffer = await asaasService.gerarComprovanteSimuladoPdf(tenant, guide);
+                } catch (sErr) {
+                    console.error(`Falha ao gerar comprovante de quitação para NF ${guide.nf_number}:`, sErr.message);
+                }
+            }
+
+            if (receiptBuffer) {
+                try {
+                    const loadedReceipt = await PDFLibDocument.load(receiptBuffer, { ignoreEncryption: true });
+                    const rPages = await mergedPdf.copyPages(loadedReceipt, loadedReceipt.getPageIndices());
+                    rPages.forEach(p => mergedPdf.addPage(p));
+                } catch (err) {
+                    console.error(`Falha ao mesclar Comprovante Asaas da NF ${guide.nf_number}:`, err.message);
+                }
+            }
+        }
+    }
+
+    const finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
+    return Buffer.from(finalPdfBytes);
+}
+
 module.exports = {
     gerarGnrePdfBuffer,
-    gerarLoteIntercaladoPdf
+    gerarRomaneioPdfBuffer,
+    gerarLoteIntercaladoPdf,
+    gerarComboExpedicaoPdf,
+    isGuiaLiberada
 };

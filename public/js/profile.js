@@ -207,6 +207,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // 9. Lógica do Formulário Conta Digital Asaas
+    const asaasForm = document.getElementById('asaas-form');
+    if (asaasForm) {
+        asaasForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const asaas_api_key = document.getElementById('asaas_api_key').value.trim();
+            const asaas_environment = document.getElementById('asaas_environment').value;
+
+            try {
+                showToast("Salvando configurações do Asaas...", 'warning');
+                const res = await fetch('/api/tenant/asaas-credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ asaas_api_key, asaas_environment })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                showToast("Configurações do Asaas salvas com sucesso!");
+                document.getElementById('asaas_api_key').value = '';
+                await carregarDados();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        });
+    }
+
+    // 10. Lógica do Formulário de Notificações da Diretoria
+    const notificationForm = document.getElementById('notification-form');
+    if (notificationForm) {
+        notificationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const notification_phone = document.getElementById('notification_phone').value.trim();
+            const notification_email = document.getElementById('notification_email').value.trim();
+
+            try {
+                showToast("Salvando preferências de notificação...", 'warning');
+                const res = await fetch('/api/tenant/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notification_phone, notification_email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                showToast("Preferências de notificação salvas com sucesso!");
+                await carregarDados();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        });
+    }
 });
 
 async function carregarDados() {
@@ -229,6 +282,20 @@ async function carregarDados() {
         document.getElementById('bank_account').value = (tenant && tenant.bank_account) || '';
         document.getElementById('bank_dac').value = (tenant && tenant.bank_dac) || '';
         document.getElementById('environment').value = (tenant && tenant.environment) || 'simulado';
+
+        // Preenche campos de notificação da diretoria
+        const phoneInput = document.getElementById('notification_phone');
+        if (phoneInput) phoneInput.value = (tenant && tenant.notification_phone) || '';
+        const emailInput = document.getElementById('notification_email');
+        if (emailInput) emailInput.value = (tenant && tenant.notification_email) || '';
+        const notifStatus = document.getElementById('notification-status');
+        if (notifStatus) {
+            if (tenant && (tenant.notification_phone || tenant.notification_email)) {
+                notifStatus.innerHTML = `<span style="color: var(--success); font-weight: 600;">✔ Notificações Ativas</span>`;
+            } else {
+                notifStatus.innerHTML = `<span style="color: var(--text-secondary);">Configuração opcional</span>`;
+            }
+        }
 
         // Preenche status do certificado digital PFX
         const pfxStatus = document.getElementById('pfx-status');
@@ -299,6 +366,39 @@ async function carregarDados() {
             }
         } catch (erpErr) {
             console.warn("Erro ao buscar status ERPs:", erpErr.message);
+        }
+
+        // Preenche campos e saldo Asaas
+        const webhookUrlEl = document.getElementById('asaas-webhook-url');
+        if (webhookUrlEl) {
+            webhookUrlEl.innerText = window.location.origin + '/api/webhooks/asaas';
+        }
+
+        const asaasEnvSelect = document.getElementById('asaas_environment');
+        if (asaasEnvSelect && tenant && tenant.asaas_environment) {
+            asaasEnvSelect.value = tenant.asaas_environment;
+        }
+
+        const asaasBadge = document.getElementById('asaas-balance-badge');
+        const asaasStatus = document.getElementById('asaas-status');
+        try {
+            const balanceRes = await fetch('/api/asaas/balance');
+            if (balanceRes.ok) {
+                const bal = await balanceRes.json();
+                if (asaasBadge) {
+                    const prefix = bal.simulado ? 'Saldo Simulado: ' : 'Saldo em Conta: ';
+                    asaasBadge.innerText = prefix + 'R$ ' + parseFloat(bal.balance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    asaasBadge.style.background = bal.simulado ? 'rgba(59, 130, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+                    asaasBadge.style.color = bal.simulado ? '#3b82f6' : '#10b981';
+                }
+                if (asaasStatus) {
+                    asaasStatus.innerHTML = bal.hasKey 
+                        ? `<span style="color: var(--success); font-weight: 600;">✔ Chave Ativa (${bal.environment.toUpperCase()})</span>`
+                        : `<span style="color: var(--warning);">⚠ Chave não cadastrada (Modo Simulado Ativo)</span>`;
+                }
+            }
+        } catch (bErr) {
+            if (asaasBadge) asaasBadge.innerText = 'Saldo Indisponível';
         }
 
         if (data.profile && data.profile.is_admin) {

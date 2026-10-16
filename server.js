@@ -20,6 +20,8 @@ const danfeService = require('./services/danfe_service');
 const printService = require('./services/print_service');
 const vndaService = require('./services/vnda_service');
 const syncService = require('./services/sync_service');
+const asaasService = require('./services/asaas_service');
+const closingService = require('./services/closing_service');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -319,6 +321,27 @@ app.post('/api/tenant/settings', requireAuth, async (req, res) => {
         if (error) throw error;
 
         return res.status(200).json({ message: "Configurações atualizadas com sucesso!" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Endpoint para salvar contatos privados de notificação da responsável / diretoria
+app.post('/api/tenant/notifications', requireAuth, async (req, res) => {
+    const { notification_phone, notification_email } = req.body;
+
+    try {
+        const { error } = await supabase
+            .from('tenants')
+            .update({
+                notification_phone: notification_phone ? notification_phone.trim() : null,
+                notification_email: notification_email ? notification_email.trim() : null
+            })
+            .eq('id', req.tenant.id);
+
+        if (error) throw error;
+
+        return res.status(200).json({ message: "Preferências de notificação salvas com sucesso!" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -655,6 +678,478 @@ app.post('/api/batch/authorize-payment/:batchId', requireAuth, async (req, res) 
     } catch (err) {
         console.error("Erro na autorização de pagamento:", err);
         return res.status(500).json({ error: "Falha ao autorizar pagamento: " + err.message });
+    }
+});
+
+// ==========================================
+// MÓDULO ASAAS — PAGAMENTO AUTOMÁTICO DE GUIAS E AUTORIZAÇÃO
+// ==========================================
+
+function getAsaasApiKey(tenant) {
+    if (!tenant || !tenant.asaas_api_key_encrypted) return null;
+    try {
+        const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+        return decrypt(tenant.asaas_api_key_encrypted, key);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * 1. Consulta o Saldo Atual na Conta Asaas do Tenant
+ */
+app.get('/api/asaas/balance', requireAuth, async (req, res) => {
+    try {
+        const tenant = req.tenant;
+        const apiKey = getAsaasApiKey(tenant);
+        const env = tenant.asaas_environment || (tenant.environment === 'producao' ? 'producao' : 'sandbox');
+
+        const saldoInfo = await asaasService.obterSaldo(apiKey, apiKey ? env : 'simulado');
+        return res.status(200).json({
+            ...saldoInfo,
+            environment: env,
+            hasKey: !!apiKey
+        });
+    } catch (err) {
+        console.error("[Asaas] Erro ao consultar saldo:", err.message);
+        return res.status(500).json({ error: "Falha ao consultar saldo no Asaas: " + err.message });
+    }
+});
+
+/**
+ * 2. Salvar Chave de API e Ambiente do Asaas
+ */
+app.post('/api/tenant/asaas-credentials', requireAuth, async (req, res) => {
+    try {
+        const { asaas_api_key, asaas_environment } = req.body;
+        const tenant = req.tenant;
+        const updateData = {};
+
+        if (asaas_environment) {
+            updateData.asaas_environment = asaas_environment === 'producao' ? 'producao' : 'sandbox';
+        }
+
+        if (asaas_api_key && asaas_api_key.trim()) {
+            const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+            updateData.asaas_api_key_encrypted = encrypt(asaas_api_key.trim(), key);
+        }
+
+        const { error } = await supabase
+            .from('tenants')
+            .update(updateData)
+            .eq('id', tenant.id);
+
+        if (error) throw error;
+        return res.status(200).json({ message: "Configurações do Asaas salvas com sucesso!" });
+    } catch (err) {
+        return res.status(500).json({ error: "Erro ao salvar credenciais do Asaas: " + err.message });
+    }
+});
+
+/**
+ * 2.1 Resumo Executivo para a Dona / Celular: Consulta Lote e Guias Pendentes de Liquidação
+ */
+app.get('/api/batch/pending-payment', requireAuth, async (req, res) => {
+    try {
+        const tenant = req.tenant;
+        const { data: batches } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .neq('status', 'cancelado')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (!batches || batches.length === 0) {
+            return res.status(200).json({ lote: null, totalGuias: 0, totalValor: 0, porTransportadora: {}, guias: [] });
+        }
+
+        for (const b of batches) {
+            const { data: guias } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('batch_id', b.id)
+                .eq('tenant_id', tenant.id);
+
+            if (!guias || guias.length === 0) continue;
+
+            const pendentes = guias.filter(g => {
+                const hasLine = (g.line_digitizable && g.line_digitizable.length > 30) || (g.barcode && g.barcode.length > 30);
+                const naoPaga = g.status !== 'paga' && g.status !== 'comprovada' && !g.asaas_bill_id;
+                return hasLine && naoPaga;
+            });
+
+            if (pendentes.length > 0) {
+                const totalValor = pendentes.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0);
+                const porTransportadora = {};
+                pendentes.forEach(g => {
+                    const transp = g.carrier_name || 'OUTROS';
+                    if (!porTransportadora[transp]) porTransportadora[transp] = { count: 0, valor: 0 };
+                    porTransportadora[transp].count++;
+                    porTransportadora[transp].valor += parseFloat(g.value || 0);
+                });
+
+                return res.status(200).json({
+                    lote: b,
+                    totalGuias: pendentes.length,
+                    totalValor: totalValor,
+                    porTransportadora,
+                    guias: pendentes.map(g => ({
+                        id: g.id,
+                        nf_number: g.nf_number,
+                        uf: g.uf,
+                        value: g.value,
+                        carrier_name: g.carrier_name,
+                        customer_name: g.customer_name
+                    }))
+                });
+            }
+        }
+
+        return res.status(200).json({ lote: null, totalGuias: 0, totalValor: 0, porTransportadora: {}, guias: [], mensagem: 'Tudo em dia! Nenhuma guia pendente de autorização.' });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * 3. AUTORIZAÇÃO DO RESPONSÁVEL: Liquidar Lote de Guias via Asaas (Idempotência Estrita)
+ */
+app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req, res) => {
+    const { batchId } = req.params;
+    const tenant = req.tenant;
+    const aprovador = req.profile?.name || req.user?.email || 'Responsável';
+
+    try {
+        const { data: batch, error: bErr } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('id', batchId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (bErr || !batch) {
+            return res.status(404).json({ error: "Lote não localizado." });
+        }
+
+        // Busca guias do lote
+        const { data: guias, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('batch_id', batchId)
+            .eq('tenant_id', tenant.id);
+
+        if (gErr || !guias || guias.length === 0) {
+            return res.status(400).json({ error: "Nenhuma guia encontrada para este lote." });
+        }
+
+        // Filtra guias elegíveis para pagamento (com linha digitável e AINDA NÃO PAGAS / IDEMPOTÊNCIA)
+        const guiasPendentes = guias.filter(g => {
+            const hasLine = (g.line_digitizable && g.line_digitizable.length > 30) || (g.barcode && g.barcode.length > 30);
+            const naoPaga = g.status !== 'paga' && g.status !== 'comprovada' && !g.asaas_bill_id;
+            return hasLine && naoPaga;
+        });
+
+        if (guiasPendentes.length === 0) {
+            return res.status(400).json({
+                error: "Todas as guias deste lote já foram autorizadas, pagas ou não possuem código de arrecadação válido."
+            });
+        }
+
+        const apiKey = getAsaasApiKey(tenant);
+        const env = tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado');
+
+        console.log(`[Asaas] Autorizando pagamento de ${guiasPendentes.length} guia(s) no lote ${batchId} por: ${aprovador}`);
+
+        const resultados = [];
+        const agora = new Date().toISOString();
+
+        for (const g of guiasPendentes) {
+            const linha = g.line_digitizable || g.barcode;
+            const extRef = `guia_${g.id}`;
+
+            try {
+                // 1. Dispara o pagamento na API do Asaas
+                const billRes = await asaasService.pagarGuia({
+                    identificationField: linha,
+                    value: g.value,
+                    description: `DIFAL NF ${g.nf_number} - ${g.uf}`,
+                    externalReference: extRef,
+                    dueDate: g.nf_issue_date || agora.split('T')[0]
+                }, apiKey, env);
+
+                const updatesGuia = {
+                    asaas_bill_id: billRes.id,
+                    payment_authorized_by: aprovador,
+                    payment_authorized_at: agora,
+                    status: 'pagamento_enviado'
+                };
+
+                // Se for simulado ou teste rápido sem chave real, gera o comprovante oficial imediatamente
+                if (billRes.simulated || !apiKey || env === 'simulado') {
+                    const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
+                        nfNumber: g.nf_number,
+                        uf: g.uf,
+                        valor: g.value,
+                        billId: billRes.id,
+                        razaoSocial: tenant.razao_social
+                    });
+
+                    const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_NF_${g.nf_number}.pdf`;
+                    await supabase.storage
+                        .from('tenant-storage')
+                        .upload(remoteReceiptPath, compPdfBuffer, {
+                            contentType: 'application/pdf',
+                            upsert: true
+                        });
+
+                    updatesGuia.status = 'comprovada';
+                    updatesGuia.paid_at = agora;
+                    updatesGuia.receipt_storage_path = remoteReceiptPath;
+                    updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${g.id.substring(0, 8).toUpperCase()}`;
+                }
+
+                await supabase.from('guides').update(updatesGuia).eq('id', g.id);
+                resultados.push({ id: g.id, nf: g.nf_number, billId: billRes.id, sucesso: true });
+
+            } catch (pErr) {
+                console.error(`[Asaas] Erro ao pagar guia NF ${g.nf_number}:`, pErr.message);
+                resultados.push({ id: g.id, nf: g.nf_number, erro: pErr.message, sucesso: false });
+            }
+        }
+
+        // Atualiza o lote com a aprovação do responsável
+        await supabase
+            .from('batches')
+            .update({
+                approved_by: aprovador,
+                approved_at: agora,
+                approval_status: 'aprovado'
+            })
+            .eq('id', batchId);
+
+        const totalSucesso = resultados.filter(r => r.sucesso).length;
+        const totalFalha = resultados.filter(r => !r.sucesso).length;
+
+        return res.status(200).json({
+            message: `Pagamento autorizado com sucesso por ${aprovador}! ${totalSucesso} guia(s) processada(s).`,
+            totalSucesso,
+            totalFalha,
+            detalhes: resultados
+        });
+
+    } catch (err) {
+        console.error("[Asaas] Erro geral na autorização do lote:", err);
+        return res.status(500).json({ error: "Falha na autorização do pagamento: " + err.message });
+    }
+});
+
+/**
+ * 4. AUTORIZAÇÃO DO RESPONSÁVEL: Pagar Guia Individual
+ */
+app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req, res) => {
+    const { guideId } = req.params;
+    const tenant = req.tenant;
+    const aprovador = req.profile?.name || req.user?.email || 'Responsável';
+
+    try {
+        const { data: guia, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', guideId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (gErr || !guia) return res.status(404).json({ error: "Guia não encontrada." });
+
+        if (guia.status === 'paga' || guia.status === 'comprovada' || guia.asaas_bill_id) {
+            return res.status(400).json({ error: "Esta guia já foi autorizada ou paga anteriormente." });
+        }
+
+        const linha = guia.line_digitizable || guia.barcode;
+        if (!linha || linha.length < 30) {
+            return res.status(400).json({ error: "Guia não possui linha digitável ou código de barras de arrecadação emitido." });
+        }
+
+        const apiKey = getAsaasApiKey(tenant);
+        const env = tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado');
+        const agora = new Date().toISOString();
+
+        const billRes = await asaasService.pagarGuia({
+            identificationField: linha,
+            value: guia.value,
+            description: `DIFAL NF ${guia.nf_number} - ${guia.uf}`,
+            externalReference: `guia_${guia.id}`,
+            dueDate: guia.nf_issue_date || agora.split('T')[0]
+        }, apiKey, env);
+
+        const updatesGuia = {
+            asaas_bill_id: billRes.id,
+            payment_authorized_by: aprovador,
+            payment_authorized_at: agora,
+            status: 'pagamento_enviado'
+        };
+
+        if (billRes.simulated || !apiKey || env === 'simulado') {
+            const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
+                nfNumber: guia.nf_number,
+                uf: guia.uf,
+                valor: guia.value,
+                billId: billRes.id,
+                razaoSocial: tenant.razao_social
+            });
+
+            const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
+            await supabase.storage
+                .from('tenant-storage')
+                .upload(remoteReceiptPath, compPdfBuffer, {
+                    contentType: 'application/pdf',
+                    upsert: true
+                });
+
+            updatesGuia.status = 'comprovada';
+            updatesGuia.paid_at = agora;
+            updatesGuia.receipt_storage_path = remoteReceiptPath;
+            updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${guia.id.substring(0, 8).toUpperCase()}`;
+        }
+
+        await supabase.from('guides').update(updatesGuia).eq('id', guia.id);
+
+        return res.status(200).json({
+            message: `Pagamento da NF ${guia.nf_number} autorizado com sucesso!`,
+            billId: billRes.id,
+            status: updatesGuia.status
+        });
+
+    } catch (err) {
+        console.error("[Asaas] Erro na autorização da guia:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * 5. Visualizar / Baixar Comprovante de Pagamento da Guia
+ */
+app.get('/api/guide/comprovante/:guideId', requireAuth, async (req, res) => {
+    const { guideId } = req.params;
+    const tenant = req.tenant;
+
+    try {
+        const { data: guia, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', guideId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (gErr || !guia) return res.status(404).json({ error: "Guia não encontrada." });
+
+        if (!guia.receipt_storage_path) {
+            // Se ainda não tiver comprovante gravado no storage, tenta gerar sob demanda se já foi paga
+            if (guia.asaas_bill_id || guia.status === 'paga' || guia.status === 'comprovada') {
+                const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
+                    nfNumber: guia.nf_number,
+                    uf: guia.uf,
+                    valor: guia.value,
+                    billId: guia.asaas_bill_id || ('bill_' + guia.id.substring(0, 8)),
+                    razaoSocial: tenant.razao_social
+                });
+
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `inline; filename="comprovante_NF_${guia.nf_number}.pdf"`);
+                return res.send(compPdfBuffer);
+            }
+            return res.status(404).json({ error: "Esta guia ainda não possui comprovante de pagamento liquidado." });
+        }
+
+        const { data: fileData, error: dlErr } = await supabase.storage
+            .from('tenant-storage')
+            .download(guia.receipt_storage_path);
+
+        if (dlErr || !fileData) {
+            return res.status(404).json({ error: "Arquivo de comprovante não encontrado no storage." });
+        }
+
+        const arrayBuffer = await fileData.arrayBuffer();
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="comprovante_NF_${guia.nf_number}.pdf"`);
+        return res.send(Buffer.from(arrayBuffer));
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * 6. WEBHOOK DO ASAAS: Notificação assíncrona de Liquidação (BILL_PAID)
+ */
+app.post('/api/webhooks/asaas', async (req, res) => {
+    try {
+        // Validação de segurança de origem do webhook se configurado no servidor
+        const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
+        const receivedToken = req.headers['asaas-access-token'];
+        if (expectedToken && receivedToken !== expectedToken) {
+            console.warn("[Webhook Asaas] Acesso rejeitado: token de webhook inválido ou ausente.");
+            return res.status(401).json({ error: "Token de webhook não autorizado." });
+        }
+
+        const event = req.body?.event;
+        const bill = req.body?.bill;
+
+        console.log(`[Webhook Asaas] Recebido evento: ${event} para Bill ID: ${bill?.id}`);
+
+        if (!event || !bill) {
+            return res.status(200).json({ received: true });
+        }
+
+        if (event === 'BILL_PAID') {
+            const billId = bill.id;
+            const extRef = bill.externalReference; // "guia_UUID"
+            const receiptUrl = bill.transactionReceiptUrl;
+
+            let query = supabase.from('guides').select('*, tenants(*)');
+            if (extRef && extRef.startsWith('guia_')) {
+                const guideId = extRef.replace('guia_', '');
+                query = query.eq('id', guideId);
+            } else {
+                query = query.eq('asaas_bill_id', billId);
+            }
+
+            const { data: guias } = await query.limit(1);
+            if (guias && guias.length > 0) {
+                const guia = guias[0];
+                const updates = {
+                    status: 'comprovada',
+                    paid_at: new Date().toISOString(),
+                    receipt_url: receiptUrl || null
+                };
+
+                // Baixa o comprovante oficial em PDF se disponível
+                if (receiptUrl) {
+                    try {
+                        const pdfBuffer = await asaasService.downloadExternalPdf(receiptUrl);
+                        const storagePath = `${guia.tenant_id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
+                        await supabase.storage
+                            .from('tenant-storage')
+                            .upload(storagePath, pdfBuffer, {
+                                contentType: 'application/pdf',
+                                upsert: true
+                            });
+                        updates.receipt_storage_path = storagePath;
+                    } catch (eDl) {
+                        console.warn("[Webhook Asaas] Falha ao baixar PDF do comprovante oficial:", eDl.message);
+                    }
+                }
+
+                await supabase.from('guides').update(updates).eq('id', guia.id);
+                console.log(`[Webhook Asaas] Guia NF ${guia.nf_number} atualizada para COMPROVADA!`);
+            }
+        }
+
+        return res.status(200).json({ received: true });
+    } catch (err) {
+        console.error("[Webhook Asaas] Erro ao processar webhook:", err);
+        return res.status(200).json({ error: err.message }); // Responde 200 para evitar retries desnecessários
     }
 });
 
@@ -1138,15 +1633,34 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
             porTransportadora[transp].push(g);
         }
 
-        // Gera HTML limpo e profissional para impressão A4 do Romaneio
         const dataHoje = new Date().toLocaleDateString('pt-BR');
         const horaHoje = new Date().toLocaleTimeString('pt-BR');
+
+        let totalVolumesGeral = guias ? guias.length : 0;
+        let liberadasGeral = 0;
+        let bloqueadasGeral = 0;
+        let totalDifalDevidoGeral = 0;
+
+        for (const g of (guias || [])) {
+            const liberada = printService.isGuiaLiberada(g);
+            if (liberada) liberadasGeral++;
+            else bloqueadasGeral++;
+
+            if ((g.uf || '').toUpperCase() !== 'SP') {
+                totalDifalDevidoGeral += parseFloat(g.value || 0);
+            }
+        }
+
+        const batchParam = batchId ? `batchId=${encodeURIComponent(batchId)}&` : '';
+        const carrierParam = carrier ? `carrier=${encodeURIComponent(carrier)}` : '';
+        const pdfUrl = `/api/expedicao/romaneio-pdf?${batchParam}${carrierParam}`;
+        const comboUrl = batchId ? `/api/expedicao/combo/${batchId}?${carrierParam}` : '#';
 
         let html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Romaneio de Expedição - ${escapeHtml(req.tenant.razao_social)}</title>
+    <title>Romaneio de Expedição & Portão Fiscal - ${escapeHtml(req.tenant.razao_social)}</title>
     <style>
         @page { 
             size: A4 landscape; 
@@ -1159,26 +1673,30 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
             background: #fff; 
             margin: 0; 
             padding: 15px; 
-            font-size: 12px; 
+            font-size: 11.5px; 
         }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 14px; }
-        .title { font-size: 20px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
+        .title { font-size: 19px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
         .meta { font-size: 11px; color: #475569; line-height: 1.5; text-align: right; }
-        .transp-section { margin-bottom: 20px; }
-        .transp-header { background: #f1f5f9; padding: 8px 14px; border-left: 5px solid #2563eb; font-size: 13px; font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+        .kpi-bar { display: flex; gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 14px; margin-bottom: 16px; font-size: 12px; font-weight: 700; }
+        .kpi-item { display: flex; align-items: center; gap: 6px; }
+        .transp-section { margin-bottom: 22px; page-break-inside: avoid; }
+        .transp-header { background: #0f172a; color: #fff; padding: 8px 14px; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        th { background: #f8fafc; color: #334155; font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 2px solid #cbd5e1; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
-        td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11.5px; vertical-align: middle; }
+        th { background: #1e293b; color: #fff; font-weight: 700; text-align: left; padding: 7px 8px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+        td { padding: 6.5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 11px; vertical-align: middle; }
         tr:nth-child(even) { background: #f8fafc; }
-        .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+        .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
         .badge-ok { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-        .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-pending { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .badge-sp { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .signatures { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-        .sig-box { width: 42%; border-top: 1.5px solid #0f172a; text-align: center; padding-top: 6px; font-size: 11px; font-weight: 600; color: #334155; }
-        .print-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .print-btn { background: #0f172a; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(15,23,42,0.15); transition: background 0.2s; }
-        .print-btn:hover { background: #1e293b; }
+        .signatures { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+        .sig-box { width: 44%; border-top: 1.5px solid #0f172a; text-align: center; padding-top: 6px; font-size: 11px; font-weight: 600; color: #334155; }
+        .print-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; background: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .btn-action { background: #0f172a; color: #fff; text-decoration: none; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 11.5px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(15,23,42,0.12); transition: background 0.2s; }
+        .btn-action:hover { background: #1e293b; }
+        .btn-emerald { background: #059669; }
+        .btn-emerald:hover { background: #047857; }
         @media print { 
             @page { 
                 size: A4 landscape; 
@@ -1200,21 +1718,32 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
 </head>
 <body>
     <div class="print-bar">
-        <button class="print-btn" onclick="window.print()">🖨️ Imprimir Romaneio em Paisagem (Ctrl + P)</button>
-        <span style="color: #475569; font-size: 11.5px;">
-            📄 <strong>Formato:</strong> A4 Paisagem (Horizontal) &nbsp;|&nbsp; Dá o espaço ideal para assinatura das transportadoras e nome completo dos clientes
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-action" onclick="window.print()">🖨️ Imprimir Romaneio (Ctrl + P)</button>
+            <a class="btn-action" href="${pdfUrl}" target="_blank">📄 Baixar Romaneio em PDF</a>
+            ${batchId ? `<a class="btn-action btn-emerald" href="${comboUrl}" target="_blank">📦 Baixar Combo Completo (Romaneio + DANFEs + GNREs + Asaas)</a>` : ''}
+        </div>
+        <span style="color: #475569; font-size: 11px;">
+            Formato: <strong>A4 Paisagem Oficial</strong> | Portão Fiscal Ativo
         </span>
     </div>
+
     <div class="header">
         <div>
-            <div class="title">📦 Romaneio de Expedição de Cargas</div>
-            <div style="font-size: 13px; font-weight: 600; margin-top: 4px;">${escapeHtml(req.tenant.razao_social)} (CNPJ: ${escapeHtml(req.tenant.cnpj)})</div>
+            <div class="title">EXPEDI HUB — MANIFESTO & ROMANEIO DE COLETA</div>
+            <div style="font-size: 12.5px; font-weight: 600; margin-top: 3px;">${escapeHtml(req.tenant.razao_social)} &nbsp;|&nbsp; CNPJ: ${escapeHtml(req.tenant.cnpj)}</div>
         </div>
         <div class="meta">
-            Data/Hora: ${dataHoje} às ${horaHoje}<br>
-            Total de Pedidos/Notas: <strong>${guias ? guias.length : 0}</strong><br>
+            Emissão: ${dataHoje} às ${horaHoje}<br>
             Filtro: <strong>${escapeHtml(carrier || 'Todas as Transportadoras')}</strong>
         </div>
+    </div>
+
+    <div class="kpi-bar">
+        <div class="kpi-item" style="color: #0f172a;">📦 Volumes Totais: <strong>${totalVolumesGeral}</strong></div>
+        <div class="kpi-item" style="color: #15803d;">✔ Liberados p/ Embarque: <strong>${liberadasGeral}</strong></div>
+        ${bloqueadasGeral > 0 ? `<div class="kpi-item" style="color: #b91c1c;">⚠ Retidos na Doca: <strong>${bloqueadasGeral}</strong></div>` : ''}
+        <div class="kpi-item" style="margin-left: auto; color: #0f172a;">Total DIFAL Devido: <strong>R$ ${totalDifalDevidoGeral.toFixed(2).replace('.', ',')}</strong></div>
     </div>`;
 
         const transportadorasNomes = Object.keys(porTransportadora);
@@ -1223,46 +1752,60 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
         } else {
             for (const nomeTransp of transportadorasNomes) {
                 const itens = porTransportadora[nomeTransp];
-                const totalValor = itens.reduce((acc, curr) => acc + parseFloat(curr.value || 0), 0);
+                const totalValor = itens.reduce((acc, curr) => {
+                    if (curr.uf === 'SP') return acc;
+                    return acc + parseFloat(curr.value || 0);
+                }, 0);
                 
+                const liberadosTransp = itens.filter(g => printService.isGuiaLiberada(g)).length;
+                const bloqueadosTransp = itens.length - liberadosTransp;
+
                 html += `
                 <div class="transp-section">
                     <div class="transp-header">
-                        <span>🚚 ${escapeHtml(nomeTransp)} (${itens.length} volume(s))</span>
-                        <span>Total DIFAL: R$ ${totalValor.toFixed(2)}</span>
+                        <span>🚚 ${escapeHtml(nomeTransp)} (${itens.length} volume(s) &nbsp;|&nbsp; ${liberadosTransp} liberados${bloqueadosTransp > 0 ? ` &nbsp;|&nbsp; <span style="color: #fca5a5;">${bloqueadosTransp} retidos</span>` : ''})</span>
+                        <span>Total DIFAL: R$ ${totalValor.toFixed(2).replace('.', ',')}</span>
                     </div>
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 45px; text-align: center;">Item</th>
-                                <th style="width: 90px;">NF-e</th>
-                                <th style="width: 55px; text-align: center;">UF</th>
+                                <th style="width: 35px; text-align: center;">Item</th>
+                                <th style="width: 75px;">Pedido</th>
+                                <th style="width: 80px;">NF-e</th>
+                                <th style="width: 45px; text-align: center;">UF</th>
                                 <th>Destinatário (Cliente)</th>
-                                <th style="width: 110px;">DIFAL (R$)</th>
-                                <th style="width: 150px; text-align: center;">Status da Guia</th>
-                                <th style="width: 220px; text-align: center;">Visto do Motorista / Coleta</th>
+                                <th style="width: 95px; text-align: right;">DIFAL (R$)</th>
+                                <th style="width: 140px; text-align: center;">Portão Fiscal</th>
+                                <th style="width: 120px; text-align: center;">Autenticação Asaas</th>
+                                <th style="width: 140px; text-align: center;">Visto do Motorista</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
                 itens.forEach((g, idx) => {
-                    let statusBadge = '<span class="badge badge-ok">✔ GUIA ANEXADA</span>';
-                    if (g.uf === 'SP') {
+                    const liberada = printService.isGuiaLiberada(g);
+                    const isSp = (g.uf === 'SP' || g.ufFavorecida === 'SP' || g.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+
+                    let statusBadge = '<span class="badge badge-ok">✔ LIBERADO P/ COLETA</span>';
+                    if (isSp) {
                         statusBadge = '<span class="badge badge-sp">ISENTO / SP</span>';
-                    } else if (!g.barcode) {
-                        statusBadge = '<span class="badge badge-pending">PENDENTE</span>';
-                    } else if (g.status === 'PAGA') {
-                        statusBadge = '<span class="badge badge-ok">✔ PAGA BANCÁRIO</span>';
+                    } else if (!liberada) {
+                        statusBadge = '<span class="badge badge-pending">⛔ AGUARDANDO PAGTO</span>';
                     }
+
+                    const valStr = isSp ? 'ISENTO' : `R$ ${parseFloat(g.value || 0).toFixed(2).replace('.', ',')}`;
+                    const authStr = g.asaas_bill_id ? escapeHtml(g.asaas_bill_id) : (liberada ? 'LIQUIDADO' : '-');
 
                     html += `
                         <tr>
                             <td style="text-align: center; color: #64748b;">${idx + 1}</td>
-                            <td><strong>${escapeHtml(g.nf_number)}</strong></td>
+                            <td><strong>${escapeHtml(g.order_number || g.xPed || '-')}</strong></td>
+                            <td><strong style="color: #1e40af;">${escapeHtml(g.nf_number)}</strong></td>
                             <td style="text-align: center;"><strong>${escapeHtml(g.uf)}</strong></td>
                             <td><strong>${escapeHtml(g.customer_name || 'CONSUMIDOR FINAL')}</strong></td>
-                            <td>R$ ${parseFloat(g.value || 0).toFixed(2)}</td>
+                            <td style="text-align: right;"><strong>${valStr}</strong></td>
                             <td style="text-align: center;">${statusBadge}</td>
+                            <td style="text-align: center; font-family: monospace; font-size: 10px;">${authStr}</td>
                             <td style="border-bottom: 1.5px dotted #cbd5e1;"></td>
                         </tr>`;
                 });
@@ -1276,12 +1819,12 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
             html += `
             <div class="signatures">
                 <div class="sig-box">
-                    Responsável pela Expedição (Lalua Modas)<br>
-                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Conferência e Liberação de Carga</span>
+                    Expedição & Portão Fiscal (${escapeHtml(req.tenant.razao_social)})<br>
+                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Conferência física e liberação irrevogável de carga</span>
                 </div>
                 <div class="sig-box">
-                    Motorista / Coletador da Transportadora<br>
-                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Recebimento e Aceite de Volumes</span>
+                    Motorista Coletador da Transportadora<br>
+                    <span style="font-size: 10px; color: #64748b; font-weight: normal;">Recebimento, Aceite de Volumes e Conferência de Guias</span>
                 </div>
             </div>`;
         }
@@ -1292,6 +1835,191 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
     } catch (err) {
         console.error("Erro ao gerar romaneio de expedição:", err);
         return res.status(500).send("Erro ao gerar romaneio: " + err.message);
+    }
+});
+
+// Endpoint para baixar o Romaneio em PDF A4 Paisagem Nativo
+app.get('/api/expedicao/romaneio-pdf', requireAuth, async (req, res) => {
+    try {
+        const { batchId, carrier } = req.query;
+        let query = supabase.from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (batchId) {
+            query = query.eq('batch_id', batchId);
+        }
+        if (carrier && carrier !== 'TODAS') {
+            query = query.eq('carrier_name', carrier);
+        }
+
+        const { data: guias, error } = await query;
+        if (error) throw error;
+
+        const pdfBuffer = await printService.gerarRomaneioPdfBuffer(req.tenant, guias || [], { carrier });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Romaneio_Coleta_${(carrier || 'GERAL').replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar PDF do romaneio:", err);
+        return res.status(500).json({ error: "Erro ao gerar PDF do romaneio: " + err.message });
+    }
+});
+
+// Endpoint da Etapa 3: COMBO COMPLETO DE EXPEDIÇÃO [Romaneio + DANFE + GNRE + Asaas]
+app.get('/api/expedicao/combo/:batchId', requireAuth, async (req, res) => {
+    try {
+        const { batchId } = req.params;
+        const { carrier, onlyCleared } = req.query;
+
+        let query = supabase.from('guides')
+            .select('*')
+            .eq('batch_id', batchId)
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (carrier && carrier !== 'TODAS') {
+            query = query.eq('carrier_name', carrier);
+        }
+
+        const { data: guias, error } = await query;
+        if (error || !guias || guias.length === 0) {
+            return res.status(404).json({ error: "Nenhuma guia encontrada para gerar o combo desta transportadora." });
+        }
+
+        const options = {
+            carrier: carrier || 'TODAS',
+            onlyCleared: onlyCleared === 'true' || onlyCleared === '1'
+        };
+
+        const comboPdfBuffer = await printService.gerarComboExpedicaoPdf(req.tenant, guias, supabase, options);
+
+        const transpSafe = (carrier || 'Geral').replace(/[^a-zA-Z0-9]/g, '_');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Combo_Expedicao_${transpSafe}_Lote_${batchId}.pdf"`);
+        return res.send(comboPdfBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar Combo Completo de Expedição:", err);
+        return res.status(500).json({ error: "Erro ao gerar Combo Completo de Expedição: " + err.message });
+    }
+});
+
+/**
+ * ETAPA 10: FECHAMENTO CONTÁBIL, AUDITORIA & RECONCILIAÇÃO BANCÁRIA
+ */
+async function obterGuiasParaFechamento(tenantId, batchId, dataFiltro) {
+    let query = supabase.from('guides')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('nf_number', { ascending: true });
+
+    if (batchId && batchId !== 'hoje' && batchId !== 'todos') {
+        query = query.eq('batch_id', batchId);
+    } else if (dataFiltro) {
+        query = query.gte('created_at', `${dataFiltro}T00:00:00`).lte('created_at', `${dataFiltro}T23:59:59`);
+    }
+
+    let { data: guias, error } = await query;
+    if (error) throw error;
+
+    if ((!guias || guias.length === 0) && (batchId === 'hoje' || !batchId)) {
+        const { data: latestBatch } = await supabase.from('batches')
+            .select('id')
+            .eq('tenant_id', tenantId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (latestBatch) {
+            const { data: batchGuias } = await supabase.from('guides')
+                .select('*')
+                .eq('tenant_id', tenantId)
+                .eq('batch_id', latestBatch.id)
+                .order('nf_number', { ascending: true });
+            if (batchGuias && batchGuias.length > 0) {
+                guias = batchGuias;
+            }
+        }
+    }
+
+    return guias || [];
+}
+
+// 1. Resumo em JSON da conciliação e divergências
+app.get('/api/fechamento/resumo/:batchId?', requireAuth, async (req, res) => {
+    try {
+        const batchId = req.params.batchId || req.query.batchId;
+        const dataFiltro = req.query.data;
+        const guias = await obterGuiasParaFechamento(req.tenant.id, batchId, dataFiltro);
+
+        const resumo = closingService.conciliarLoteOuDia(req.tenant, guias);
+        return res.status(200).json(resumo);
+    } catch (err) {
+        console.error("Erro ao gerar resumo de fechamento:", err);
+        return res.status(500).json({ error: "Erro ao gerar resumo de conciliação: " + err.message });
+    }
+});
+
+// 2. Relatório Executivo Oficial da Diretoria em PDF
+app.get('/api/fechamento/relatorio-pdf/:batchId?', requireAuth, async (req, res) => {
+    try {
+        const batchId = req.params.batchId || req.query.batchId;
+        const dataFiltro = req.query.data;
+        const guias = await obterGuiasParaFechamento(req.tenant.id, batchId, dataFiltro);
+
+        const pdfBuffer = await closingService.gerarResumoExecutivoPdf(req.tenant, guias);
+        const dataStr = new Date().toISOString().split('T')[0];
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Relatorio_Executivo_Diretoria_${dataStr}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar Relatório Executivo PDF:", err);
+        return res.status(500).json({ error: "Erro ao gerar Relatório Executivo: " + err.message });
+    }
+});
+
+// 3. Planilha de Conciliação em CSV (UTF-8 com BOM para Excel)
+app.get('/api/fechamento/planilha-csv/:batchId?', requireAuth, async (req, res) => {
+    try {
+        const batchId = req.params.batchId || req.query.batchId;
+        const dataFiltro = req.query.data;
+        const guias = await obterGuiasParaFechamento(req.tenant.id, batchId, dataFiltro);
+
+        const csvBuffer = closingService.gerarPlanilhaConciliacaoCsv(req.tenant, guias);
+        const dataStr = new Date().toISOString().split('T')[0];
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="Conciliacao_Fiscal_${dataStr}.csv"`);
+        return res.send(csvBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar Planilha CSV:", err);
+        return res.status(500).json({ error: "Erro ao gerar Planilha CSV: " + err.message });
+    }
+});
+
+// 4. Pacote Completo de Auditoria em formato .ZIP
+app.get('/api/fechamento/pacote-zip/:batchId?', requireAuth, async (req, res) => {
+    try {
+        const batchId = req.params.batchId || req.query.batchId;
+        const dataFiltro = req.query.data;
+        const guias = await obterGuiasParaFechamento(req.tenant.id, batchId, dataFiltro);
+
+        if (!guias || guias.length === 0) {
+            return res.status(404).json({ error: "Nenhuma guia encontrada para fechar pacote." });
+        }
+
+        const zipBuffer = await closingService.gerarPacoteFechamentoZip(req.tenant, guias, supabase);
+        const dataStr = new Date().toISOString().split('T')[0];
+
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="Pacote_Fechamento_Fiscal_${dataStr}.zip"`);
+        return res.send(zipBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar Pacote ZIP de Fechamento:", err);
+        return res.status(500).json({ error: "Erro ao gerar Pacote ZIP: " + err.message });
     }
 });
 

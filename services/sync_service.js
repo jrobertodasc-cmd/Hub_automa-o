@@ -210,9 +210,7 @@ async function sincronizarTenant(tenant, supabase, runBatchProcessFn, options = 
 
             const pedidos = await vndaService.listarPedidos(token, shopHost, {
                 page: 1,
-                per_page: 50,
-                sort: 'created_at',
-                direction: 'desc'
+                per_page: 50
             });
             resultado.vnda.pedidosLidos = pedidos ? pedidos.length : 0;
 
@@ -266,11 +264,14 @@ async function sincronizarTenant(tenant, supabase, runBatchProcessFn, options = 
                             updates.customer_name = pedido.client?.name || pedido.email;
                         }
                         if (!g.carrier_name && pedido.shipping_label) {
-                            let transp = 'OUTROS';
-                            const label = pedido.shipping_label.toLowerCase();
-                            if (label.includes('express') || label.includes('total')) transp = 'TOTAL EXPRESS';
+                            const rawLabel = String(pedido.shipping_label).trim();
+                            const label = rawLabel.toLowerCase();
+                            let transp = rawLabel.toUpperCase();
+                            if (label.includes('mt log') || label.includes('mtlog') || label.includes('mt_log')) transp = 'MT LOG';
+                            else if (label.includes('total') || label.includes('express')) transp = 'TOTAL EXPRESS';
                             else if (label.includes('correios') || label.includes('pac') || label.includes('sedex') || label.includes('normal')) transp = 'CORREIOS';
                             else if (label.includes('gol')) transp = 'GOL LOG';
+                            else if (label.includes('jadlog')) transp = 'JADLOG';
                             updates.carrier_name = transp;
                         }
 

@@ -252,6 +252,81 @@
                     </div>
                 </form>
             </div>
+
+            <!-- CONTA DIGITAL ASAAS (LIQUIDAÇÃO DE TRIBUTOS) -->
+            <div class="card mb-4" style="border: 1px solid rgba(16, 185, 129, 0.3);">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div><span>💳</span> Conta Digital Asaas (Liquidação de Tributos)</div>
+                    <span id="asaas-balance-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 6px;">Saldo: Carregando...</span>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Conta exclusiva para pagamento automático e pontual das guias de DIFAL/FCP via API. Elimina a dependência de remessas manuais e comprova o pagamento antes da saída da mercadoria.
+                </p>
+
+                <form id="asaas-form">
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="asaas_api_key">Chave de API Asaas ($aact_...)</label>
+                            <input type="password" id="asaas_api_key" placeholder="Insira a Chave de API gerada no painel do Asaas">
+                        </div>
+                        <div class="form-group">
+                            <label for="asaas_environment">Ambiente de Liquidação</label>
+                            <select id="asaas_environment" class="form-control" style="width: 100%; height: 42px; border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); padding: 0 12px;">
+                                <option value="sandbox">Sandbox (Ambiente de Testes / Homologação)</option>
+                                <option value="producao">Produção (Débito Real em Conta)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px; padding: 10px 14px; background: rgba(59, 130, 246, 0.08); border-radius: 6px; font-size: 12px; color: var(--text-secondary);">
+                        <strong>URL do Webhook para o Asaas:</strong> <code id="asaas-webhook-url" style="color: #3b82f6;">https://.../api/webhooks/asaas</code>
+                        <div style="margin-top: 4px;">Cadastre esta URL em <em>Configurações &gt; Integrações &gt; Webhooks &gt; Pague Contas</em> no painel do Asaas para confirmação automática de liquidação.</div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            Salvar Configurações Asaas
+                        </button>
+                        <span id="asaas-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- NOTIFICAÇÕES E APROVAÇÃO NO CELULAR (DIRETORIA / FINANCEIRO) -->
+            <div class="card mb-4" style="border: 1px solid rgba(59, 130, 246, 0.3);">
+                <div class="card-title">
+                    <span>📲</span> Notificações e Aprovação no Celular (Diretoria / Financeiro)
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Configure os contatos privados da responsável para receber alertas e acessar a tela de aprovação de guias pelo celular.
+                </p>
+
+                <form id="notification-form">
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="notification_phone">WhatsApp / Celular da Responsável (DDD + Número)</label>
+                            <input type="text" id="notification_phone" placeholder="Ex: (71) 99999-9999 (Opcional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="notification_email">E-mail para Alertas Financeiros</label>
+                            <input type="email" id="notification_email" placeholder="financeiro@empresa.com.br (Opcional)">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 12px; padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border-radius: 6px; font-size: 12px; color: var(--text-secondary); border-left: 3px solid #10b981;">
+                        <strong>📱 Link da Tela Mobile da Dona:</strong> 
+                        <a href="/aprovar.html" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: underline; margin-left: 6px;">Abrir Tela de Aprovação (/aprovar.html) ↗</a>
+                        <div style="margin-top: 4px; font-size: 11.5px;">A responsável pode adicionar este atalho à tela inicial do celular para aprovar débitos em 1 toque antes da saída dos caminhões.</div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
+                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                            Salvar Preferências de Notificação
+                        </button>
+                        <span id="notification-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                    </div>
+                </form>
+            </div>
     </div>
 
     <div id="toast" class="toast"></div>

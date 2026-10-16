@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta Visual de UX - Portão Fiscal de DIFAL</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #090d16;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 24px;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        p.subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .mockup-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .mockup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .mockup-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .mockup-tag {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+        }
+        .mockup-desc {
+            font-size: 13.5px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        .mockup-img-wrap {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: #000;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .mobile-wrap {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Proposta de Interface & UX — expedi HUB</h1>
+            <p class="subtitle">Diretriz: Design sério, profissional, estilo Fintech/Enterprise B2B. Zero emojis. Foco em clareza imediata ("Olhou, Identificou").</p>
+        </header>
+
+        <!-- TELA 1 -->
+        <div class="mockup-card">
+            <div class="mockup-header">
+                <div class="mockup-title">1. Console Operacional & Controle de Embarque (Desktop)</div>
+                <div class="mockup-tag">Nova Versão Aprovada</div>
+            </div>
+            <div class="mockup-desc">
+                Nomenclatura 100% natural e corporativa: <strong>"Documentos de Embarque"</strong> (em azul), <strong>"Liquidar Guias de DIFAL"</strong> (em verde), campo de leitor <strong>"Conferir Volume (Bipar Etiqueta ou Chave)..."</strong> e status <strong>Liberado</strong> / <strong>Bloqueado</strong> / <strong>Isento (SP)</strong>.
+            </div>
+            <div class="mockup-img-wrap">
+                <a href="1_dashboard_desktop_v2.jpg" target="_blank">
+                    <img src="1_dashboard_desktop_v2.jpg" alt="Console Operacional e Controle de Embarque">
+                </a>
+            </div>
+        </div>
+
+        <!-- TELA 2 -->
+        <div class="mockup-card">
+            <div class="mockup-header">
+                <div class="mockup-title">2. Painel de Feedback da Bipagem (Alerta do Portão Fiscal)</div>
+                <div class="mockup-tag">Doca / Scanner Laser</div>
+            </div>
+            <div class="mockup-desc">
+                Resposta instantânea na bipagem. Em caso de pendência fiscal, exibe borda vermelha técnica fina, dados consolidados da NF-e e botão de ação direta: "Pagar e Liberar Volume no Asaas" para liberação imediata.
+            </div>
+            <div class="mockup-img-wrap">
+                <a href="2_modal_portao_fiscal.jpg" target="_blank">
+                    <img src="2_modal_portao_fiscal.jpg" alt="Painel do Portão Fiscal">
+                </a>
+            </div>
+        </div>
+
+        <!-- TELA 3 -->
+        <div class="mockup-card">
+            <div class="mockup-header">
+                <div class="mockup-title">3. Interface Mobile da Diretoria (/aprovar.html)</div>
+                <div class="mockup-tag">Smartphone / PWA</div>
+            </div>
+            <div class="mockup-desc">
+                Interface minimalista e sóbria para o sócio aprovar a remessa no smartphone. Exibe o valor total em destaque monoespaçado, contador de volumes retidos e botão executivo seguro de liberação.
+            </div>
+            <div class="mockup-img-wrap mobile-wrap">
+                <a href="3_app_mobile_aprovacao.jpg" target="_blank">
+                    <img src="3_app_mobile_aprovacao.jpg" alt="Interface Mobile da Diretoria">
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

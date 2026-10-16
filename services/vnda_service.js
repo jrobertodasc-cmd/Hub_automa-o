@@ -69,9 +69,9 @@ async function listarPedidos(token, shopHost, params = {}) {
     if (opts.page) qs.append('page', String(opts.page || 1));
     if (opts.type) qs.append('type', opts.type);
     
-    // Garante que traga sempre os pedidos mais recentes primeiro
-    qs.append('sort', opts.sort || 'created_at');
-    qs.append('direction', opts.direction || 'desc');
+    // Parâmetros opcionais (só anexa se explicitamente configurado)
+    if (opts.sort) qs.append('sort', opts.sort);
+    if (opts.direction) qs.append('direction', opts.direction);
 
     const path = `/api/v2/orders?${qs.toString()}`;
     return await requestVnda(path, token, shopHost);
@@ -83,12 +83,17 @@ async function listarPedidos(token, shopHost, params = {}) {
 async function obterPedidoPorCodigo(token, shopHost, orderCode) {
     if (!orderCode) return null;
     const cleanCode = String(orderCode).trim();
-    // A VNDA aceita buscar direto por /api/v2/orders?code=...
-    const pedidos = await requestVnda(`/api/v2/orders?code=${encodeURIComponent(cleanCode)}`, token, shopHost);
-    if (Array.isArray(pedidos) && pedidos.length > 0) {
-        return pedidos[0];
+    try {
+        // Na API v2 da Vnda, o código alfanumérico do pedido é consultado diretamente na rota: /api/v2/orders/:code
+        const pedido = await requestVnda(`/api/v2/orders/${encodeURIComponent(cleanCode)}`, token, shopHost);
+        if (pedido && (pedido.id || pedido.code)) {
+            return pedido;
+        }
+        return null;
+    } catch (err) {
+        // Se for 404 (pedido não existe na loja), retorna null silenciosamente
+        return null;
     }
-    return null;
 }
 
 /**
