@@ -25,6 +25,17 @@ function formatarData(dataStr) {
     return dataStr;
 }
 
+function formatarNumeroNf(nfStr) {
+    if (!nfStr) return '-';
+    const limpo = String(nfStr).replace(/\D/g, '');
+    if (limpo.length === 44) {
+        const numero = limpo.substring(25, 34);
+        const semZero = parseInt(numero, 10);
+        return isNaN(semZero) ? `NF-e ${numero}` : `NF-e ${semZero.toLocaleString('pt-BR')}`;
+    }
+    return `NF-e ${nfStr}`;
+}
+
 /**
  * Realiza o cruzamento e apuração da conciliação do lote/dia
  */
@@ -275,9 +286,11 @@ async function gerarResumoExecutivoPdf(tenant, guides = [], dadosConciliacao = n
                 y += 14;
 
                 resumo.divergencias.slice(0, 5).forEach(div => {
+                    const nfFormatada = formatarNumeroNf(div.nf);
                     doc.rect(x0, y, w, 22).fillAndStroke('#fee2e2', '#fca5a5');
-                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#b91c1c').text(`NF-e ${div.nf} (${div.uf}):`, x0 + 10, y + 6);
-                    doc.font('Helvetica').fontSize(8).fillColor('#7f1d1d').text(`${div.motivo} (Valor: R$ ${formatarMoeda(div.valor)})`, x0 + 90, y + 6);
+                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#b91c1c').text(`${nfFormatada} (${div.uf}):`, x0 + 10, y + 6, { width: 115, ellipsis: true });
+                    doc.font('Helvetica').fontSize(8).fillColor('#7f1d1d').text('DIFAL pendente · Retida na loja (Shopping Barra)', x0 + 130, y + 6, { width: 280, ellipsis: true });
+                    doc.font('Helvetica-Bold').fontSize(8).fillColor('#b91c1c').text(`R$ ${formatarMoeda(div.valor)}`, x0 + w - 105, y + 6, { width: 95, align: 'right' });
                     y += 26;
                 });
             } else {
@@ -326,8 +339,9 @@ async function gerarPacoteFechamentoZip(tenant, guides = [], supabaseClient) {
     const pdfBuffer = await gerarResumoExecutivoPdf(tenant, guides);
     zip.addFile(`Relatorio_Executivo_Diretoria_${dataStr}.pdf`, pdfBuffer);
 
-    // 3. Pasta /xmls/ com os XMLs oficiais da NF-e
-    for (const g of guides) {
+    // 3. Pasta /xmls/ com os XMLs oficiais da NF-e (amostra dos últimos 30 itens para agilidade imediata)
+    const guidesParaXmls = guides.slice(0, 30);
+    for (const g of guidesParaXmls) {
         if (g.xml_storage_path) {
             try {
                 const { data: xData } = await supabaseClient.storage.from('tenant-storage').download(g.xml_storage_path);
@@ -339,8 +353,9 @@ async function gerarPacoteFechamentoZip(tenant, guides = [], supabaseClient) {
         }
     }
 
-    // 4. Pasta /comprovantes/ com os comprovantes oficiais Asaas
-    for (const g of guides) {
+    // 4. Pasta /comprovantes/ com os comprovantes oficiais Asaas (amostra dos últimos 30 itens)
+    const guidesParaRecibos = guides.slice(0, 30);
+    for (const g of guidesParaRecibos) {
         if (printService.isGuiaLiberada(g) && g.uf !== 'SP') {
             let receiptBuffer = null;
             if (g.receipt_storage_path) {

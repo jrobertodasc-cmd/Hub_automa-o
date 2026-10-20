@@ -1,337 +1,806 @@
-<!-- public/profile.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex GNRE - Configurações</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>expedi HUB — Configurações & Certificado A1 · Lalua / Boah</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --text-main: #111F33;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --border-line: #E2E8F0;
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #EFF6FF;
+            --success: #10B981;
+            --success-light: #ECFDF5;
+            --warning: #F59E0B;
+            --warning-light: #FFFBEB;
+            --danger: #EF4444;
+            --danger-light: #FEF2F2;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --header-navy: #0F172A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAVBAR CORPORATIVA EXPEDI HUB */
+        .hub-navbar {
+            background: var(--header-navy);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0 28px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hub-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .hub-logo-badge {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+
+        .hub-title-wrap h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hub-tag-pill {
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(37, 99, 235, 0.25);
+            color: #93C5FD;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            text-transform: uppercase;
+        }
+
+        .hub-subtitle {
+            font-size: 11px;
+            color: #94A3B8;
+        }
+
+        .hub-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hub-nav-item {
+            color: #CBD5E1;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hub-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hub-nav-item.active {
+            color: #ffffff;
+            background: #2563EB;
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .main-container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 24px 28px 48px;
+        }
+
+        /* BARRA EXECUTIVA / SUBHEADER */
+        .exec-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 16px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .exec-title-area h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exec-title-area p {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        /* GRID PRINCIPAL DE CONFIGURAÇÕES */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 960px) {
+            .config-grid { grid-template-columns: 1fr; }
+        }
+
+        /* CARDS */
+        .card-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 22px;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-line);
+            padding-bottom: 12px;
+        }
+
+        .card-header-row h3 {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.45;
+        }
+
+        /* FORMULÁRIOS */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input, .form-select {
+            height: 40px;
+            padding: 0 12px;
+            font-size: 13px;
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            background: #FFFFFF;
+            color: var(--text-main);
+            transition: all 0.15s;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* BOTÕES */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+        }
+
+        .btn-action.primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .btn-action.primary:hover { background: var(--primary-hover); }
+
+        .btn-action.success {
+            background: #059669;
+            color: #ffffff;
+        }
+        .btn-action.success:hover { background: #047857; }
+
+        .btn-action.secondary {
+            background: #FFFFFF;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-line);
+        }
+        .btn-action.secondary:hover { background: #F1F5F9; color: var(--text-main); }
+
+        /* STATUS BADGES & CALLOUTS */
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge.success { background: var(--success-light); color: #047857; border: 1px solid #A7F3D0; }
+        .badge.warning { background: var(--warning-light); color: #B45309; border: 1px solid #FDE68A; }
+        .badge.danger { background: var(--danger-light); color: #B91C1C; border: 1px solid #FECACA; }
+        .badge.info { background: var(--primary-light); color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+        .callout-box {
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.45;
+            margin-top: 12px;
+        }
+        .callout-box.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+        .callout-box.success { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+        .callout-box.warning { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+
+        /* ACORDEÃO PARA ERPS SECUNDÁRIOS */
+        details.erps-collapsible {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            margin-bottom: 22px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        details.erps-collapsible summary {
+            padding: 16px 20px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #F8FAFC;
+            transition: background 0.15s;
+        }
+
+        details.erps-collapsible summary:hover {
+            background: #F1F5F9;
+            color: var(--text-main);
+        }
+
+        details.erps-collapsible[open] summary {
+            border-bottom: 1px solid var(--border-line);
+        }
+
+        .collapsible-content {
+            padding: 20px 22px;
+        }
+
+        /* TOAST NOTIFICAÇÃO */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .toast.success { background: #059669; }
+        .toast.error { background: #DC2626; }
+        .toast.warning { background: #D97706; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <div class="logo-area">
-                <h1>Apex GNRE SaaS</h1>
-                <p>Configurações da Empresa e Certificado Digital</p>
+    <!-- NAVBAR CORPORATIVA EXPEDI HUB -->
+    <nav class="hub-navbar">
+        <a href="/dashboard.html" class="hub-brand">
+            <div class="hub-logo-badge">E</div>
+            <div class="hub-title-wrap">
+                <h1>expedi HUB <span class="hub-tag-pill">CONFIGURAÇÕES</span></h1>
+                <div class="hub-subtitle">Lalua / Boah · Loja Shopping Barra (Salvador / BA)</div>
             </div>
-            <div class="nav-links">
-                <a href="/dashboard.html" class="nav-btn">Faturamento</a>
-                <a href="/bi.html" class="nav-btn" style="color: #38bdf8; font-weight: 600;">📊 BI Fiscal</a>
-                <a href="/profile.html" class="nav-btn active">Empresa</a>
-                <a href="/plans.html" class="nav-btn">Planos</a>
-                <a href="/admin.html" id="admin-nav-link" class="nav-btn d-none">Administração</a>
-                <button onclick="logout()" class="nav-btn" style="cursor: pointer; border: none; background: transparent;">Sair</button>
-            </div>
-        </header>
+        </a>
 
-        <div class="grid-config" style="grid-template-columns: 1.2fr 0.8fr; gap: 28px;">
-            <!-- CARD DE DADOS CADASTRAIS/BANCÁRIOS -->
-            <div class="card">
-                <div class="card-title">
-                    <span>🏢</span> Dados da Empresa e Conta Débito
+        <div class="hub-nav-links">
+            <a href="/dashboard.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>Doca & Portão Fiscal</span>
+            </a>
+            <a href="/bi.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span>Inteligência BI</span>
+            </a>
+            <a href="/profile.html" class="hub-nav-item active">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Configurações & A1</span>
+            </a>
+            <a href="/aprovar.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>App Diretoria</span>
+            </a>
+            <button onclick="logout()" class="hub-nav-item" style="background: none; border: none; cursor: pointer;">
+                <span>Sair</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+    <main class="main-container">
+
+        <!-- BARRA EXECUTIVA -->
+        <div class="exec-bar">
+            <div class="exec-title-area">
+                <h2>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Painel de Configurações, Segurança & Integrações
+                </h2>
+                <p>Gerenciamento da empresa, certificado digital A1 para SEFAZ, liquidação Asaas e canais de aprovação mobile.</p>
+            </div>
+            <div>
+                <a href="/dashboard.html" class="btn-action secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>Voltar ao Cockpit</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- GRID 1: EMPRESA & CERTIFICADO A1 -->
+        <div class="config-grid">
+            
+            <!-- CARD 1: DADOS DA EMPRESA -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                        Identidade do Contribuinte (Lalua / Boah)
+                    </h3>
+                    <span class="badge info">Shopping Barra</span>
                 </div>
+                <p class="card-desc">
+                    Dados da empresa emitente para transmissão das guias ao Portal Nacional GNRE e SEFAZ SP.
+                </p>
 
                 <form id="settings-form">
-                    <div class="grid-form">
-                        <div class="form-group full-width">
-                            <label for="razao_social">Razão Social do Contribuinte</label>
-                            <input type="text" id="razao_social" required placeholder="Razão Social completa">
-                        </div>
+                    <div class="form-group full-width">
+                        <label for="razao_social">Razão Social do Contribuinte</label>
+                        <input type="text" id="razao_social" class="form-input" required placeholder="LALUA COMERCIO DE MODAS EIRELI">
+                    </div>
 
+                    <div class="form-grid-2">
                         <div class="form-group">
                             <label for="cnpj">CNPJ Emitente</label>
-                            <input type="text" id="cnpj" required placeholder="Apenas números" maxlength="14">
+                            <input type="text" id="cnpj" class="form-input" required placeholder="10436619000105" maxlength="14">
                         </div>
 
                         <div class="form-group">
-                            <label for="environment">Ambiente de Operação</label>
-                            <select id="environment">
+                            <label for="environment">Ambiente SEFAZ</label>
+                            <select id="environment" class="form-select">
                                 <option value="simulado">🧪 Homologação / Simulação</option>
                                 <option value="producao">🚀 Produção Real (SEFAZ)</option>
                             </select>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="bank_agency">Agência Débito (Itaú)</label>
-                            <input type="text" id="bank_agency" required placeholder="Ex: 0334" maxlength="4">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="bank_account">Conta Corrente</label>
-                            <input type="text" id="bank_account" required placeholder="Ex: 98775" maxlength="5">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="bank_dac">Dígito DAC</label>
-                            <input type="text" id="bank_dac" required placeholder="Ex: 7" maxlength="1">
+                    <!-- Dados Legados de Banco (Opcionais) -->
+                    <div style="margin-top: 10px; border-top: 1px dashed var(--border-line); padding-top: 12px;">
+                        <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Conta de Débito Bancário Legado (Opcional)</label>
+                        <div class="form-grid-3" style="margin-top: 8px;">
+                            <div class="form-group">
+                                <label for="bank_agency">Agência</label>
+                                <input type="text" id="bank_agency" class="form-input" placeholder="Ex: 0334" maxlength="4">
+                            </div>
+                            <div class="form-group">
+                                <label for="bank_account">Conta Corrente</label>
+                                <input type="text" id="bank_account" class="form-input" placeholder="Ex: 98775" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="bank_dac">Dígito (DAC)</label>
+                                <input type="text" id="bank_dac" class="form-input" placeholder="Ex: 7" maxlength="1">
+                            </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary mt-4">
-                        Salvar Configurações
-                    </button>
+                    <div style="margin-top: 16px;">
+                        <button type="submit" class="btn-action primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Salvar Dados da Loja</span>
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            <!-- CARD DE CERTIFICADO DIGITAL -->
-            <div class="card">
-                <div class="card-title">
-                    <span>🔑</span> Certificado Digital (A1 .pfx)
+            <!-- CARD 2: CERTIFICADO DIGITAL A1 -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Certificado Digital A1 (.PFX)
+                    </h3>
+                    <span class="badge success">Assinatura Digital</span>
                 </div>
+                <p class="card-desc">
+                    Utilizado para autenticar requisições de emissão e cancelamento de GNRE junto à SEFAZ de todos os estados.
+                </p>
 
                 <form id="pfx-form">
-                    <div class="form-group mb-4">
-                        <label>Arquivo PFX Cadastrado</label>
-                        <div id="pfx-status" style="font-size: 14px; color: var(--text-secondary); margin-top: 5px;">
-                            Carregando...
+                    <div class="form-group">
+                        <label>Status do Certificado</label>
+                        <div id="pfx-status" style="font-size: 13px; padding: 10px 12px; background: #F8FAFC; border: 1px solid var(--border-line); border-radius: 8px;">
+                            Carregando status do A1...
                         </div>
                     </div>
 
-                    <div class="form-group mb-4">
-                        <label for="pfx-file">Novo Arquivo Certificado (.pfx)</label>
-                        <input type="file" id="pfx-file" accept=".pfx">
+                    <div class="form-group">
+                        <label for="pfx-file">Novo Arquivo (.pfx ou .p12)</label>
+                        <input type="file" id="pfx-file" class="form-input" accept=".pfx,.p12" style="padding-top: 7px;">
                     </div>
 
-                    <div class="form-group mb-4">
+                    <div class="form-group">
                         <label for="passphrase">Senha do Certificado</label>
-                        <input type="password" id="passphrase" placeholder="Senha do PFX">
+                        <input type="password" id="passphrase" class="form-input" placeholder="Digite a senha de instalação">
                     </div>
 
-                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
-                        Fazer Upload e Salvar
+                    <div class="callout-box info" style="margin-bottom: 14px;">
+                        <strong>Segurança Garantida:</strong> A chave privada é criptografada e armazenada em ambiente seguro restrito ao tenant da Lalua.
+                    </div>
+
+                    <button type="submit" class="btn-action success" style="width: 100%;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <span>Fazer Upload e Ativar Certificado A1</span>
                     </button>
                 </form>
             </div>
 
-            <!-- CARD DE INTEGRAÇÃO LINX MICROVIX -->
-            <div class="card" style="grid-column: span 2;">
-                <div class="card-title">
-                    <span>⚡</span> Integração Linx Microvix (WebAPI B2CConsultaNFe)
+        </div>
+
+        <!-- GRID 2: FINTECH ASAAS & APROVAÇÃO MOBILE -->
+        <div class="config-grid">
+
+            <!-- CARD 3: CONTA DIGITAL ASAAS -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        Conta Digital Asaas (Fintech de Liquidação)
+                    </h3>
+                    <span id="asaas-balance-badge" class="badge success">Saldo: Carregando...</span>
                 </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Configure os parâmetros para sincronizar as Notas Fiscais emitidas e gerar as GNREs automaticamente.
-                </p>
-
-                <form id="microvix-form">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="microvix_key">Chave de API Linx (GUID)</label>
-                            <input type="text" id="microvix_key" placeholder="Ex: F68C88F7-37FF-4336-B5C9-D01C2FB09F74" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="microvix_cnpj">CNPJ da Empresa na Linx</label>
-                            <input type="text" id="microvix_cnpj" placeholder="10436619000105" maxlength="14" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="microvix_user">Usuário WebAPI</label>
-                            <input type="text" id="microvix_user" placeholder="Padrão: linx_b2c" value="linx_b2c">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="microvix_password">Nova Senha WebAPI (opcional)</label>
-                            <input type="password" id="microvix_password" placeholder="Preencha apenas para alterar">
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary">
-                            Salvar Credenciais Linx
-                        </button>
-                        <span id="microvix-status" style="font-size: 13px; color: var(--text-secondary);"></span>
-                    </div>
-                </form>
-            </div>
-
-            <!-- BLING ERP -->
-            <div class="card mb-4">
-                <div class="card-title">
-                    <span>🟠</span> Integração Bling ERP (API v3)
-                </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Importe automaticamente suas notas fiscais de venda emitidas no Bling para processamento de DIFAL e GNRE.
-                </p>
-
-                <form id="bling-form">
-                    <div class="form-group">
-                        <label for="bling_token">API Key / Access Token (Bling v3)</label>
-                        <input type="password" id="bling_token" placeholder="Cole o token de API v3 gerado no Bling" required>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d97706, #b45309);">
-                            Salvar Credenciais Bling
-                        </button>
-                        <span id="bling-status" style="font-size: 13px; color: var(--text-secondary);"></span>
-                    </div>
-                </form>
-            </div>
-
-            <!-- TINY ERP -->
-            <div class="card mb-4">
-                <div class="card-title">
-                    <span>🔵</span> Integração Tiny ERP / Olist (API 2.0)
-                </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Conecte sua conta do Tiny ERP para resgatar XMLs e automatizar guias de partilha de ICMS interestadual.
-                </p>
-
-                <form id="tiny-form">
-                    <div class="form-group">
-                        <label for="tiny_token">API Token (Tiny ERP)</label>
-                        <input type="password" id="tiny_token" placeholder="Token gerado em Configurações > E-commerce > API" required>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
-                            Salvar Credenciais Tiny
-                        </button>
-                        <span id="tiny-status" style="font-size: 13px; color: var(--text-secondary);"></span>
-                    </div>
-                </form>
-            </div>
-
-            <!-- OMIE ERP -->
-            <div class="card mb-4">
-                <div class="card-title">
-                    <span>🟢</span> Integração Omie ERP (Webservices)
-                </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Configure as chaves do aplicativo Omie para ler as notas fiscais emitidas no faturamento.
-                </p>
-
-                <form id="omie-form">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="omie_app_key">App Key (Omie)</label>
-                            <input type="text" id="omie_app_key" placeholder="Ex: 383332994972" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="omie_app_secret">App Secret (Omie)</label>
-                            <input type="password" id="omie_app_secret" placeholder="Ex: a9a7c06... (Chave Secreta)" required>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #047857);">
-                            Salvar Credenciais Omie
-                        </button>
-                        <span id="omie-status" style="font-size: 13px; color: var(--text-secondary);"></span>
-                    </div>
-                </form>
-            </div>
-
-            <!-- OLIST VNDA (BOAH) -->
-            <div class="card mb-4">
-                <div class="card-title">
-                    <span>🛍️</span> Integração E-commerce Olist Vnda (Loja Boah)
-                </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Sincronização direta com a loja virtual para identificar transportadoras contratadas no checkout (Total Express, Correios, MT Log) e cruzar pedidos com faturamento.
-                </p>
-
-                <form id="vnda-form">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="vnda_token">Token da API (Bearer)</label>
-                            <input type="password" id="vnda_token" placeholder="Cole o token da VNDA gerado no painel" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="vnda_shop_host">Domínio da Loja (X-Shop-Host)</label>
-                            <input type="text" id="vnda_shop_host" value="www.boah.com.br" required>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #ec4899, #db2777);">
-                            Salvar Credenciais Vnda
-                        </button>
-                        <span id="vnda-status" style="font-size: 13px; color: var(--text-secondary);"></span>
-                    </div>
-                </form>
-            </div>
-
-            <!-- CONTA DIGITAL ASAAS (LIQUIDAÇÃO DE TRIBUTOS) -->
-            <div class="card mb-4" style="border: 1px solid rgba(16, 185, 129, 0.3);">
-                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div><span>💳</span> Conta Digital Asaas (Liquidação de Tributos)</div>
-                    <span id="asaas-balance-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 6px;">Saldo: Carregando...</span>
-                </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Conta exclusiva para pagamento automático e pontual das guias de DIFAL/FCP via API. Elimina a dependência de remessas manuais e comprova o pagamento antes da saída da mercadoria.
+                <p class="card-desc">
+                    Liquidação automática e instantânea das guias GNRE via API bancária do Asaas, liberando as encomendas imediatamente na Doca da loja.
                 </p>
 
                 <form id="asaas-form">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="asaas_api_key">Chave de API Asaas ($aact_...)</label>
-                            <input type="password" id="asaas_api_key" placeholder="Insira a Chave de API gerada no painel do Asaas">
-                        </div>
-                        <div class="form-group">
-                            <label for="asaas_environment">Ambiente de Liquidação</label>
-                            <select id="asaas_environment" class="form-control" style="width: 100%; height: 42px; border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); padding: 0 12px;">
-                                <option value="sandbox">Sandbox (Ambiente de Testes / Homologação)</option>
-                                <option value="producao">Produção (Débito Real em Conta)</option>
-                            </select>
+                    <div class="form-group">
+                        <label for="asaas_api_key">Chave de API do Asaas ($aact_...)</label>
+                        <input type="password" id="asaas_api_key" class="form-input" placeholder="Cole a Chave de API gerada no Asaas">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="asaas_environment">Ambiente de Liquidação</label>
+                        <select id="asaas_environment" class="form-select">
+                            <option value="sandbox">Sandbox (Ambiente de Testes / Homologação)</option>
+                            <option value="producao">Produção (Débito Real em Conta Asaas)</option>
+                        </select>
+                    </div>
+
+                    <div class="callout-box info">
+                        <strong style="display: block; margin-bottom: 2px;">URL do Webhook Pague Contas:</strong>
+                        <code id="asaas-webhook-url" style="color: #1D4ED8; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; word-break: break-all;">https://.../api/webhooks/asaas</code>
+                        <div style="margin-top: 5px; font-size: 11px; color: #475569;">
+                            Cadastre esta URL em <em>Configurações > Integrações > Webhooks > Pague Contas</em> no painel do Asaas para recebimento instantâneo do comprovante SISBACEN.
                         </div>
                     </div>
 
-                    <div style="margin-top: 10px; padding: 10px 14px; background: rgba(59, 130, 246, 0.08); border-radius: 6px; font-size: 12px; color: var(--text-secondary);">
-                        <strong>URL do Webhook para o Asaas:</strong> <code id="asaas-webhook-url" style="color: #3b82f6;">https://.../api/webhooks/asaas</code>
-                        <div style="margin-top: 4px;">Cadastre esta URL em <em>Configurações &gt; Integrações &gt; Webhooks &gt; Pague Contas</em> no painel do Asaas para confirmação automática de liquidação.</div>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
-                            Salvar Configurações Asaas
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 16px;">
+                        <button type="submit" class="btn-action success">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Salvar Credenciais Asaas</span>
                         </button>
-                        <span id="asaas-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                        <span id="asaas-status" style="font-size: 12px;"></span>
                     </div>
                 </form>
             </div>
 
-            <!-- NOTIFICAÇÕES E APROVAÇÃO NO CELULAR (DIRETORIA / FINANCEIRO) -->
-            <div class="card mb-4" style="border: 1px solid rgba(59, 130, 246, 0.3);">
-                <div class="card-title">
-                    <span>📲</span> Notificações e Aprovação no Celular (Diretoria / Financeiro)
+            <!-- CARD 4: NOTIFICAÇÕES & APP MOBILE DA DIRETORIA -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        App Mobile & Notificações da Diretoria
+                    </h3>
+                    <span class="badge info">Aprovação 1-Toque</span>
                 </div>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                <p class="card-desc">
                     Configure os contatos privados da responsável para receber alertas e acessar a tela de aprovação de guias pelo celular.
                 </p>
 
                 <form id="notification-form">
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label for="notification_phone">WhatsApp / Celular da Responsável (DDD + Número)</label>
-                            <input type="text" id="notification_phone" placeholder="Ex: (71) 99999-9999 (Opcional)">
+                    <div class="form-group">
+                        <label for="notification_phone">WhatsApp / Celular da Responsável</label>
+                        <input type="text" id="notification_phone" class="form-input" placeholder="(71) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notification_email">E-mail para Alertas Financeiros</label>
+                        <input type="email" id="notification_email" class="form-input" placeholder="financeiro@boah.com.br">
+                    </div>
+
+                    <div class="callout-box success">
+                        <strong style="color: #047857; display: flex; align-items: center; gap: 6px;">
+                            <span>📱</span> Atalho do App Mobile da Dona:
+                        </strong>
+                        <div style="margin-top: 4px; font-size: 11.5px; color: #065F46;">
+                            Acesse no celular: <a href="/aprovar.html" target="_blank" style="color: #047857; font-weight: 700; text-decoration: underline;">http://localhost:3001/aprovar.html ↗</a>
                         </div>
-                        <div class="form-group">
-                            <label for="notification_email">E-mail para Alertas Financeiros</label>
-                            <input type="email" id="notification_email" placeholder="financeiro@empresa.com.br (Opcional)">
+                        <div style="font-size: 11px; color: #047857; margin-top: 3px;">
+                            Permite à diretoria auditar o saldo, conferir transportadoras e liquidar com gesto de arrastar.
                         </div>
                     </div>
 
-                    <div style="margin-top: 12px; padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border-radius: 6px; font-size: 12px; color: var(--text-secondary); border-left: 3px solid #10b981;">
-                        <strong>📱 Link da Tela Mobile da Dona:</strong> 
-                        <a href="/aprovar.html" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: underline; margin-left: 6px;">Abrir Tela de Aprovação (/aprovar.html) ↗</a>
-                        <div style="margin-top: 4px; font-size: 11.5px;">A responsável pode adicionar este atalho à tela inicial do celular para aprovar débitos em 1 toque antes da saída dos caminhões.</div>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 18px;">
-                        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
-                            Salvar Preferências de Notificação
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 16px;">
+                        <button type="submit" class="btn-action primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Salvar Contatos da Diretoria</span>
                         </button>
-                        <span id="notification-status" style="font-size: 13px; color: var(--text-secondary);"></span>
+                        <span id="notification-status" style="font-size: 12px;"></span>
                     </div>
                 </form>
             </div>
-    </div>
 
+        </div>
+
+        <!-- SEÇÃO: INTEGRAÇÕES OFICIAIS (LINX & VNDA BOAH) -->
+        <div class="card-box">
+            <div class="card-header-row">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    Integrações de E-commerce & ERP (Linx Microvix & Olist Vnda)
+                </h3>
+                <span class="badge success">Lalua / Boah Oficial</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                
+                <!-- LINX MICROVIX -->
+                <div style="border-right: 1px solid var(--border-line); padding-right: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                            <span style="color: #2563EB;">⚡</span> Linx Microvix (WebAPI B2C)
+                        </strong>
+                        <span id="microvix-status" style="font-size: 11.5px;"></span>
+                    </div>
+                    <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 14px;">
+                        Sincroniza automaticamente as NFs faturadas na loja Shopping Barra para cálculo instantâneo do DIFAL.
+                    </p>
+
+                    <form id="microvix-form">
+                        <div class="form-group">
+                            <label for="microvix_key">Chave de API Linx (GUID)</label>
+                            <input type="text" id="microvix_key" class="form-input" placeholder="F68C88F7-37FF-4336-B5C9-D01C2FB09F74" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="microvix_cnpj">CNPJ na Linx</label>
+                            <input type="text" id="microvix_cnpj" class="form-input" placeholder="10436619000105" maxlength="14" required>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="microvix_user">Usuário WebAPI</label>
+                                <input type="text" id="microvix_user" class="form-input" value="linx_b2c">
+                            </div>
+                            <div class="form-group">
+                                <label for="microvix_password">Nova Senha</label>
+                                <input type="password" id="microvix_password" class="form-input" placeholder="Alterar senha">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-action primary" style="width: 100%; margin-top: 6px;">
+                            <span>Salvar Credenciais Linx</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- OLIST VNDA (BOAH) -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong style="font-size: 13.5px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                            <span style="color: #EC4899;">🛍️</span> Olist Vnda (Loja Virtual Boah)
+                        </strong>
+                        <span id="vnda-status" style="font-size: 11.5px;"></span>
+                    </div>
+                    <p style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 14px;">
+                        Identifica a transportadora contratada no checkout (Total Express, Correios, MT Log) e vincula ao pedido.
+                    </p>
+
+                    <form id="vnda-form">
+                        <div class="form-group">
+                            <label for="vnda_token">Token da API VNDA (Bearer)</label>
+                            <input type="password" id="vnda_token" class="form-input" placeholder="Cole o token gerado no painel Vnda" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vnda_shop_host">Domínio da Loja (X-Shop-Host)</label>
+                            <input type="text" id="vnda_shop_host" class="form-input" value="www.boah.com.br" required>
+                        </div>
+                        <div class="callout-box info" style="margin-top: 14px; margin-bottom: 14px; font-size: 11.5px;">
+                            Ambiente configurado para <strong>www.boah.com.br</strong> com rastreamento logístico ativo.
+                        </div>
+                        <button type="submit" class="btn-action primary" style="width: 100%; background: #DB2777;">
+                            <span>Salvar Credenciais Vnda</span>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ACORDEÃO PARA ERPS SECUNDÁRIOS (BLING, TINY, OMIE) -->
+        <details class="erps-collapsible">
+            <summary>
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    Conexões Adicionais com Outros ERPs (Bling, Tiny, Omie)
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted);">Clique para expandir ▾</span>
+            </summary>
+            
+            <div class="collapsible-content">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;">
+                    
+                    <!-- BLING ERP -->
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-line); border-radius: 8px; padding: 14px;">
+                        <strong style="font-size: 12.5px; display: block; margin-bottom: 6px; color: #D97706;">🟠 Bling ERP (v3)</strong>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">Token de API v3 gerado no Bling.</p>
+                        <form id="bling-form">
+                            <div class="form-group">
+                                <label for="bling_token">API Token</label>
+                                <input type="password" id="bling_token" class="form-input" placeholder="Token Bling" required>
+                            </div>
+                            <button type="submit" class="btn-action secondary" style="width: 100%;">Salvar Bling</button>
+                            <div id="bling-status" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+                        </form>
+                    </div>
+
+                    <!-- TINY ERP -->
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-line); border-radius: 8px; padding: 14px;">
+                        <strong style="font-size: 12.5px; display: block; margin-bottom: 6px; color: #0284C7;">🔵 Tiny ERP (2.0)</strong>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">Token gerado em E-commerce > API.</p>
+                        <form id="tiny-form">
+                            <div class="form-group">
+                                <label for="tiny_token">API Token</label>
+                                <input type="password" id="tiny_token" class="form-input" placeholder="Token Tiny" required>
+                            </div>
+                            <button type="submit" class="btn-action secondary" style="width: 100%;">Salvar Tiny</button>
+                            <div id="tiny-status" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+                        </form>
+                    </div>
+
+                    <!-- OMIE ERP -->
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-line); border-radius: 8px; padding: 14px;">
+                        <strong style="font-size: 12.5px; display: block; margin-bottom: 6px; color: #059669;">🟢 Omie ERP</strong>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">Chaves do aplicativo Omie.</p>
+                        <form id="omie-form">
+                            <div class="form-group">
+                                <label for="omie_app_key">App Key</label>
+                                <input type="text" id="omie_app_key" class="form-input" placeholder="App Key" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="omie_app_secret">App Secret</label>
+                                <input type="password" id="omie_app_secret" class="form-input" placeholder="App Secret" required>
+                            </div>
+                            <button type="submit" class="btn-action secondary" style="width: 100%;">Salvar Omie</button>
+                            <div id="omie-status" style="font-size: 11px; margin-top: 6px; text-align: center;"></div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </details>
+
+    </main>
+
+    <!-- TOAST POPUP -->
     <div id="toast" class="toast"></div>
 
-    <script src="/js/auth.js?v=3"></script>
+    <script src="/js/auth.js?v=5"></script>
     <script src="/js/profile.js"></script>
 </body>
 </html>

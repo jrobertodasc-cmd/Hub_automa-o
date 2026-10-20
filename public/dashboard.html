@@ -3,315 +3,1018 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lalua Comércio de Modas — Portão Fiscal & Expedição</title>
+    <title>expedi HUB — Cockpit do Portão Fiscal & Expedição</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/expedi.css">
     <style>
         :root {
-            --bg-page: #0B1626;
-            --bg-card: #111F33;
-            --bg-card-secondary: #1B2D47;
-            --bg-card-hover: #223755;
-            --bg-input: #0B1626;
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-light: rgba(255, 255, 255, 0.15);
-            --text-primary: #ffffff;
-            --text-secondary: #9FB0C7;
-            --text-muted: #6B7C93;
+            --bg-page: #F5F7FA;
+            --surface: #FFFFFF;
+            --surface-hover: #F8FAFC;
+            --navy: #111F33;
+            --navy-light: #1B2D47;
             --primary-blue: #2563EB;
             --primary-blue-hover: #1D4ED8;
-            --emerald: #10B981;
-            --emerald-hover: #059669;
-            --emerald-badge-bg: rgba(16, 185, 129, 0.15);
-            --emerald-badge-text: #34D399;
-            --emerald-badge-border: rgba(16, 185, 129, 0.28);
-            --red-alert: #EF4444;
-            --red-badge-bg: rgba(239, 68, 68, 0.15);
-            --red-badge-text: #F87171;
-            --red-badge-border: rgba(239, 68, 68, 0.28);
-            --slate-badge-bg: rgba(148, 163, 184, 0.12);
-            --slate-badge-text: #CBD5E1;
-            --slate-badge-border: rgba(148, 163, 184, 0.22);
-            --r: 10px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --border-line: #E3E8EF;
+            --border-subtle: #EDF2F7;
+            --text-dark: #182536;
+            --text-secondary: #5B6B7F;
+            --text-muted: #8393A7;
+            --ok: #157347;
+            --ok-bg: #EAF7F0;
+            --ok-border: #A6E2C3;
+            --err: #B42318;
+            --err-bg: #FDEEEE;
+            --err-border: #F7B5B5;
+            --warn: #8A5A00;
+            --warn-bg: #FFF6E0;
+            --info: #1D4ED8;
+            --info-bg: #EDF3FF;
+            --info-border: #C8DBFC;
+            --r: 12px;
+            --shadow-sm: 0 1px 3px rgba(17, 31, 51, 0.05);
+            --shadow-card: 0 2px 8px rgba(17, 31, 51, 0.04), 0 1px 2px rgba(17, 31, 51, 0.02);
+            --shadow-lg: 0 16px 36px rgba(17, 31, 51, 0.12);
         }
 
         body {
             background-color: var(--bg-page);
-            color: var(--text-primary);
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-dark);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            padding: 36px 24px;
+            padding: 0;
+            margin: 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            max-width: 1180px;
-            margin: 0 auto;
-        }
-
-        /* Top Header */
-        .header-cockpit {
+        /* Top Navbar Corporativa Unificada expedi HUB */
+        .hub-navbar {
+            background: var(--navy);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0 28px;
+            height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
         }
 
-        .brand-title-wrap {
+        .hub-brand {
             display: flex;
             align-items: center;
+            gap: 12px;
+            text-decoration: none;
         }
 
-        .brand-expedi {
-            display: inline-flex;
+        .hub-logo-badge {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+
+        .hub-title-wrap h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+            display: flex;
             align-items: center;
             gap: 8px;
-            text-decoration: none;
+            margin: 0;
         }
 
-        .brand-icon-box {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: var(--primary-blue);
-            display: grid;
-            place-items: center;
-        }
-
-        .brand-text {
-            color: #ffffff;
-            font-size: 19px;
+        .hub-tag-pill {
+            font-size: 10px;
             font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        .brand-hub-tag {
-            font-size: 9px;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(37, 99, 235, 0.25);
+            color: #93C5FD;
+            padding: 2px 7px;
             border-radius: 4px;
-            padding: 1px 4px;
-            color: #ffffff;
-            opacity: 0.9;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            text-transform: uppercase;
         }
 
-        .brand-divider {
-            height: 20px;
-            width: 1px;
-            background: rgba(255, 255, 255, 0.15);
-            margin: 0 16px;
+        .hub-subtitle {
+            font-size: 11px;
+            color: #94A3B8;
         }
 
-        .brand-title {
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            color: var(--text-primary);
-            margin-right: 12px;
-        }
-
-        .status-pill-active {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #94a3b8;
-            font-size: 12px;
-            font-weight: 500;
-            border-radius: 9999px;
-            padding: 4px 12px;
-        }
-
-        .header-links {
+        .hub-nav-links {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 8px;
         }
 
-        .header-link-btn {
-            color: var(--text-secondary);
-            font-size: 12.5px;
+        .hub-nav-item {
+            color: #CBD5E1;
             text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hub-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+        }
+
+        .hub-nav-item.active {
+            color: #ffffff;
+            background: #2563EB;
+        }
+
+        .live-sse-indicator {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #34D399;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulseGreen 1.8s infinite;
+        }
+
+        @keyframes pulseGreen {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Container Principal */
+        .cockpit-container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* Faixa de Identificação da Doca & Alçada */
+        .dock-meta-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: var(--r);
+            padding: 10px 18px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .meta-batch-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .meta-batch-tag {
+            color: var(--navy);
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-security-tag {
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: color 0.15s;
+            font-size: 12.5px;
+            color: var(--ok);
+            background: var(--ok-bg);
+            border: 1px solid var(--ok-border);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
         }
 
-        .header-link-btn:hover {
-            color: #ffffff;
-        }
-
-        /* 4 KPI Cards Grid */
-        .kpi-grid {
+        /* HUD Semafórico da Doca (4 KPIs Cards) */
+        .hud-kpi-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
         }
 
-        .kpi-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
+        .hud-card {
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: var(--r);
             padding: 18px 20px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
         }
 
-        .kpi-top {
+        .hud-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(17, 31, 51, 0.07);
+        }
+
+        .hud-card-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 13.5px;
+            font-size: 13px;
             color: var(--text-secondary);
             font-weight: 500;
         }
 
-        .kpi-badge {
+        .hud-badge {
             font-size: 12px;
             font-weight: 700;
-            border-radius: 6px;
+            border-radius: 999px;
             padding: 2px 8px;
         }
 
-        .kpi-badge.badge-green {
-            background: var(--emerald-badge-bg);
-            color: var(--emerald-badge-text);
+        .hud-badge-green {
+            background: var(--ok-bg);
+            color: var(--ok);
+            border: 1px solid var(--ok-border);
         }
 
-        .kpi-badge.badge-red {
-            background: var(--red-badge-bg);
-            color: var(--red-badge-text);
+        .hud-badge-red {
+            background: var(--err-bg);
+            color: var(--err);
+            border: 1px solid var(--err-border);
         }
 
-        .kpi-value {
+        .hud-value {
             font-size: 32px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-top: 10px;
-            letter-spacing: -0.5px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-top: 8px;
+            letter-spacing: -0.6px;
+            line-height: 1.1;
         }
 
-        .kpi-value.mono {
+        .hud-value.mono {
             font-family: 'JetBrains Mono', monospace;
             font-size: 26px;
         }
 
-        /* Action Bar */
-        .action-dock-bar {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+        .hud-subtext {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
-        .search-field-wrap {
-            flex: 1;
+        /* ZONA 3: ESTAÇÃO DE BIPAGEM HANDS-FREE */
+        .laser-station-card {
+            background: #ffffff;
+            border: 2px solid var(--primary-blue);
+            border-radius: var(--r);
+            padding: 18px 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+            position: relative;
+            transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+        }
+
+        .laser-station-card.flash-success {
+            border-color: #10B981 !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25) !important;
+            background-color: #F8FDFB !important;
+        }
+
+        .laser-station-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .laser-station-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .laser-live-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #EDF3FF;
+            color: var(--primary-blue);
+            border: 1px solid var(--info-border);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .laser-input-wrapper {
             position: relative;
             display: flex;
             align-items: center;
         }
 
-        .search-field-wrap svg {
+        .laser-input-icon {
             position: absolute;
-            left: 14px;
-            width: 18px;
-            height: 18px;
-            color: #64748b;
+            left: 16px;
+            color: var(--primary-blue);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .laser-barcode-input {
+            width: 100%;
+            height: 52px;
+            background: #FAFCFE;
+            border: 1.5px solid var(--border-line);
+            border-radius: 10px;
+            padding-left: 50px;
+            padding-right: 140px;
+            color: var(--navy);
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .laser-barcode-input:focus {
+            border-color: var(--primary-blue);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .laser-barcode-input::placeholder {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .laser-input-hint-badge {
+            position: absolute;
+            right: 12px;
+            background: #E2E8F0;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
             pointer-events: none;
         }
 
-        .search-barcode-input {
-            width: 100%;
-            height: 42px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-subtle);
-            border-radius: 6px;
-            padding-left: 42px;
-            padding-right: 14px;
-            color: #ffffff;
-            font-size: 13px;
-            outline: none;
+        /* Fita dos Últimos 3 Volumes Bipados */
+        .scanned-ribbon-wrap {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .scanned-ribbon-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scanned-items-list {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .scanned-chip {
+            background: #FAFCFE;
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            padding: 5px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .scanned-chip.chip-green {
+            background: var(--ok-bg);
+            border-color: var(--ok-border);
+            color: var(--ok);
+        }
+
+        .scanned-chip.chip-red {
+            background: var(--err-bg);
+            border-color: var(--err-border);
+            color: var(--err);
+        }
+
+        /* Banner Flutuante de Sucesso Hands-Free */
+        #handsfree-toast-banner {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #ffffff;
+            border: 2px solid #10B981;
+            box-shadow: var(--shadow-lg);
+            border-radius: 12px;
+            padding: 16px 20px;
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            gap: 14px;
+            max-width: 440px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ZONA 4: CARDS DE COLETAS POR TRANSPORTADORA */
+        .carrier-coleta-section {
+            margin-bottom: 22px;
+        }
+
+        .carrier-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .carrier-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .carrier-coleta-card {
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: var(--r);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
 
-        .search-barcode-input:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+        .carrier-coleta-card:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 4px 12px rgba(17, 31, 51, 0.06);
         }
 
-        .btn-dock-action {
-            height: 42px;
-            padding: 0 18px;
+        .carrier-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .carrier-name-badge {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .carrier-icon-pill {
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
-            font-size: 13px;
+            background: #EDF3FF;
+            color: var(--primary-blue);
+            display: grid;
+            place-items: center;
+        }
+
+        .carrier-progress-bar-bg {
+            width: 100%;
+            height: 7px;
+            background: #E2E8F0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 10px 0 12px;
+        }
+
+        .carrier-progress-bar-fill {
+            height: 100%;
+            background: #10B981;
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .carrier-meta-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .carrier-card-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-carrier-combo {
+            flex: 1.4;
+            height: 38px;
+            background: #EDF3FF;
+            border: 1px solid var(--info-border);
+            color: var(--primary-blue);
+            border-radius: 8px;
+            font-size: 12.5px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            border: none;
             text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .btn-carrier-combo:hover {
+            background: #DBEAFE;
+            color: var(--primary-blue-hover);
+            text-decoration: none;
+        }
+
+        .btn-carrier-coletar {
+            flex: 1;
+            height: 38px;
+            background: #4F46E5;
+            border: none;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-carrier-coletar:hover {
+            background: #4338CA;
+        }
+
+        /* ZONA 5: TABELA E BARRA DE CONTROLE MODERNA */
+        .dock-table-container {
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: var(--r);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        /* Barra de Abas e Filtros Integrada (Padrão SaaS Moderno) */
+        .dock-tabs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: #FAFCFE;
+            border-bottom: 1px solid var(--border-line);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .dock-nav-tabs {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .dock-tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 2.5px solid transparent;
+            padding: 14px 14px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             white-space: nowrap;
-            transition: background 0.15s, transform 0.05s;
+            transition: all 0.15s;
         }
 
-        .btn-dock-action:active {
-            transform: scale(0.99);
+        .dock-tab-btn:hover {
+            color: var(--navy);
         }
 
-        .btn-blue {
-            background: var(--primary-blue);
+        .dock-tab-btn.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        .tab-counter-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: #E2E8F0;
+            color: var(--text-secondary);
+        }
+
+        .dock-tab-btn.active .tab-counter-badge {
+            background: #EDF3FF;
+            color: var(--primary-blue);
+        }
+
+        .tab-counter-badge.counter-red {
+            background: var(--err-bg);
+            color: var(--err);
+            border: 1px solid var(--err-border);
+        }
+
+        .dock-filter-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            flex-wrap: wrap;
+        }
+
+        .dock-select-input {
+            height: 34px;
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .dock-select-input:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .dock-inline-search {
+            height: 34px;
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: 6px;
+            padding: 0 12px 0 32px;
+            font-size: 12.5px;
+            color: var(--text-dark);
+            outline: none;
+            width: 220px;
+            transition: all 0.15s;
+        }
+
+        .dock-inline-search:focus {
+            border-color: var(--primary-blue);
+            width: 260px;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+        }
+
+        /* Barra Flutuante de Ação em Lote */
+        .dock-bulk-bar {
+            background: var(--navy);
+            color: #ffffff;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            animation: fadeIn 0.15s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bulk-actions-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-bulk-action {
+            height: 30px;
+            padding: 0 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+
+        .btn-bulk-action:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* Badges de Dados Ricos (E-commerce Real) */
+        .badge-vnda-order {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #F1F5F9;
+            color: #475569;
+            border: 1px solid #CBD5E1;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+        }
+
+        .badge-uf-dest {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            background: #EDF3FF;
+            color: var(--primary-blue);
+            border: 1px solid var(--info-border);
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+        .dock-time-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-top: 2px;
+        }
+
+        .dock-time-pill.time-ok {
+            background: #F1F5F9;
+            color: #475569;
+        }
+
+        .dock-time-pill.time-warn {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+        }
+
+        /* Checkbox Custom */
+        .table-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-blue);
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        /* Paginação */
+        .dock-pagination-bar {
+            padding: 12px 20px;
+            background: #FAFCFE;
+            border-top: 1px solid var(--border-line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pagination-pages-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-page-num {
+            min-width: 30px;
+            height: 30px;
+            padding: 0 6px;
+            display: grid;
+            place-items: center;
+            border-radius: 6px;
+            border: 1px solid var(--border-line);
+            background: #ffffff;
+            color: var(--text-dark);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .btn-page-num:hover {
+            border-color: #CBD5E1;
+            background: #F8FAFC;
+        }
+
+        .btn-page-num.active {
+            background: var(--navy);
+            border-color: var(--navy);
             color: #ffffff;
         }
 
-        .btn-blue:hover {
-            background: var(--primary-blue-hover);
+        /* Tabela Estilizada */
+        .cockpit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
         }
 
-        .btn-green {
-            background: var(--emerald);
-            color: #ffffff;
+        .cockpit-table thead th {
+            background: #F8FAFC;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-line);
         }
 
-        .btn-green:hover {
-            background: var(--emerald-hover);
+        .cockpit-table tbody td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-dark);
+            vertical-align: middle;
         }
 
-        .btn-dark {
-            background: #1e293b;
-            border: 1px solid var(--border-light);
-            color: #cbd5e1;
+        .cockpit-table tbody tr:hover {
+            background-color: #F8FAFC;
         }
 
-        .btn-dark:hover {
-            background: #273549;
-            color: #ffffff;
+        .cockpit-table tbody tr:last-child td {
+            border-bottom: none;
         }
 
-        /* Dropdown Mais Opções */
+        .cell-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--navy);
+        }
+
+        /* Status Tags Limpas (Padrão Landing) */
+        .tag-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tag-liberado {
+            background: var(--ok-bg);
+            color: var(--ok);
+            border: 1px solid var(--ok-border);
+        }
+
+        .tag-bloqueado {
+            background: var(--err-bg);
+            color: var(--err);
+            border: 1px solid var(--err-border);
+        }
+
+        .tag-isento {
+            background: #EDF3FF;
+            color: var(--primary-blue);
+            border: 1px solid var(--info-border);
+        }
+
+        .tag-despachado {
+            background: #F1F5F9;
+            color: #475569;
+            border: 1px solid #CBD5E1;
+        }
+
+        /* Ações na Tabela */
+        .btn-table-action {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--border-line);
+            background: #ffffff;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.12s;
+        }
+
+        .btn-table-action:hover {
+            background: #F1F5F9;
+            text-decoration: none;
+        }
+
+        .btn-table-action.danger {
+            background: var(--err-bg);
+            border-color: var(--err-border);
+            color: var(--err);
+        }
+
+        .btn-table-action.danger:hover {
+            background: #FBD5D5;
+        }
+
+        /* Barra de Ações Extras / Dropdown */
+        .table-footer-bar {
+            padding: 14px 20px;
+            background: #FAFCFE;
+            border-top: 1px solid var(--border-line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
         .dropdown-menu-custom {
             position: absolute;
             right: 0;
-            top: 100%;
-            margin-top: 6px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            min-width: 240px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.85);
+            bottom: 100%;
+            margin-bottom: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            border-radius: 10px;
+            min-width: 250px;
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             overflow: hidden;
             display: none;
@@ -323,697 +1026,981 @@
             background: none;
             border: none;
             padding: 11px 16px;
-            color: #f1f5f9;
-            font-size: 12.5px;
+            color: var(--text-dark);
+            font-size: 13px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--border-subtle);
             text-decoration: none;
             transition: background 0.12s;
         }
 
         .dropdown-item-custom:hover {
-            background: rgba(255,255,255,0.06);
-            color: #38bdf8;
+            background: #F1F5F9;
+            color: var(--primary-blue);
+            text-decoration: none;
         }
 
-        /* Table Container */
-        .table-cockpit-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .cockpit-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13px;
-        }
-
-        .cockpit-table thead th {
-            background: rgba(15, 23, 42, 0.7);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 14px 18px;
-            color: var(--text-secondary);
-            font-size: 12.5px;
-            font-weight: 600;
-            letter-spacing: 0.2px;
-        }
-
-        .cockpit-table tbody td {
-            padding: 14px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--text-primary);
-            vertical-align: middle;
-        }
-
-        .cockpit-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .cockpit-table tbody tr:last-child td {
+        .dropdown-item-custom:last-child {
             border-bottom: none;
         }
 
-        .cell-mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            font-size: 12.5px;
-        }
-
-        /* Status Tags */
-        .tag-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .tag-liberado {
-            background: var(--emerald-badge-bg);
-            color: var(--emerald-badge-text);
-            border: 1px solid var(--emerald-badge-border);
-        }
-
-        .tag-bloqueado {
-            background: var(--red-badge-bg);
-            color: var(--red-badge-text);
-            border: 1px solid var(--red-badge-border);
-        }
-
-        .tag-isento {
-            background: var(--slate-badge-bg);
-            color: var(--slate-badge-text);
-            border: 1px solid var(--slate-badge-border);
-        }
-
-        .tag-despachado {
-            background: rgba(56, 189, 248, 0.12);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-
-        /* Action Buttons */
-        .btn-row-liquidar {
-            background: #1e293b;
-            border: 1px solid var(--border-light);
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 6px;
-            padding: 5px 14px;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
-        }
-
-        .btn-row-liquidar:hover {
-            background: #2b394f;
-            border-color: #475569;
-        }
-
-        .action-link-subtle {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 11.5px;
-            margin-left: 8px;
-            transition: color 0.12s;
-        }
-
-        .action-link-subtle:hover {
-            color: #38bdf8;
-        }
-
-        /* FILTROS RÁPIDOS DA TABELA */
-        .filter-pill {
-            background: #111f33;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
-            font-size: 11.5px;
-            font-weight: 600;
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .filter-pill:hover {
-            background: #1b2d47;
-            color: #ffffff;
-        }
-        .filter-pill.active {
-            background: #2563eb;
-            color: #ffffff;
-            border-color: #3b82f6;
-        }
-        .filter-pill.filter-red.active {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border-color: #ef4444;
-        }
-        .filter-pill.filter-green.active {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border-color: #10b981;
-        }
-
-        /* Toast notification */
-        #toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 999999;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .toast-msg {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        @media (max-width: 900px) {
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
+        @media (max-width: 960px) {
+            .hud-kpi-grid, .carrier-cards-grid {
+                grid-template-columns: 1fr;
             }
-            .action-dock-bar {
-                flex-wrap: wrap;
+            .cockpit-nav {
+                padding: 12px 16px;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
             }
-            .search-field-wrap {
-                min-width: 100%;
+            .nav-right-actions {
+                width: 100%;
+                justify-content: space-between;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <!-- HEADER PRINCIPAL: TITULAR DA OPERAÇÃO -->
-        <header class="header-cockpit">
-            <div class="brand-title-wrap">
-                <div class="brand-expedi">
-                    <div class="brand-icon-box">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    </div>
-                    <span class="brand-text">expedi</span>
-                    <span class="brand-hub-tag">HUB</span>
-                </div>
-                <div class="brand-divider"></div>
-                <h1 class="brand-title" id="tenant-name">Lalua Comércio de Modas</h1>
-                <span class="status-pill-active" id="company-cnpj">Operação Ativa</span>
+    <!-- NAVBAR CORPORATIVA EXPEDI HUB -->
+    <nav class="hub-navbar">
+        <a href="/dashboard.html" class="hub-brand">
+            <div class="hub-logo-badge">E</div>
+            <div class="hub-title-wrap">
+                <h1>expedi HUB <span class="hub-tag-pill">PORTÃO FISCAL</span></h1>
+                <div class="hub-subtitle">Lalua / Boah · Loja Shopping Barra (Salvador / BA)</div>
+            </div>
+        </a>
+
+        <div class="hub-nav-links">
+            <!-- Indicador SSE em Tempo Real -->
+            <div class="live-sse-indicator" title="Conexão persistente com o Portão Fiscal ativa" style="margin-right: 4px;">
+                <div class="pulse-dot"></div>
+                <span style="font-size: 11.5px;">Doca Conectada</span>
             </div>
 
-            <div class="header-links">
-                <a href="/aprovar.html" target="_blank" class="header-link-btn" title="Abrir interface mobile para a Dona">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                    <span>App Aprovação (Dona)</span>
-                </a>
-                <a href="/login.html" class="header-link-btn" onclick="logout()" title="Encerrar sessão">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span>Sair</span>
-                </a>
-            </div>
-        </header>
-
-        <!-- FAIXA DE IDENTIFICAÇÃO DA REMESSA & ALÇADA FINANCEIRA -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 16px; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
-                <span style="color: #94a3b8;">Remessa em Expedição:</span>
-                <span style="color: #ffffff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    16 de Outubro de 2026 (Hoje) · Lote Doca Principal #20261016-01
-                </span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94a3b8;">
-                <span>Alçada de Pagamento:</span>
-                <span style="color: #34d399; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                    Exclusiva da Diretoria / App Mobile (Dona)
-                </span>
-            </div>
-        </div>
-
-        <!-- OS 4 CARTÕES SEMAFÓRICOS -->
-        <div class="kpi-grid">
-            <!-- 1. CARGAS NO LOTE -->
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <span>Cargas no Lote:</span>
-                </div>
-                <div class="kpi-value" id="kpi-volumes">248</div>
-            </div>
-
-            <!-- 2. CARGAS LIBERADAS -->
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <span>Cargas Liberadas:</span>
-                    <span class="kpi-badge badge-green" id="kpi-ready-badge">236</span>
-                </div>
-                <div class="kpi-value" id="kpi-ready-val">236</div>
-            </div>
-
-            <!-- 3. CARGAS BLOQUEADAS -->
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <span>Cargas Bloqueadas:</span>
-                    <span class="kpi-badge badge-red" id="kpi-blocked-badge">12</span>
-                </div>
-                <div class="kpi-value" id="kpi-status">12</div>
-            </div>
-
-            <!-- 4. DIFAL A LIQUIDAR -->
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <span>DIFAL a Liquidar:</span>
-                </div>
-                <div class="kpi-value mono" id="kpi-difal">R$ 1.840,50</div>
-            </div>
-        </div>
-
-        <!-- BARRA DE AÇÃO UNIFICADA DO PORTÃO FISCAL -->
-        <div class="action-dock-bar">
-            <!-- BIPADOR DE CÓDIGO DE BARRAS -->
-            <div class="search-field-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"></path></svg>
-                <input type="text" id="filter-search" class="search-barcode-input" placeholder="Conferir Volume (Bipar Etiqueta ou Chave)..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
-            </div>
-
-            <!-- BOTÃO AZUL: DOCUMENTOS DE EMBARQUE -->
-            <a id="btn-combo-expedicao" href="/api/expedicao/romaneio" target="_blank" class="btn-dock-action btn-blue" title="Emite Romaneio Oficial + DANFEs + Comprovantes das 236 cargas liberadas hoje">
-                <span>Documentos de Embarque</span>
+            <a href="/dashboard.html" class="hub-nav-item active">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>Doca & Portão Fiscal</span>
             </a>
-
-            <!-- BOTÃO VERDE: LIQUIDAR GUIAS DE DIFAL -->
-            <button id="btn-pay-asaas" onclick="abrirModalAutorizacaoAsaas()" class="btn-dock-action btn-green" title="Liquidar guias pendentes de DIFAL">
-                <span>Liquidar Guias de DIFAL</span>
+            <a href="/bi.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span>Inteligência BI</span>
+            </a>
+            <a href="/profile.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Configurações & A1</span>
+            </a>
+            <a href="/aprovar.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>App Diretoria</span>
+            </a>
+            <button onclick="logout();" class="hub-nav-item" style="background: none; border: none; cursor: pointer; color: #F87171;" title="Encerrar sessão">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Sair</span>
             </button>
-
-            <!-- BOTÃO ROXO: REGISTRAR COLETA (DESPACHAR) -->
-            <button id="btn-registrar-coleta" onclick="confirmarColetaTransportadora()" class="btn-dock-action" style="background: #4f46e5; border-color: #6366f1; color: #ffffff;" title="Registrar a coleta física das cargas liberadas na doca e transferir para o histórico de Já Despachadas">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                <span>Registrar Coleta (Despachar)</span>
-            </button>
-
-            <!-- BOTÃO MAIS OPÇÕES COM DROPDOWN -->
-            <div style="position: relative;">
-                <button type="button" onclick="toggleDropdownMaisOpcoes()" class="btn-dock-action btn-dark">
-                    <span>Mais Opções</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                <div id="dropdown-menu-mais-opcoes" class="dropdown-menu-custom">
-                    <button onclick="abrirModalFechamentoContabil(); toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        <span>Fechamento Diário (.ZIP)</span>
-                    </button>
-                    <a id="btn-romaneio-expedicao" href="/api/expedicao/romaneio" target="_blank" onclick="toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                        <span>Romaneio Oficial (A4)</span>
-                    </a>
-                    <a id="print-interleaved-btn" href="#" target="_blank" onclick="toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                        <span>Imprimir NFs e Guias</span>
-                    </a>
-                    <button onclick="abrirModalAutorizacaoPagamento(); toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                        <span>Gerar Remessa CNAB 240</span>
-                    </button>
-                    <label for="input-retorno-cnab" class="dropdown-item-custom" style="margin: 0;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <span>Upload Retorno (.RET)</span>
-                    </label>
-                    <input type="file" id="input-retorno-cnab" accept=".ret,.txt,.RET,.TXT" style="display: none;" onchange="uploadRetornoBancario(event)">
-                    <a id="download-sp-xml-btn" href="#" class="dropdown-item-custom" onclick="toggleDropdownMaisOpcoes();">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                        <span>Exportar Lote XML SP</span>
-                    </a>
-                    <button onclick="abrirModalDevolucoes(); toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                        <span style="color: #f59e0b;">Devoluções & Crédito DIFAL</span>
-                    </button>
-                    <button onclick="reiniciarDemonstracaoDoca();" class="dropdown-item-custom" style="border-top: 1px solid rgba(255,255,255,0.06); color: #94a3b8;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-                        <span>Reiniciar Teste do Lote</span>
-                    </button>
-                </div>
-            </div>
         </div>
+    </nav>
 
-        <!-- BARRA DE FILTROS VISÍVEIS (DATA DE EMISSÃO, TRANSPORTADORA & SITUAÇÃO) -->
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px 16px;">
-            <!-- Linha 1: Filtro por Data de Emissão da Nota -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-right: 2px; display: inline-flex; align-items: center; gap: 4px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        Data Emissão:
-                    </span>
-                    <button type="button" class="filter-pill active" onclick="filtrarPorDataEmissao('TODAS', this)">Todas as Datas</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorDataEmissao('ONTEM', this)">Ontem (15/10) · 42 NFs</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorDataEmissao('HOJE', this)">Hoje (16/10) · 206 NFs</button>
-                </div>
-                <div style="font-size: 11.5px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                    <span style="color: #38bdf8;">●</span> Cargas emitidas ontem e não coletadas permanecem na doca
-                </div>
-            </div>
-
-            <!-- Linha 2: Transportadora & Situação Fiscal -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 8px;">
-                <!-- Filtro por Transportadora -->
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-right: 2px;">Transportadora:</span>
-                    <button type="button" class="filter-pill active" onclick="filtrarPorTransportadora('TODAS', this)">Todas (248)</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorTransportadora('Total Express', this)">Total Express (238)</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorTransportadora('Correios', this)">Correios (8)</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorTransportadora('MT Log', this)">MT Log (2)</button>
-                </div>
-
-                <!-- Filtro por Situação Fiscal -->
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-right: 2px;">Situação:</span>
-                    <button type="button" class="filter-pill active" onclick="filtrarPorSituacao('TODAS', this)">Na Doca (248)</button>
-                    <button type="button" class="filter-pill filter-red" onclick="filtrarPorSituacao('Bloqueado', this)">🔴 Bloqueadas (12)</button>
-                    <button type="button" class="filter-pill filter-green" onclick="filtrarPorSituacao('Liberado', this)">🟢 Liberadas (236)</button>
-                    <button type="button" class="filter-pill" onclick="filtrarPorSituacao('Isento', this)">Isento (SP)</button>
-                    <button type="button" class="filter-pill" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" onclick="filtrarPorSituacao('Despachado', this)">🚚 Já Despachadas (Histórico)</button>
-                </div>
-            </div>
+    <!-- BANNER FLUTUANTE DE SUCESSO HANDS-FREE -->
+    <div id="handsfree-toast-banner">
+        <div style="width: 38px; height: 38px; border-radius: 50%; background: #EAF7F0; display: grid; place-items: center; color: #10B981; flex-shrink: 0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-
-        <!-- TABELA DE EXPEDIÇÃO & CONFERÊNCIA -->
-        <div class="table-cockpit-card">
-            <table class="cockpit-table">
-                <thead>
-                    <tr>
-                        <th style="width: 120px;">NF-e</th>
-                        <th style="width: 130px;">Emissão</th>
-                        <th>Destino</th>
-                        <th>Transportadora</th>
-                        <th style="text-align: right; width: 130px;">DIFAL R$</th>
-                        <th style="text-align: center; width: 140px;">Situação</th>
-                        <th style="text-align: right; width: 130px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="guides-table-body">
-                    <!-- Linhas Pré-carregadas da Doca Ativa -->
-                    <tr>
-                        <td class="cell-mono">03001006</td>
-                        <td style="color: #94a3b8; font-size: 12px;">16/10 (Hoje)</td>
-                        <td>Rua GAT - 3300</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 420,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-liberado">Liberado</span></td>
-                        <td style="text-align: right;"><a href="#" class="action-link-subtle">DANFE</a></td>
-                    </tr>
-                    <tr>
-                        <td class="cell-mono">03001003</td>
-                        <td style="color: #f59e0b; font-size: 12px; font-weight: 600;">15/10 (Ontem)</td>
-                        <td>Rua (SP) - 437</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 1.840,50</td>
-                        <td style="text-align: center;"><span class="tag-status tag-bloqueado">Bloqueado</span></td>
-                        <td style="text-align: right;"><button onclick="abrirModalBipagemExemplo('03001003')" class="btn-row-liquidar" style="color: #f87171; border-color: rgba(239, 68, 68, 0.4);" title="Ver motivo do bloqueio fiscal na doca">Ver Pendência</button></td>
-                    </tr>
-                    <tr>
-                        <td class="cell-mono">03001013</td>
-                        <td style="color: #94a3b8; font-size: 12px;">16/10 (Hoje)</td>
-                        <td>Rua GAT - 3002</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 310,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-isento">Isento (SP)</span></td>
-                        <td style="text-align: right;"><a href="#" class="action-link-subtle">DANFE</a></td>
-                    </tr>
-                    <tr>
-                        <td class="cell-mono">03001003</td>
-                        <td style="color: #94a3b8; font-size: 12px;">16/10 (Hoje)</td>
-                        <td>Rua GAT - 3005 - NR</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 130,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-liberado">Liberado</span></td>
-                        <td style="text-align: right;"><a href="#" class="action-link-subtle">DANFE</a></td>
-                    </tr>
-                    <tr>
-                        <td class="cell-mono">03001003</td>
-                        <td style="color: #f59e0b; font-size: 12px; font-weight: 600;">15/10 (Ontem)</td>
-                        <td>Rua (SP) - 124</td>
-                        <td>Correios</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 130,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-bloqueado">Bloqueado</span></td>
-                        <td style="text-align: right;"><button onclick="abrirModalBipagemExemplo('03001003')" class="btn-row-liquidar" style="color: #f87171; border-color: rgba(239, 68, 68, 0.4);" title="Ver motivo do bloqueio fiscal na doca">Ver Pendência</button></td>
-                    </tr>
-                    <tr>
-                        <td class="cell-mono">03012004</td>
-                        <td style="color: #94a3b8; font-size: 12px;">16/10 (Hoje)</td>
-                        <td>Rua M&D - 163</td>
-                        <td>MT Log</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 360,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-isento">Isento (SP)</span></td>
-                        <td style="text-align: right;"><a href="#" class="action-link-subtle">DANFE</a></td>
-                    </tr>
-
-                    <!-- Cargas Já Despachadas (Histórico de Coletas Anteriores) -->
-                    <tr class="row-despachada" style="display: none; background: rgba(56, 189, 248, 0.02);">
-                        <td class="cell-mono">03000980</td>
-                        <td style="color: #64748b; font-size: 12px;">15/10 (Ontem)</td>
-                        <td>Av. Paulista - 1000 / SP</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 0,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
-                        <td style="text-align: right; color: #64748b; font-size: 11px;">Romaneio #20261015-01</td>
-                    </tr>
-                    <tr class="row-despachada" style="display: none; background: rgba(56, 189, 248, 0.02);">
-                        <td class="cell-mono">03000975</td>
-                        <td style="color: #64748b; font-size: 12px;">15/10 (Ontem)</td>
-                        <td>Rua das Flores - 210 / MG</td>
-                        <td>Total Express</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 185,40</td>
-                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
-                        <td style="text-align: right; color: #64748b; font-size: 11px;">Romaneio #20261015-01</td>
-                    </tr>
-                    <tr class="row-despachada" style="display: none; background: rgba(56, 189, 248, 0.02);">
-                        <td class="cell-mono">03000962</td>
-                        <td style="color: #64748b; font-size: 12px;">15/10 (Ontem)</td>
-                        <td>Rua Bahia - 45 / BA</td>
-                        <td>Correios</td>
-                        <td style="text-align: right;" class="cell-mono">R$ 290,10</td>
-                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
-                        <td style="text-align: right; color: #64748b; font-size: 11px;">Romaneio #20261015-02</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-    <!-- MODAL GESTÃO DE DEVOLUÇÕES & CRÉDITO DIFAL -->
-    <div id="modal-gestao-devolucoes" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.88); backdrop-filter: blur(8px); z-index: 10003; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #0d1525; border: 1.5px solid #f59e0b; border-radius: 14px; width: 100%; max-width: 520px; padding: 30px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.85); text-align: left;">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                </div>
-                <div>
-                    <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: #fff;">Gestão de Devoluções & Crédito DIFAL</h3>
-                    <p style="margin: 2px 0 0; font-size: 12px; color: #94a3b8;">Estorno e compensação contábil de notas devolvidas na doca</p>
-                </div>
-            </div>
-
-            <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 12px 14px; margin: 18px 0; font-size: 12px; color: #fde68a; line-height: 1.45;">
-                Evite bitributação: vincule a NF-e de entrada emitida na chegada do produto na doca para recuperar o crédito fiscal da GNRE recolhida.
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px;">
-                <div>
-                    <label style="font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px;">NF-e Original de Saída (Lote):</label>
-                    <input type="text" id="devolucao-nf-saida" value="03001003" style="width: 100%; height: 40px; background: #162032; border: 1px solid #334155; border-radius: 8px; padding: 0 12px; color: #fff; font-size: 13.5px; font-family: 'JetBrains Mono', monospace;">
-                </div>
-                <div>
-                    <label style="font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px;">NF-e de Devolução / Entrada emitida no Linx:</label>
-                    <input type="text" id="devolucao-nf-entrada" placeholder="Ex: 004291 ou Chave de Acesso da Devolução" style="width: 100%; height: 40px; background: #162032; border: 1px solid #334155; border-radius: 8px; padding: 0 12px; color: #fff; font-size: 13.5px;">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px;">Tipo de Devolução:</label>
-                        <select id="devolucao-tipo" onchange="ajustarValorDevolucao()" style="width: 100%; height: 40px; background: #162032; border: 1px solid #334155; border-radius: 8px; padding: 0 10px; color: #fff; font-size: 13px;">
-                            <option value="total">Total (100% do DIFAL)</option>
-                            <option value="parcial">Parcial (Item Avulso)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 12px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 5px;">Crédito a Compensar (R$):</label>
-                        <input type="text" id="devolucao-valor" value="130,00" style="width: 100%; height: 40px; background: #162032; border: 1px solid #334155; border-radius: 8px; padding: 0 12px; color: #10b981; font-weight: 800; font-size: 14px; font-family: 'JetBrains Mono', monospace;">
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="fecharModalDevolucoes()" style="flex: 1; height: 44px; background: #0f172a; color: #cbd5e1; border: 1px solid #334155; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                    Cancelar
-                </button>
-                <button type="button" onclick="confirmarRegistroDevolucao()" style="flex: 2; height: 44px; background: #f59e0b; color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                    Registrar Estorno & Abater do Lote
-                </button>
-            </div>
+        <div>
+            <div id="handsfree-toast-title" style="font-size: 13.5px; font-weight: 700; color: #157347;">VOLUME LIBERADO PARA EMBARQUE!</div>
+            <div id="handsfree-toast-desc" style="font-size: 12px; color: #5B6B7F; margin-top: 2px;">NF-e 03001006 · Total Express (Pode colocar na esteira)</div>
         </div>
     </div>
 
-    <!-- MODAL PORTÃO FISCAL (BIPAGEM NA DOCA - PADRÃO PROPOSTA IMAGEM 3) -->
-    <div id="modal-bipagem-portao-fiscal" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.88); backdrop-filter: blur(8px); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
-        <div id="bipagem-card-border" style="background: #0d1525; border: 1.5px solid #ef4444; border-radius: 14px; width: 100%; max-width: 520px; padding: 32px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.85); text-align: center;">
+    <main class="cockpit-container">
+
+        <!-- FAIXA DE METADADOS DA REMESSA & ALÇADA -->
+        <div class="dock-meta-strip">
+            <div class="meta-batch-info">
+                <span>Remessa em Expedição:</span>
+                <span class="meta-batch-tag">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    16 de Outubro de 2026 (Hoje) · Lote Doca Principal #20261016-01
+                </span>
+            </div>
+            <div class="meta-security-tag">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Alçada Financeira Segregada: Exclusiva da Diretoria / App Mobile</span>
+            </div>
+        </div>
+
+        <!-- HUD SEMAFÓRICO (4 CARDS) -->
+        <div class="hud-kpi-grid">
+            <!-- 1. Cargas no Lote -->
+            <div class="hud-card">
+                <div class="hud-card-top">
+                    <span>Cargas na Doca</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B6B7F" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                </div>
+                <div class="hud-value" id="kpi-volumes">248</div>
+                <div class="hud-subtext">Total de volumes faturados hoje</div>
+            </div>
+
+            <!-- 2. Cargas Liberadas -->
+            <div class="hud-card">
+                <div class="hud-card-top">
+                    <span>Cargas Liberadas</span>
+                    <span class="hud-badge hud-badge-green" id="kpi-ready-badge">95% Pronto</span>
+                </div>
+                <div class="hud-value" style="color: var(--ok);" id="kpi-ready-val">236</div>
+                <div class="hud-subtext">Prontas para embarque no caminhão</div>
+            </div>
+
+            <!-- 3. Cargas Bloqueadas -->
+            <div class="hud-card">
+                <div class="hud-card-top">
+                    <span>Cargas Bloqueadas</span>
+                    <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">12 Retidas</span>
+                </div>
+                <div class="hud-value" style="color: var(--err);" id="kpi-status">12</div>
+                <div class="hud-subtext">Pendência de DIFAL na SEFAZ</div>
+            </div>
+
+            <!-- 4. DIFAL a Liquidar -->
+            <div class="hud-card">
+                <div class="hud-card-top">
+                    <span>DIFAL a Liquidar</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                </div>
+                <div class="hud-value mono" id="kpi-difal" style="color: var(--primary-blue);">R$ 1.840,50</div>
+                <div class="hud-subtext">Autorização pelo app da dona</div>
+            </div>
+        </div>
+
+        <!-- ZONA 3: ESTAÇÃO DE BIPAGEM LASER HANDS-FREE -->
+        <div class="laser-station-card" id="laser-station-box">
+            <div class="laser-station-header">
+                <div class="laser-station-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"></path></svg>
+                    <span>Estação de Bipagem Rápida na Doca</span>
+                    <span class="laser-live-tag">● MODO HANDS-FREE ATIVO</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    Foco contínuo · Não precisa usar o mouse
+                </div>
+            </div>
+
+            <div class="laser-input-wrapper">
+                <div class="laser-input-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <input type="text" id="filter-search" class="laser-barcode-input" placeholder="Bipar etiqueta da caixa (código de barras 44 dígitos) ou digitar NF..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
+                <div class="laser-input-hint-badge">PISTOLA LASER / ENTER</div>
+            </div>
+
+            <!-- FITA DOS ÚLTIMOS 3 VOLUMES CONFERIDOS -->
+            <div class="scanned-ribbon-wrap">
+                <div class="scanned-ribbon-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    <span>Últimos Volumes Conferidos na Esteira:</span>
+                </div>
+                <div class="scanned-items-list" id="scanned-ribbon-items">
+                    <div class="scanned-chip chip-green">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>NF-e 03001006 · Total Express (Liberada)</span>
+                    </div>
+                    <div class="scanned-chip chip-green">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>NF-e 03001013 · Total Express (Isento SP)</span>
+                    </div>
+                    <div class="scanned-chip chip-red">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>NF-e 03001003 · Retida SEFAZ (R$ 1.840,50)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZONA 4: CARDS DE COLETAS POR TRANSPORTADORA (ITEM 2 DO BRIEFING) -->
+        <section class="carrier-coleta-section">
+            <div class="carrier-section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                <span>Próximas Coletas & Combos Oficiais por Transportadora</span>
+            </div>
+
+            <div class="carrier-cards-grid">
+                <!-- Card 1: TOTAL EXPRESS -->
+                <div class="carrier-coleta-card">
+                    <div>
+                        <div class="carrier-card-top">
+                            <div class="carrier-name-badge">
+                                <div class="carrier-icon-pill">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                </div>
+                                <span>Total Express</span>
+                            </div>
+                            <span class="hud-badge hud-badge-green" id="carrier-total-badge">236 / 238 Prontos</span>
+                        </div>
+                        <div class="carrier-progress-bar-bg">
+                            <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 99%;"></div>
+                        </div>
+                        <div class="carrier-meta-stats">
+                            <span>Liberadas: <strong>236</strong></span>
+                            <span>Retidas: <strong style="color: var(--err);" id="carrier-total-retidas">2</strong></span>
+                            <span>Coleta: <strong>Hoje às 16h30</strong></span>
+                        </div>
+                    </div>
+                    <div class="carrier-card-buttons">
+                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-carrier-combo" title="Gera Romaneio Oficial + DANFEs + Comprovantes bancários da Total Express">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                            <span>Combo Total Express</span>
+                        </a>
+                        <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 236)" class="btn-carrier-coletar" title="Registra a saída das caixas liberadas">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Coletar (236)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: CORREIOS -->
+                <div class="carrier-coleta-card">
+                    <div>
+                        <div class="carrier-card-top">
+                            <div class="carrier-name-badge">
+                                <div class="carrier-icon-pill" style="background: #FEF3C7; color: #D97706;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                </div>
+                                <span>Correios</span>
+                            </div>
+                            <span class="hud-badge hud-badge-green">8 / 8 Prontos (100%)</span>
+                        </div>
+                        <div class="carrier-progress-bar-bg">
+                            <div class="carrier-progress-bar-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="carrier-meta-stats">
+                            <span>Liberadas: <strong>8</strong></span>
+                            <span>Retidas: <strong>0</strong></span>
+                            <span>Coleta: <strong>Hoje às 17h00</strong></span>
+                        </div>
+                    </div>
+                    <div class="carrier-card-buttons">
+                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn-carrier-combo">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                            <span>Combo Correios</span>
+                        </a>
+                        <button type="button" onclick="confirmarColetaPorTransportadora('Correios', 8)" class="btn-carrier-coletar">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Coletar (8)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 3: MT LOG -->
+                <div class="carrier-coleta-card">
+                    <div>
+                        <div class="carrier-card-top">
+                            <div class="carrier-name-badge">
+                                <div class="carrier-icon-pill" style="background: #E0E7FF; color: #4338CA;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                </div>
+                                <span>MT Log</span>
+                            </div>
+                            <span class="hud-badge hud-badge-green">2 / 2 Prontos (100%)</span>
+                        </div>
+                        <div class="carrier-progress-bar-bg">
+                            <div class="carrier-progress-bar-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="carrier-meta-stats">
+                            <span>Liberadas: <strong>2</strong></span>
+                            <span>Retidas: <strong>0</strong></span>
+                            <span>Coleta: <strong>Hoje às 15h30</strong></span>
+                        </div>
+                    </div>
+                    <div class="carrier-card-buttons">
+                        <a href="/api/expedicao/romaneio?carrier=MT%20Log" target="_blank" class="btn-carrier-combo">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                            <span>Combo MT Log</span>
+                        </a>
+                        <button type="button" onclick="confirmarColetaPorTransportadora('MT Log', 2)" class="btn-carrier-coletar">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Coletar (2)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ZONA 5: TABELA DE CONFERÊNCIA DA DOCA & FILTROS (PADRÃO MODERNO) -->
+        <div class="dock-table-container">
             
-            <!-- Ícone Escudo SEFAZ (Proposta Imagem 3) -->
-            <div id="bipagem-icon-badge" style="width: 56px; height: 56px; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center;">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Barra de Abas e Filtros Integrada -->
+            <div class="dock-tabs-header">
+                <!-- Abas Rápidas de Situação -->
+                <div class="dock-nav-tabs">
+                    <button type="button" class="dock-tab-btn active" onclick="filtrarPorSituacaoTab('TODAS', this)">
+                        <span>Na Doca</span>
+                        <span class="tab-counter-badge" id="tab-cnt-todas">248</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Bloqueado', this)">
+                        <span>🔴 Retidas SEFAZ</span>
+                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">12</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Liberado', this)">
+                        <span>🟢 Liberadas</span>
+                        <span class="tab-counter-badge" id="tab-cnt-liberadas">236</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Isento', this)">
+                        <span>Isento (SP)</span>
+                        <span class="tab-counter-badge" id="tab-cnt-isentas">18</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Despachado', this)">
+                        <span>🚚 Já Despachadas</span>
+                        <span class="tab-counter-badge">Histórico</span>
+                    </button>
+                </div>
+
+                <!-- Controles Compactos à Direita -->
+                <div class="dock-filter-controls-group">
+                    <select id="select-filter-data" onchange="filtrarPorDataEmissao(this.value, null)" class="dock-select-input" title="Filtrar por data de faturamento">
+                        <option value="TODAS">📅 Todas as Datas (248 NFs)</option>
+                        <option value="HOJE" selected>📅 Hoje (16/10) · 206 NFs</option>
+                        <option value="ONTEM">📅 Ontem (15/10) · 42 NFs</option>
+                    </select>
+
+                    <select id="select-filter-transp" onchange="filtrarPorTransportadora(this.value, null)" class="dock-select-input" title="Filtrar por transportadora">
+                        <option value="TODAS">🚚 Todas as Transportadoras</option>
+                        <option value="Total Express">Total Express (238)</option>
+                        <option value="Correios">Correios (8)</option>
+                        <option value="MT Log">MT Log (2)</option>
+                    </select>
+
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8393A7" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" class="dock-inline-search" placeholder="Buscar cliente, pedido #VD...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra Flutuante de Ação em Lote (Aparece ao selecionar checkboxes) -->
+            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-weight: 700;" id="bulk-selected-count">0</span>
+                    <span>cargas selecionadas na doca</span>
+                </div>
+                <div class="bulk-actions-wrap">
+                    <button type="button" onclick="imprimirDanfesLoteSelecionado()" class="btn-bulk-action">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Imprimir DANFEs Selecionadas</span>
+                    </button>
+                    <button type="button" onclick="solicitarLiberacaoLoteSelecionado()" class="btn-bulk-action" style="background: #2563EB; border-color: #3B82F6;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        <span>Solicitar Liberação à Diretoria</span>
+                    </button>
+                    <button type="button" onclick="desmarcarTodasLinhas()" class="btn-bulk-action" style="background: none; border-color: transparent; text-decoration: underline;">
+                        Desmarcar Todas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabela de Cargas com Dados Ricos de Moda E-commerce -->
+            <table class="cockpit-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="check-all-rows" class="table-checkbox" onchange="toggleSelectAllRows(this.checked)" title="Selecionar todas as cargas da página">
+                        </th>
+                        <th style="width: 140px;">NF-e / Pedido</th>
+                        <th>Cliente / Destino</th>
+                        <th style="width: 160px;">Emissão / Doca</th>
+                        <th>Transportadora</th>
+                        <th style="text-align: right; width: 150px;">Venda / DIFAL</th>
+                        <th style="text-align: center; width: 150px;">Situação Portão</th>
+                        <th style="text-align: right; width: 170px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="guides-table-body">
+                    <!-- Linha 1: Rio de Janeiro (Liberada) -->
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">03001006</div>
+                            <span class="badge-vnda-order" title="Pedido Olist Vnda">#VD-89412</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Mariana Silveira Ramos</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                Rio de Janeiro <span class="badge-uf-dest">RJ</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 2h na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                <span>Total Express</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--ok);">R$ 420,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 1.420,00</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-liberado">🟢 Liberado</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" class="btn-table-action" title="Visualizar DANFE">DANFE</a>
+                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);" title="Comprovante bancário Asaas">Asaas ✓</a>
+                        </td>
+                    </tr>
+
+                    <!-- Linha 2: Belo Horizonte / MG (Retida SEFAZ com Urgência) -->
+                    <tr style="background: rgba(239, 68, 68, 0.02);">
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono" style="color: var(--err);">03001003</div>
+                            <span class="badge-vnda-order">#VD-89350</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Camila Fagundes Mendes</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                Belo Horizonte <span class="badge-uf-dest">MG</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: #D97706; font-size: 12.5px;">15/10 (Ontem)</div>
+                            <span class="dock-time-pill time-warn">⚠️ 26h retida</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                <span>Total Express</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--err); font-size: 14px;">R$ 1.840,50</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 4.890,00</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-bloqueado">🔴 Retido SEFAZ</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button onclick="abrirModalBipagemExemplo('03001003')" class="btn-table-action danger" title="Ver motivo da pendência fiscal">
+                                ⚠️ Ver Pendência
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Linha 3: São Paulo (Isento SP) -->
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">03001013</div>
+                            <span class="badge-vnda-order">#VD-89405</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Beatriz Alencar Costa</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                São Paulo <span class="badge-uf-dest" style="background: #F1F5F9; color: #475569;">SP</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 3h na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                <span>Total Express</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--text-muted);">R$ 0,00</div>
+                            <div style="font-size: 11px; color: var(--primary-blue); font-weight: 600;">Isento (SP)</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-isento">Isento (SP)</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" class="btn-table-action">DANFE</a>
+                        </td>
+                    </tr>
+
+                    <!-- Linha 4: Curitiba / PR (Liberada) -->
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">03001005</div>
+                            <span class="badge-vnda-order">#VD-89392</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Letícia Toledo Barros</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                Curitiba <span class="badge-uf-dest">PR</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 4h na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                <span>Total Express</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--ok);">R$ 130,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 540,00</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-liberado">🟢 Liberado</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" class="btn-table-action">DANFE</a>
+                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);">Asaas ✓</a>
+                        </td>
+                    </tr>
+
+                    <!-- Linha 5: Salvador / BA (Correios - Liberada) -->
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">03001007</div>
+                            <span class="badge-vnda-order">#VD-89311</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Juliana Rocha Paes</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                Salvador <span class="badge-uf-dest">BA</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: #D97706; font-size: 12.5px;">15/10 (Ontem)</div>
+                            <span class="dock-time-pill time-ok">🕒 18h na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                <span>Correios</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--ok);">R$ 130,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 790,00</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-liberado">🟢 Liberado</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" class="btn-table-action">DANFE</a>
+                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);">Asaas ✓</a>
+                        </td>
+                    </tr>
+
+                    <!-- Linha 6: Campinas / SP (MT Log - Isento) -->
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">03012004</div>
+                            <span class="badge-vnda-order">#VD-89419</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">Fernanda Vasconcelos</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                Campinas <span class="badge-uf-dest" style="background: #F1F5F9; color: #475569;">SP</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 1h na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg>
+                                <span>MT Log</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="color: var(--text-muted);">R$ 0,00</div>
+                            <div style="font-size: 11px; color: var(--primary-blue); font-weight: 600;">Isento (SP)</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="tag-status tag-isento">Isento (SP)</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" class="btn-table-action">DANFE</a>
+                        </td>
+                    </tr>
+
+                    <!-- Histórico de Cargas Já Despachadas -->
+                    <tr class="row-despachada" style="display: none; background: #F8FAFC;">
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox" disabled>
+                        </td>
+                        <td>
+                            <div class="cell-mono" style="color: var(--text-muted);">03000980</div>
+                            <span class="badge-vnda-order">#VD-89240</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-muted);">Patrícia Bueno Lins</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">São Paulo / SP</div>
+                        </td>
+                        <td>
+                            <div style="color: var(--text-muted); font-size: 12px;">15/10 (Ontem)</div>
+                            <span class="dock-time-pill" style="background: #E2E8F0; color: #64748b;">Coletado</span>
+                        </td>
+                        <td>Total Express</td>
+                        <td style="text-align: right; color: var(--text-muted);" class="cell-mono">R$ 0,00</td>
+                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
+                        <td style="text-align: right; color: var(--text-muted); font-size: 11.5px;">Romaneio #20261015-01</td>
+                    </tr>
+                    <tr class="row-despachada" style="display: none; background: #F8FAFC;">
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox" disabled>
+                        </td>
+                        <td>
+                            <div class="cell-mono" style="color: var(--text-muted);">03000975</div>
+                            <span class="badge-vnda-order">#VD-89218</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-muted);">Gabriela Nogueira</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Juiz de Fora / MG</div>
+                        </td>
+                        <td>
+                            <div style="color: var(--text-muted); font-size: 12px;">15/10 (Ontem)</div>
+                            <span class="dock-time-pill" style="background: #E2E8F0; color: #64748b;">Coletado</span>
+                        </td>
+                        <td>Total Express</td>
+                        <td style="text-align: right; color: var(--text-muted);" class="cell-mono">R$ 185,40</td>
+                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
+                        <td style="text-align: right; color: var(--text-muted); font-size: 11.5px;">Romaneio #20261015-01</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Barra de Paginação & Rodapé de Ações -->
+            <div class="dock-pagination-bar">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>Mostrando <strong id="paginacao-intervalo">1 a 6</strong> de <strong>248</strong> cargas na doca</span>
+                    <span style="color: var(--border-line);">|</span>
+                    <a id="btn-combo-expedicao" href="/api/expedicao/romaneio" target="_blank" class="btn pri sm" title="Emite o pacote documental completo de todas as cargas liberadas hoje">
+                        <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Documentos de Embarque Geral</span>
+                    </a>
+                    <button type="button" onclick="abrirModalFechamentoContabil()" class="btn sm" style="font-weight: 700; color: #111F33; border-color: #CBD5E1; background: #ffffff;" title="Fechamento contábil e pacote de auditoria ZIP">
+                        <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <span>Fechamento Diário (.ZIP)</span>
+                    </button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <!-- Controles de Paginação -->
+                    <div class="pagination-pages-wrap">
+                        <button class="btn-page-num" disabled style="opacity: 0.5;">‹</button>
+                        <button class="btn-page-num active">1</button>
+                        <button class="btn-page-num" onclick="showToast('Página 2 carregada')">2</button>
+                        <button class="btn-page-num" onclick="showToast('Página 3 carregada')">3</button>
+                        <span style="color: var(--text-muted); font-size: 12px;">...</span>
+                        <button class="btn-page-num" onclick="showToast('Página 25 carregada')">25</button>
+                        <button class="btn-page-num" onclick="showToast('Página 2 carregada')">›</button>
+                    </div>
+
+                    <!-- Dropdown de Mais Opções -->
+                    <div style="position: relative;">
+                        <button type="button" onclick="toggleDropdownMaisOpcoes()" class="btn sm" style="border-color: var(--border-line);">
+                            <span>Mais Opções</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+
+                        <div id="dropdown-menu-mais-opcoes" class="dropdown-menu-custom">
+                            <button onclick="abrirModalFechamentoContabil(); toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Fechamento Diário (.ZIP Auditoria)</span>
+                            </button>
+                            <a id="btn-romaneio-expedicao" href="/api/expedicao/romaneio" target="_blank" onclick="toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                                <span>Romaneio Oficial A4 Paisagem</span>
+                            </a>
+                            <button onclick="abrirModalDevolucoes(); toggleDropdownMaisOpcoes();" class="dropdown-item-custom">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                <span style="color: #D97706; font-weight: 600;">Devoluções & Crédito DIFAL</span>
+                            </button>
+                            <a id="download-sp-xml-btn" href="#" class="dropdown-item-custom" onclick="toggleDropdownMaisOpcoes();">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                                <span>Exportar Lote XML SP</span>
+                            </a>
+                            <button onclick="reiniciarDemonstracaoDoca();" class="dropdown-item-custom" style="border-top: 1px solid var(--border-subtle); color: var(--text-secondary);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                                <span>Reiniciar Demonstração do Lote</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PORTÃO FISCAL (PARADA SEMAFÓRICA VERMELHA - BRIEFING IMAGEM 3) -->
+    <div id="modal-bipagem-portao-fiscal" style="display: none; position: fixed; inset: 0; background: rgba(17, 31, 51, 0.7); backdrop-filter: blur(6px); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
+        <div id="bipagem-card-border" style="background: #ffffff; border: 2px solid #EF4444; border-radius: 16px; width: 100%; max-width: 520px; padding: 30px 26px; box-shadow: var(--shadow-lg); text-align: center; box-sizing: border-box; overflow: hidden;">
+            
+            <!-- Escudo SEFAZ -->
+            <div id="bipagem-icon-badge" style="width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 50%; background: #FDEEEE; display: flex; align-items: center; justify-content: center; color: #B42318;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
             </div>
 
-            <!-- Título e Subtítulo SEFAZ -->
-            <h2 id="bipagem-status-title" style="margin: 0 0 8px; font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: 0.4px;">
-                CARGA RETIDA NA DOCA — PENDÊNCIA SEFAZ
+            <h2 id="bipagem-status-title" style="margin: 0 0 8px; font-size: 19px; font-weight: 800; color: #B42318; letter-spacing: -0.3px;">
+                CARGA RETIDA NA EXPEDIÇÃO — PENDÊNCIA SEFAZ
             </h2>
-            <p id="bipagem-status-subtitle" style="margin: 0 0 24px; font-size: 13px; color: #94a3b8; line-height: 1.45;">
-                DIFAL interestadual não liquidado. Risco de retenção fiscal na barreira estadual.
+            <p id="bipagem-status-subtitle" style="margin: 0 0 20px; font-size: 13px; color: #5B6B7F; line-height: 1.45;">
+                DIFAL interestadual não liquidado. Risco de retenção física da van no posto fiscal de fronteira.
             </p>
 
-            <!-- Grid 2x2 de Informações da Carga (Proposta Imagem 3) -->
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid #1e293b; border-radius: 8px; padding: 18px 20px; margin-bottom: 24px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
-                <div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Nota Fiscal:</div>
-                    <div id="bipagem-nf" style="font-size: 14.5px; font-weight: 700; color: #ffffff; font-family: 'JetBrains Mono', monospace;">NF-e 054.201</div>
+            <!-- Grid 2x2 de Informações da Carga (min-width: 0 para evitar estouro de texto) -->
+            <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 16px 18px; margin-bottom: 22px; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; box-sizing: border-box;">
+                <div style="min-width: 0; overflow: hidden;">
+                    <div style="font-size: 11.5px; color: #5B6B7F; margin-bottom: 3px;">Nota Fiscal:</div>
+                    <div id="bipagem-nf" style="font-size: 14.5px; font-weight: 700; color: #111F33; font-family: 'JetBrains Mono', monospace; word-break: break-all;">NF-e 03001003</div>
                 </div>
-                <div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Destino:</div>
-                    <div id="bipagem-destinatario" style="font-size: 14.5px; font-weight: 700; color: #f1f5f9;">Rio de Janeiro / RJ</div>
+                <div style="min-width: 0; overflow: hidden;">
+                    <div style="font-size: 11.5px; color: #5B6B7F; margin-bottom: 3px;">Destino:</div>
+                    <div id="bipagem-destinatario" style="font-size: 14px; font-weight: 700; color: #111F33; word-break: break-word;">Belo Horizonte / MG</div>
                 </div>
-                <div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Transportadora:</div>
-                    <div id="bipagem-transp" style="font-size: 14.5px; font-weight: 700; color: #cbd5e1;">Total Express</div>
+                <div style="min-width: 0; overflow: hidden;">
+                    <div style="font-size: 11.5px; color: #5B6B7F; margin-bottom: 3px;">Transportadora:</div>
+                    <div id="bipagem-transp" style="font-size: 14px; font-weight: 700; color: #111F33;">Total Express</div>
                 </div>
-                <div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">DIFAL Pendente:</div>
-                    <div id="bipagem-difal-valor" style="font-size: 15px; font-weight: 800; color: #ffffff;">R$ 84,50</div>
-                    <div id="bipagem-difal-sub" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">(Aguardando Liquidação Asaas)</div>
+                <div style="min-width: 0; overflow: hidden;">
+                    <div style="font-size: 11.5px; color: #5B6B7F; margin-bottom: 3px;">DIFAL a Liquidar:</div>
+                    <div id="bipagem-difal-valor" style="font-size: 16px; font-weight: 800; color: #B42318; font-family: 'JetBrains Mono', monospace;">R$ 1.840,50</div>
+                    <div id="bipagem-difal-sub" style="font-size: 10.5px; color: #8393A7; margin-top: 1px;">(Aguardando Aprovação Asaas)</div>
                 </div>
             </div>
 
-            <!-- Botões Verticais (Proposta Imagem 3) -->
+            <!-- Ações Operacionais Seguras (Sem poder de débito do operador) -->
             <div id="bipagem-actions-container" style="display: flex; flex-direction: column; gap: 10px;">
-                <button id="btn-bipagem-primary" onclick="executarAcaoBipagemPrimaria()" style="width: 100%; height: 46px; background: #16a34a; hover: background: #15803d; color: #ffffff; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
-                    Pagar e Liberar Volume no Asaas (R$ 84,50)
+                <button id="btn-solicitar-diretoria" onclick="solicitarLiberacaoDiretoria('03001003', '1.840,50')" style="width: 100%; height: 46px; background: #2563EB; color: #ffffff; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                    <span id="btn-solicitar-text">Solicitar Liberação à Diretoria no App (R$ 1.840,50)</span>
                 </button>
-                <button onclick="fecharModalBipagem()" style="width: 100%; height: 46px; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 600; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
-                    Manter Bloqueado e Continuar Bipagem
+                <button onclick="fecharModalBipagem()" style="width: 100%; height: 44px; background: #ffffff; color: #182536; font-size: 13px; font-weight: 600; border: 1.5px solid #CBD5E1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
+                    Separar Caixa na Expedição & Próximo Volume (Enter)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE LIQUIDAÇÃO ASAAS -->
-    <div id="modal-autorizar-asaas" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: #0f172a; border: 1.5px solid rgba(16, 185, 129, 0.5); border-radius: 14px; width: 100%; max-width: 540px; padding: 26px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);">
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
-                <div style="padding: 10px; background: rgba(16, 185, 129, 0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <!-- MODAL GESTÃO DE DEVOLUÇÕES & CRÉDITO DIFAL -->
+    <div id="modal-gestao-devolucoes" style="display: none; position: fixed; inset: 0; background: rgba(17, 31, 51, 0.7); backdrop-filter: blur(6px); z-index: 10003; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border: 1px solid #F59E0B; border-radius: 14px; width: 100%; max-width: 520px; padding: 28px; box-shadow: var(--shadow-lg); text-align: left;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div style="width: 42px; height: 42px; border-radius: 10px; background: #FEF3C7; display: flex; align-items: center; justify-content: center; color: #D97706;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #f8fafc;">Autorização de Liquidação via Asaas</h3>
-                    <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">Liquidação imediata de tributos estaduais com emissão de comprovante oficial</p>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111F33;">Gestão de Devoluções & Crédito DIFAL</h3>
+                    <p style="margin: 2px 0 0; font-size: 12px; color: #5B6B7F;">Estorno e compensação contábil de mercadorias devolvidas na loja Shopping Barra</p>
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid #1e293b; border-radius: 10px; padding: 16px; margin-bottom: 18px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
-                    <span style="color: #94a3b8;">Saldo Disponível no Asaas:</span>
-                    <strong id="asaas-modal-saldo" style="color: #10b981; font-size: 15px;">R$ 4.250,80</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
-                    <span style="color: #94a3b8;">Guias a Pagar:</span>
-                    <strong id="asaas-modal-qtd-guias" style="color: #38bdf8;">12 guia(s)</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
-                    <span style="color: #94a3b8;">Total do Débito:</span>
-                    <strong id="asaas-modal-valor-total" style="color: #f8fafc; font-size: 16px;">R$ 1.840,50</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12.5px;">
-                    <span style="color: #94a3b8;">Status de Cobertura:</span>
-                    <span id="asaas-modal-cobertura" style="font-weight: 600; color: #34d399;">Saldo suficiente (Coberto)</span>
-                </div>
+            <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 14px; margin: 18px 0; font-size: 12.5px; color: #92400E; line-height: 1.45;">
+                Evite bitributação: vincule a NF-e de entrada emitida na chegada da devolução no Linx Microvix para abater o crédito da guia GNRE recolhida.
             </div>
 
-            <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 12.5px; color: #cbd5e1;">
-                <div><strong>Responsável pela Autorização:</strong> <span id="asaas-modal-aprovador" style="color: #fff;">Roberto / Lalua</span></div>
-                <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Esta ação debita os valores da conta Asaas da empresa e gera os comprovantes vinculados às notas fiscais.</div>
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #5B6B7F; display: block; margin-bottom: 5px;">NF-e Original de Saída (Lote):</label>
+                    <input type="text" id="devolucao-nf-saida" value="03001003" style="width: 100%; height: 42px; background: #FAFCFE; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 12px; color: #111F33; font-size: 13.5px; font-family: 'JetBrains Mono', monospace;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: 600; color: #5B6B7F; display: block; margin-bottom: 5px;">NF-e de Devolução / Entrada emitida no Linx:</label>
+                    <input type="text" id="devolucao-nf-entrada" placeholder="Ex: 004291 ou Chave de Acesso da Devolução" style="width: 100%; height: 42px; background: #FAFCFE; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 12px; color: #111F33; font-size: 13.5px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: #5B6B7F; display: block; margin-bottom: 5px;">Tipo de Devolução:</label>
+                        <select id="devolucao-tipo" onchange="ajustarValorDevolucao()" style="width: 100%; height: 42px; background: #FAFCFE; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 10px; color: #111F33; font-size: 13px;">
+                            <option value="total">Total (100% do DIFAL)</option>
+                            <option value="parcial">Parcial (Item Avulso)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: #5B6B7F; display: block; margin-bottom: 5px;">Crédito a Compensar (R$):</label>
+                        <input type="text" id="devolucao-valor" value="130,00" style="width: 100%; height: 42px; background: #FAFCFE; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 12px; color: #157347; font-weight: 800; font-size: 14px; font-family: 'JetBrains Mono', monospace;">
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="fecharModalAutorizacaoAsaas()" class="btn-dock-action btn-dark" style="flex: 1;">Cancelar</button>
-                <button type="button" id="btn-confirmar-pagamento-asaas" onclick="confirmarAutorizacaoAsaas()" class="btn-dock-action btn-green" style="flex: 2;">
-                    Autorizar e Liquidar Agora
+                <button type="button" onclick="fecharModalDevolucoes()" style="flex: 1; height: 42px; background: #ffffff; color: #5B6B7F; border: 1px solid #CBD5E1; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button type="button" onclick="confirmarRegistroDevolucao()" style="flex: 2; height: 42px; background: #D97706; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                    Registrar Estorno & Abater do Lote
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MODAL DE FECHAMENTO FISCAL & AUDITORIA DIÁRIA -->
-    <div id="modal-fechamento-contabil" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 16px; width: 100%; max-width: 680px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); max-height: 90vh; overflow-y: auto;">
+    <div id="modal-fechamento-contabil" style="display: none; position: fixed; inset: 0; background: rgba(17, 31, 51, 0.7); backdrop-filter: blur(6px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border: 1px solid #E3E8EF; border-radius: 16px; width: 100%; max-width: 680px; padding: 26px 28px; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <h2 style="margin: 0; font-size: 19px; font-weight: 800; color: #fff;">Fechamento Fiscal & Auditoria Diária</h2>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <h2 style="margin: 0; font-size: 19px; font-weight: 800; color: #111F33;">Fechamento Fiscal & Conciliação Diária</h2>
                     </div>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #94a3b8;">
-                        Reconciliação quádrupla: NF-e (Linx/Vnda) × Guias DIFAL × Liquidação Asaas × Doca
+                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #5B6B7F;">
+                        Reconciliação quádrupla: NF-e (Linx/Vnda) × Guias DIFAL × Débito Asaas × Doca da Loja (Shopping Barra)
                     </p>
                 </div>
-                <button type="button" onclick="fecharModalFechamentoContabil()" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; padding: 0 4px;">&times;</button>
+                <button type="button" onclick="fecharModalFechamentoContabil()" style="background: none; border: none; color: #8393A7; font-size: 24px; cursor: pointer; padding: 0 4px; line-height: 1;">&times;</button>
             </div>
 
-            <div style="background: #1e293b; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; border-left: 4px solid #38bdf8;">
+            <!-- SITUAÇÃO & HASH -->
+            <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; border-left: 4px solid #2563EB;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;">Situação da Conciliação</span>
-                    <span id="fechamento-status-badge" style="font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; background: rgba(34, 197, 94, 0.15); color: #4ade80;">100% CONCILIADO</span>
+                    <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #5B6B7F; letter-spacing: 0.5px;">Situação da Conciliação</span>
+                    <span id="fechamento-status-badge" style="font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; background: #EAF7F0; color: #157347;">100% CONCILIADO</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span style="color: #64748b;">Hash de Integridade (SHA-256):</span>
-                    <span id="fechamento-hash" style="font-family: monospace; color: #38bdf8; font-weight: 700;">CALCULANDO...</span>
+                <div style="display: flex; justify-content: space-between; font-size: 11.5px;">
+                    <span style="color: #8393A7;">Hash de Integridade (SHA-256):</span>
+                    <span id="fechamento-hash" style="font-family: monospace; color: #2563EB; font-weight: 700;">8F3D...A91C (AUDITADO-OK)</span>
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-                <a id="btn-download-pacote-zip" href="#" target="_blank" class="btn-dock-action btn-blue" style="width: 100%;">
+            <!-- KPIs DO FECHAMENTO (4 Colunas) -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+                <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #5B6B7F; font-weight: 600; text-transform: uppercase;">Total de Notas</div>
+                    <div id="fechamento-total-notas" style="font-size: 20px; font-weight: 800; color: #111F33; margin-top: 4px;">8</div>
+                </div>
+                <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #5B6B7F; font-weight: 600; text-transform: uppercase;">Liberadas</div>
+                    <div id="fechamento-liberadas" style="font-size: 20px; font-weight: 800; color: #10B981; margin-top: 4px;">6</div>
+                </div>
+                <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #5B6B7F; font-weight: 600; text-transform: uppercase;">DIFAL Devido</div>
+                    <div id="fechamento-total-devido" style="font-size: 15px; font-weight: 800; color: #111F33; margin-top: 6px;">R$ 2.981,00</div>
+                </div>
+                <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #5B6B7F; font-weight: 600; text-transform: uppercase;">Liquidado Asaas</div>
+                    <div id="fechamento-total-pago" style="font-size: 15px; font-weight: 800; color: #2563EB; margin-top: 6px;">R$ 930,00</div>
+                </div>
+            </div>
+
+            <!-- TABELA DE CONCILIAÇÃO POR ESTADO (UF) -->
+            <div style="border: 1px solid #E3E8EF; border-radius: 10px; overflow: hidden; margin-bottom: 18px;">
+                <div style="background: #F8FAFC; padding: 8px 14px; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #E3E8EF; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Detalhamento Tributário por UF</span>
+                    <span style="font-size: 10px; color: #64748B; font-weight: 500;">Cruzamento Linx × SEFAZ × Asaas</span>
+                </div>
+                <div style="max-height: 190px; overflow-y: auto;">
+                    <table style="width: 100% !important; min-width: 0 !important; max-width: 100% !important; border-collapse: collapse; font-size: 11px; table-layout: fixed;">
+                        <thead>
+                            <tr style="background: #FAFCFE; border-bottom: 1px solid #E3E8EF; color: #5B6B7F; font-size: 10px; text-transform: uppercase;">
+                                <th style="padding: 7px 10px; text-align: left; font-weight: 700; width: 14%;">UF</th>
+                                <th style="padding: 7px 10px; text-align: center; font-weight: 700; width: 16%;">Notas</th>
+                                <th style="padding: 7px 10px; text-align: right; font-weight: 700; width: 24%;">Total Devido</th>
+                                <th style="padding: 7px 10px; text-align: right; font-weight: 700; width: 24%;">Liquidado Asaas</th>
+                                <th style="padding: 7px 10px; text-align: center; font-weight: 700; width: 22%;">Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fechamento-tabela-uf-body">
+                            <!-- Preenchido via dashboard.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PACOTE DE ARQUIVOS PARA CONTABILIDADE E DIRETORIA -->
+            <div style="display: flex; flex-direction: column; gap: 9px;">
+                <a id="btn-download-pacote-zip" href="#" download="Pacote_Auditoria_Fiscal_Lalua_Boah.zip" class="btn pri" style="width: 100%; text-decoration: none; justify-content: center; height: 44px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span>Baixar Pacote Completo de Auditoria (.ZIP)</span>
                 </a>
                 <div style="display: flex; gap: 10px;">
-                    <a id="btn-download-relatorio-pdf" href="#" target="_blank" class="btn-dock-action btn-dark" style="flex: 1;">
-                        Relatório Executivo (.PDF)
+                    <a id="btn-download-relatorio-pdf" href="#" target="_blank" download="Relatorio_Executivo_Diretoria.pdf" class="btn" style="flex: 1; text-decoration: none; justify-content: center; height: 38px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border-color: #E3E8EF;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Relatório Executivo (.PDF)</span>
                     </a>
-                    <a id="btn-download-planilha-csv" href="#" target="_blank" class="btn-dock-action btn-dark" style="flex: 1;">
-                        Planilha Conciliação (.CSV)
+                    <a id="btn-download-planilha-csv" href="#" download="Conciliacao_Fiscal_Lalua_Boah.csv" class="btn" style="flex: 1; text-decoration: none; justify-content: center; height: 38px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border-color: #E3E8EF;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                        <span>Planilha Conciliação (.CSV)</span>
                     </a>
                 </div>
+            </div>
+
+            <div style="margin-top: 14px; font-size: 11px; color: #8393A7; text-align: center;">
+                🔒 Pacote criptografado com hash SHA-256 para comprovação e envio à contabilidade externa da Lalua / Boah.
             </div>
         </div>
     </div>
 
-    <div id="toast-container"></div>
+    <!-- MODAL DE AUTORIZAÇÃO ASAAS (DIRETORIA) -->
+    <div id="modal-autorizar-asaas" style="display: none; position: fixed; inset: 0; background: rgba(17, 31, 51, 0.7); backdrop-filter: blur(6px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border: 1.5px solid #10B981; border-radius: 14px; width: 100%; max-width: 520px; padding: 26px; box-shadow: var(--shadow-lg);">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+                <div style="padding: 10px; background: #EAF7F0; border-radius: 10px; color: #10B981;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #111F33;">Autorização de Liquidação via Asaas</h3>
+                    <p style="margin: 3px 0 0; font-size: 12px; color: #5B6B7F;">Liquidação imediata de tributos com autenticação bancária SISBACEN</p>
+                </div>
+            </div>
 
-    <script src="/js/auth.js?v=4"></script>
-    <script src="/js/dashboard.js?v=6"></script>
+            <div style="background: #FAFCFE; border: 1px solid #E3E8EF; border-radius: 10px; padding: 16px; margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
+                    <span style="color: #5B6B7F;">Saldo Disponível no Asaas:</span>
+                    <strong id="asaas-modal-saldo" style="color: #10B981; font-size: 15px;">R$ 4.250,80</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
+                    <span style="color: #5B6B7F;">Guias a Pagar:</span>
+                    <strong id="asaas-modal-qtd-guias" style="color: #2563EB;">12 guia(s)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13.5px;">
+                    <span style="color: #5B6B7F;">Total do Débito:</span>
+                    <strong id="asaas-modal-valor-total" style="color: #111F33; font-size: 16px;">R$ 1.840,50</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #E3E8EF; font-size: 12.5px;">
+                    <span style="color: #5B6B7F;">Status de Cobertura:</span>
+                    <span id="asaas-modal-cobertura" style="font-weight: 600; color: #157347;">Saldo suficiente (Coberto)</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="fecharModalAutorizacaoAsaas()" class="btn" style="flex: 1;">Cancelar</button>
+                <button type="button" id="btn-confirmar-pagamento-asaas" onclick="confirmarAutorizacaoAsaas()" class="btn pri" style="flex: 2;">
+                    Autorizar e Liquidar Agora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px;"></div>
+
+    <script src="/js/auth.js?v=5"></script>
+    <script src="/js/dashboard.js?v=9"></script>
 </body>
 </html>

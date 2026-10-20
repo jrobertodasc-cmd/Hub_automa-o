@@ -87,7 +87,7 @@ O sistema transforma o fluxo em um **Portão Fiscal Contínuo**:
 3. A dona confere o resumo e clica em **"Confirmar Pagamento e Liberar Doca"**.
 4. Pronto! O Asaas liquida as guias e o status na doca muda para liberado instantaneamente.
 
-### B. Para o Operador da Expedição / Doca (No Computador do Galpão)
+### B. Para o Operador da Expedição / Doca (No Computador da Loja - Shopping Barra)
 1. O operador acessa o Cockpit do Portão Fiscal (**`/dashboard.html`**).
 2. **Conferência das Caixas (Bipagem):**
    - O operador clica no campo de busca/bipagem no topo da tabela.

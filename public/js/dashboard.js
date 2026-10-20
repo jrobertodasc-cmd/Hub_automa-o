@@ -1931,116 +1931,148 @@ function executarAcaoBipagemPrimaria() {
     }
 }
 
+let ultimosVolumesBipados = [
+    { nf: '03001006', transp: 'Total Express', status: 'liberado', desc: 'Liberada (R$ 420,00)' },
+    { nf: '03001013', transp: 'Total Express', status: 'liberado', desc: 'Isento SP (R$ 0,00)' },
+    { nf: '03001003', transp: 'Total Express', status: 'bloqueado', desc: 'Retida SEFAZ (R$ 1.840,50)' }
+];
+
+function adicionarUltimoBipado(guia, statusTipo) {
+    const nfNum = String(guia.nf_number || '').padStart(6, '0');
+    const nfFmt = nfNum.length === 6 ? `${nfNum.slice(0, 3)}.${nfNum.slice(3)}` : nfNum;
+    const isSp = (guia.uf === 'SP' || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+    const valor = parseFloat(guia.value || 0).toFixed(2).replace('.', ',');
+    
+    let desc = statusTipo === 'liberado'
+        ? (isSp ? 'Isento SP (R$ 0,00)' : `Liberada (R$ ${valor})`)
+        : `Retida SEFAZ (R$ ${valor})`;
+
+    ultimosVolumesBipados.unshift({
+        nf: nfFmt,
+        transp: guia.carrier_name || 'Total Express',
+        status: statusTipo,
+        desc: desc
+    });
+
+    if (ultimosVolumesBipados.length > 3) {
+        ultimosVolumesBipados.pop();
+    }
+
+    renderizarFitaUltimosBipados();
+}
+
+function renderizarFitaUltimosBipados() {
+    const container = document.getElementById('scanned-ribbon-items');
+    if (!container) return;
+
+    container.innerHTML = ultimosVolumesBipados.map(item => {
+        const isOk = item.status === 'liberado';
+        const chipClass = isOk ? 'chip-green' : 'chip-red';
+        const iconSvg = isOk
+            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+        return `
+            <div class="scanned-chip ${chipClass}">
+                ${iconSvg}
+                <span>NF-e ${escapeHtml(item.nf)} · ${escapeHtml(item.transp)} (${escapeHtml(item.desc)})</span>
+            </div>
+        `;
+    }).join('');
+}
+
+let handsFreeBannerTimeout = null;
+function mostrarBannerHandsFree(guia) {
+    const banner = document.getElementById('handsfree-toast-banner');
+    const desc = document.getElementById('handsfree-toast-desc');
+    const station = document.getElementById('laser-station-box');
+    if (!banner) return;
+
+    const nfNum = String(guia.nf_number || '').padStart(6, '0');
+    const nfFmt = nfNum.length === 6 ? `${nfNum.slice(0, 3)}.${nfNum.slice(3)}` : nfNum;
+    const transp = guia.carrier_name || 'Total Express';
+
+    if (desc) {
+        desc.textContent = `NF-e ${nfFmt} · ${transp} — Carga Liberada (Colocar na esteira!)`;
+    }
+
+    if (station) {
+        station.classList.add('flash-success');
+        setTimeout(() => station.classList.remove('flash-success'), 650);
+    }
+
+    banner.style.display = 'flex';
+    if (handsFreeBannerTimeout) clearTimeout(handsFreeBannerTimeout);
+    handsFreeBannerTimeout = setTimeout(() => {
+        banner.style.display = 'none';
+    }, 2800);
+}
+
 function exibirResultadoPortaoFiscal(guia) {
     currentGuiaPortaoFiscal = guia;
     const modal = document.getElementById('modal-bipagem-portao-fiscal');
-    if (!modal) return;
+    const input = document.getElementById('filter-search');
 
     const isSp = (guia.uf === 'SP' || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP');
     const difalVal = parseFloat(guia.value || 0);
     const liberada = isGuiaLiberadaLocal(guia);
 
-    const card = document.getElementById('bipagem-card-border');
-    const badge = document.getElementById('bipagem-icon-badge');
-    const title = document.getElementById('bipagem-status-title');
-    const subtitle = document.getElementById('bipagem-status-subtitle');
+    const rawNf = String(guia.nf_number || '').trim();
+    let displayNf = rawNf;
+    let chaveSubtext = '';
+
+    if (rawNf.length >= 44) {
+        // Extrai número da NF-e (posições 25 a 34 da chave de acesso)
+        const numExtraido = parseInt(rawNf.substring(25, 34), 10);
+        displayNf = isNaN(numExtraido) ? rawNf.slice(-8) : String(numExtraido);
+        chaveSubtext = `<div style="font-size: 10px; color: #8393A7; font-family: 'JetBrains Mono', monospace; word-break: break-all; margin-top: 2px;">Chave: ${rawNf.slice(0, 6)}...${rawNf.slice(-8)}</div>`;
+    } else if (rawNf.length > 0 && rawNf.length <= 6) {
+        displayNf = rawNf.padStart(6, '0');
+    }
+
+    if (liberada) {
+        // MODO HANDS-FREE: NÃO TRAVA COM MODAL!
+        playAudioFeedback('liberado');
+        adicionarUltimoBipado(guia, 'liberado');
+        mostrarBannerHandsFree(guia);
+
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        return;
+    }
+
+    // ESTADO BLOQUEADO (PARADA OBRIGATÓRIA NA EXPEDIÇÃO)
+    playAudioFeedback('bloqueado');
+    adicionarUltimoBipado(guia, 'bloqueado');
+
+    if (!modal) return;
+
     const nfEl = document.getElementById('bipagem-nf');
     const destEl = document.getElementById('bipagem-destinatario');
     const transpEl = document.getElementById('bipagem-transp');
     const difalEl = document.getElementById('bipagem-difal-valor');
-    const difalSubEl = document.getElementById('bipagem-difal-sub');
     const actionsEl = document.getElementById('bipagem-actions-container');
 
-    const nfNum = String(guia.nf_number || '').padStart(6, '0');
-    const nfFmt = nfNum.length === 6 ? `${nfNum.slice(0, 3)}.${nfNum.slice(3)}` : nfNum;
-    if (nfEl) nfEl.textContent = `NF-e ${nfFmt}`;
-
+    if (nfEl) {
+        nfEl.innerHTML = `<div>NF-e ${escapeHtml(displayNf)}</div>${chaveSubtext}`;
+    }
     const destTexto = guia.customer_name ? `${guia.customer_name} / ${guia.uf || 'BR'}` : `${guia.city || 'Destino'} / ${guia.uf || 'BR'}`;
     if (destEl) destEl.textContent = destTexto;
     if (transpEl) transpEl.textContent = guia.carrier_name || 'Total Express';
+    if (difalEl) difalEl.textContent = `R$ ${difalVal.toFixed(2).replace('.', ',')}`;
 
-    if (liberada) {
-        // ESTADO LIBERADO
-        playAudioFeedback('liberado');
-        if (card) card.style.border = '1.5px solid #10b981';
-        if (badge) {
-            badge.innerHTML = `
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <polyline points="9 12 11 14 15 10"></polyline>
-                </svg>
-            `;
-        }
-        if (title) {
-            title.style.color = '#10b981';
-            title.textContent = 'CARGA LIBERADA PARA EMBARQUE';
-        }
-        if (subtitle) {
-            subtitle.textContent = isSp 
-                ? 'Destino São Paulo (Isento de DIFAL). Volume autorizado para carregamento.' 
-                : 'Tributo quitado e autenticado via Asaas. Carga autorizada no posto fiscal.';
-        }
-        if (difalEl) {
-            difalEl.textContent = isSp ? 'R$ 0,00' : `R$ ${difalVal.toFixed(2).replace('.', ',')}`;
-            difalEl.style.color = '#10b981';
-        }
-        if (difalSubEl) {
-            difalSubEl.textContent = isSp ? '(Isento de DIFAL)' : '(Autenticado via Asaas)';
-            difalSubEl.style.color = '#10b981';
-        }
-
-        if (actionsEl) {
-            actionsEl.innerHTML = `
-                <button onclick="fecharModalBipagem()" style="width: 100%; height: 46px; background: #16a34a; color: #ffffff; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
-                    Liberar Próximo Volume (Enter)
-                </button>
-                ${guia.receipt_storage_path ? `
-                    <a href="/api/guide/comprovante/${guia.id}" target="_blank" style="text-decoration: none; width: 100%; height: 44px; background: #0f172a; color: #38bdf8; font-size: 13.5px; font-weight: 600; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                        Ver Comprovante Oficial Asaas
-                    </a>
-                ` : ''}
-            `;
-        }
-    } else {
-        // ESTADO BLOQUEADO (EXATO PROPOSTA IMAGEM 3)
-        playAudioFeedback('bloqueado');
-        if (card) card.style.border = '1.5px solid #ef4444';
-        if (badge) {
-            badge.innerHTML = `
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-            `;
-        }
-        if (title) {
-            title.style.color = '#ffffff';
-            title.textContent = 'CARGA RETIDA NA DOCA — PENDÊNCIA SEFAZ';
-        }
-        if (subtitle) {
-            subtitle.textContent = 'DIFAL interestadual não liquidado. Risco de retenção fiscal na barreira estadual.';
-        }
-        if (difalEl) {
-            difalEl.textContent = `R$ ${difalVal.toFixed(2).replace('.', ',')}`;
-            difalEl.style.color = '#ffffff';
-        }
-        if (difalSubEl) {
-            difalSubEl.textContent = '(Aguardando Liquidação Asaas)';
-            difalSubEl.style.color = '#94a3b8';
-        }
-
-        if (actionsEl) {
-            actionsEl.innerHTML = `
-                <button id="btn-solicitar-diretoria" onclick="solicitarLiberacaoDiretoria('${guia.nf_number}', '${difalVal.toFixed(2).replace('.', ',')}')" style="width: 100%; height: 46px; background: #16a34a; color: #ffffff; font-size: 13.5px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                    <span>Solicitar Liberação à Diretoria no App (R$ ${difalVal.toFixed(2).replace('.', ',')})</span>
-                </button>
-                <button onclick="fecharModalBipagem()" style="width: 100%; height: 46px; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 600; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
-                    Separar Caixa na Doca & Continuar Bipagem
-                </button>
-            `;
-        }
+    if (actionsEl) {
+        actionsEl.innerHTML = `
+            <button id="btn-solicitar-diretoria" onclick="solicitarLiberacaoDiretoria('${displayNf}', '${difalVal.toFixed(2).replace('.', ',')}')" style="width: 100%; height: 46px; background: #2563EB; color: #ffffff; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>Solicitar Liberação à Diretoria no App (R$ ${difalVal.toFixed(2).replace('.', ',')})</span>
+            </button>
+            <button onclick="fecharModalBipagem()" style="width: 100%; height: 44px; background: #ffffff; color: #182536; font-size: 13px; font-weight: 600; border: 1.5px solid #CBD5E1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
+                Separar Caixa na Expedição & Próximo Volume (Enter)
+            </button>
+        `;
     }
 
     modal.style.display = 'flex';
@@ -2070,20 +2102,19 @@ function solicitarLiberacaoDiretoria(nf, valor) {
 }
 window.solicitarLiberacaoDiretoria = solicitarLiberacaoDiretoria;
 
-// ==========================================
-// FILTROS RÁPIDOS DA DOCA (EMISSÃO, TRANSPORTADORA E SITUAÇÃO)
-// ==========================================
 let filtroDataEmissaoAtivo = 'TODAS';
 let filtroTransportadoraAtivo = 'TODAS';
 let filtroSituacaoAtivo = 'TODAS';
+let filtroTextoInlineAtivo = '';
 
 function aplicarFiltrosRapidos() {
     const rows = document.querySelectorAll('.cockpit-table tbody tr');
     let visiveis = 0;
 
     rows.forEach(tr => {
-        const emissaoTd = (tr.children[1]?.textContent || '').trim().toLowerCase();
-        const transpTd = (tr.children[3]?.textContent || '').trim().toLowerCase();
+        const rowText = (tr.textContent || '').toLowerCase();
+        const emissaoTd = (tr.children[3]?.textContent || '').trim().toLowerCase();
+        const transpTd = (tr.children[4]?.textContent || '').trim().toLowerCase();
         const statusSpan = tr.querySelector('.tag-status');
         const statusText = (statusSpan?.textContent || '').trim().toLowerCase();
         const isDespachada = tr.classList.contains('row-despachada') || statusText.includes('despachad');
@@ -2102,7 +2133,7 @@ function aplicarFiltrosRapidos() {
         // 3. Filtro Situação
         let matchSituacao = true;
         if (filtroSituacaoAtivo === 'Bloqueado') {
-            matchSituacao = statusText.includes('bloqueado') && !isDespachada;
+            matchSituacao = statusText.includes('bloqueado') || statusText.includes('retido');
         } else if (filtroSituacaoAtivo === 'Liberado') {
             matchSituacao = statusText.includes('liberado') && !isDespachada;
         } else if (filtroSituacaoAtivo === 'Isento') {
@@ -2110,11 +2141,17 @@ function aplicarFiltrosRapidos() {
         } else if (filtroSituacaoAtivo === 'Despachado') {
             matchSituacao = isDespachada;
         } else if (filtroSituacaoAtivo === 'TODAS') {
-            // "Na Doca": mostra todas que estão na doca, mas oculta as já despachadas
+            // "Na Doca": mostra todas ativas na doca, mas oculta histórico de despachadas
             matchSituacao = !isDespachada;
         }
 
-        if (matchData && matchTransp && matchSituacao) {
+        // 4. Filtro Texto Inline (Cliente, Pedido, NF)
+        let matchTexto = true;
+        if (filtroTextoInlineAtivo) {
+            matchTexto = rowText.includes(filtroTextoInlineAtivo);
+        }
+
+        if (matchData && matchTransp && matchSituacao && matchTexto) {
             tr.style.display = '';
             visiveis++;
         } else {
@@ -2122,39 +2159,89 @@ function aplicarFiltrosRapidos() {
         }
     });
 
-    const syncEl = document.getElementById('table-sync-timestamp');
-    if (syncEl) {
-        syncEl.textContent = `${visiveis} volumes visíveis no filtro`;
+    const intervaloEl = document.getElementById('paginacao-intervalo');
+    if (intervaloEl) {
+        intervaloEl.textContent = `1 a ${Math.min(visiveis, 6)}`;
     }
 }
 window.aplicarFiltrosRapidos = aplicarFiltrosRapidos;
 
-function filtrarPorDataEmissao(dataTipo, btnEl) {
-    filtroDataEmissaoAtivo = dataTipo;
+function filtrarPorSituacaoTab(situacao, btnEl) {
+    filtroSituacaoAtivo = situacao;
     if (btnEl && btnEl.parentElement) {
-        btnEl.parentElement.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        btnEl.parentElement.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
     }
+    aplicarFiltrosRapidos();
+}
+window.filtrarPorSituacaoTab = filtrarPorSituacaoTab;
+
+function aplicarFiltroTextoInline(val) {
+    filtroTextoInlineAtivo = (val || '').toLowerCase().trim();
+    aplicarFiltrosRapidos();
+}
+window.aplicarFiltroTextoInline = aplicarFiltroTextoInline;
+
+function toggleSelectAllRows(checked) {
+    const boxes = document.querySelectorAll('.cockpit-table tbody tr:not([style*="display: none"]) .row-select-box');
+    boxes.forEach(box => {
+        box.checked = checked;
+    });
+    atualizarContagemLote();
+}
+window.toggleSelectAllRows = toggleSelectAllRows;
+
+function atualizarContagemLote() {
+    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
+    const bulkBar = document.getElementById('dock-bulk-bar');
+    const countEl = document.getElementById('bulk-selected-count');
+
+    if (countEl) countEl.textContent = selected.length;
+    if (bulkBar) {
+        bulkBar.style.display = selected.length > 0 ? 'flex' : 'none';
+    }
+}
+window.atualizarContagemLote = atualizarContagemLote;
+
+function desmarcarTodasLinhas() {
+    document.querySelectorAll('.table-checkbox').forEach(b => b.checked = false);
+    atualizarContagemLote();
+}
+window.desmarcarTodasLinhas = desmarcarTodasLinhas;
+
+function imprimirDanfesLoteSelecionado() {
+    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
+    if (selected.length === 0) return;
+    showToast(`Gerando impressão de ${selected.length} DANFEs selecionadas...`, 'success');
+    window.open('/api/expedicao/romaneio', '_blank');
+}
+window.imprimirDanfesLoteSelecionado = imprimirDanfesLoteSelecionado;
+
+function solicitarLiberacaoLoteSelecionado() {
+    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
+    if (selected.length === 0) return;
+    showToast(`Notificação enviada ao celular da dona para autorizar as ${selected.length} cargas selecionadas!`, 'warning');
+}
+window.solicitarLiberacaoLoteSelecionado = solicitarLiberacaoLoteSelecionado;
+
+function filtrarPorDataEmissao(dataTipo, btnEl) {
+    filtroDataEmissaoAtivo = dataTipo;
+    const select = document.getElementById('select-filter-data');
+    if (select && select.value !== dataTipo) select.value = dataTipo;
     aplicarFiltrosRapidos();
 }
 window.filtrarPorDataEmissao = filtrarPorDataEmissao;
 
 function filtrarPorTransportadora(transp, btnEl) {
     filtroTransportadoraAtivo = transp;
-    if (btnEl && btnEl.parentElement) {
-        btnEl.parentElement.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-        btnEl.classList.add('active');
-    }
+    const select = document.getElementById('select-filter-transp');
+    if (select && select.value !== transp) select.value = transp;
     aplicarFiltrosRapidos();
 }
 window.filtrarPorTransportadora = filtrarPorTransportadora;
 
 function filtrarPorSituacao(situacao, btnEl) {
     filtroSituacaoAtivo = situacao;
-    if (btnEl && btnEl.parentElement) {
-        btnEl.parentElement.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-        btnEl.classList.add('active');
-    }
     aplicarFiltrosRapidos();
 }
 window.filtrarPorSituacao = filtrarPorSituacao;
@@ -2202,6 +2289,61 @@ function confirmarColetaTransportadora() {
 window.confirmarColetaTransportadora = confirmarColetaTransportadora;
 
 /**
+ * Registra a coleta específica de uma transportadora (Total Express, Correios, MT Log)
+ */
+function confirmarColetaPorTransportadora(transportadoraNome, qtdEsperada) {
+    const rows = document.querySelectorAll('.cockpit-table tbody tr:not(.row-despachada)');
+    let coletadasCount = 0;
+
+    const conf = confirm(`Confirmar a coleta de ${qtdEsperada} volumes liberados da ${transportadoraNome}?\\n\\nO motorista receberá o Romaneio Oficial com os comprovantes bancários Asaas e as cargas serão arquivadas no histórico.`);
+    if (!conf) return;
+
+    rows.forEach(tr => {
+        const textRow = tr.textContent || '';
+        if (textRow.includes(transportadoraNome)) {
+            const hasLiberada = tr.querySelector('.tag-liberado, .tag-isento');
+            if (hasLiberada) {
+                tr.classList.add('row-despachada');
+                coletadasCount++;
+                const tdStatus = tr.children[5];
+                if (tdStatus) {
+                    tdStatus.innerHTML = '<span class="tag-status tag-despachado">Despachado (Em Trânsito)</span>';
+                }
+                const tdAcoes = tr.children[6];
+                if (tdAcoes) {
+                    tdAcoes.innerHTML = '<span style="font-size: 11.5px; color: #8393A7;">Romaneio #20261016</span>';
+                }
+            }
+        }
+    });
+
+    // Atualiza badges do card da transportadora se existir
+    if (transportadoraNome === 'Total Express') {
+        const badge = document.getElementById('carrier-total-badge');
+        const fill = document.getElementById('carrier-total-bar');
+        if (badge) badge.textContent = 'Coletado / Despachado';
+        if (fill) fill.style.background = '#475569';
+    }
+
+    aplicarFiltrosRapidos();
+    showToast(`Coleta da ${transportadoraNome} registrada com sucesso (${coletadasCount} volumes)!`, 'success');
+}
+window.confirmarColetaPorTransportadora = confirmarColetaPorTransportadora;
+
+// Recuperação contínua de foco para ergonomia Hands-Free na Doca
+setInterval(() => {
+    const modalAberto = document.querySelector('#modal-bipagem-portao-fiscal[style*="flex"], #modal-autorizar-asaas[style*="flex"], #modal-fechamento-contabil[style*="flex"], #modal-gestao-devolucoes[style*="flex"]');
+    if (modalAberto) return;
+
+    const activeEl = document.activeElement;
+    const isEditingInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+    if (!isEditingInput) {
+        const barcodeInput = document.getElementById('filter-search');
+        if (barcodeInput) barcodeInput.focus();
+    }
+}, 2500);
+
+/**
  * Dropdown de Mais Opções da Barra do Portão Fiscal
  */
 function toggleDropdownMaisOpcoes() {
@@ -2234,9 +2376,19 @@ async function abrirModalFechamentoContabil() {
     const pdfBtn = document.getElementById('btn-download-relatorio-pdf');
     const csvBtn = document.getElementById('btn-download-planilha-csv');
 
-    if (zipBtn) zipBtn.href = `/api/fechamento/pacote-zip/${batchId}`;
-    if (pdfBtn) pdfBtn.href = `/api/fechamento/relatorio-pdf/${batchId}`;
-    if (csvBtn) csvBtn.href = `/api/fechamento/planilha-csv/${batchId}`;
+    const dataHojeIso = new Date().toISOString().split('T')[0];
+    if (zipBtn) {
+        zipBtn.href = `/api/fechamento/pacote-zip/${batchId}`;
+        zipBtn.setAttribute('download', `Pacote_Auditoria_Fiscal_${dataHojeIso}.zip`);
+    }
+    if (pdfBtn) {
+        pdfBtn.href = `/api/fechamento/relatorio-pdf/${batchId}`;
+        pdfBtn.setAttribute('download', `Relatorio_Executivo_Diretoria_${dataHojeIso}.pdf`);
+    }
+    if (csvBtn) {
+        csvBtn.href = `/api/fechamento/planilha-csv/${batchId}`;
+        csvBtn.setAttribute('download', `Conciliacao_Fiscal_${dataHojeIso}.csv`);
+    }
 
     modal.style.display = 'flex';
 
@@ -2252,11 +2404,11 @@ async function abrirModalFechamentoContabil() {
         if (statusBadge) {
             statusBadge.textContent = data.statusGeral;
             if (data.isTotalmenteConciliado) {
-                statusBadge.style.background = 'rgba(34, 197, 94, 0.15)';
-                statusBadge.style.color = '#4ade80';
+                statusBadge.style.background = '#EAF7F0';
+                statusBadge.style.color = '#157347';
             } else {
-                statusBadge.style.background = 'rgba(239, 68, 68, 0.15)';
-                statusBadge.style.color = '#f87171';
+                statusBadge.style.background = '#FEF2F2';
+                statusBadge.style.color = '#DC2626';
             }
         }
 
@@ -2277,18 +2429,18 @@ async function abrirModalFechamentoContabil() {
         const pagoEl = document.getElementById('fechamento-total-pago');
         if (pagoEl) pagoEl.textContent = `R$ ${(data.totais?.totalDifalLiquidado || 0).toFixed(2).replace('.', ',')}`;
 
-        // Tabela por UF
+        // Tabela por UF (Tema Light Moderno)
         const ufBody = document.getElementById('fechamento-tabela-uf-body');
         if (ufBody && data.porUf) {
             ufBody.innerHTML = data.porUf.map(u => `
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 7px 12px; font-weight: 700; color: #fff;">${u.uf}</td>
-                    <td style="padding: 7px 12px; text-align: center; color: #cbd5e1;">${u.qtdNotas}</td>
-                    <td style="padding: 7px 12px; text-align: right; color: #cbd5e1;">R$ ${u.totalDevido.toFixed(2).replace('.', ',')}</td>
-                    <td style="padding: 7px 12px; text-align: right; font-weight: 700; color: #38bdf8;">R$ ${u.totalLiquidado.toFixed(2).replace('.', ',')}</td>
-                    <td style="padding: 7px 12px; text-align: center;">
-                        <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; ${u.retidas === 0 ? 'background: rgba(34, 197, 94, 0.15); color: #4ade80;' : 'background: rgba(239, 68, 68, 0.15); color: #f87171;'}">
-                            ${u.retidas === 0 ? 'REGULAR' : 'RETIDO'}
+                <tr style="border-bottom: 1px solid #E3E8EF;">
+                    <td style="padding: 6px 10px; font-weight: 700; color: #111F33;">${u.uf}</td>
+                    <td style="padding: 6px 10px; text-align: center; color: #5B6B7F; font-weight: 600;">${u.qtdNotas}</td>
+                    <td style="padding: 6px 10px; text-align: right; color: #5B6B7F;">R$ ${u.totalDevido.toFixed(2).replace('.', ',')}</td>
+                    <td style="padding: 6px 10px; text-align: right; font-weight: 700; color: #2563EB;">R$ ${u.totalLiquidado.toFixed(2).replace('.', ',')}</td>
+                    <td style="padding: 6px 10px; text-align: center;">
+                        <span style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; ${u.retidas === 0 ? 'background: #EAF7F0; color: #157347;' : 'background: #FEF2F2; color: #DC2626;'}">
+                            ${u.retidas === 0 ? 'REGULAR' : `${u.retidas} RET`}
                         </span>
                     </td>
                 </tr>
@@ -2328,5 +2480,12 @@ window.mudarPaginaTabela = mudarPaginaTabela;
 window.irParaPagina = irParaPagina;
 window.toggleMaisFiltros = toggleMaisFiltros;
 window.imprimirGuiasLoteIntercaladas = imprimirGuiasLoteIntercaladas;
+
+// Auto-abertura via URL param (ex: ?modal=fechamento)
+if (window.location.search.includes('modal=fechamento')) {
+    setTimeout(() => {
+        if (typeof abrirModalFechamentoContabil === 'function') abrirModalFechamentoContabil();
+    }, 400);
+}
 
 

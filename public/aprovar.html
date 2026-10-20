@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#070c16">
-    <title>Lalua Modas — Remessa Doca</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#111F33">
+    <title>expedi HUB — App Mobile da Diretoria (Lalua / Boah)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,17 +14,27 @@
 
     <style>
         :root {
-            --bg-page: #070c16;
-            --bg-card: #162032;
-            --border-card: rgba(255, 255, 255, 0.07);
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --emerald: #10b981;
-            --emerald-hover: #059669;
-            --red-pill-bg: rgba(220, 38, 38, 0.18);
-            --red-pill-text: #f87171;
+            --bg-page: #F5F7FA;
+            --surface: #FFFFFF;
+            --navy: #111F33;
+            --navy-light: #1E2E48;
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --text-dark: #182536;
+            --text-muted: #5B6B7F;
+            --border-line: #E3E8EF;
+            --ok: #157347;
+            --ok-bg: #EAF7F0;
+            --err: #B42318;
+            --err-bg: #FDEEEE;
+            --warn: #8A5A00;
+            --warn-bg: #FFF6E0;
             --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
             --font-serif: 'Playfair Display', Georgia, serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --shadow-sm: 0 2px 6px rgba(17, 31, 51, 0.05);
+            --shadow-card: 0 10px 25px rgba(17, 31, 51, 0.08);
+            --shadow-phone: 0 25px 60px rgba(17, 31, 51, 0.18), 0 0 0 1px rgba(17, 31, 51, 0.08);
         }
 
         * {
@@ -35,42 +45,69 @@
         }
 
         body {
-            background-color: #0b101b;
-            color: var(--text-primary);
+            background-color: var(--bg-page);
+            color: var(--text-dark);
             font-family: var(--font-sans);
             min-height: 100vh;
-            padding: 24px 16px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 24px 16px;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* SMARTPHONE CHASSIS (IGUAL MOCKUP PROPOSTA IMAGEM 4) */
+        /* BANNER DO SIMULADOR QUANDO ABERTO NO DESKTOP */
+        .desktop-sim-banner {
+            margin-bottom: 14px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1px solid var(--border-line);
+            padding: 6px 14px;
+            border-radius: 999px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .desktop-sim-banner a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* SMARTPHONE CHASSIS (PADRÃO HUB MODERNO) */
         .smartphone-chassis {
             width: 100%;
-            max-width: 400px;
-            background: #0d1525;
+            max-width: 412px;
+            background: #FFFFFF;
             border-radius: 46px;
-            padding: 14px 20px 24px;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 0 2px rgba(255, 255, 255, 0.08);
+            padding: 14px 18px 24px;
+            box-shadow: var(--shadow-phone);
+            border: 8px solid #111F33;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 14px;
             position: relative;
+            overflow: hidden;
         }
 
         @media (max-width: 480px) {
             body {
                 padding: 0;
-                background: #0d1525;
+                background: #FFFFFF;
+            }
+            .desktop-sim-banner {
+                display: none;
             }
             .smartphone-chassis {
                 border-radius: 0;
                 box-shadow: none;
                 border: none;
                 min-height: 100vh;
-                padding: 20px 16px 32px;
+                padding: 16px 16px 28px;
             }
             .dynamic-island {
                 display: none;
@@ -79,217 +116,583 @@
 
         /* DYNAMIC ISLAND DO IPHONE */
         .dynamic-island {
-            width: 86px;
+            width: 88px;
             height: 22px;
-            background: #000000;
+            background: #111F33;
             border-radius: 20px;
-            margin: 0 auto 4px;
+            margin: 0 auto 6px;
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding-right: 10px;
+            padding-right: 8px;
         }
 
         .camera-lens {
             width: 9px;
             height: 9px;
             border-radius: 50%;
-            background: #111e38;
+            background: #1E2E48;
         }
 
-        /* TOP HEADER */
-        .header-mobile {
-            text-align: center;
-            padding-top: 4px;
-            padding-bottom: 2px;
-        }
-
-        .brand-logo-wrap {
-            display: inline-flex;
+        /* CABEÇALHO DO APP (EXPEDI HUB + LALUA / BOAH SHOPPING BARRA) */
+        .app-top-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 4px;
+            padding: 4px 4px 6px;
+            border-bottom: 1px solid var(--border-line);
         }
 
-        .brand-logo-icon {
-            width: 20px;
-            height: 20px;
+        .brand-hub-combo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #cbd5e1;
+            gap: 8px;
         }
 
-        .brand-logo-text {
-            font-family: var(--font-serif);
-            font-size: 23px;
-            font-weight: 700;
-            letter-spacing: -0.2px;
+        .brand-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--navy);
             color: #ffffff;
-        }
-
-        .header-subtitle {
-            font-size: 13px;
-            color: #94a3b8;
-            font-weight: 400;
-        }
-
-        /* CARD 1: VALOR TOTAL E VOLUMES (PROPOSTA IMAGEM 4) */
-        .summary-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 18px;
-            padding: 26px 18px 22px;
-            text-align: center;
-        }
-
-        .total-amount {
-            font-size: 42px;
+            font-size: 15px;
             font-weight: 800;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 2px 6px rgba(17, 31, 51, 0.2);
+        }
+
+        .brand-meta h1 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            line-height: 1.2;
+        }
+
+        .hub-tag {
+            background: var(--primary);
             color: #ffffff;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-            font-family: var(--font-sans);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
         }
 
-        .total-label {
-            font-size: 13.5px;
-            color: #94a3b8;
-            font-weight: 400;
-        }
-
-        .pill-volumes-blocked {
-            display: inline-block;
-            background: var(--red-pill-bg);
-            color: var(--red-pill-text);
-            font-size: 12px;
+        .store-location {
+            font-size: 11px;
+            color: var(--text-muted);
             font-weight: 500;
-            padding: 6px 16px;
-            border-radius: 999px;
-            margin-top: 16px;
-            letter-spacing: 0.2px;
         }
 
-        /* CARD 2: LISTA DE TRANSPORTADORAS (ACCORDION PROPOSTA IMAGEM 4) */
-        .carriers-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 18px;
+        .live-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--ok-bg);
+            color: var(--ok);
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .pulse-circle {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* CARD DE SALDO ASAAS (FINTECH CARD) */
+        .asaas-balance-card {
+            background: linear-gradient(135deg, #111F33 0%, #1A2E4C 100%);
+            border-radius: 16px;
+            padding: 16px 18px;
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(17, 31, 51, 0.15);
+            position: relative;
             overflow: hidden;
         }
 
-        .carrier-item {
-            padding: 18px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .asaas-balance-card::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .asaas-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .asaas-label-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: #9FB0C7;
+            font-weight: 500;
+        }
+
+        .asaas-badge {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .asaas-balance-val {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-family: var(--font-mono);
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .asaas-coverage-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        /* BARRA DE PAUSA OPERACIONAL DE EMERGÊNCIA */
+        .emergency-pause-bar {
+            background: #FAFCFE;
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pause-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        /* TOGGLE SWITCH */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #CBD5E1;
+            transition: .25s;
+            border-radius: 24px;
+        }
+
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .25s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider-round {
+            background-color: #B42318;
+        }
+
+        input:checked + .slider-round:before {
+            transform: translateX(18px);
+        }
+
+        /* CARD DE VALOR PENDENTE NA DOCA */
+        .difal-summary-card {
+            background: #FFFFFF;
+            border: 1.5px solid #FDEEEE;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .difal-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .difal-big-value {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--err);
+            font-family: var(--font-mono);
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        .difal-badge-held {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--err-bg);
+            color: var(--err);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 999px;
+            margin-top: 10px;
+        }
+
+        /* LISTA ACCORDION DE TRANSPORTADORAS */
+        .carriers-accordion-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .carrier-box {
+            background: #FFFFFF;
+            border: 1px solid var(--border-line);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.15s;
+        }
+
+        .carrier-box.open {
+            border-color: #CBD5E1;
+        }
+
+        .carrier-head {
+            padding: 13px 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: background 0.15s;
+            user-select: none;
+            background: #FAFCFE;
         }
 
-        .carrier-item:last-child {
-            border-bottom: none;
+        .carrier-brand-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .carrier-item:hover, .carrier-item:active {
-            background: rgba(255, 255, 255, 0.03);
+        .carrier-icon-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            font-size: 13px;
+            font-weight: 800;
         }
 
-        .carrier-info {
-            text-align: left;
+        .carrier-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1.2;
         }
 
-        .carrier-name {
-            font-size: 14.5px;
-            font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 3px;
+        .carrier-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        .carrier-sub {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .carrier-val-chevron {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: right;
         }
 
-        .chevron-icon {
-            color: #64748b;
-            transition: transform 0.2s;
+        .carrier-val-badge {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-dark);
         }
 
-        .carrier-details {
+        .chevron {
+            color: #8393A7;
+            transition: transform 0.2s ease;
+        }
+
+        .carrier-box.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .carrier-body {
             display: none;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 12px 20px;
+            padding: 12px 15px;
+            border-top: 1px solid var(--border-line);
+            background: #FFFFFF;
             font-size: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .carrier-details.open {
+        .carrier-box.open .carrier-body {
             display: block;
         }
 
-        .note-row {
+        .nfe-item-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 6px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            color: #cbd5e1;
+            border-bottom: 1px dashed #EDF2F7;
+            color: var(--text-dark);
         }
 
-        .note-row:last-child {
+        .nfe-item-row:last-of-type {
             border-bottom: none;
         }
 
-        /* BOTÃO PRINCIPAL DE APROVAÇÃO */
-        .btn-confirm-approval {
+        .btn-approve-single-carrier {
             width: 100%;
-            height: 52px;
-            background: var(--emerald);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
+            height: 38px;
+            margin-top: 10px;
+            background: #FAFCFE;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            font-size: 12.5px;
             font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
-            transition: background 0.15s, transform 0.05s;
-            margin-top: 8px;
+            gap: 6px;
+            transition: all 0.15s;
         }
 
-        .btn-confirm-approval:hover {
-            background: var(--emerald-hover);
+        .btn-approve-single-carrier:hover {
+            background: #EDF3FF;
         }
 
-        .btn-confirm-approval:active {
-            transform: scale(0.99);
-        }
-
-        .btn-confirm-approval:disabled {
-            background: #1e293b;
-            color: #64748b;
-            box-shadow: none;
+        .btn-approve-single-carrier:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
+            border-color: #CBD5E1;
+            color: #8393A7;
         }
 
-        /* TOAST */
+        /* SLIDER "DESLIZE PARA CONFIRMAR" (ESTILO NUBANK / APPLE PAY) */
+        .slider-confirm-container {
+            position: relative;
+            background: #E3E8EF;
+            height: 58px;
+            border-radius: 30px;
+            padding: 4px;
+            user-select: none;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 4px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .slider-progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0%;
+            background: linear-gradient(90deg, #10B981, #059669);
+            border-radius: 30px;
+            pointer-events: none;
+            transition: width 0.05s ease;
+        }
+
+        .slider-track-text {
+            position: relative;
+            z-index: 2;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #111F33;
+            letter-spacing: 0.2px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .slider-track-text svg {
+            animation: bounce-horizontal 1.5s infinite;
+        }
+
+        @keyframes bounce-horizontal {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(4px); }
+        }
+
+        .slider-thumb-handle {
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            width: 50px;
+            height: 50px;
+            background: #111F33;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: grab;
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(17, 31, 51, 0.35);
+            transition: transform 0.05s ease, background-color 0.2s;
+        }
+
+        .slider-thumb-handle:active {
+            cursor: grabbing;
+            transform: scale(1.04);
+        }
+
+        .slider-thumb-handle.unlocked {
+            background: #10B981;
+        }
+
+        /* TELA DE SUCESSO (ESTADO LIBERADO 100%) */
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .success-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--ok-bg);
+            color: var(--ok);
+            display: grid;
+            place-items: center;
+            margin-bottom: 6px;
+            box-shadow: 0 8px 20px rgba(21, 115, 71, 0.18);
+            animation: pop-check 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop-check {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.3px;
+        }
+
+        .success-desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 320px;
+        }
+
+        .success-meta-box {
+            background: #FAFCFE;
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 14px 16px;
+            width: 100%;
+            text-align: left;
+            font-size: 12.5px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-reset-simulation {
+            width: 100%;
+            height: 44px;
+            background: #FFFFFF;
+            border: 1.5px solid var(--border-line);
+            color: var(--navy);
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* TOAST FLUTUANTE */
         #mobile-toast {
             position: fixed;
             bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: #0f172a;
-            border: 1px solid #334155;
+            background: #111F33;
+            border: 1px solid rgba(255,255,255,0.1);
             color: #ffffff;
-            padding: 14px 22px;
+            padding: 12px 20px;
             border-radius: 10px;
-            font-size: 13px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            font-size: 12.5px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             display: none;
             z-index: 10000;
             width: 90%;
@@ -300,99 +703,282 @@
 </head>
 <body>
 
+    <!-- AVISO DE SIMULAÇÃO VISÍVEL NO DESKTOP -->
+    <div class="desktop-sim-banner">
+        <span>📱 App Mobile da Diretoria</span>
+        <span>•</span>
+        <a href="/dashboard.html">Doca & Portão Fiscal</a>
+        <span>•</span>
+        <a href="/bi.html">Inteligência BI</a>
+        <span>•</span>
+        <a href="/profile.html">Configurações & A1</a>
+    </div>
+
+    <!-- MOLDURA DO SMARTPHONE (PADRÃO EXPEDI HUB) -->
     <div class="smartphone-chassis">
 
-        <!-- DYNAMIC ISLAND (ESTILO IPHONE) -->
+        <!-- DYNAMIC ISLAND (ESTILO IPHONE MODERNO) -->
         <div class="dynamic-island">
             <div class="camera-lens"></div>
         </div>
 
-        <!-- CABEÇALHO ELEGANTE -->
-        <header class="header-mobile">
-            <div class="brand-logo-wrap">
-                <div class="brand-logo-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <!-- CABEÇALHO DO APP: MARCA HUB + LALUA / BOAH SHOPPING BARRA -->
+        <header class="app-top-header">
+            <div class="brand-hub-combo">
+                <div class="brand-avatar">E</div>
+                <div class="brand-meta">
+                    <h1>
+                        expedi <span class="hub-tag">HUB</span>
+                    </h1>
+                    <div class="store-location">Lalua / Boah · Shopping Barra (Salvador)</div>
                 </div>
-                <div class="brand-logo-text">Lalua Modas</div>
             </div>
-            <div class="header-subtitle" id="mobile-date-label">16 de Outubro · Remessa Doca</div>
+            <div class="live-status-pill" id="live-connection-tag" title="Conexão persistente com a doca">
+                <div class="pulse-circle"></div>
+                <span>Doca Conectada</span>
+            </div>
         </header>
 
-        <!-- CARD 1: VALOR TOTAL E VOLUMES -->
-        <div class="summary-card">
-            <div class="total-amount" id="mobile-total-difal">R$ 1.840,50</div>
-            <div class="total-label">DIFAL Pendente de Aprovação</div>
-            <div>
-                <span class="pill-volumes-blocked" id="mobile-volumes-badge">
-                    12 volumes aguardando liberação na doca
-                </span>
+        <!-- CONTAINER PRINCIPAL DE PENDÊNCIAS (VISÍVEL ENQUANTO HOUVER GUIAS PENDENTES) -->
+        <div id="approval-main-view" style="display: flex; flex-direction: column; gap: 13px;">
+
+            <!-- 1. CARD DE SALDO ASAAS (FINTECH STYLE) -->
+            <div class="asaas-balance-card">
+                <div class="asaas-card-top">
+                    <div class="asaas-label-wrap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        <span>Conta Digital Asaas</span>
+                        <span class="asaas-badge">PJ</span>
+                    </div>
+                    <span style="font-size: 11px; color: #9FB0C7;">SISBACEN</span>
+                </div>
+                <div class="asaas-balance-val" id="asaas-live-balance">R$ 4.250,80</div>
+                <div class="asaas-coverage-pill" id="asaas-coverage-indicator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Saldo Coberto para Débito</span>
+                </div>
             </div>
+
+            <!-- 2. CHAVE DE PAUSA OPERACIONAL DE EMERGÊNCIA -->
+            <div class="emergency-pause-bar">
+                <div class="pause-info">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
+                    <div>
+                        <div style="font-size: 12.5px; color: var(--navy);">Pausa Operacional</div>
+                        <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 400;">Suspender autorizações temporariamente</div>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-emergency-pause" onchange="togglePausaOperacional(this.checked)">
+                    <span class="slider-round"></span>
+                </label>
+            </div>
+
+            <!-- 3. CARD RESUMO DO DIFAL A LIQUIDAR -->
+            <div class="difal-summary-card">
+                <div class="difal-title">DIFAL Interestadual a Liquidar</div>
+                <div class="difal-big-value" id="difal-total-display">R$ 1.840,50</div>
+                <div>
+                    <span class="difal-badge-held" id="difal-held-badge">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span id="difal-count-label">12 volumes retidos na expedição</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 4. LISTA ACCORDION COM APROVAÇÃO POR TRANSPORTADORA -->
+            <div class="carriers-accordion-wrap">
+
+                <!-- 4.1 TOTAL EXPRESS -->
+                <div class="carrier-box open" id="box-total-express">
+                    <div class="carrier-head" onclick="toggleCarrierBox('box-total-express')">
+                        <div class="carrier-brand-info">
+                            <div class="carrier-icon-dot" style="background: #EDF3FF; color: #2563EB;">T</div>
+                            <div>
+                                <div class="carrier-title">Total Express</div>
+                                <div class="carrier-subtext" id="sub-total-text">8 caixas · R$ 1.120,00</div>
+                            </div>
+                        </div>
+                        <div class="carrier-val-chevron">
+                            <span class="carrier-val-badge">R$ 1.120,00</span>
+                            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+                    <div class="carrier-body">
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001003 (Belo Horizonte / MG)</span>
+                            <strong style="color: var(--err);">R$ 1.840,50</strong>
+                        </div>
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001006 (Rio de Janeiro / RJ)</span>
+                            <strong>R$ 420,00</strong>
+                        </div>
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001013 (São Paulo / SP)</span>
+                            <span style="color: var(--primary); font-weight: 600;">Isento</span>
+                        </div>
+                        <button type="button" class="btn-approve-single-carrier" id="btn-appr-total" onclick="aprovarTransportadoraIndividual('Total Express', 1120.00)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Aprovar Somente Total Express (R$ 1.120,00)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4.2 CORREIOS -->
+                <div class="carrier-box" id="box-correios">
+                    <div class="carrier-head" onclick="toggleCarrierBox('box-correios')">
+                        <div class="carrier-brand-info">
+                            <div class="carrier-icon-dot" style="background: #FEF3C7; color: #D97706;">C</div>
+                            <div>
+                                <div class="carrier-title">Correios</div>
+                                <div class="carrier-subtext" id="sub-correios-text">3 caixas · R$ 480,50</div>
+                            </div>
+                        </div>
+                        <div class="carrier-val-chevron">
+                            <span class="carrier-val-badge">R$ 480,50</span>
+                            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+                    <div class="carrier-body">
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001007 (Salvador / BA)</span>
+                            <strong>R$ 130,00</strong>
+                        </div>
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001009 (Recife / PE)</span>
+                            <strong>R$ 210,50</strong>
+                        </div>
+                        <div class="nfe-item-row">
+                            <span>NF-e 03001015 (Curitiba / PR)</span>
+                            <strong>R$ 140,00</strong>
+                        </div>
+                        <button type="button" class="btn-approve-single-carrier" id="btn-appr-correios" onclick="aprovarTransportadoraIndividual('Correios', 480.50)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Aprovar Somente Correios (R$ 480,50)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4.3 MT LOG -->
+                <div class="carrier-box" id="box-mtlog">
+                    <div class="carrier-head" onclick="toggleCarrierBox('box-mtlog')">
+                        <div class="carrier-brand-info">
+                            <div class="carrier-icon-dot" style="background: #E0E7FF; color: #4338CA;">M</div>
+                            <div>
+                                <div class="carrier-title">MT Log</div>
+                                <div class="carrier-subtext" id="sub-mtlog-text">1 caixa · R$ 240,00</div>
+                            </div>
+                        </div>
+                        <div class="carrier-val-chevron">
+                            <span class="carrier-val-badge">R$ 240,00</span>
+                            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+                    <div class="carrier-body">
+                        <div class="nfe-item-row">
+                            <span>NF-e 03012004 (Vitória / ES)</span>
+                            <strong>R$ 240,00</strong>
+                        </div>
+                        <button type="button" class="btn-approve-single-carrier" id="btn-appr-mtlog" onclick="aprovarTransportadoraIndividual('MT Log', 240.00)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Aprovar Somente MT Log (R$ 240,00)</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 5. SLIDER "DESLIZE PARA CONFIRMAR" (ANTI-TOQUE ACIDENTAL) -->
+            <div class="slider-confirm-container" id="slider-box">
+                <div class="slider-progress-fill" id="slider-fill"></div>
+                <div class="slider-track-text" id="slider-label">
+                    <span>Deslize para Autorizar Geral</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div class="slider-thumb-handle" id="slider-thumb">
+                    <svg id="slider-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+            </div>
+
         </div>
 
-        <!-- CARD 2: LISTA DE TRANSPORTADORAS (ACCORDION) -->
-        <div class="carriers-card" id="mobile-carriers-container">
-            <!-- 1. TOTAL EXPRESS -->
-            <div class="carrier-item" onclick="toggleCarrierAccordion('details-total')">
-                <div class="carrier-info">
-                    <div class="carrier-name">Total Express</div>
-                    <div class="carrier-sub" id="sub-total-express">(8 volumes · R$ 1.120,00)</div>
-                </div>
-                <div class="chevron-icon" id="chevron-total">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+        <!-- 6. TELA DE SUCESSO (DOCA 100% LIBERADA) -->
+        <div class="success-screen" id="approval-success-view">
+            <div class="success-icon-wrap">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
-            <div class="carrier-details" id="details-total">
-                <div class="note-row"><span>NF-e 03001003 (RJ)</span><span>R$ 1.840,50</span></div>
-                <div class="note-row"><span>NF-e 03001006 (MG)</span><span>R$ 420,00</span></div>
-                <div class="note-row"><span>NF-e 03001013 (SP)</span><span style="color: #94a3b8;">Isento</span></div>
+            <div class="success-title">Expedição 100% Liberada!</div>
+            <div class="success-desc">
+                Pagamentos autorizados e liquidados na conta Asaas. Todas as cargas foram liberadas na doca da loja Shopping Barra.
             </div>
 
-            <!-- 2. CORREIOS -->
-            <div class="carrier-item" onclick="toggleCarrierAccordion('details-correios')">
-                <div class="carrier-info">
-                    <div class="carrier-name">Correios</div>
-                    <div class="carrier-sub" id="sub-correios">(3 volumes · R$ 480,50)</div>
+            <div class="success-meta-box">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Autenticação SISBACEN:</span>
+                    <strong style="color: var(--ok); font-family: var(--font-mono);">AS-91823-BR ✓</strong>
                 </div>
-                <div class="chevron-icon" id="chevron-correios">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Saldo Restante Asaas:</span>
+                    <strong style="color: var(--navy); font-family: var(--font-mono);">R$ 2.410,30</strong>
                 </div>
-            </div>
-            <div class="carrier-details" id="details-correios">
-                <div class="note-row"><span>NF-e 03001003 (BA)</span><span>R$ 130,00</span></div>
-                <div class="note-row"><span>NF-e 03001007 (PE)</span><span>R$ 210,50</span></div>
-                <div class="note-row"><span>NF-e 03001009 (PR)</span><span>R$ 140,00</span></div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Status na Doca:</span>
+                    <span style="color: var(--ok); font-weight: 700;">Pronto para Coleta das Vans</span>
+                </div>
             </div>
 
-            <!-- 3. MT LOG -->
-            <div class="carrier-item" onclick="toggleCarrierAccordion('details-mtlog')">
-                <div class="carrier-info">
-                    <div class="carrier-name">MT Log</div>
-                    <div class="carrier-sub" id="sub-mtlog">(1 volume · R$ 240,00)</div>
-                </div>
-                <div class="chevron-icon" id="chevron-mtlog">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-            </div>
-            <div class="carrier-details" id="details-mtlog">
-                <div class="note-row"><span>NF-e 03012004 (ES)</span><span>R$ 240,00</span></div>
-            </div>
+            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-approve-single-carrier" style="background: var(--primary); color: #fff; border-color: var(--primary); height: 44px; text-decoration: none;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                <span>Visualizar Romaneio & Comprovantes</span>
+            </a>
+
+            <button type="button" onclick="reiniciarSimulacao()" class="btn-reset-simulation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                <span>Redefinir Simulação de Pendências</span>
+            </button>
         </div>
-
-        <!-- BOTÃO PRINCIPAL DE CONFIRMAÇÃO (CADEADO + LIBERAR DOCA) -->
-        <button id="btn-mobile-confirm" onclick="executarAprovacaoMobile()" class="btn-confirm-approval">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span>Confirmar Pagamento e Liberar Doca</span>
-        </button>
 
     </div>
 
+    <!-- TOAST INFORMATIVO -->
     <div id="mobile-toast"></div>
 
     <script>
-        function toggleCarrierAccordion(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.toggle('open');
+        // WEB AUDIO API - SOM HARMÔNICO DE AUTORIZAÇÃO BANCÁRIA
+        function playAudioFeedback(type = 'success') {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (type === 'success') {
+                    // Acorde Harmônico Triplo de Sucesso (Fá Maior)
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35 + (idx * 0.08));
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(ctx.currentTime + (idx * 0.04));
+                        osc.stop(ctx.currentTime + 0.5 + (idx * 0.08));
+                    });
+                } else if (type === 'warn') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(320, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.25);
+                }
+            } catch (e) {
+                // Audio fallback silencioso
             }
         }
 
@@ -403,82 +989,174 @@
             toast.style.display = 'block';
             setTimeout(() => {
                 toast.style.display = 'none';
-            }, 4000);
+            }, 3500);
         }
 
-        async function carregarDadosMobile() {
-            try {
-                // Se já foi aprovado anteriormente nesta simulação
-                if (localStorage.getItem('doca_liberada') === 'true') {
-                    const amountEl = document.getElementById('mobile-total-difal');
-                    if (amountEl) amountEl.textContent = 'R$ 0,00';
-                    const badgeEl = document.getElementById('mobile-volumes-badge');
-                    if (badgeEl) {
-                        badgeEl.style.background = 'rgba(16, 185, 129, 0.18)';
-                        badgeEl.style.color = '#34d399';
-                        badgeEl.textContent = 'Doca 100% Liberada para Embarque';
-                    }
-                    const btn = document.getElementById('btn-mobile-confirm');
-                    if (btn) {
-                        btn.style.background = "#1e293b";
-                        btn.disabled = true;
-                        btn.innerHTML = `<span>Doca 100% Liberada para Embarque</span>`;
-                    }
-                }
+        function toggleCarrierBox(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('open');
+        }
 
-                // Atualiza data atual
-                const hoje = new Date();
-                const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-                const dataFmt = `${hoje.getDate()} de ${meses[hoje.getMonth()]} · Remessa Doca`;
-                const dateEl = document.getElementById('mobile-date-label');
-                if (dateEl) dateEl.textContent = dataFmt;
-
-                // Tenta puxar lote real do backend
-                const res = await fetch('/api/batch/history');
-                if (!res.ok) return;
-                const batches = await res.json();
-                if (!batches || batches.length === 0) return;
-
-                const batchRes = await fetch(`/api/batch/status/${batches[0].id}`);
-                if (!batchRes.ok) return;
-                const batch = await batchRes.json();
-                if (!batch || !batch.guides || batch.guides.length === 0) return;
-
-                // Calcula valores reais
-                const guides = batch.guides;
-                const pendentes = guides.filter(g => {
-                    const uf = (g.uf || '').toUpperCase();
-                    if (uf === 'SP') return false;
-                    const st = (g.status || '').toLowerCase();
-                    if (st === 'comprovada' || st === 'liquidada' || st === 'baixada' || st === 'paga') return false;
-                    const v = parseFloat(g.value || 0);
-                    return v > 0;
-                });
-
-                const totalVal = pendentes.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0);
-                const totalVol = pendentes.length;
-
-                if (totalVol > 0) {
-                    const amountEl = document.getElementById('mobile-total-difal');
-                    if (amountEl) amountEl.textContent = `R$ ${totalVal.toFixed(2).replace('.', ',')}`;
-
-                    const badgeEl = document.getElementById('mobile-volumes-badge');
-                    if (badgeEl) badgeEl.textContent = `${totalVol} volumes aguardando liberação na doca`;
-                }
-            } catch (e) {
-                console.log("Mantendo dados ilustrativos da proposta Lalua Modas.");
+        let operacaoPausada = false;
+        function togglePausaOperacional(isPaused) {
+            operacaoPausada = isPaused;
+            if (isPaused) {
+                playAudioFeedback('warn');
+                showMobileToast("⏸️ Pausa de Emergência ativada! Pagamentos bloqueados.");
+                document.getElementById('slider-box').style.opacity = '0.4';
+                document.getElementById('slider-box').style.pointerEvents = 'none';
+                document.querySelectorAll('.btn-approve-single-carrier').forEach(b => b.disabled = true);
+            } else {
+                playAudioFeedback('success');
+                showMobileToast("▶️ Operação normalizada! Liberações autorizadas.");
+                document.getElementById('slider-box').style.opacity = '1';
+                document.getElementById('slider-box').style.pointerEvents = 'auto';
+                document.querySelectorAll('.btn-approve-single-carrier').forEach(b => b.disabled = false);
             }
         }
 
-        async function executarAprovacaoMobile() {
-            const btn = document.getElementById('btn-mobile-confirm');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<span>Processando Liquidação na Doca...</span>`;
+        // APROVAÇÃO INDIVIDUAL POR TRANSPORTADORA
+        async function aprovarTransportadoraIndividual(carrierName, valor) {
+            if (operacaoPausada) return;
+
+            playAudioFeedback('success');
+            showMobileToast(`✓ Liquidação de R$ ${valor.toFixed(2).replace('.', ',')} da ${carrierName} concluída no Asaas!`);
+
+            const box = document.getElementById(
+                carrierName === 'Total Express' ? 'box-total-express' :
+                carrierName === 'Correios' ? 'box-correios' : 'box-mtlog'
+            );
+            if (box) {
+                box.style.opacity = '0.6';
+                box.style.background = '#EAF7F0';
+                const btn = box.querySelector('.btn-approve-single-carrier');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.background = '#157347';
+                    btn.style.borderColor = '#157347';
+                    btn.style.color = '#ffffff';
+                    btn.innerHTML = `<span>✓ ${carrierName} Liberada na Doca</span>`;
+                }
             }
 
+            // Atualiza o saldo Asaas e valor pendente
+            const balanceEl = document.getElementById('asaas-live-balance');
+            if (balanceEl) {
+                let v = 4250.80 - valor;
+                balanceEl.textContent = `R$ ${v.toFixed(2).replace('.', ',')}`;
+            }
+
+            const difalEl = document.getElementById('difal-total-display');
+            if (difalEl) {
+                let atual = parseFloat(difalEl.textContent.replace('R$', '').replace('.', '').replace(',', '.').trim()) || 1840.50;
+                let novo = Math.max(0, atual - valor);
+                difalEl.textContent = `R$ ${novo.toFixed(2).replace('.', ',')}`;
+                if (novo === 0) {
+                    setTimeout(mostrarTelaSucesso, 800);
+                }
+            }
+        }
+
+        // SLIDER DRAG LOGIC (DESLIZE PARA CONFIRMAR)
+        const sliderBox = document.getElementById('slider-box');
+        const sliderThumb = document.getElementById('slider-thumb');
+        const sliderFill = document.getElementById('slider-fill');
+        const sliderLabel = document.getElementById('slider-label');
+        const sliderIcon = document.getElementById('slider-icon');
+
+        let isDragging = false;
+        let startX = 0;
+        let maxDrag = 0;
+
+        function updateMaxDrag() {
+            if (sliderBox && sliderThumb) {
+                maxDrag = sliderBox.offsetWidth - sliderThumb.offsetWidth - 8;
+            }
+        }
+        window.addEventListener('resize', updateMaxDrag);
+        updateMaxDrag();
+
+        function handleDragStart(e) {
+            if (operacaoPausada) return;
+            isDragging = true;
+            startX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
+            updateMaxDrag();
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging || operacaoPausada) return;
+            const currentX = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+            let delta = currentX - startX;
+            delta = Math.max(0, Math.min(delta, maxDrag));
+
+            sliderThumb.style.transform = `translateX(${delta}px)`;
+            const percent = (delta / maxDrag) * 100;
+            sliderFill.style.width = `${percent}%`;
+
+            if (percent > 60) {
+                sliderLabel.style.opacity = '0.2';
+            } else {
+                sliderLabel.style.opacity = '1';
+            }
+
+            // Destrava ao atingir 92% do percurso
+            if (delta >= maxDrag * 0.92) {
+                sliderThumb.classList.add('unlocked');
+                sliderIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+            } else {
+                sliderThumb.classList.remove('unlocked');
+                sliderIcon.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+            }
+        }
+
+        async function handleDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const matrix = window.getComputedStyle(sliderThumb).transform;
+            let currentX = 0;
+            if (matrix !== 'none') {
+                const values = matrix.split('(')[1].split(')')[0].split(',');
+                currentX = parseFloat(values[4]);
+            }
+
+            if (currentX >= maxDrag * 0.90) {
+                // CONFIRMADO COM SUCESSO!
+                sliderThumb.style.transform = `translateX(${maxDrag}px)`;
+                sliderFill.style.width = '100%';
+                await processarAprovacaoGeral();
+            } else {
+                // Voltou pro início (não completou)
+                sliderThumb.style.transition = 'transform 0.25s ease';
+                sliderFill.style.transition = 'width 0.25s ease';
+                sliderThumb.style.transform = 'translateX(0px)';
+                sliderFill.style.width = '0%';
+                sliderLabel.style.opacity = '1';
+                sliderThumb.classList.remove('unlocked');
+                sliderIcon.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+                setTimeout(() => {
+                    sliderThumb.style.transition = 'none';
+                    sliderFill.style.transition = 'none';
+                }, 260);
+            }
+        }
+
+        // Eventos Touch (Mobile)
+        sliderThumb.addEventListener('touchstart', handleDragStart, { passive: true });
+        window.addEventListener('touchmove', handleDragMove, { passive: true });
+        window.addEventListener('touchend', handleDragEnd);
+
+        // Eventos Mouse (Desktop / Simulador)
+        sliderThumb.addEventListener('mousedown', handleDragStart);
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', handleDragEnd);
+
+        async function processarAprovacaoGeral() {
+            playAudioFeedback('success');
+            showMobileToast("Autorizando pagamento de R$ 1.840,50 no Asaas...");
+
             try {
-                // Tenta acionar API se houver lote ativo
+                // Dispara requisição ao backend
                 const resBatch = await fetch('/api/batch/history');
                 if (resBatch.ok) {
                     const batches = await resBatch.json();
@@ -486,32 +1164,33 @@
                         await fetch(`/api/batch/authorize-payment-asaas/${batches[0].id}`, { method: 'POST' });
                     }
                 }
-
-                localStorage.setItem('doca_liberada', 'true');
-                showMobileToast("Pagamento de R$ 1.840,50 autorizado no Asaas! Doca de expedição liberada.");
-                if (btn) {
-                    btn.style.background = "#1e293b";
-                    btn.innerHTML = `<span>Doca 100% Liberada para Embarque</span>`;
-                }
-                const badgeEl = document.getElementById('mobile-volumes-badge');
-                if (badgeEl) {
-                    badgeEl.style.background = 'rgba(16, 185, 129, 0.18)';
-                    badgeEl.style.color = '#34d399';
-                    badgeEl.textContent = 'Doca 100% Liberada para Embarque';
-                }
-                const totalEl = document.getElementById('mobile-total-difal');
-                if (totalEl) totalEl.textContent = 'R$ 0,00';
             } catch (err) {
-                localStorage.setItem('doca_liberada', 'true');
-                showMobileToast("Autorização concluída! Sinal de liberação enviado para a Doca.");
-                if (btn) {
-                    btn.style.background = "#1e293b";
-                    btn.innerHTML = `<span>Doca 100% Liberada para Embarque</span>`;
-                }
+                console.log("Simulação local de aprovação concluída.");
+            }
+
+            localStorage.setItem('doca_liberada', 'true');
+            setTimeout(mostrarTelaSucesso, 500);
+        }
+
+        function mostrarTelaSucesso() {
+            document.getElementById('approval-main-view').style.display = 'none';
+            document.getElementById('approval-success-view').style.display = 'flex';
+        }
+
+        function reiniciarSimulacao() {
+            localStorage.removeItem('doca_liberada');
+            window.location.reload();
+        }
+
+        // CARREGAMENTO INICIAL
+        function initApp() {
+            updateMaxDrag();
+            if (localStorage.getItem('doca_liberada') === 'true') {
+                mostrarTelaSucesso();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', carregarDadosMobile);
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>

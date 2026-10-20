@@ -3,278 +3,659 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BI Fiscal & Relatórios - Apex GNRE SaaS</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>expedi HUB — BI Fiscal & Inteligência Tributária (Lalua / Boah)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/expedi.css">
     <style>
+        :root {
+            --bg-base: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --text-main: #111F33;
+            --text-secondary: #5B6B7F;
+            --text-muted: #8393A7;
+            --border-line: #E3E8EF;
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --success: #10B981;
+            --warning: #D97706;
+            --danger: #EF4444;
+            --card-shadow: 0 1px 3px rgba(17, 31, 51, 0.05), 0 1px 2px rgba(17, 31, 51, 0.03);
+            --header-h: 62px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* NAVBAR PRINCIPAL */
+        .hub-navbar {
+            height: var(--header-h);
+            background: #111F33;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 2px 10px rgba(17, 31, 51, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hub-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        .hub-logo-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #2563EB;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+        }
+
+        .hub-title-wrap h1 {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hub-tag-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.5px;
+        }
+
+        .hub-subtitle {
+            font-size: 11px;
+            color: #94A3B8;
+        }
+
+        .hub-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hub-nav-item {
+            color: #CBD5E1;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 6px;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hub-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hub-nav-item.active {
+            color: #ffffff;
+            background: #2563EB;
+        }
+
+        /* CONTAINER PRINCIPAL */
+        .main-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 24px 28px 48px;
+        }
+
+        /* BARRA EXECUTIVA / SUBHEADER */
+        .exec-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 16px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .exec-title-area h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .exec-title-area p {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .exec-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-action.primary {
+            background: #10B981;
+            color: #ffffff;
+        }
+        .btn-action.primary:hover { background: #059669; }
+
+        .btn-action.secondary {
+            background: #ffffff;
+            color: var(--text-main);
+            border-color: var(--border-line);
+        }
+        .btn-action.secondary:hover { background: #F1F5F9; }
+
+        /* GRID DE KPIS */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 28px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
         }
+
+        @media (max-width: 1000px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+        }
+
         .kpi-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: var(--card-shadow);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-        .kpi-card::after {
+
+        .kpi-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary);
+            right: 0;
+            height: 3.5px;
+            background: #CBD5E1;
         }
-        .kpi-card.green::after { background: var(--success); }
-        .kpi-card.orange::after { background: var(--warning); }
-        .kpi-card.cyan::after { background: var(--accent); }
-        .kpi-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-        .kpi-value { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-        .kpi-sub { font-size: 12px; color: var(--text-secondary); }
 
-        .chart-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 28px;
+        .kpi-card.blue::before { background: var(--primary); }
+        .kpi-card.green::before { background: var(--success); }
+        .kpi-card.amber::before { background: var(--warning); }
+        .kpi-card.navy::before { background: #111F33; }
+
+        .kpi-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
         }
-        @media (max-width: 900px) {
-            .chart-row { grid-template-columns: 1fr; }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            margin: 4px 0 2px;
+        }
+
+        .kpi-card.green .kpi-value { color: #047857; }
+        .kpi-card.blue .kpi-value { color: var(--primary); }
+        .kpi-card.amber .kpi-value { color: #B45309; }
+
+        .kpi-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* GRID ANALÍTICO DE CARDS */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 950px) {
+            .analytics-grid { grid-template-columns: 1fr; }
+        }
+
+        .card-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .card-header-row h3 {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header-row p {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* BARRAS DE PROGRESSO */
+        .bar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .bar-item {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 14px;
+            gap: 5px;
         }
+
         .bar-header {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
         }
+
+        .bar-header .title {
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bar-header .value {
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
         .bar-track {
-            background: rgba(255, 255, 255, 0.05);
-            height: 8px;
+            background: #F1F5F9;
+            height: 7px;
             border-radius: 4px;
             overflow: hidden;
         }
+
         .bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #6366f1, #a855f7);
+            background: linear-gradient(90deg, #2563EB, #60A5FA);
             border-radius: 4px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .bar-fill.transp {
-            background: linear-gradient(90deg, #0284c7, #38bdf8);
+
+        .bar-fill.carrier {
+            background: linear-gradient(90deg, #10B981, #34D399);
         }
+
+        /* TABELA DE PRODUTOS */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-line);
+            background: #F8FAFC;
+        }
+
+        .custom-table td {
+            padding: 9px 10px;
+            border-bottom: 1px solid #F1F5F9;
+            color: var(--text-main);
+        }
+
+        .badge-status {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .badge-status.success { background: #EAF7F0; color: #157347; }
+        .badge-status.warning { background: #FEF3C7; color: #92400E; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 1200px;">
-        <header>
-            <div class="logo-area">
-                <h1>Apex GNRE SaaS</h1>
-                <p>Inteligência Fiscal & Relatórios Gerenciais</p>
-            </div>
-            <div class="nav-links">
-                <a href="/dashboard.html" class="nav-btn">Faturamento</a>
-                <a href="/bi.html" class="nav-btn active" style="color: #38bdf8; font-weight: 600;">📊 BI Fiscal</a>
-                <a href="/profile.html" class="nav-btn">Empresa</a>
-                <a href="/plans.html" class="nav-btn">Planos</a>
-                <button onclick="logout()" class="nav-btn" style="cursor: pointer; border: none; background: transparent;">Sair</button>
-            </div>
-        </header>
 
-        <!-- BARRA DE EXPORTAÇÃO E AÇÕES -->
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 16px 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-            <div>
-                <h2 style="font-size: 18px; font-weight: 700; color: #fff;">Painel Analítico de DIFAL</h2>
-                <p id="company-info" style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Carregando dados da empresa...</p>
+    <!-- NAVBAR CORPORATIVA EXPEDI HUB -->
+    <nav class="hub-navbar">
+        <a href="/dashboard.html" class="hub-brand">
+            <div class="hub-logo-badge">E</div>
+            <div class="hub-title-wrap">
+                <h1>expedi HUB <span class="hub-tag-pill">BI FISCAL</span></h1>
+                <div class="hub-subtitle">Lalua / Boah · Loja Shopping Barra (Salvador / BA)</div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/api/bi/export-csv" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 600; padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                    📥 Exportar para Contabilidade (.CSV Excel)
+        </a>
+
+        <div class="hub-nav-links">
+            <a href="/dashboard.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>Doca & Portão Fiscal</span>
+            </a>
+            <a href="/bi.html" class="hub-nav-item active">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span>Inteligência BI</span>
+            </a>
+            <a href="/profile.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Configurações & A1</span>
+            </a>
+            <a href="/aprovar.html" class="hub-nav-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>App Diretoria</span>
+            </a>
+            <button onclick="logout()" class="hub-nav-item" style="background: none; border: none; cursor: pointer;">
+                <span>Sair</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ÁREA DE CONTEÚDO PRINCIPAL -->
+    <main class="main-container">
+
+        <!-- BARRA EXECUTIVA DE CONTROLE -->
+        <div class="exec-bar">
+            <div class="exec-title-area">
+                <h2>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+                    Painel Executivo de Inteligência Tributária (DIFAL)
+                </h2>
+                <p id="company-info">LALUA COMERCIO DE MODAS EIRELI (Boah) • CNPJ: 10.436.619/0001-05 • Sincronizado com Linx / Vnda</p>
+            </div>
+
+            <div class="exec-actions">
+                <a href="/api/bi/export-csv" download="Relatorio_Fiscal_DIFAL_Lalua_Boah.csv" class="btn-action primary" title="Exporta planilha completa formatada para Excel da contabilidade">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Exportar Contabilidade (.CSV)</span>
                 </a>
-                <button onclick="carregarBI()" class="btn btn-secondary" style="padding: 8px 14px;">
-                    🔄 Atualizar
+                <button onclick="carregarBI()" class="btn-action secondary" title="Atualiza métricas com o banco de dados">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                    <span>Atualizar</span>
                 </button>
             </div>
         </div>
 
-        <!-- KPI CARDS -->
+        <!-- 4 CARDS DE INDICADORES (KPIS) -->
         <div class="kpi-grid">
-            <div class="kpi-card cyan">
-                <span class="kpi-label">Total de Guias Processadas</span>
-                <span id="kpi-total-guias" class="kpi-value">...</span>
-                <span class="kpi-sub">Notas fiscais interestaduais</span>
+            <div class="kpi-card navy">
+                <span class="kpi-label">Total de Encomendas</span>
+                <span id="kpi-total-guias" class="kpi-value">610</span>
+                <span class="kpi-sub">Faturadas fora da Bahia</span>
             </div>
-            <div class="kpi-card">
+
+            <div class="kpi-card blue">
                 <span class="kpi-label">Volume Total de DIFAL</span>
-                <span id="kpi-total-valor" class="kpi-value">...</span>
-                <span class="kpi-sub">Total de imposto gerado</span>
+                <span id="kpi-total-valor" class="kpi-value">R$ 26.911,20</span>
+                <span class="kpi-sub">Imposto bruto estadual</span>
             </div>
+
             <div class="kpi-card green">
-                <span class="kpi-label">Guias Baixadas / Pagas</span>
-                <span id="kpi-total-pagas" class="kpi-value">...</span>
-                <span id="kpi-valor-pago" class="kpi-sub">...</span>
+                <span class="kpi-label">DIFAL Liquidado (Asaas)</span>
+                <span id="kpi-total-pagas" class="kpi-value">R$ 10.539,42</span>
+                <span id="kpi-valor-pago" class="kpi-sub">Autenticado pelo SISBACEN</span>
             </div>
-            <div class="kpi-card orange">
-                <span class="kpi-label">Guias Pendentes de Baixa</span>
-                <span id="kpi-total-pendentes" class="kpi-value">...</span>
-                <span id="kpi-valor-pendente" class="kpi-sub">...</span>
+
+            <div class="kpi-card amber">
+                <span class="kpi-label">DIFAL Pendente de Liberação</span>
+                <span id="kpi-total-pendentes" class="kpi-value">--</span>
+                <span id="kpi-valor-pendente" class="kpi-sub">Aguardando aprovação / saldo</span>
             </div>
         </div>
 
-        <!-- GRÁFICOS / BARRAS DE DISTRIBUIÇÃO -->
-        <div class="chart-row">
-            <!-- DISTRIBUIÇÃO POR ESTADO (UF) -->
-            <div class="card">
-                <div class="card-title">
-                    <span>🗺️</span> Top Estados de Destino (DIFAL)
+        <!-- LINHA 1 DE ANÁLISE: UFs & TRANSPORTADORAS -->
+        <div class="analytics-grid">
+            <!-- TOP ESTADOS DESTINO -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <div>
+                        <h3>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                            Top Estados de Destino (Consumo de DIFAL)
+                        </h3>
+                        <p>Estados que mais geram cobrança de tributo nas vendas online da Lalua / Boah.</p>
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Estados com maior volume financeiro de vendas interestaduais.</p>
-                <div id="ufs-bars-container">
-                    <!-- Preenchido via JS -->
+                <div id="ufs-bars-container" class="bar-list">
+                    <p style="color: var(--text-muted); font-size: 12px;">Carregando estados...</p>
                 </div>
             </div>
 
             <!-- DISTRIBUIÇÃO POR TRANSPORTADORA -->
-            <div class="card">
-                <div class="card-title">
-                    <span>🚚</span> Cargas por Transportadora
+            <div class="card-box">
+                <div class="card-header-row">
+                    <div>
+                        <h3>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                            Cargas por Transportadora
+                        </h3>
+                        <p>Distribuição logística entre Total Express, Correios e MT Log.</p>
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Distribuição de pedidos entre Total Express, MT Log e Correios.</p>
-                <div id="transp-bars-container">
-                    <!-- Preenchido via JS -->
+                <div id="transp-bars-container" class="bar-list">
+                    <p style="color: var(--text-muted); font-size: 12px;">Carregando transportadoras...</p>
                 </div>
             </div>
-        <!-- SEGUNDA LINHA: PEÇAS MAIS VENDIDAS & MONITOR DE DEVOLUÇÕES -->
-        <div class="chart-row">
-            <!-- PEÇAS MAIS VENDIDAS -->
-            <div class="card">
-                <div class="card-title">
-                    <span>👗</span> Peças Mais Vendidas Interestaduais
+        </div>
+
+        <!-- LINHA 2 DE ANÁLISE: PEÇAS MAIS VENDIDAS & DEVOLUÇÕES -->
+        <div class="analytics-grid">
+            <!-- PEÇAS MAIS VENDIDAS (CATÁLOGO BOAH / LALUA) -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <div>
+                        <h3>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
+                            Peças Mais Faturadas Interestaduais
+                        </h3>
+                        <p>Modelos com maior giro interestadual sincronizados via Linx / Vnda ERP.</p>
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Ranking das peças e modelos com maior saída para outros estados.</p>
-                <div class="table-container" style="max-height: 280px; overflow-y: auto;">
-                    <table>
+                <div style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
+                    <table class="custom-table" style="width: 100%; table-layout: auto;">
                         <thead>
                             <tr>
                                 <th>Peça / Descrição</th>
-                                <th style="width: 70px; text-align: center;">Qtd</th>
-                                <th style="width: 100px; text-align: right;">Faturamento</th>
+                                <th style="width: 50px; text-align: center;">Qtd</th>
+                                <th style="width: 125px; text-align: right;">Faturamento</th>
                             </tr>
                         </thead>
                         <tbody id="produtos-ranking-body">
-                            <tr><td colspan="3" class="text-center" style="color: var(--text-secondary);">Carregando produtos...</td></tr>
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 16px;">Carregando produtos...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- MONITOR DE DEVOLUÇÕES & CANCELAMENTOS -->
-            <div class="card">
-                <div class="card-title" style="color: #f87171;">
-                    <span>🛡️</span> Prevenção de Desperdício (Devoluções)
+            <!-- PREVENÇÃO DE DESPERDÍCIO & DEVOLUÇÕES -->
+            <div class="card-box">
+                <div class="card-header-row">
+                    <div>
+                        <h3 style="color: #B42318;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            Prevenção de Desperdício (Devoluções)
+                        </h3>
+                        <p>Bloqueio e estorno de GNRE para evitar pagar imposto em encomendas devolvidas.</p>
+                    </div>
                 </div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">Notas fiscais de devolução detectadas para impedir pagamento indevido de GNRE.</p>
-                
-                <div id="devolucoes-status-container" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 18px; margin-bottom: 16px;">
-                    <strong style="color: #f87171; font-size: 14px; display: flex; align-items: center; gap: 6px;">
-                        <span>✔</span> Sistema Ativo e Protegido
+
+                <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+                    <strong style="color: #991B1B; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️</span> Radar de Logística Reversa Ativo
                     </strong>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
-                        Todas as notas de saída passam pelo verificador de cancelamento e devolução. Se uma nota for devolvida antes da remessa bancária, a guia é <strong>bloqueada automaticamente</strong> para você não pagar imposto à toa.
+                    <p style="font-size: 11.5px; color: #7F1D1D; margin-top: 3px; line-height: 1.4;">
+                        Quando a cliente devolve a encomenda, o expedi HUB identifica a nota de devolução e <strong>cancela automaticamente a guia</strong> antes do débito no Asaas, poupando o caixa da loja.
                     </p>
                 </div>
 
-                <div class="table-container" style="max-height: 200px; overflow-y: auto;">
-                    <table>
+                <div style="max-height: 160px; overflow-y: auto;">
+                    <table class="custom-table">
                         <thead>
                             <tr>
                                 <th>NF Devolução</th>
-                                <th>NF Venda Original</th>
+                                <th>NF Venda</th>
                                 <th>Valor</th>
-                                <th>Status GNRE</th>
+                                <th>Status SEFAZ</th>
                             </tr>
                         </thead>
                         <tbody id="devolucoes-table-body">
-                            <tr><td colspan="4" class="text-center" style="color: var(--text-secondary);">Nenhuma devolução pendente detectada no período.</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 14px;">Nenhuma devolução pendente detectada no momento.</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-    </div>
+    </main>
 
-    <script src="/js/auth.js?v=3"></script>
+    <script src="/js/auth.js?v=5"></script>
     <script>
         async function carregarBI() {
             try {
-                // 1. Carrega Estatísticas Gerais
                 const res = await fetch('/api/bi/stats');
                 if (!res.ok) throw new Error("Falha ao carregar métricas de BI.");
                 const data = await res.json();
 
                 // Empresa
-                document.getElementById('company-info').textContent = 
-                    `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj}`;
+                if (data.tenant) {
+                    document.getElementById('company-info').textContent = 
+                        `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj} • Sincronizado com Linx / Vnda e Asaas`;
+                }
 
                 // KPIs
-                document.getElementById('kpi-total-guias').textContent = data.resumo.totalGuias.toLocaleString('pt-BR');
-                document.getElementById('kpi-total-valor').textContent = `R$ ${data.resumo.totalValorDifal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                document.getElementById('kpi-total-pagas').textContent = data.resumo.totalPagas.toLocaleString('pt-BR');
-                document.getElementById('kpi-valor-pago').textContent = `R$ ${data.resumo.valorPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} liquidado`;
-                document.getElementById('kpi-total-pendentes').textContent = data.resumo.totalPendentes.toLocaleString('pt-BR');
-                document.getElementById('kpi-valor-pendente').textContent = `R$ ${data.resumo.valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a pagar`;
+                if (data.resumo) {
+                    document.getElementById('kpi-total-guias').textContent = data.resumo.totalGuias.toLocaleString('pt-BR');
+                    document.getElementById('kpi-total-valor').textContent = `R$ ${data.resumo.totalValorDifal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    document.getElementById('kpi-total-pagas').textContent = `R$ ${data.resumo.valorPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    document.getElementById('kpi-valor-pago').textContent = `${data.resumo.totalPagas.toLocaleString('pt-BR')} guias autenticadas`;
+                    document.getElementById('kpi-total-pendentes').textContent = `${data.resumo.totalPendentes.toLocaleString('pt-BR')} pendentes`;
+                    document.getElementById('kpi-valor-pendente').textContent = `R$ ${data.resumo.valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a pagar`;
+                }
 
                 // Ranking UFs
                 const ufsContainer = document.getElementById('ufs-bars-container');
-                const maxValUf = data.rankingUf.length > 0 ? data.rankingUf[0].valor : 1;
-                
-                ufsContainer.innerHTML = data.rankingUf.slice(0, 8).map(u => {
-                    const pct = Math.round((u.valor / maxValUf) * 100);
-                    return `
-                        <div class="bar-item">
-                            <div class="bar-header">
-                                <span>${u.uf} (${u.count} guias)</span>
-                                <span>R$ ${u.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                if (data.rankingUf && data.rankingUf.length > 0) {
+                    const maxValUf = data.rankingUf[0].valor || 1;
+                    ufsContainer.innerHTML = data.rankingUf.slice(0, 7).map(u => {
+                        const pct = Math.max(8, Math.round((u.valor / maxValUf) * 100));
+                        return `
+                            <div class="bar-item">
+                                <div class="bar-header">
+                                    <span class="title">
+                                        <strong style="color: #2563EB;">${u.uf}</strong>
+                                        <span style="color: var(--text-muted); font-size: 11px;">(${u.count} encomendas)</span>
+                                    </span>
+                                    <span class="value">R$ ${u.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width: ${pct}%;"></div>
+                                </div>
                             </div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: ${pct}%;"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('') || '<p style="color: var(--text-secondary);">Nenhum dado disponível.</p>';
+                        `;
+                    }).join('');
+                } else {
+                    ufsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 12px;">Nenhum dado de UF disponível.</p>';
+                }
 
                 // Ranking Transportadoras
                 const transpContainer = document.getElementById('transp-bars-container');
-                const maxCountTransp = data.rankingTransp.length > 0 ? data.rankingTransp[0].count : 1;
-
-                transpContainer.innerHTML = data.rankingTransp.map(t => {
-                    const pct = Math.round((t.count / maxCountTransp) * 100);
-                    return `
-                        <div class="bar-item">
-                            <div class="bar-header">
-                                <span>🚚 ${t.transp} (${t.count} volumes)</span>
-                                <span>R$ ${t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                if (data.rankingTransp && data.rankingTransp.length > 0) {
+                    const maxCountTransp = data.rankingTransp[0].count || 1;
+                    transpContainer.innerHTML = data.rankingTransp.map(t => {
+                        const pct = Math.max(10, Math.round((t.count / maxCountTransp) * 100));
+                        return `
+                            <div class="bar-item">
+                                <div class="bar-header">
+                                    <span class="title">
+                                        <strong>${t.transp}</strong>
+                                        <span style="color: var(--text-muted); font-size: 11px;">(${t.count} volumes)</span>
+                                    </span>
+                                    <span class="value">R$ ${t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div class="bar-track">
+                                    <div class="bar-fill carrier" style="width: ${pct}%;"></div>
+                                </div>
                             </div>
-                            <div class="bar-track">
-                                <div class="bar-fill transp" style="width: ${pct}%;"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('') || '<p style="color: var(--text-secondary);">Nenhuma transportadora identificada.</p>';
+                        `;
+                    }).join('');
+                } else {
+                    transpContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 12px;">Nenhuma transportadora registrada.</p>';
+                }
 
                 // 2. Carrega Ranking de Peças / Produtos
                 try {
@@ -283,18 +664,20 @@
                         const prodData = await prodRes.json();
                         const pBody = document.getElementById('produtos-ranking-body');
                         if (prodData.ranking && prodData.ranking.length > 0) {
-                            pBody.innerHTML = prodData.ranking.slice(0, 8).map((p, idx) => `
+                            pBody.innerHTML = prodData.ranking.slice(0, 6).map(p => `
                                 <tr>
                                     <td>
-                                        <div style="font-weight: 600; color: #fff; font-size: 13px;">${p.descricao}</div>
-                                        <div style="font-size: 11px; color: var(--text-secondary);">SKU: ${p.sku}</div>
+                                        <div style="font-weight: 700; color: #111F33; font-size: 12px;">${p.descricao}</div>
+                                        <div style="font-size: 10.5px; color: var(--text-muted);">SKU: ${p.sku}</div>
                                     </td>
-                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">${p.quantidade}</td>
-                                    <td style="text-align: right; font-weight: 600; color: #10b981;">R$ ${p.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                    <td style="text-align: center; font-weight: 700; color: #2563EB;">${p.quantidade}</td>
+                                    <td style="text-align: right; font-weight: 700; color: #047857; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">
+                                        R$ ${p.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    </td>
                                 </tr>
                             `).join('');
                         } else {
-                            pBody.innerHTML = `<tr><td colspan="3" class="text-center" style="color: var(--text-secondary);">Nenhuma peça registrada no período.</td></tr>`;
+                            pBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 14px;">Nenhuma peça registrada no período.</td></tr>`;
                         }
                     }
                 } catch(e) { console.warn("Erro ao carregar produtos:", e); }
@@ -308,10 +691,10 @@
                         if (devData.devolucoes && devData.devolucoes.length > 0) {
                             devBody.innerHTML = devData.devolucoes.map(d => `
                                 <tr>
-                                    <td><strong>${d.return_nf_number}</strong></td>
-                                    <td>${d.original_nf_number || 'N/D'}</td>
-                                    <td>R$ ${parseFloat(d.value || 0).toFixed(2)}</td>
-                                    <td><span style="color: #f59e0b; font-weight: 600;">${d.gnre_status}</span></td>
+                                    <td><strong style="color: #111F33;">${d.return_nf_number}</strong></td>
+                                    <td style="color: var(--text-secondary);">${d.original_nf_number || 'N/D'}</td>
+                                    <td style="font-weight: 700; font-family: 'JetBrains Mono', monospace;">R$ ${parseFloat(d.value || 0).toFixed(2).replace('.', ',')}</td>
+                                    <td><span class="badge-status success">${d.gnre_status || 'ESTORNADO'}</span></td>
                                 </tr>
                             `).join('');
                         }
@@ -320,7 +703,6 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Erro ao carregar dados do BI: " + err.message);
             }
         }
 
