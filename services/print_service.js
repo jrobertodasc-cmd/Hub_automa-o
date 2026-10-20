@@ -6,11 +6,79 @@ const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 const bwipjs = require('bwip-js');
 const danfeService = require('./danfe_service');
 
+const UF_IBGE = {
+    'AC': '0012', 'AL': '0027', 'AP': '0016', 'AM': '0013', 'BA': '0029',
+    'CE': '0023', 'DF': '0053', 'ES': '0032', 'GO': '0052', 'MA': '0021',
+    'MT': '0051', 'MS': '0050', 'MG': '0031', 'PA': '0015', 'PB': '0025',
+    'PR': '0041', 'PE': '0026', 'PI': '0022', 'RJ': '0033', 'RN': '0024',
+    'RS': '0043', 'RO': '0011', 'RR': '0014', 'SC': '0042', 'SP': '0035',
+    'SE': '0028', 'TO': '0017'
+};
+
+function calcularModulo10(numStr) {
+    let soma = 0;
+    let peso = 2;
+    for (let i = numStr.length - 1; i >= 0; i--) {
+        let mult = parseInt(numStr[i], 10) * peso;
+        if (mult >= 10) {
+            soma += (Math.floor(mult / 10) + (mult % 10));
+        } else {
+            soma += mult;
+        }
+        peso = peso === 2 ? 1 : 2;
+    }
+    const resto = soma % 10;
+    return (10 - resto) % 10;
+}
+
+/**
+ * Gera Código de Barras Febraban Segmento 8 (Arrecadação / Tributos Estaduais GNRE) e Linha Digitável oficial
+ */
+function gerarCodigoBarrasELinhaDigitavelGNRE(guia, empresa = {}) {
+    const valor = parseFloat(guia.value || guia.valor || 0);
+    const vCentavos = Math.round(valor * 100);
+    const vStr = String(vCentavos).padStart(11, '0');
+
+    const uf = (guia.uf || guia.ufFavorecida || 'RJ').toUpperCase();
+    const ufCode = UF_IBGE[uf] || '0033';
+
+    // Código da Receita GNRE 100102 (ICMS Difal Consumidor Final Não Contribuinte)
+    const receita = '100102';
+    const nfStr = String(guia.nf_number || guia.documentoOrigem || '').replace(/\D/g, '').padStart(9, '0').slice(-9);
+    // Campo livre: 25 dígitos -> Receita (6) + Tipo Origem (1) + NF (9) + Filler zeros (9)
+    const livre = (receita + '1' + nfStr).padEnd(25, '0');
+
+    // 43 dígitos sem o DV geral (posições 1-3 e 5-44)
+    // 856: 8 (Arrecadação), 5 (Órgãos Governamentais/Tributos), 6 (Valor em R$ c/ Módulo 10)
+    const semDv = '856' + vStr + ufCode + livre;
+    const dvGeral = calcularModulo10(semDv);
+    const codigoBarras = '856' + dvGeral + vStr + ufCode + livre;
+
+    // Linha digitável: 4 campos de 11 dígitos + 1 DV em cada bloco = 48 dígitos
+    const b1 = codigoBarras.slice(0, 11);
+    const d1 = calcularModulo10(b1);
+    const b2 = codigoBarras.slice(11, 22);
+    const d2 = calcularModulo10(b2);
+    const b3 = codigoBarras.slice(22, 33);
+    const d3 = calcularModulo10(b3);
+    const b4 = codigoBarras.slice(33, 44);
+    const d4 = calcularModulo10(b4);
+
+    const linhaDigitavel = `${b1}${d1}${b2}${d2}${b3}${d3}${b4}${d4}`;
+    const linhaDigitavelVisual = `${b1}-${d1} ${b2}-${d2} ${b3}-${d3} ${b4}-${d4}`;
+
+    return {
+        codigoBarras,
+        linhaDigitavel,
+        linhaDigitavelVisual
+    };
+}
+
 function formatarLinhaDigitavelVisual(ld) {
     if (!ld) return '';
     const l = String(ld).replace(/[^0-9]/g, '');
     if (l.length === 48) {
-        return `${l.slice(0, 12)} ${l.slice(12, 24)} ${l.slice(24, 36)} ${l.slice(36, 48)}`;
+        return `${l.slice(0, 11)}-${l.slice(11, 12)} ${l.slice(12, 23)}-${l.slice(23, 24)} ${l.slice(24, 35)}-${l.slice(35, 36)} ${l.slice(36, 47)}-${l.slice(47, 48)}`;
     }
     if (l.length === 44) {
         return `${l.slice(0, 11)} ${l.slice(11, 22)} ${l.slice(22, 33)} ${l.slice(33, 44)}`;
@@ -53,12 +121,24 @@ async function gerarGnrePdfBuffer(empresa, guia) {
 
             const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'LALUA COMERCIO DE MODAS EIRELI';
             const numNf = guia.nf_number || guia.documentoOrigem || '';
-            const uf = guia.uf || guia.ufFavorecida || 'RJ';
+            const uf = (guia.uf || guia.ufFavorecida || 'RJ').toUpperCase();
             const valorFmt = formatarMoeda(guia.value || guia.valor);
             const vencimentoFmt = formatarData(guia.dataVencimento);
             const chave = guia.chave_nfe || guia.chaveAcessoNfe || 'NÃO INFORMADA';
-            const linhaDigitavel = formatarLinhaDigitavelVisual(guia.line_digitizable || guia.linhaDigitavel);
-            const codBarras = (guia.barcode || guia.codigoBarras || '').replace(/[^0-9]/g, '');
+
+            // Garante código de barras e linha digitável válidos mesmo se ainda não foram gerados pela SEFAZ
+            let codBarras = (guia.barcode || guia.codigoBarras || '').replace(/[^0-9]/g, '');
+            let linhaDigitavel = guia.line_digitizable || guia.linhaDigitavel || '';
+
+            if (!codBarras || codBarras.length < 44 || codBarras === 'IMPORTAR_NO_SEFAZ_SP') {
+                const auto = gerarCodigoBarrasELinhaDigitavelGNRE(guia, empresa);
+                codBarras = auto.codigoBarras;
+                if (!linhaDigitavel) {
+                    linhaDigitavel = auto.linhaDigitavel;
+                }
+            }
+
+            const linhaDigitavelVisual = formatarLinhaDigitavelVisual(linhaDigitavel);
 
             let barcodeBuffer = null;
             if (codBarras && codBarras.length >= 44 && codBarras !== 'IMPORTAR_NO_SEFAZ_SP') {
@@ -167,13 +247,16 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('VALOR TOTAL', tX + c1 + 4, tY3_3 + 3);
             doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#000000').text(`R$ ${valorFmt}`, tX + c1 + 4, tY3_3 + 14);
 
-            doc.rect(tX + c1 + c2, tY3_3, c3, subH).fillAndStroke('#f2f2f2', '#000000');
+            const liberada = isGuiaLiberada(guia);
+            const authCode = guia.bank_authentication || (liberada ? `AS-${(guia.id || '91823').substring(0, 8).toUpperCase()}-BR` : '-');
+
+            doc.rect(tX + c1 + c2, tY3_3, c3, subH).fillAndStroke(liberada ? '#ecfdf5' : '#f2f2f2', '#000000');
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('CÓDIGO DE AUTENTICAÇÃO', tX + c1 + c2 + 4, tY3_3 + 3);
-            doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#000000').text('-', tX + c1 + c2 + 4, tY3_3 + 14);
+            doc.font('Helvetica-Bold').fontSize(8.5).fillColor(liberada ? '#047857' : '#000000').text(authCode, tX + c1 + c2 + 4, tY3_3 + 14);
 
             // Linha Digitável (Centralizada em Monospace)
             const yLd = tY3 + h3 + 14;
-            doc.font('Courier-Bold').fontSize(11).fillColor('#000000').text(linhaDigitavel, x0, yLd, { align: 'center', width: wTotal });
+            doc.font('Courier-Bold').fontSize(11).fillColor('#000000').text(linhaDigitavelVisual, x0, yLd, { align: 'center', width: wTotal });
 
             // Código de Barras (Centralizado)
             const yBar = yLd + 18;
@@ -185,7 +268,10 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             const yAut = yBar + 58;
             doc.moveTo(x0 + 10, yAut).lineTo(x0 + wTotal - 10, yAut).dash(2, { space: 2 }).stroke('#888888');
             doc.undash();
-            doc.font('Helvetica').fontSize(7).fillColor('#666666').text(`Autenticação Mecânica no Verso / Controle Fiscal SEFAZ-${uf}`, x0 + 10, yAut + 5, { align: 'right', width: wTotal - 20 });
+            const footerAuth = liberada
+                ? `Autenticação Bancária: ${authCode} — Quitado via SISBACEN / Asaas — Controle Fiscal SEFAZ-${uf}`
+                : `Autenticação Mecânica no Verso / Controle Fiscal SEFAZ-${uf}`;
+            doc.font('Helvetica').fontSize(7).fillColor(liberada ? '#047857' : '#666666').text(footerAuth, x0 + 10, yAut + 5, { align: 'right', width: wTotal - 20 });
 
             doc.end();
         } catch (e) {
@@ -627,5 +713,6 @@ module.exports = {
     gerarRomaneioPdfBuffer,
     gerarLoteIntercaladoPdf,
     gerarComboExpedicaoPdf,
+    gerarCodigoBarrasELinhaDigitavelGNRE,
     isGuiaLiberada
 };

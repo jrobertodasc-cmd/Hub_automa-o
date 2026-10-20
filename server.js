@@ -858,6 +858,22 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
             return res.status(400).json({ error: "Nenhuma guia encontrada para este lote." });
         }
 
+        // Garante que guias de DIFAL tenham código de barras e linha digitável Febraban calculados
+        for (const g of guias) {
+            const uf = (g.uf || '').toUpperCase();
+            if (uf !== 'SP' && parseFloat(g.value || 0) > 0) {
+                if (!g.barcode || g.barcode.length < 44 || !g.line_digitizable) {
+                    const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, tenant);
+                    g.barcode = auto.codigoBarras;
+                    g.line_digitizable = auto.linhaDigitavel;
+                    await supabase.from('guides').update({
+                        barcode: auto.codigoBarras,
+                        line_digitizable: auto.linhaDigitavel
+                    }).eq('id', g.id);
+                }
+            }
+        }
+
         // Filtra guias elegíveis para pagamento (com linha digitável e AINDA NÃO PAGAS / IDEMPOTÊNCIA)
         const guiasPendentes = guias.filter(g => {
             const hasLine = (g.line_digitizable && g.line_digitizable.length > 30) || (g.barcode && g.barcode.length > 30);
@@ -979,6 +995,16 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req,
 
         if (guia.status === 'paga' || guia.status === 'comprovada' || guia.asaas_bill_id) {
             return res.status(400).json({ error: "Esta guia já foi autorizada ou paga anteriormente." });
+        }
+
+        if (!guia.barcode || guia.barcode.length < 44 || !guia.line_digitizable) {
+            const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guia, tenant);
+            guia.barcode = auto.codigoBarras;
+            guia.line_digitizable = auto.linhaDigitavel;
+            await supabase.from('guides').update({
+                barcode: auto.codigoBarras,
+                line_digitizable: auto.linhaDigitavel
+            }).eq('id', guia.id);
         }
 
         const linha = guia.line_digitizable || guia.barcode;
@@ -2817,6 +2843,16 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Guia não encontrada." });
         }
 
+        if (!guide.barcode || guide.barcode.length < 44 || !guide.line_digitizable) {
+            const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guide, req.tenant);
+            guide.barcode = auto.codigoBarras;
+            guide.line_digitizable = auto.linhaDigitavel;
+            supabase.from('guides').update({
+                barcode: auto.codigoBarras,
+                line_digitizable: auto.linhaDigitavel
+            }).eq('id', guide.id).then(() => {}).catch(() => {});
+        }
+
         let buffer = null;
         if (guide.storage_path) {
             try {
@@ -2871,6 +2907,15 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
 
         const pdfBuffers = [];
         for (const g of guiasComGnre) {
+            if (!g.barcode || g.barcode.length < 44 || !g.line_digitizable) {
+                const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, req.tenant);
+                g.barcode = auto.codigoBarras;
+                g.line_digitizable = auto.linhaDigitavel;
+                supabase.from('guides').update({
+                    barcode: auto.codigoBarras,
+                    line_digitizable: auto.linhaDigitavel
+                }).eq('id', g.id).then(() => {}).catch(() => {});
+            }
             let buf = null;
             if (g.storage_path) {
                 try {
