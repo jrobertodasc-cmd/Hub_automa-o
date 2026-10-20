@@ -1740,6 +1740,7 @@ async function carregarCargasDocaReais() {
                         </td>
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
+                            ${g.uf !== 'SP' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : ''}
                             ${isLib ? '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>' : `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`}
                         </td>
                     </tr>
@@ -2350,6 +2351,20 @@ function imprimirDanfesLoteSelecionado() {
     }
 }
 window.imprimirDanfesLoteSelecionado = imprimirDanfesLoteSelecionado;
+
+function imprimirGnresLoteSelecionado() {
+    const selected = Array.from(document.querySelectorAll('.cockpit-table tbody .row-select-box:checked'));
+    if (selected.length === 0) return;
+    const ids = selected.map(cb => cb.dataset.guideId).filter(Boolean);
+    const nfs = selected.map(cb => cb.dataset.nf).filter(Boolean);
+    showToast(`Gerando PDF unificado de Guias GNRE selecionadas...`, 'success');
+    if (ids.length > 0) {
+        window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}`, '_blank');
+    } else if (nfs.length > 0) {
+        window.open(`/api/guide/gnre-selecionadas?nfs=${nfs.join(',')}`, '_blank');
+    }
+}
+window.imprimirGnresLoteSelecionado = imprimirGnresLoteSelecionado;
 
 function solicitarLiberacaoLoteSelecionado() {
     const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
