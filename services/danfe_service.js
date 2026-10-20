@@ -69,7 +69,75 @@ async function gerarDanfePdf(xmlString) {
     });
 }
 
+const { PDFDocument: PDFLibDocument } = require('pdf-lib');
+
+/**
+ * Obtém do Storage ou gera dinamicamente a DANFE em PDF de uma guia
+ */
+async function obterOuGerarDanfePdfGuia(supabaseClient, tenantId, guide) {
+    if (!guide) return null;
+
+    const danfePath = guide.danfe_storage_path || `${tenantId}/danfe/danfe_NF_${guide.nf_number}.pdf`;
+
+    // 1. Tenta baixar do storage se já existir
+    try {
+        const { data: dData, error: dErr } = await supabaseClient.storage.from('tenant-storage').download(danfePath);
+        if (!dErr && dData) {
+            return Buffer.from(await dData.arrayBuffer());
+        }
+    } catch (e) {}
+
+    // 2. Se não existir, baixa o XML e gera
+    if (guide.xml_storage_path) {
+        try {
+            const { data: xData, error: xErr } = await supabaseClient.storage.from('tenant-storage').download(guide.xml_storage_path);
+            if (!xErr && xData) {
+                const xmlStr = await xData.text();
+                const pdfBuffer = await gerarDanfePdf(xmlStr);
+
+                // Salva no storage em background para acelerar próximas consultas
+                supabaseClient.storage.from('tenant-storage').upload(danfePath, pdfBuffer, {
+                    contentType: 'application/pdf',
+                    upsert: true
+                }).catch(() => {});
+
+                if (!guide.danfe_storage_path) {
+                    supabaseClient.from('guides').update({ danfe_storage_path: danfePath }).eq('id', guide.id).catch(() => {});
+                }
+
+                return pdfBuffer;
+            }
+        } catch (e) {
+            console.error(`Erro ao gerar DANFE a partir do XML da NF ${guide.nf_number}:`, e.message);
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Mescla múltiplos buffers de DANFE em um único PDF sequencial para impressão
+ */
+async function mesclarDanfesPdf(pdfBuffers) {
+    const mergedPdf = await PDFLibDocument.create();
+    for (const buf of pdfBuffers) {
+        if (!buf) continue;
+        try {
+            const doc = await PDFLibDocument.load(buf, { ignoreEncryption: true });
+            const pages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+            pages.forEach(p => mergedPdf.addPage(p));
+        } catch (err) {
+            console.error("Erro ao incluir página de DANFE no PDF mesclado:", err.message);
+        }
+    }
+    const mergedBytes = await mergedPdf.save();
+    return Buffer.from(mergedBytes);
+}
+
 module.exports = {
     gerarDanfePdf,
-    normalizarXmlParaDanfe
+    normalizarXmlParaDanfe,
+    obterOuGerarDanfePdfGuia,
+    mesclarDanfesPdf
 };
+

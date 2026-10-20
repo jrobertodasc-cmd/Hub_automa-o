@@ -1709,7 +1709,7 @@ async function carregarCargasDocaReais() {
                 return `
                     <tr>
                         <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" onchange="atualizarContagemLote()">
                         </td>
                         <td>
                             <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
@@ -1739,7 +1739,7 @@ async function carregarCargasDocaReais() {
                             ${statusBadge}
                         </td>
                         <td style="text-align: right;">
-                            <a href="#" onclick="alert('DANFE NF-e ${escapeHtml(g.nf_number)} sincronizada da Linx Microvix.'); return false;" class="btn-table-action" title="Visualizar DANFE">DANFE</a>
+                            <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
                             ${isLib ? '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>' : `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`}
                         </td>
                     </tr>
@@ -2336,10 +2336,18 @@ function desmarcarTodasLinhas() {
 window.desmarcarTodasLinhas = desmarcarTodasLinhas;
 
 function imprimirDanfesLoteSelecionado() {
-    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
+    const selected = Array.from(document.querySelectorAll('.cockpit-table tbody .row-select-box:checked'));
     if (selected.length === 0) return;
-    showToast(`Gerando impressão de ${selected.length} DANFEs selecionadas...`, 'success');
-    window.open('/api/expedicao/romaneio', '_blank');
+    const ids = selected.map(cb => cb.dataset.guideId).filter(Boolean);
+    const nfs = selected.map(cb => cb.dataset.nf).filter(Boolean);
+    showToast(`Gerando PDF unificado de ${selected.length} DANFE(s) da Linx Microvix...`, 'success');
+    if (ids.length > 0) {
+        window.open(`/api/guide/danfe-selecionadas?ids=${ids.join(',')}`, '_blank');
+    } else if (nfs.length > 0) {
+        window.open(`/api/guide/danfe-selecionadas?nfs=${nfs.join(',')}`, '_blank');
+    } else {
+        window.open('/api/expedicao/romaneio', '_blank');
+    }
 }
 window.imprimirDanfesLoteSelecionado = imprimirDanfesLoteSelecionado;
 

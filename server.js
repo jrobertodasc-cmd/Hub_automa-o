@@ -2851,21 +2851,60 @@ app.get('/api/guide/danfe/:guideId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Guia não encontrada." });
         }
 
-        const danfePath = guide.danfe_storage_path || `${req.tenant.id}/danfe/danfe_NF_${guide.nf_number}.pdf`;
-
-        const { data, error: downloadError } = await supabase.storage
-            .from('tenant-storage')
-            .download(danfePath);
-
-        if (downloadError || !data) {
+        const buffer = await danfeService.obterOuGerarDanfePdfGuia(supabase, req.tenant.id, guide);
+        if (!buffer) {
             return res.status(404).json({ error: "DANFE não encontrado para esta nota fiscal." });
         }
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${guide.nf_number}.pdf"`);
-        const buffer = Buffer.from(await data.arrayBuffer());
         return res.send(buffer);
     } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * Emissão e Impressão de Múltiplos DANFEs selecionados na Doca / Cockpit
+ */
+app.get('/api/guide/danfe-selecionadas', requireAuth, async (req, res) => {
+    try {
+        const { ids, nfs, batchId } = req.query;
+        let query = supabase.from('guides').select('*').eq('tenant_id', req.tenant.id);
+
+        if (ids) {
+            const idList = ids.split(',').map(s => s.trim()).filter(Boolean);
+            query = query.in('id', idList);
+        } else if (nfs) {
+            const nfList = nfs.split(',').map(s => s.trim()).filter(Boolean);
+            query = query.in('nf_number', nfList);
+        } else if (batchId) {
+            query = query.eq('batch_id', batchId);
+        } else {
+            return res.status(400).json({ error: "Nenhum ID ou número de NF informado." });
+        }
+
+        const { data: guias, error } = await query;
+        if (error || !guias || guias.length === 0) {
+            return res.status(404).json({ error: "Nenhuma guia encontrada para os filtros fornecidos." });
+        }
+
+        const pdfBuffers = [];
+        for (const g of guias) {
+            const buf = await danfeService.obterOuGerarDanfePdfGuia(supabase, req.tenant.id, g);
+            if (buf) pdfBuffers.push(buf);
+        }
+
+        if (pdfBuffers.length === 0) {
+            return res.status(404).json({ error: "Não foi possível carregar os DANFEs das notas selecionadas." });
+        }
+
+        const mergedBuffer = await danfeService.mesclarDanfesPdf(pdfBuffers);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="DANFES_SELECIONADAS_${guias.length}_NOTAS.pdf"`);
+        return res.send(mergedBuffer);
+    } catch (err) {
+        console.error("Erro ao gerar DANFEs selecionadas:", err);
         return res.status(500).json({ error: err.message });
     }
 });
