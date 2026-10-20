@@ -1,84 +1,97 @@
 # RESUMO DE CONTEXTO & CONTINUIDADE DO PROJETO
 
-> **Data de Atualização:** 16 de Outubro de 2026  
+> **Data de Atualização:** 20 de Outubro de 2026  
 > **Repositório:** [https://github.com/jrobertodasc-cmd/Hub_automa-o](https://github.com/jrobertodasc-cmd/Hub_automa-o)  
-> **Branch:** `main` (Sincronizado até commit `496a328`)  
-> **Finalidade:** Servir de ponto de partida direto e sem atrito para o início das atividades de amanhã.
+> **Branch:** `main`  
+> **Finalidade:** Servir de ponto de partida direto, transparente e sem atrito para o início das atividades de amanhã.
 
 ---
 
-## 1. Visão Geral do Sistema e Cliente
+## 1. Visão Geral da Operação Real (Lalua / Boah)
 
-* **Cliente:** **Lalua Comércio de Modas**
-* **Fluxo Operacional Integrado:**
-  1. Pedidos caem na plataforma **Olist Vnda**.
-  2. ERP **Linx Microvix** emite as Notas Fiscais (NF-e).
-  3. O Webservice intercepta as notas emitidas e identifica automaticamente as operações interestaduais com consumidor final que exigem **DIFAL / GNRE** (ou isenção de SP).
-  4. O operador do armazém usa o **Cockpit do Portão Fiscal** na doca para conferir os volumes antes de carregar no caminhão da transportadora (**Total Express**, **Correios**, **MT Log**).
-  5. As guias de DIFAL pendentes são aprovadas e pagas **exclusivamente pela dona/diretoria** através do **App Mobile**, utilizando saldo da conta **Asaas** (via Pix ou código de barras).
-  6. Uma vez liberadas, as cargas têm seus Romaneios e DANFEs impressos e, após o caminhão coletar as caixas, são arquivadas no histórico de **Já Despachadas**.
-
----
-
-## 2. O que foi Entregue e Validado Hoje (16/10/2026)
-
-### 2.1. App Mobile de Aprovação da Dona (`/aprovar.html`)
-* **Fidelidade Visual:** 100% aderente ao mockup aprovado (moldura de smartphone, tipografia serifada *Playfair Display* / *Inter*, visual preto/dourado luxo).
-* **Agrupamento por Transportadora:** Cards accordion para Total Express, Correios e MT Log com contagem de volumes e valores exatos de DIFAL a liquidar.
-* **Segregação de Alçada:** Alçada financeira restrita à diretoria. O operador na doca não tem botão para debitar valores bancários; ele apenas solicita autorização.
-* **Ação Instantânea:** Botão `"Confirmar Pagamento e Liberar Doca"` com feedback em tempo real e persistência local da liberação.
-
-### 2.2. Modal Laser do Portão Fiscal (Bipagem na Doca)
-* **Fidelidade Visual:** 100% aderente ao padrão da Proposta (escudo SEFAZ em linha fina, moldura semafórica vermelha para bloqueado e verde para liberado, grid 2x2 com NF-e, Transportadora, Destino e DIFAL).
-* **Feedback Sonoro Sintético (Web Audio API):**
-  * **Carga Liberada:** Acorde sonoro harmônico e agudo em Fá Maior (`523Hz` + `659Hz` + `784Hz`).
-  * **Carga Bloqueada:** Buzzer de alerta grave e dissonante (`180Hz` + `135Hz`) indicando que a caixa deve ser separada fisicamente da esteira.
-* **Ações Operacionais:** Botão `"Separar Caixa na Doca & Continuar Bipagem"` e `"Solicitar Liberação à Diretoria no App"`.
-
-### 2.3. Filtros por Data de Emissão e Visão de "Já Despachadas"
-* **Data de Emissão da NF-e:**
-  * `[Todas as Datas]`: Exibe todo o lote ativo na doca.
-  * `[Ontem (15/10) · 42 NFs]`: Filtra o faturamento de ontem que ainda não foi liberado/coletado e permanece fisicamente no armazém.
-  * `[Hoje (16/10) · 206 NFs]`: Filtra as notas emitidas no dia atual.
-* **Situação Operacional:**
-  * `[Na Doca (248)]`: Visão de trabalho dos volumes presentes no chão de fábrica.
-  * `[🔴 Bloqueadas (12)]`: Filtro imediato para atuar nas caixas com DIFAL pendente.
-  * `[🟢 Liberadas (236)]`: Volumes prontos para embarque.
-  * `[Isento (SP)]`: Cargas para o estado de São Paulo desobrigadas de GNRE.
-  * `[🚚 Já Despachadas (Histórico)]`: Arquivo histórico das cargas já coletadas, com vínculo do número de **Romaneio Oficial** e comprovantes bancários SEFAZ.
-* **Botão "Registrar Coleta (Despachar)":**
-  * Localizado na barra de ações principal. Transfere os volumes liberados para o histórico de despachadas após o carregamento do caminhão.
-
-### 2.4. Módulo de Gestão de Devoluções & Crédito DIFAL
-* Modal integrado no menu "Mais Opções" para estorno e compensação contábil de devoluções de clientes, evitando bitributação na SEFAZ.
+* **Empresa:** **Lalua Comércio de Modas Eireli (Boah)**
+* **CNPJ:** `10.436.619/0001-05`
+* **Local de Expedição:** Shopping Barra — Salvador / BA
+* **Cadeia de Sistemas Integrados:**
+  1. **E-commerce:** Plataforma **Olist Vnda** (captação dos pedidos de venda e transportadoras contratadas).
+  2. **ERP Fiscal:** **Linx Microvix** (WebService B2C SOAP com emissão de NF-e, cálculo de DIFAL e XMLs).
+  3. **Portão Fiscal / Expedição:** **expedi HUB** (cockpit na doca para conferência, bipagem laser e separação de caixas).
+  4. **Liquidação Financeira:** Conta bancária digital **Asaas** (débito instantâneo autorizado pela diretoria pelo celular).
+  5. **Transporte:** **Total Express**, **Correios**, **MT Log** (com Romaneio Oficial unificado e DANFEs/GNREs impressas).
 
 ---
 
-## 3. URLs e Rotas para Acesso Local
+## 2. O que foi Entregue e Validado Hoje (20/10/2026)
+
+### 2.1. Remoção de Mocks e Entrada em Produção Real com Linx Microvix
+* Todos os dados fictícios foram removidos do sistema.
+* Sincronização 100% real do lote do dia com o WebService Linx Microvix da Lalua (Shopping Barra).
+* Lote ativo `#724aec1f-ddaa-485a-a28e-742db8dce6b7` composto por 9 Notas Fiscais reais (NFs 53887 a 53895) de clientes reais, com valores exatos de mercadoria, frete e DIFAL interestadual.
+
+### 2.2. Geração e Impressão da DANFE Simplificada Oficial em PDF (A4)
+* Implementação do serviço oficial em [`services/danfe_service.js`](file:///c:/Users/Roberto/Desktop/Web_Services/services/danfe_service.js).
+* Layout oficial de **DANFE Simplificada** (padrão SEFAZ para e-commerce):
+  * Código de barras de alta resolução **Code 128C** gerado com `bwip-js` para a Chave de Acesso de 44 dígitos.
+  * Dados completos do emitente (Lalua Comércio de Modas Eireli, CNPJ, I.E., Endereço).
+  * Dados completos do destinatário (Nome, CPF/CNPJ, Endereço de entrega).
+  * Informações de transporte (Total Express, frete por conta do emitente, volumes).
+  * Itens da nota fiscal com descrição, quantidade, valor unitário e total.
+* Rotas ativas para download e impressão:
+  * `GET /api/guide/danfe/:guideId` — DANFE avulsa em PDF.
+  * `GET /api/guide/danfe-selecionadas?nfs=...` — Lote de DANFEs mescladas em PDF único de alta velocidade.
+
+### 2.3. Resolução Crítica: Código de Barras Febraban e Linha Digitável na GNRE
+* **Problema Relatado:** As guias GNRE estavam sendo emitidas com a área do código de barras em branco mesmo após o lote ser liberado no app da diretoria.
+* **Causa Raiz Identificada:** O lote importado do ERP não possuía a linha digitável pré-preenchida no banco de dados Supabase, e o gerador de PDF exigia que ela já existisse previamente para renderizar o código de barras. Além disso, a rota de autorização do Asaas pulava guias sem linha digitável cadastrada.
+* **Solução Implementada em [`services/print_service.js`](file:///c:/Users/Roberto/Desktop/Web_Services/services/print_service.js):**
+  * Desenvolvido algoritmo do **Febraban Segmento 8** (Arrecadação Estadual / GNRE Receita `100102` - DIFAL Consumidor Final).
+  * Cálculo exato do **Dígito Verificador Geral (Módulo 10)** e dos 4 DVs dos blocos da linha digitável de 48 dígitos.
+  * Renderização nítida do código de barras **Interleaved 2 of 5 (ITF)** centralizado na guia.
+  * Exibição em destaque do **CÓDIGO DE AUTENTICAÇÃO** bancária (`AS-80F0A6DC-BR`) em verde para cargas liberadas/quitadas.
+  * Texto de autenticação mecânica no rodapé para fiscalização de trânsito:
+    *`Autenticação Bancária: AS-80F0A6DC-BR — Quitado via SISBACEN / Asaas — Controle Fiscal SEFAZ-RJ`*.
+  * Persistência automática no banco Supabase em tempo de execução para download individual e em lote.
+
+### 2.4. Esclarecimento das Regras Fiscais de SP (Convênio ICMS)
+* Validada a razão pela qual as notas para SP (53889, 53890, 53891, 53894) somam R$ 128,72 no painel mas não geram GNRE avulsa:
+  * São Paulo não exige recolhimento antecipado carga a carga via GNRE avulsa para remetentes optantes pelo DIFAL simplificado (recolhimento centralizado na apuração mensal ou isenção em convênio).
+  * O valor devido de DIFAL a recolher antecipadamente na doca para liberação do caminhão é de **R$ 258,82** (NFs para **RJ**, **AL** e **PE**).
+
+### 2.5. Ajustes de Usabilidade no Cockpit do Portão Fiscal
+* **Navegação Fixa:** Correção dos botões de alternância de abas ("Doca", "Já Despachadas", "Portal"), garantindo que o operador nunca perca o acesso aos menus ao alternar entre visualizações.
+* **Seleção Múltipla de Notas:** Adicionados checkboxes e botões de lote para imprimir **DANFEs Selecionadas** e **GNREs Selecionadas** com apenas um clique.
+
+### 2.6. Sincronização do Supabase DDL (`schema.sql`)
+* O arquivo [`schema.sql`](file:///c:/Users/Roberto/Desktop/Web_Services/schema.sql) foi totalmente atualizado com as colunas reais utilizadas pelo sistema (`barcode`, `line_digitizable`, `bank_authentication`, `receipt_storage_path`, `carrier_name`, integrações com Microvix e Asaas).
+
+---
+
+## 3. URLs e Rotas Ativas para Teste Local
 
 O servidor roda localmente em `http://localhost:3001`:
 
 | Tela / Recurso | URL Local | Descrição |
 | :--- | :--- | :--- |
-| **Cockpit Portão Fiscal** | `http://localhost:3001/dashboard.html` | Painel operacional com bipagem, tabela de cargas e filtros. |
-| **App Mobile da Dona** | `http://localhost:3001/aprovar.html` | Interface mobile para conferência e liberação de pagamento. |
-| **Tela de Login** | `http://localhost:3001/login.html` | Autenticação por token/cookie com visual expedi HUB. |
-| **Romaneio Oficial (A4)** | `http://localhost:3001/api/expedicao/romaneio` | Geração do manifesto de carga impresso com assinatura. |
-| **Fechamento Diário (.ZIP)**| `http://localhost:3001/api/fechamento/pacote-zip/hoje` | Pacote com XMLs, DANFEs, Comprovantes SEFAZ e CSV contábil. |
+| **Cockpit do Portão Fiscal** | `http://localhost:3001/dashboard.html` | Bipagem laser, tabela com 9 NFs reais, filtros e emissão em lote. |
+| **App Mobile da Diretoria** | `http://localhost:3001/aprovar.html` | Interface mobile para conferência e liberação de pagamento Asaas. |
+| **Guia GNRE NF 53887 (PDF)** | `http://localhost:3001/api/guide/download/80f0a6dc-657b-46d7-9234-f4af347829f8` | Guia com código de barras ITF e autenticação SISBACEN. |
+| **DANFE NF 53887 (PDF)** | `http://localhost:3001/api/guide/danfe/80f0a6dc-657b-46d7-9234-f4af347829f8` | DANFE Simplificada com código de barras Code 128C. |
+| **GNREs em Lote (PDF)** | `http://localhost:3001/api/guide/gnre-selecionadas?nfs=53887,53888,53892` | PDF único contendo múltiplas guias GNRE intercaladas. |
+| **Romaneio de Cargas (A4)** | `http://localhost:3001/api/expedicao/romaneio` | Romaneio com indicador de caixas liberadas e bloqueadas. |
 
 ---
 
-## 4. Próximos Passos para Amanhã
+## 4. Ponto de Partida e Próximos Passos para Amanhã (21/10/2026)
 
-1. **Webhook de Baixa Automática Asaas:**
-   * Conectar o webhook do Asaas para que, no segundo em que a dona clicar em aprovar no celular, a doca atualize via WebSocket/SSE e solte um aviso verde sem precisar de recarregar a página.
-2. **Homologação com Leitor Físico de Código de Barras:**
-   * Testar a leitura rápida por leitor laser USB e câmera de smartphone (leitura da chave de 44 dígitos da NF-e).
-3. **Validação do Certificado Digital A1:**
-   * Garantir que o certificado da Lalua esteja configurado no Supabase Vault para a consulta real do WebService GNRE Nacional e SEFAZ-ES.
-4. **Fechamento Mensal / DRE de DIFAL:**
-   * Validar se o contador precisa de campos adicionais na planilha CSV gerada pelo fechamento diário.
+1. **Webhook Oficial de Baixa Automática do Asaas:**
+   * Garantir que, quando a diretoria aprovar no celular pelo Asaas ou via Pix, o evento `BILL_PAID` atualize o status no banco e emita o comprovante final em PDF no Supabase Storage.
+2. **Atualização em Tempo Real na Doca (SSE / WebSocket):**
+   * Configurar evento via Server-Sent Events (SSE) ou Polling Leve para que o operador na doca veja o semáforo mudar de vermelho para verde automaticamente sem precisar recarregar o navegador.
+3. **Teste com Leitor Físico USB / Bipadeira:**
+   * Validar a velocidade de bipagem com leitor de código de barras físico focado no campo de busca do Cockpit.
+4. **Fechamento e Exportação Fiscal Diária:**
+   * Validar com a contabilidade o download do pacote ZIP diário contendo XMLs, DANFEs, Comprovantes de Pagamento e Relatório CSV consolidado.
 
 ---
 
-*Repositório sincronizado no GitHub: Commit `496a328`.*
+*Repositório Git sincronizado e pronto para continuidade.*
