@@ -18,10 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verifica login e carrega cabeçalho/empresa
     await carregarDadosDashboard();
 
-    // 1.1 Se a doca foi liberada via mobile ou cockpit
-    if (localStorage.getItem('doca_liberada') === 'true') {
-        aplicarLiberacaoGeralDoca();
-    }
+    // 1.1 Carrega cargas reais da Doca da Linx Microvix
+    await carregarCargasDocaReais();
 
     // 2. Carrega histórico de lotes
     await carregarHistoricoLotes();
@@ -1592,38 +1590,7 @@ async function abrirModalAutorizacaoAsaas() {
 
 function aplicarLiberacaoGeralDoca() {
     localStorage.setItem('doca_liberada', 'true');
-
-    // Atualiza contadores dos cartões
-    const readyVal = document.getElementById('kpi-ready-val');
-    const readyBadge = document.getElementById('kpi-ready-badge');
-    const statusVal = document.getElementById('kpi-status');
-    const blockedBadge = document.getElementById('kpi-blocked-badge');
-    const difalVal = document.getElementById('kpi-difal');
-
-    if (readyVal) readyVal.textContent = '248';
-    if (readyBadge) readyBadge.textContent = '248';
-    if (statusVal) statusVal.textContent = '0';
-    if (blockedBadge) {
-        blockedBadge.textContent = '0';
-        blockedBadge.className = 'kpi-badge badge-green';
-    }
-    if (difalVal) difalVal.textContent = 'R$ 0,00';
-
-    // Atualiza todas as linhas da tabela para Liberado
-    const rows = document.querySelectorAll('.cockpit-table tbody tr');
-    rows.forEach(tr => {
-        const tagStatus = tr.querySelector('.tag-status');
-        if (tagStatus && tagStatus.classList.contains('tag-bloqueado')) {
-            tagStatus.className = 'tag-status tag-liberado';
-            tagStatus.textContent = 'Liberado';
-        }
-        const btnLiquidar = tr.querySelector('.btn-row-liquidar');
-        if (btnLiquidar) {
-            const td = btnLiquidar.parentElement;
-            td.innerHTML = '<a href="#" onclick="alert(\'DANFE com comprovante de quitação Asaas oficial anexado.\'); return false;" class="action-link-subtle">DANFE</a>';
-        }
-    });
-
+    carregarCargasDocaReais();
     playAudioFeedback('liberado');
 }
 
@@ -1632,6 +1599,165 @@ function reiniciarDemonstracaoDoca() {
     window.location.reload();
 }
 window.reiniciarDemonstracaoDoca = reiniciarDemonstracaoDoca;
+
+async function carregarCargasDocaReais() {
+    try {
+        const res = await fetch('/api/expedicao/cargas-ativas');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !data.cargas || data.cargas.length === 0) {
+            console.log("Nenhuma carga ativa encontrada na Doca.");
+            return;
+        }
+
+        const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+        const { resumo, porTransportadora, cargas } = data;
+        window.currentBatchGuides = cargas;
+        if (data.batch) window.activeBatchId = data.batch.id;
+
+        const liberadasCount = isDocaLiberada ? resumo.total : resumo.liberadas;
+        const retidasCount = isDocaLiberada ? 0 : resumo.retidas;
+        const difalPendente = isDocaLiberada ? 0 : resumo.valorPendente;
+
+        // 1. Atualiza HUD Cards
+        const kpiVol = document.getElementById('kpi-volumes');
+        if (kpiVol) kpiVol.textContent = resumo.total;
+
+        const kpiReady = document.getElementById('kpi-ready-val');
+        if (kpiReady) kpiReady.textContent = liberadasCount;
+
+        const kpiReadyBadge = document.getElementById('kpi-ready-badge');
+        if (kpiReadyBadge) {
+            const pct = resumo.total > 0 ? Math.round((liberadasCount / resumo.total) * 100) : 100;
+            kpiReadyBadge.textContent = `${pct}% Pronto`;
+        }
+
+        const kpiStatus = document.getElementById('kpi-status');
+        if (kpiStatus) kpiStatus.textContent = retidasCount;
+
+        const kpiBlockedBadge = document.getElementById('kpi-blocked-badge');
+        if (kpiBlockedBadge) {
+            kpiBlockedBadge.textContent = `${retidasCount} Retidas`;
+            if (retidasCount === 0) {
+                kpiBlockedBadge.className = 'hud-badge hud-badge-green';
+            } else {
+                kpiBlockedBadge.className = 'hud-badge hud-badge-red';
+            }
+        }
+
+        const kpiDifal = document.getElementById('kpi-difal');
+        if (kpiDifal) {
+            kpiDifal.textContent = `R$ ${difalPendente.toFixed(2).replace('.', ',')}`;
+        }
+
+        // 2. Atualiza Cards de Coletas por Transportadora
+        const totalExp = porTransportadora['Total Express'] || { total: 0, liberadas: 0, retidas: 0 };
+        const totalLib = isDocaLiberada ? totalExp.total : totalExp.liberadas;
+        const totalRet = isDocaLiberada ? 0 : totalExp.retidas;
+
+        const badgeTotal = document.getElementById('carrier-total-badge');
+        if (badgeTotal) badgeTotal.textContent = `${totalLib} / ${totalExp.total} Prontos`;
+
+        const barTotal = document.getElementById('carrier-total-bar');
+        if (barTotal) {
+            const pct = totalExp.total > 0 ? (totalLib / totalExp.total) * 100 : 0;
+            barTotal.style.width = `${pct}%`;
+        }
+
+        const retidasTotalEl = document.getElementById('carrier-total-retidas');
+        if (retidasTotalEl) retidasTotalEl.textContent = totalRet;
+
+        // 3. Atualiza Fita dos Últimos Volumes Bipados com cargas reais
+        const ribbonEl = document.getElementById('scanned-ribbon-items');
+        if (ribbonEl && cargas.length > 0) {
+            ribbonEl.innerHTML = cargas.slice(0, 3).map(g => {
+                const isLib = isDocaLiberada || g.is_liberada;
+                const isSp = (g.uf === 'SP');
+                const chipClass = isLib ? 'chip-green' : 'chip-red';
+                const icon = isLib 
+                    ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+                    : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                const desc = isLib ? (isSp ? 'Isento SP' : 'Liberada') : `Retida SEFAZ (R$ ${g.value.toFixed(2).replace('.', ',')})`;
+                return `
+                    <div class="scanned-chip ${chipClass}">
+                        ${icon}
+                        <span>NF-e ${escapeHtml(g.nf_number)} · ${escapeHtml(g.carrier_name)} (${desc})</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 4. Renderiza as linhas na Tabela do Cockpit
+        const tbody = document.getElementById('guides-table-body');
+        if (tbody) {
+            tbody.innerHTML = cargas.map((g, idx) => {
+                const isLib = isDocaLiberada || g.is_liberada;
+                const isSp = (g.uf === 'SP');
+                const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+
+                let statusBadge = '';
+                if (isLib) {
+                    if (isSp) {
+                        statusBadge = '<span class="tag-status tag-isento">Isento (SP)</span>';
+                    } else {
+                        statusBadge = '<span class="tag-status tag-liberado">🟢 Liberado</span>';
+                    }
+                } else {
+                    statusBadge = '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 Retido SEFAZ</span>';
+                }
+
+                return `
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
+                            <span class="badge-vnda-order" title="Nota Fiscal Real Linx Microvix">Linx B2C</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">${escapeHtml(g.customer_name)}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                ${escapeHtml(g.uf)} <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">20/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 ${10 + idx * 5}m na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                <span>${escapeHtml(g.carrier_name)}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="${isLib ? 'color: var(--ok);' : 'color: var(--err); font-weight: 700;'}">${valFmt}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'Isenção Confaz' : 'DIFAL Destino'}</div>
+                        </td>
+                        <td style="text-align: center;">
+                            ${statusBadge}
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="#" onclick="alert('DANFE NF-e ${escapeHtml(g.nf_number)} sincronizada da Linx Microvix.'); return false;" class="btn-table-action" title="Visualizar DANFE">DANFE</a>
+                            ${isLib ? '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>' : `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 5. Atualiza Paginação
+        const intervaloEl = document.getElementById('paginacao-intervalo');
+        if (intervaloEl && intervaloEl.parentElement) {
+            intervaloEl.parentElement.innerHTML = `Mostrando <strong id="paginacao-intervalo">1 a ${resumo.total}</strong> de <strong>${resumo.total}</strong> cargas reais na doca`;
+        }
+
+    } catch (e) {
+        console.error("Erro ao carregar cargas reais da doca:", e);
+    }
+}
+window.carregarCargasDocaReais = carregarCargasDocaReais;
 
 function fecharModalAutorizacaoAsaas() {
     const modal = document.getElementById('modal-autorizar-asaas');

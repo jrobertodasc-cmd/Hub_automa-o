@@ -1619,8 +1619,99 @@ app.post('/api/cnab/upload-retorno', requireAuth, uploadRetorno.single('retornoF
 });
 
 /**
+ * 4.0 Consulta de Cargas Ativas da Doca (Tempo Real para Cockpit e Mobile)
+ */
+app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
+    try {
+        const tenant = req.tenant;
+        const { data: batches } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .neq('status', 'cancelado')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        const activeBatch = batches && batches.length > 0 ? batches[0] : null;
+
+        let query = supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (activeBatch) {
+            query = query.eq('batch_id', activeBatch.id);
+        }
+
+        const { data: guias } = await query;
+        const lista = guias || [];
+
+        let total = lista.length;
+        let liberadas = 0;
+        let retidas = 0;
+        let valorTotal = 0;
+        let valorPendente = 0;
+
+        const porTransportadora = {};
+
+        lista.forEach(g => {
+            const val = parseFloat(g.value || 0);
+            valorTotal += val;
+            const isLib = printService.isGuiaLiberada(g);
+            if (isLib) {
+                liberadas++;
+            } else {
+                retidas++;
+                valorPendente += val;
+            }
+
+            let transp = (g.carrier_name || 'Total Express').trim();
+            if (transp.toUpperCase().includes('TOTAL')) transp = 'Total Express';
+            else if (transp.toUpperCase().includes('CORREIO')) transp = 'Correios';
+            else if (transp.toUpperCase().includes('MT')) transp = 'MT Log';
+
+            if (!porTransportadora[transp]) {
+                porTransportadora[transp] = { total: 0, liberadas: 0, retidas: 0, valor: 0 };
+            }
+            porTransportadora[transp].total++;
+            if (isLib) porTransportadora[transp].liberadas++;
+            else porTransportadora[transp].retidas++;
+            porTransportadora[transp].valor += val;
+        });
+
+        return res.json({
+            batch: activeBatch,
+            resumo: {
+                total,
+                liberadas,
+                retidas,
+                valorTotal: parseFloat(valorTotal.toFixed(2)),
+                valorPendente: parseFloat(valorPendente.toFixed(2))
+            },
+            porTransportadora,
+            cargas: lista.map(g => ({
+                id: g.id,
+                nf_number: g.nf_number,
+                chave_nfe: g.chave_nfe,
+                uf: g.uf,
+                value: parseFloat(g.value || 0),
+                customer_name: g.customer_name || 'Cliente Lalua / Boah',
+                carrier_name: g.carrier_name || 'Total Express',
+                status: g.status,
+                is_liberada: printService.isGuiaLiberada(g),
+                created_at: g.created_at
+            }))
+        });
+    } catch (err) {
+        console.error("Erro ao buscar cargas ativas:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * MÓDULO 4: Romaneio de Expedição por Transportadora (Total Express, MT Log, Correios, etc.)
- * Gera documento para impressão e conferência no galpão antes do carregamento
+ * Gera documento para impressão e conferência na loja antes do carregamento
  */
 app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
     try {
