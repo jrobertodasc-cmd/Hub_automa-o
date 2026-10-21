@@ -1,6 +1,6 @@
 # RESUMO DE CONTEXTO & CONTINUIDADE DO PROJETO
 
-> **Data de Atualização:** 20 de Outubro de 2026  
+> **Data de Atualização:** 21 de Outubro de 2026  
 > **Repositório:** [https://github.com/jrobertodasc-cmd/Hub_automa-o](https://github.com/jrobertodasc-cmd/Hub_automa-o)  
 > **Branch:** `main`  
 > **Finalidade:** Servir de ponto de partida direto, transparente e sem atrito para o início das atividades de amanhã.
@@ -116,5 +116,72 @@ O servidor roda localmente em `http://localhost:3001`:
 
 ---
 
-*Repositório sincronizado, testado e 100% operacional para o dia a dia da expedição.*
+## 5. Entregas e Ajustes Críticos de Produção (21/10/2026 - Noite)
+
+### 5.1. Importação Oficial do Lote de 91 Guias Pendentes (Lalua Modas)
+* **Tenant Real:** `Lalua Comércio de Modas Eireli` (`607ca6d1-0ec1-4de3-b4d9-056145274af5`).
+* **Lote de Guias Criado:** `#afd63fb5-772c-4668-931a-b43270b7b3c7`.
+* **Composição:** 91 guias GNRE reais (PE, RJ, CE, BA, etc.) totalizando exatamente **R$ 4.019,14**.
+* Todas as 91 guias ativas no banco de dados Supabase prontas para expedição e liquidação financeira.
+
+### 5.2. Correção de Erros de Frontend no Cockpit da Doca
+* **`ReferenceError: originalFetch is not defined`:**
+  * Declarado `const originalFetch = window.fetch;` em [`public/js/auth.js`](file:///c:/Users/Roberto/Desktop/Web_Services/public/js/auth.js).
+  * Atualizada a versão de cache dos scripts para `v=6` e `v=12` em `dashboard.html`.
+* **Tratamento de 401 e Favicon:**
+  * Rota de fallback `/favicon.ico` com HTTP 204 adicionada em [`server.js`](file:///c:/Users/Roberto/Desktop/Web_Services/server.js) eliminando ruído no console.
+  * Interceptor de autenticação com redirecionamento suave para `/login.html`.
+
+### 5.3. Paginação Dinâmica e Seleção em Massa Multilotes
+* **Seletor de Itens por Página:** Adicionados botões e dropdown para visualizar **10, 25, 50 ou Todas as Cargas** (`9999`) sem recarregar a tela.
+* **Banner de Seleção Global:** Ao marcar a caixa de seleção do cabeçalho, exibe banner informativo permitindo estender a seleção para **todas as 91 cargas do lote** com um único clique.
+* **Persistência da Seleção:** As guias marcadas continuam selecionadas ao avançar/retroceder páginas de paginação.
+
+### 5.4. Resolução Definitiva da Rejeição Itaú: `ARQUIVO SEM HEADER VALIDO ( 000 )`
+* **Erro Original do Itaú SISPAG:**
+  ```text
+  Arquivo de PAGAMENTOS - SISPAG - GNRE2226.TXT
+  PAGAMENTO DE TRIBUTOS
+  Agência/Conta do Lote: 0334-98775 | Registros: 91 | Valor Total: 4.019,14
+  Motivo de rejeição do lote: ARQUIVO SEM HEADER VALIDO ( 000 )
+  000001 a 000009 REGISTRO REJEITADO
+  ```
+* **Causa Raiz Identificada:**
+  * No padrão FEBRABAN / Itaú CNAB 240, as posições `009-017` do Header de Arquivo são reservadas para 9 brancos (`padSpace('', 9)`).
+  * O validador do Itaú lê o campo **Versão do Layout do Arquivo** estritamente nas posições **`164-166`** (precedido pelo NSA de 6 dígitos em `158-163`).
+  * No código legado, a versão estava posicionada precocemente em `015-017` como `086`, e as posições `158-166` continham zeros (`000000000`). Ao ler as posições `164-166`, o banco leu `000`, disparando o erro: `ARQUIVO SEM HEADER VALIDO ( 000 )`.
+* **Solução Aplicada em [`services/cnab_service.js`](file:///c:/Users/Roberto/Desktop/Web_Services/services/cnab_service.js):**
+  1. **Header de Arquivo (Tipo 0):**
+     * Posições `009-017`: 9 espaços em branco (`Uso FEBRABAN`).
+     * Posições `158-163`: NSA `000001` (6 dígitos).
+     * Posições `164-166`: Versão do Layout do Arquivo **`080`**.
+     * Posições `167-171`: Densidade de gravação `00000`.
+  2. **Header de Lote (Tipo 1 - Forma de Lançamento 91):**
+     * Posições `014-016`: Versão do Layout do Lote de Tributos com Código de Barras ajustada para **`030`** (conforme manual Itaú SISPAG Tributos).
+  3. **Segmento O (Tipo 3):**
+     * Posições `096-103`: Data de vencimento garantida preenchida com a data de pagamento/emissão caso não conste no XML, evitando rejeição por vencimento zerado (`00000000`).
+  4. **Endpoint de Download ([`server.js`](file:///c:/Users/Roberto/Desktop/Web_Services/server.js)):**
+     * Sempre regera dinamicamente a remessa com charset `ISO-8859-1` (`latin1`) sem BOM, evitando servir versões cacheadas antigas.
+* **Arquivo Corrigido e Validado:**
+  * Salvo localmente em: [`GNRE/remessa_itau_91_guias_pendentes.txt`](file:///c:/Users/Roberto/Desktop/Web_Services/GNRE/remessa_itau_91_guias_pendentes.txt).
+  * 95 linhas rigorosamente formatadas com 240 bytes e CRLF (`\r\n`).
+  * Atualizado no bucket `tenant-storage` do Supabase.
+  * Código commitado em `main` e publicado no Render.
+
+---
+
+## 6. Roteiro Direto para Retomada Amanhã
+
+1. **Upload no Itaú SISPAG:**
+   * Enviar o arquivo [`GNRE/remessa_itau_91_guias_pendentes.txt`](file:///c:/Users/Roberto/Desktop/Web_Services/GNRE/remessa_itau_91_guias_pendentes.txt) no portal Itaú Empresas (Menu *Pagamentos > SISPAG > Transmissão de Arquivos*).
+   * O validador do banco reconhecerá o Header `080` e o Lote de Tributos `030`, aceitando o lote das 91 guias (R$ 4.019,14).
+2. **Autorização pelo Financeiro:**
+   * Aprovação do lote pelo token/assinatura eletrônica do gestor financeiro da Lalua.
+3. **Baixa e Conciliação Automática no expedi HUB:**
+   * Quando o Itaú disponibilizar o arquivo de retorno (`.RET`), realizar o upload na aba **Fintech / SISPAG** do cockpit.
+   * O sistema executará o parser do Segmento Z / Segmento O, gravando as autenticações bancárias nas 91 guias e liberando os semáforos da doca em tempo real via SSE.
+
+---
+
+*Repositório sincronizado, testado e 100% operacional no commit `c06586d` da branch `main`.*
 

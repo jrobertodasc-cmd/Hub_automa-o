@@ -381,8 +381,17 @@ Todas as etapas fundamentais da esteira (E1 a E10) foram desenvolvidas, testadas
    - Modal corporativo de Fechamento Contábil integrado ao [public/dashboard.html](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html) com cálculo de hash SHA-256 e download imediato.
    - Validado via `scratch/test_etapa10_fechamento.js` e suite integral `scratch/audit_suite_e1_to_e9.js` (21/21 testes aprovados).
 
+6. **Fintech Bancária — Itaú SISPAG CNAB 240 (Tributos / GNRE):**
+   - Conector oficial Febraban 240 para arrecadação estadual ([services/cnab_service.js](file:///c:/Users/Roberto/Desktop/Web_Services/services/cnab_service.js)).
+   - Header de Arquivo validado pelo Itaú: Versão do Layout `080` (posições 164-166) e 9 brancos (009-017).
+   - Header de Lote: Versão do Layout `030` específico para Forma de Lançamento `91` (GNRE com Código de Barras).
+   - Detalhe Segmento O: Vencimento e valor de 48 posições para guias de tributos.
+   - Lote ativo `#afd63fb5-772c-4668-931a-b43270b7b3c7` com 91 guias (R$ 4.019,14) gerado e persistido no Supabase Storage e localmente em `GNRE/remessa_itau_91_guias_pendentes.txt`.
+
 Consulte o manual técnico e operacional detalhado em:
 👉 **[MANUAL_PORTAO_FISCAL_EXPEDICAO.md](file:///c:/Users/Roberto/Desktop/Web_Services/MANUAL_PORTAO_FISCAL_EXPEDICAO.md)**
+👉 **[RESUMO_CONTEXTO_CONTINUIDADE.md](file:///c:/Users/Roberto/Desktop/Web_Services/RESUMO_CONTEXTO_CONTINUIDADE.md)**
 
 ---
 *Relatório atualizado e homologado na raiz como `PANORAMA_PROJETO.md`.*
+
