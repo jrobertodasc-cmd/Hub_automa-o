@@ -1791,82 +1791,10 @@ async function carregarCargasDocaReais() {
             }).join('');
         }
 
-        // 4. Renderiza as linhas na Tabela do Cockpit
-        const tbody = document.getElementById('guides-table-body');
-        if (tbody) {
-            tbody.innerHTML = cargas.map((g, idx) => {
-                const isLib = isDocaLiberada || g.is_liberada;
-                const isSp = (g.uf === 'SP');
-                const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
-
-                let statusBadge = '';
-                if (isLib) {
-                    if (isSp) {
-                        statusBadge = '<span class="tag-status tag-isento">Isento (SP)</span>';
-                    } else {
-                        statusBadge = '<span class="tag-status tag-liberado">🟢 Liberado</span>';
-                    }
-                } else {
-                    statusBadge = '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 Retido SEFAZ</span>';
-                }
-
-                return `
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
-                            <span class="badge-vnda-order" title="Nota Fiscal Real Linx Microvix">Linx B2C</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">${escapeHtml(g.customer_name)}</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                ${escapeHtml(g.uf)} <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">20/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 ${10 + idx * 5}m na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                <span>${escapeHtml(g.carrier_name)}</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="${isLib ? 'color: var(--ok);' : 'color: var(--err); font-weight: 700;'}">${valFmt}</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'Isenção Confaz' : 'DIFAL Destino'}</div>
-                        </td>
-                        <td style="text-align: center;">
-                            ${statusBadge}
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
-                            ${g.uf !== 'SP' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : ''}
-                            ${(() => {
-                                if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
-                                const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
-                                const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
-                                if (canAuth) {
-                                    return `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`;
-                                } else {
-                                    return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
-                                }
-                            })()}
-                        </td>
-                    </tr>
-
-                `;
-            }).join('');
-        }
-
-        // 5. Atualiza Paginação
-        const intervaloEl = document.getElementById('paginacao-intervalo');
-        if (intervaloEl && intervaloEl.parentElement) {
-            intervaloEl.parentElement.innerHTML = `Mostrando <strong id="paginacao-intervalo">1 a ${resumo.total}</strong> de <strong>${resumo.total}</strong> cargas no lote`;
-        }
+        // 4. Salva cargas e renderiza a primeira página paginada (12 por página)
+        window.todasCargasDoca = cargas;
+        window.cargasFiltradasDoca = cargas;
+        renderizarPaginaDoca(1);
 
         // 6. Atualiza Painel Fintech e Metadados do Lote
         if (data.batch) {
@@ -2540,62 +2468,215 @@ let filtroTransportadoraAtivo = 'TODAS';
 let filtroSituacaoAtivo = 'TODAS';
 let filtroTextoInlineAtivo = '';
 
-function aplicarFiltrosRapidos() {
-    const rows = document.querySelectorAll('.cockpit-table tbody tr');
-    let visiveis = 0;
+window.todasCargasDoca = [];
+window.cargasFiltradasDoca = [];
+window.paginaAtualDoca = 1;
+window.itensPorPaginaDoca = 12;
 
-    rows.forEach(tr => {
-        const rowText = (tr.textContent || '').toLowerCase();
-        const emissaoTd = (tr.children[3]?.textContent || '').trim().toLowerCase();
-        const transpTd = (tr.children[4]?.textContent || '').trim().toLowerCase();
-        const statusSpan = tr.querySelector('.tag-status');
-        const statusText = (statusSpan?.textContent || '').trim().toLowerCase();
-        const isDespachada = tr.classList.contains('row-despachada') || statusText.includes('despachad');
+function renderizarPaginaDoca(pagina = 1) {
+    const lista = window.cargasFiltradasDoca || [];
+    const total = lista.length;
+    const itensPorPag = window.itensPorPaginaDoca || 12;
+    const maxPagina = Math.max(1, Math.ceil(total / itensPorPag));
 
-        // 1. Filtro Data de Emissão (Ontem vs Hoje)
-        let matchData = true;
-        if (filtroDataEmissaoAtivo === 'ONTEM') {
-            matchData = emissaoTd.includes('15/10') || emissaoTd.includes('ontem');
-        } else if (filtroDataEmissaoAtivo === 'HOJE') {
-            matchData = emissaoTd.includes('16/10') || emissaoTd.includes('hoje');
-        }
+    if (pagina < 1) pagina = 1;
+    if (pagina > maxPagina) pagina = maxPagina;
+    window.paginaAtualDoca = pagina;
 
-        // 2. Filtro Transportadora
-        let matchTransp = (filtroTransportadoraAtivo === 'TODAS') || transpTd.includes(filtroTransportadoraAtivo.toLowerCase());
+    const inicio = (pagina - 1) * itensPorPag;
+    const fim = Math.min(inicio + itensPorPag, total);
+    const cargasPagina = lista.slice(inicio, fim);
 
-        // 3. Filtro Situação
-        let matchSituacao = true;
-        if (filtroSituacaoAtivo === 'Bloqueado') {
-            matchSituacao = statusText.includes('bloqueado') || statusText.includes('retido');
-        } else if (filtroSituacaoAtivo === 'Liberado') {
-            matchSituacao = statusText.includes('liberado') && !isDespachada;
-        } else if (filtroSituacaoAtivo === 'Isento') {
-            matchSituacao = statusText.includes('isento') && !isDespachada;
-        } else if (filtroSituacaoAtivo === 'Despachado') {
-            matchSituacao = isDespachada;
-        } else if (filtroSituacaoAtivo === 'TODAS') {
-            // "Na Doca": mostra todas ativas na doca, mas oculta histórico de despachadas
-            matchSituacao = !isDespachada;
-        }
-
-        // 4. Filtro Texto Inline (Cliente, Pedido, NF)
-        let matchTexto = true;
-        if (filtroTextoInlineAtivo) {
-            matchTexto = rowText.includes(filtroTextoInlineAtivo);
-        }
-
-        if (matchData && matchTransp && matchSituacao && matchTexto) {
-            tr.style.display = '';
-            visiveis++;
+    const tbody = document.getElementById('guides-table-body');
+    if (tbody) {
+        if (total === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px;">Nenhuma carga localizada para este filtro</div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Tente alterar os filtros de transportadora ou buscar por outro termo.</p>
+                    </td>
+                </tr>
+            `;
         } else {
-            tr.style.display = 'none';
+            const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+            tbody.innerHTML = cargasPagina.map((g, idx) => {
+                const isLib = isDocaLiberada || g.is_liberada;
+                const isSp = (g.uf === 'SP');
+                const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+
+                let statusBadge = '';
+                if (isLib) {
+                    if (isSp) {
+                        statusBadge = '<span class="tag-status tag-isento">Isento (SP)</span>';
+                    } else {
+                        statusBadge = '<span class="tag-status tag-liberado">🟢 Liberado</span>';
+                    }
+                } else {
+                    statusBadge = '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 Retido SEFAZ</span>';
+                }
+
+                return `
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" onchange="atualizarContagemLote()">
+                        </td>
+                        <td>
+                            <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
+                            <span class="badge-vnda-order" title="Nota Fiscal Real Linx Microvix">Linx B2C</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--navy);">${escapeHtml(g.customer_name)}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
+                                ${escapeHtml(g.uf)} <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">20/10 (Hoje)</div>
+                            <span class="dock-time-pill time-ok">🕒 ${10 + (inicio + idx) * 2}m na doca</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon></svg>
+                                <span>${escapeHtml(g.carrier_name)}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="cell-mono" style="${isLib ? 'color: var(--ok);' : 'color: var(--err); font-weight: 700;'}">${valFmt}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'Isenção Confaz' : 'DIFAL Destino'}</div>
+                        </td>
+                        <td style="text-align: center;">
+                            ${statusBadge}
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
+                            ${g.uf !== 'SP' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : ''}
+                            ${(() => {
+                                if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
+                                const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
+                                const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
+                                if (canAuth) {
+                                    return `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`;
+                                } else {
+                                    return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
+                                }
+                            })()}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
+    }
+
+    // Atualiza texto de paginação
+    const intervaloEl = document.getElementById('paginacao-intervalo');
+    const totalEl = document.getElementById('paginacao-total');
+    if (intervaloEl) {
+        intervaloEl.textContent = total > 0 ? `${inicio + 1} a ${fim}` : '0';
+    }
+    if (totalEl) {
+        totalEl.textContent = total;
+    }
+
+    // Atualiza os botões dinâmicos de paginação
+    const wrap = document.getElementById('dock-pagination-pages');
+    if (wrap) {
+        let html = '';
+        
+        // Botão Anterior ‹
+        const prevDisabled = pagina <= 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : '';
+        html += `<button type="button" class="btn-page-num" ${prevDisabled} onclick="mudarPaginaDoca(-1)" title="Página Anterior">‹</button>`;
+
+        // Botões numéricos
+        if (maxPagina <= 7) {
+            for (let i = 1; i <= maxPagina; i++) {
+                const active = (i === pagina) ? 'active' : '';
+                html += `<button type="button" class="btn-page-num ${active}" onclick="irParaPaginaDoca(${i})">${i}</button>`;
+            }
+        } else {
+            html += `<button type="button" class="btn-page-num ${pagina === 1 ? 'active' : ''}" onclick="irParaPaginaDoca(1)">1</button>`;
+            
+            if (pagina > 3) {
+                html += `<span style="color: var(--text-muted); font-size: 12px; padding: 0 4px; display: inline-flex; align-items: center;">...</span>`;
+            }
+
+            const startP = Math.max(2, pagina - 1);
+            const endP = Math.min(maxPagina - 1, pagina + 1);
+            for (let i = startP; i <= endP; i++) {
+                const active = (i === pagina) ? 'active' : '';
+                html += `<button type="button" class="btn-page-num ${active}" onclick="irParaPaginaDoca(${i})">${i}</button>`;
+            }
+
+            if (pagina < maxPagina - 2) {
+                html += `<span style="color: var(--text-muted); font-size: 12px; padding: 0 4px; display: inline-flex; align-items: center;">...</span>`;
+            }
+
+            html += `<button type="button" class="btn-page-num ${pagina === maxPagina ? 'active' : ''}" onclick="irParaPaginaDoca(${maxPagina})">${maxPagina}</button>`;
+        }
+
+        // Botão Próximo ›
+        const nextDisabled = pagina >= maxPagina ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : '';
+        html += `<button type="button" class="btn-page-num" ${nextDisabled} onclick="mudarPaginaDoca(1)" title="Próxima Página">›</button>`;
+
+        wrap.innerHTML = html;
+    }
+
+    atualizarContagemLote();
+}
+
+function mudarPaginaDoca(delta) {
+    const nova = (window.paginaAtualDoca || 1) + delta;
+    renderizarPaginaDoca(nova);
+}
+window.mudarPaginaDoca = mudarPaginaDoca;
+
+function irParaPaginaDoca(num) {
+    renderizarPaginaDoca(num);
+}
+window.irParaPaginaDoca = irParaPaginaDoca;
+window.renderizarPaginaDoca = renderizarPaginaDoca;
+
+function aplicarFiltrosRapidos() {
+    const todas = window.todasCargasDoca || [];
+    const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+
+    window.cargasFiltradasDoca = todas.filter(g => {
+        const isLib = isDocaLiberada || g.is_liberada;
+        const isSp = (g.uf === 'SP');
+        const transp = (g.carrier_name || 'Total Express').trim();
+
+        // 1. Filtro Transportadora
+        if (filtroTransportadoraAtivo && filtroTransportadoraAtivo !== 'TODAS') {
+            if (!transp.toLowerCase().includes(filtroTransportadoraAtivo.toLowerCase())) {
+                return false;
+            }
+        }
+
+        // 2. Filtro Situação Tab
+        if (filtroSituacaoAtivo === 'Bloqueado') {
+            if (isLib) return false;
+        } else if (filtroSituacaoAtivo === 'Liberado') {
+            if (!isLib) return false;
+        } else if (filtroSituacaoAtivo === 'Isento') {
+            if (!isSp) return false;
+        }
+
+        // 3. Filtro Texto Inline
+        if (filtroTextoInlineAtivo) {
+            const query = filtroTextoInlineAtivo.toLowerCase();
+            const nf = String(g.nf_number || '').toLowerCase();
+            const cliente = String(g.customer_name || '').toLowerCase();
+            const chave = String(g.chave_nfe || '').toLowerCase();
+            const uf = String(g.uf || '').toLowerCase();
+            if (!nf.includes(query) && !cliente.includes(query) && !chave.includes(query) && !uf.includes(query)) {
+                return false;
+            }
+        }
+
+        return true;
     });
 
-    const intervaloEl = document.getElementById('paginacao-intervalo');
-    if (intervaloEl) {
-        intervaloEl.textContent = `1 a ${Math.min(visiveis, 6)}`;
-    }
+    renderizarPaginaDoca(1);
 }
 window.aplicarFiltrosRapidos = aplicarFiltrosRapidos;
 
@@ -2941,6 +3022,9 @@ window.atualizarBancoRemessaDoca = atualizarBancoRemessaDoca;
 window.atualizarLinksRemessaDoca = atualizarLinksRemessaDoca;
 window.executarDownloadRemessaDoca = executarDownloadRemessaDoca;
 window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
+window.mudarPaginaDoca = mudarPaginaDoca;
+window.irParaPaginaDoca = irParaPaginaDoca;
+window.renderizarPaginaDoca = renderizarPaginaDoca;
 
 // Auto-abertura via URL param (ex: ?modal=fechamento)
 if (window.location.search.includes('modal=fechamento')) {

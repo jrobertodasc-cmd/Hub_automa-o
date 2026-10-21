@@ -1650,14 +1650,10 @@
 
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <!-- Controles de Paginação -->
-                    <div class="pagination-pages-wrap">
-                        <button class="btn-page-num" disabled style="opacity: 0.5;">‹</button>
+                    <div class="pagination-pages-wrap" id="dock-pagination-pages">
+                        <button class="btn-page-num" disabled style="opacity: 0.4;">‹</button>
                         <button class="btn-page-num active">1</button>
-                        <button class="btn-page-num" onclick="showToast('Página 2 carregada')">2</button>
-                        <button class="btn-page-num" onclick="showToast('Página 3 carregada')">3</button>
-                        <span style="color: var(--text-muted); font-size: 12px;">...</span>
-                        <button class="btn-page-num" onclick="showToast('Página 25 carregada')">25</button>
-                        <button class="btn-page-num" onclick="showToast('Página 2 carregada')">›</button>
+                        <button class="btn-page-num" disabled style="opacity: 0.4;">›</button>
                     </div>
 
                     <!-- Dropdown de Mais Opções -->
@@ -1938,6 +1934,6 @@
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px;"></div>
 
     <script src="/js/auth.js?v=6"></script>
-    <script src="/js/dashboard.js?v=10"></script>
+    <script src="/js/dashboard.js?v=11"></script>
 </body>
 </html>
