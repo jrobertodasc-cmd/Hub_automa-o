@@ -4896,12 +4896,13 @@ app.get('*', (req, res, next) => {
     return res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Inicializa o servidor Express apenas localmente (evita travar na Vercel serverless)
-if (process.env.NODE_ENV !== 'production' && require.main === module) {
-    app.listen(PORT, () => {
+// Inicializa o servidor Express quando executado diretamente (Render, Railway, Docker, Local)
+if (require.main === module) {
+    const HOST = '0.0.0.0';
+    app.listen(PORT, HOST, () => {
         console.log(`\n==================================================`);
-        console.log(`🚀 expedi HUB SaaS rodando localmente na porta ${PORT}`);
-        console.log(`🔗 Acesse: http://localhost:${PORT}`);
+        console.log(`🚀 expedi HUB SaaS rodando na porta ${PORT}`);
+        console.log(`🔗 Ambiente: ${process.env.NODE_ENV || 'development'}`);
         console.log(`==================================================\n`);
 
         // Inicia o Agendador Automático periódico (a cada 30 minutos)
