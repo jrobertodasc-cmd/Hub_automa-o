@@ -1047,6 +1047,188 @@
             border-bottom: none;
         }
 
+        /* Painel Corporativo de Liquidação Financeira SISPAG */
+        .fintech-payment-panel {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 22px 24px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+        }
+
+        .fintech-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 18px;
+        }
+
+        .fintech-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fintech-icon-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #60A5FA;
+            display: grid;
+            place-items: center;
+        }
+
+        .fintech-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #F8FAFC;
+            letter-spacing: -0.3px;
+        }
+
+        .fintech-subtitle {
+            font-size: 12.5px;
+            color: #94A3B8;
+            margin-top: 2px;
+        }
+
+        .fintech-bank-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #FBBF24;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        .fintech-controls-grid {
+            display: grid;
+            grid-template-columns: auto auto 1fr;
+            align-items: flex-end;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .fintech-controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fintech-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .fintech-field-label {
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #94A3B8;
+            font-weight: 700;
+        }
+
+        .fintech-input-date, .fintech-select {
+            background: #0B1120;
+            border: 1px solid #334155;
+            color: #F8FAFC;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: var(--font-sans);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .fintech-input-date:focus, .fintech-select:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        .fintech-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-fintech-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2563EB;
+            color: #FFFFFF;
+            border: 1px solid #3B82F6;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-fintech-primary:hover {
+            background: #1D4ED8;
+            transform: translateY(-1px);
+        }
+
+        .btn-fintech-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-fintech-secondary:hover {
+            background: rgba(16, 185, 129, 0.25);
+            color: #10B981;
+        }
+
+        .btn-fintech-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #E2E8F0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-fintech-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+        }
+
         @media (max-width: 960px) {
             .hud-kpi-grid, .carrier-cards-grid {
                 grid-template-columns: 1fr;
@@ -1066,26 +1248,26 @@
 </head>
 <body>
 
-    <!-- NAVBAR CORPORATIVA EXPEDI HUB -->
+    <!-- NAVBAR CORPORATIVA EXPEDI HUB ENTERPRISE -->
     <nav class="hub-navbar">
         <a href="/dashboard.html" class="hub-brand">
             <div class="hub-logo-badge">E</div>
             <div class="hub-title-wrap">
-                <h1>expedi HUB <span class="hub-tag-pill">PORTÃO FISCAL</span></h1>
-                <div class="hub-subtitle" id="tenant-subtitle">Doca & Portão Fiscal</div>
+                <h1>expedi HUB Enterprise <span class="hub-tag-pill">GESTÃO FISCAL & EXPEDIÇÃO</span></h1>
+                <div class="hub-subtitle" id="tenant-subtitle">Centro Integrado de Expedição Fiscal & Doca</div>
             </div>
         </a>
 
         <div class="hub-nav-links">
-            <!-- Indicador SSE em Tempo Real -->
-            <div class="live-sse-indicator" title="Conexão persistente com o Portão Fiscal ativa" style="margin-right: 4px;">
+            <!-- Indicador de Conexão Ativa -->
+            <div class="live-sse-indicator" title="Monitoramento fiscal contínuo ativo" style="margin-right: 4px;">
                 <div class="pulse-dot"></div>
-                <span style="font-size: 11.5px;">Doca Conectada</span>
+                <span style="font-size: 11.5px;">Conexão Fiscal Online</span>
             </div>
 
             <a href="/dashboard.html" class="hub-nav-item active">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span>Doca & Portão Fiscal</span>
+                <span>Expedição & Doca Fiscal</span>
             </a>
             <a href="/bi.html" class="hub-nav-item">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -1097,7 +1279,7 @@
             </a>
             <a href="/aprovar.html" class="hub-nav-item">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>App Diretoria</span>
+                <span>Portal Diretoria & Alçadas</span>
             </a>
             <a href="/admin.html" id="nav-master-admin" class="hub-nav-item" style="display: none; background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3);">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
@@ -1110,87 +1292,142 @@
         </div>
     </nav>
 
-    <!-- BANNER FLUTUANTE DE SUCESSO HANDS-FREE -->
+    <!-- BANNER FLUTUANTE DE SUCESSO -->
     <div id="handsfree-toast-banner">
         <div style="width: 38px; height: 38px; border-radius: 50%; background: #EAF7F0; display: grid; place-items: center; color: #10B981; flex-shrink: 0;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
         <div>
-            <div id="handsfree-toast-title" style="font-size: 13.5px; font-weight: 700; color: #157347;">VOLUME LIBERADO PARA EMBARQUE!</div>
-            <div id="handsfree-toast-desc" style="font-size: 12px; color: #5B6B7F; margin-top: 2px;">NF-e 03001006 · Total Express (Pode colocar na esteira)</div>
+            <div id="handsfree-toast-title" style="font-size: 13.5px; font-weight: 700; color: #157347;">CARGA AUDITADA & LIBERADA!</div>
+            <div id="handsfree-toast-desc" style="font-size: 12px; color: #5B6B7F; margin-top: 2px;">Carga liberada para expedição e transporte.</div>
         </div>
     </div>
 
     <main class="cockpit-container">
 
-        <!-- FAIXA DE METADADOS DA REMESSA & ALÇADA -->
+        <!-- FAIXA DE METADADOS DA REMESSA & ALÇADA CORPORATIVA -->
         <div class="dock-meta-strip">
             <div class="meta-batch-info">
-                <span>Remessa em Expedição:</span>
-                <span class="meta-batch-tag">
+                <span>Remessa Ativa em Expedição:</span>
+                <span class="meta-batch-tag" id="meta-batch-tag">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    16 de Outubro de 2026 (Hoje) · Lote Doca Principal #20261016-01
+                    Lote Ativo Linx Microvix · 91 Guias Pendentes
                 </span>
             </div>
             <div class="meta-security-tag">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <span>Alçada Financeira Segregada: Exclusiva da Diretoria / App Mobile</span>
+                <span>Alçada Financeira Segregada: Diretoria Executiva & Tesouraria Corporativa</span>
             </div>
         </div>
 
-        <!-- HUD SEMAFÓRICO (4 CARDS) -->
+        <!-- HUD DE INDICADORES OPERACIONAIS (4 CARDS) -->
         <div class="hud-kpi-grid">
             <!-- 1. Cargas no Lote -->
             <div class="hud-card">
                 <div class="hud-card-top">
-                    <span>Cargas na Doca</span>
+                    <span>Volumes sob Custódia</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B6B7F" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                 </div>
-                <div class="hud-value" id="kpi-volumes">248</div>
-                <div class="hud-subtext">Total de volumes faturados hoje</div>
+                <div class="hud-value" id="kpi-volumes">91</div>
+                <div class="hud-subtext">Total de volumes no lote faturado</div>
             </div>
 
             <!-- 2. Cargas Liberadas -->
             <div class="hud-card">
                 <div class="hud-card-top">
                     <span>Cargas Liberadas</span>
-                    <span class="hud-badge hud-badge-green" id="kpi-ready-badge">95% Pronto</span>
+                    <span class="hud-badge hud-badge-green" id="kpi-ready-badge">0% Pronto</span>
                 </div>
-                <div class="hud-value" style="color: var(--ok);" id="kpi-ready-val">236</div>
-                <div class="hud-subtext">Prontas para embarque no caminhão</div>
+                <div class="hud-value" style="color: var(--ok);" id="kpi-ready-val">0</div>
+                <div class="hud-subtext">Prontas para expedição e transporte</div>
             </div>
 
             <!-- 3. Cargas Bloqueadas -->
             <div class="hud-card">
                 <div class="hud-card-top">
-                    <span>Cargas Bloqueadas</span>
-                    <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">12 Retidas</span>
+                    <span>Pendências Tributárias</span>
+                    <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">91 Pendentes</span>
                 </div>
-                <div class="hud-value" style="color: var(--err);" id="kpi-status">12</div>
-                <div class="hud-subtext">Pendência de DIFAL na SEFAZ</div>
+                <div class="hud-value" style="color: var(--err);" id="kpi-status">91</div>
+                <div class="hud-subtext">Aguardando recolhimento SEFAZ</div>
             </div>
 
             <!-- 4. DIFAL a Liquidar -->
             <div class="hud-card">
                 <div class="hud-card-top">
-                    <span>DIFAL a Liquidar</span>
+                    <span>DIFAL a Recolher</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
                 </div>
-                <div class="hud-value mono" id="kpi-difal" style="color: var(--primary-blue);">R$ 1.840,50</div>
-                <div class="hud-subtext">Autorização pelo app da dona</div>
+                <div class="hud-value mono" id="kpi-difal" style="color: var(--primary-blue);">R$ 4.019,14</div>
+                <div class="hud-subtext">Débito Itaú SISPAG / Alçada Diretoria</div>
             </div>
         </div>
 
-        <!-- ZONA 3: ESTAÇÃO DE BIPAGEM LASER HANDS-FREE -->
+        <!-- MÓDULO CORPORATIVO DE LIQUIDAÇÃO BANCÁRIA & DATA DE PAGAMENTO PERSONALIZADA -->
+        <section class="fintech-payment-panel" id="fintech-payment-panel">
+            <div class="fintech-panel-header">
+                <div class="fintech-title-wrap">
+                    <div class="fintech-icon-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    </div>
+                    <div>
+                        <div class="fintech-title">Liquidação Bancária do Lote · Remessa Itaú SISPAG (CNAB 240)</div>
+                        <div class="fintech-subtitle" id="fintech-batch-summary">Lote Ativo: 91 guias · Total a Recolher: R$ 4.019,14 · Status: Aguardando Autorização</div>
+                    </div>
+                </div>
+                <div class="fintech-bank-pill" id="fintech-bank-info">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
+                    <span>Itaú (341) · Agência 0334 · Conta 98775-7 (LALUA)</span>
+                </div>
+            </div>
+
+            <div class="fintech-controls-grid">
+                <!-- Seletor da Data de Pagamento / Débito -->
+                <div class="fintech-field-group">
+                    <label class="fintech-field-label" for="doca-input-data-pagamento">Data de Efetivação / Débito Bancário</label>
+                    <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" title="Escolha a data em que o banco deve debitar e pagar as guias">
+                </div>
+
+                <!-- Seletor do Banco / Layout -->
+                <div class="fintech-field-group">
+                    <label class="fintech-field-label" for="doca-select-banco">Layout Bancário (CNAB 240)</label>
+                    <select id="doca-select-banco" class="fintech-select" onchange="atualizarBancoRemessaDoca(this.value)">
+                        <option value="itau" selected>Itaú SISPAG (CNAB 240 - Segmento O)</option>
+                        <option value="bradesco">Bradesco Multipag (CNAB 240)</option>
+                        <option value="bb">Banco do Brasil (CNAB 240)</option>
+                    </select>
+                </div>
+
+                <!-- Botões de Ação Imediata -->
+                <div class="fintech-actions-group">
+                    <a id="btn-doca-baixar-remessa" href="#" class="btn-fintech-primary" onclick="executarDownloadRemessaDoca(event)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <span id="btn-doca-baixar-remessa-text">Baixar Remessa Itaú (.TXT)</span>
+                    </a>
+
+                    <button type="button" id="btn-doca-autorizar-lote" class="btn-fintech-secondary" onclick="autorizarPagamentoLoteComData()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Confirmar Agendamento</span>
+                    </button>
+
+                    <a id="btn-doca-baixar-guias" href="/api/guias/download-all" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias do lote">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Guias GNRE (PDF)</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ZONA 3: TERMINAL DE CONFERÊNCIA FISCAL & LEITURA ÓPTICA -->
         <div class="laser-station-card" id="laser-station-box">
             <div class="laser-station-header">
                 <div class="laser-station-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"></path></svg>
-                    <span>Estação de Bipagem Rápida na Doca</span>
-                    <span class="laser-live-tag">● MODO HANDS-FREE ATIVO</span>
+                    <span>Terminal de Conferência Óptica & Liberação de Saída</span>
+                    <span class="laser-live-tag">● LEITURA ÓPTICA ATIVA</span>
                 </div>
                 <div style="font-size: 12px; color: var(--text-secondary);">
-                    Foco contínuo · Não precisa usar o mouse
+                    Foco contínuo · Validação automática de chaves e Danfe
                 </div>
             </div>
 
@@ -1198,38 +1435,29 @@
                 <div class="laser-input-icon">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </div>
-                <input type="text" id="filter-search" class="laser-barcode-input" placeholder="Bipar etiqueta da caixa (código de barras 44 dígitos) ou digitar NF..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
-                <div class="laser-input-hint-badge">PISTOLA LASER / ENTER</div>
+                <input type="text" id="filter-search" class="laser-barcode-input" placeholder="Bipar código de barras de 44 dígitos da NF-e ou digitar número da nota..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
+                <div class="laser-input-hint-badge">LEITOR ÓPTICO / ENTER</div>
             </div>
 
-            <!-- FITA DOS ÚLTIMOS 3 VOLUMES CONFERIDOS -->
+            <!-- FITA DE AUDITORIA CONTÍNUA -->
             <div class="scanned-ribbon-wrap">
                 <div class="scanned-ribbon-label">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                    <span>Últimos Volumes Conferidos na Esteira:</span>
+                    <span>Auditoria Recente de Cargas na Esteira:</span>
                 </div>
                 <div class="scanned-items-list" id="scanned-ribbon-items">
-                    <div class="scanned-chip chip-green">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>NF-e 03001006 · Total Express (Liberada)</span>
-                    </div>
-                    <div class="scanned-chip chip-green">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>NF-e 03001013 · Total Express (Isento SP)</span>
-                    </div>
-                    <div class="scanned-chip chip-red">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>NF-e 03001003 · Retida SEFAZ (R$ 1.840,50)</span>
+                    <div style="font-size: 12px; color: var(--text-secondary); padding: 4px 8px;">
+                        Aguardando leitura do primeiro volume pelo leitor óptico...
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ZONA 4: CARDS DE COLETAS POR TRANSPORTADORA (ITEM 2 DO BRIEFING) -->
+        <!-- ZONA 4: MANIFESTOS DE EMBARQUE POR OPERADOR LOGÍSTICO -->
         <section class="carrier-coleta-section">
             <div class="carrier-section-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                <span>Próximas Coletas & Combos Oficiais por Transportadora</span>
+                <span>Manifestos de Embarque por Operador Logístico</span>
             </div>
 
             <div class="carrier-cards-grid">
@@ -1243,25 +1471,25 @@
                                 </div>
                                 <span>Total Express</span>
                             </div>
-                            <span class="hud-badge hud-badge-green" id="carrier-total-badge">236 / 238 Prontos</span>
+                            <span class="hud-badge hud-badge-red" id="carrier-total-badge">91 Retidas</span>
                         </div>
                         <div class="carrier-progress-bar-bg">
-                            <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 99%;"></div>
+                            <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 0%;"></div>
                         </div>
                         <div class="carrier-meta-stats">
-                            <span>Liberadas: <strong>236</strong></span>
-                            <span>Retidas: <strong style="color: var(--err);" id="carrier-total-retidas">2</strong></span>
-                            <span>Coleta: <strong>Hoje às 16h30</strong></span>
+                            <span>Liberadas: <strong id="carrier-total-liberadas">0</strong></span>
+                            <span>Pendentes: <strong style="color: var(--err);" id="carrier-total-retidas">91</strong></span>
+                            <span>Status: <strong>Aguardando Quitação</strong></span>
                         </div>
                     </div>
                     <div class="carrier-card-buttons">
                         <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-carrier-combo" title="Gera Romaneio Oficial + DANFEs + Comprovantes bancários da Total Express">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                            <span>Combo Total Express</span>
+                            <span>Romaneio Oficial</span>
                         </a>
-                        <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 236)" class="btn-carrier-coletar" title="Registra a saída das caixas liberadas">
+                        <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" class="btn-carrier-coletar" title="Registra a saída das caixas liberadas">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Coletar (236)</span>
+                            <span>Liberar Embarque</span>
                         </button>
                     </div>
                 </div>
@@ -1276,65 +1504,27 @@
                                 </div>
                                 <span>Correios</span>
                             </div>
-                            <span class="hud-badge hud-badge-green">8 / 8 Prontos (100%)</span>
+                            <span class="hud-badge" id="carrier-correios-badge" style="background: #F1F5F9; color: var(--text-secondary);">Pronto para Coleta</span>
                         </div>
                         <div class="carrier-progress-bar-bg">
                             <div class="carrier-progress-bar-fill" style="width: 100%;"></div>
                         </div>
                         <div class="carrier-meta-stats">
-                            <span>Liberadas: <strong>8</strong></span>
-                            <span>Retidas: <strong>0</strong></span>
-                            <span>Coleta: <strong>Hoje às 17h00</strong></span>
+                            <span>Expedição: <strong>Nacional</strong></span>
+                            <span>Modalidade: <strong>Sedex / PAC</strong></span>
                         </div>
                     </div>
                     <div class="carrier-card-buttons">
                         <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn-carrier-combo">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                            <span>Combo Correios</span>
+                            <span>Romaneio Correios</span>
                         </a>
-                        <button type="button" onclick="confirmarColetaPorTransportadora('Correios', 8)" class="btn-carrier-coletar">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Coletar (8)</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Card 3: MT LOG -->
-                <div class="carrier-coleta-card">
-                    <div>
-                        <div class="carrier-card-top">
-                            <div class="carrier-name-badge">
-                                <div class="carrier-icon-pill" style="background: #E0E7FF; color: #4338CA;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                </div>
-                                <span>MT Log</span>
-                            </div>
-                            <span class="hud-badge hud-badge-green">2 / 2 Prontos (100%)</span>
-                        </div>
-                        <div class="carrier-progress-bar-bg">
-                            <div class="carrier-progress-bar-fill" style="width: 100%;"></div>
-                        </div>
-                        <div class="carrier-meta-stats">
-                            <span>Liberadas: <strong>2</strong></span>
-                            <span>Retidas: <strong>0</strong></span>
-                            <span>Coleta: <strong>Hoje às 15h30</strong></span>
-                        </div>
-                    </div>
-                    <div class="carrier-card-buttons">
-                        <a href="/api/expedicao/romaneio?carrier=MT%20Log" target="_blank" class="btn-carrier-combo">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                            <span>Combo MT Log</span>
-                        </a>
-                        <button type="button" onclick="confirmarColetaPorTransportadora('MT Log', 2)" class="btn-carrier-coletar">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Coletar (2)</span>
-                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ZONA 5: TABELA DE CONFERÊNCIA DA DOCA & FILTROS (PADRÃO MODERNO) -->
+        <!-- ZONA 5: COCKPIT DE AUDITORIA FISCAL & FILTROS INTEGRADOS -->
         <div class="dock-table-container">
             
             <!-- Barra de Abas e Filtros Integrada -->
@@ -1342,23 +1532,23 @@
                 <!-- Abas Rápidas de Situação -->
                 <div class="dock-nav-tabs">
                     <button type="button" class="dock-tab-btn active" onclick="filtrarPorSituacaoTab('TODAS', this)">
-                        <span>Na Doca</span>
-                        <span class="tab-counter-badge" id="tab-cnt-todas">248</span>
+                        <span>Todos no Lote</span>
+                        <span class="tab-counter-badge" id="tab-cnt-todas">91</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Bloqueado', this)">
                         <span>🔴 Retidas SEFAZ</span>
-                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">12</span>
+                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">91</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Liberado', this)">
                         <span>🟢 Liberadas</span>
-                        <span class="tab-counter-badge" id="tab-cnt-liberadas">236</span>
+                        <span class="tab-counter-badge" id="tab-cnt-liberadas">0</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Isento', this)">
                         <span>Isento (SP)</span>
-                        <span class="tab-counter-badge" id="tab-cnt-isentas">18</span>
+                        <span class="tab-counter-badge" id="tab-cnt-isentas">0</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Despachado', this)">
-                        <span>🚚 Já Despachadas</span>
+                        <span>🚚 Concluídas</span>
                         <span class="tab-counter-badge">Histórico</span>
                     </button>
                 </div>
@@ -1366,21 +1556,19 @@
                 <!-- Controles Compactos à Direita -->
                 <div class="dock-filter-controls-group">
                     <select id="select-filter-data" onchange="filtrarPorDataEmissao(this.value, null)" class="dock-select-input" title="Filtrar por data de faturamento">
-                        <option value="TODAS">📅 Todas as Datas (248 NFs)</option>
-                        <option value="HOJE" selected>📅 Hoje (16/10) · 206 NFs</option>
-                        <option value="ONTEM">📅 Ontem (15/10) · 42 NFs</option>
+                        <option value="TODAS" selected>📅 Todas as Datas de Emissão</option>
+                        <option value="HOJE">📅 Emissões Recentes</option>
                     </select>
 
                     <select id="select-filter-transp" onchange="filtrarPorTransportadora(this.value, null)" class="dock-select-input" title="Filtrar por transportadora">
-                        <option value="TODAS">🚚 Todas as Transportadoras</option>
-                        <option value="Total Express">Total Express (238)</option>
-                        <option value="Correios">Correios (8)</option>
-                        <option value="MT Log">MT Log (2)</option>
+                        <option value="TODAS" selected>🚚 Todos os Operadores Logísticos</option>
+                        <option value="Total Express">Total Express</option>
+                        <option value="Correios">Correios</option>
                     </select>
 
                     <div style="position: relative; display: flex; align-items: center;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8393A7" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" class="dock-inline-search" placeholder="Buscar cliente, pedido #VD...">
+                        <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" class="dock-inline-search" placeholder="Buscar por NF, cliente, chave...">
                     </div>
                 </div>
             </div>

@@ -1860,6 +1860,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         }
 
         const bankParam = (req.query.banco || 'itau').toLowerCase();
+        const paymentDateChosen = req.query.paymentDate || req.query.dataPagamento;
 
         // Se solicitado Bradesco ou Banco do Brasil, gera na hora para as guias do lote
         if (bankParam === 'bradesco' || bankParam === 'bb') {
@@ -1881,15 +1882,16 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             const mapped = (batchGuides || []).map(g => ({
                 codigoBarras: g.barcode,
                 valor: g.value,
-                dataVencimento: g.due_date || new Date().toISOString().split('T')[0],
-                documentoOrigem: g.nf_number
+                dataVencimento: paymentDateChosen || g.due_date || new Date().toISOString().split('T')[0],
+                documentoOrigem: g.nf_number,
+                ufFavorecida: g.uf || 'BA'
             }));
 
             let cnabText = '';
             if (bankParam === 'bradesco') {
-                cnabText = cnabService.gerarRemessaBradesco(dadosBancarios, mapped);
+                cnabText = cnabService.gerarRemessaBradesco(dadosBancarios, mapped, paymentDateChosen);
             } else {
-                cnabText = cnabService.gerarRemessaBB(dadosBancarios, mapped);
+                cnabText = cnabService.gerarRemessaBB(dadosBancarios, mapped, paymentDateChosen);
             }
 
             res.setHeader('Content-Type', 'text/plain');
@@ -1897,7 +1899,38 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             return res.send(cnabText);
         }
 
-        // Caso padrão (Itaú)
+        // Caso padrão (Itaú SISPAG)
+        // Se o usuário escolheu uma data de pagamento personalizada, gera o arquivo na hora com essa data
+        if (paymentDateChosen) {
+            const { data: batchGuides } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('batch_id', batch.id)
+                .eq('tenant_id', req.tenant.id);
+
+            const dadosBancarios = {
+                cnpj: req.tenant.cnpj,
+                razaoSocial: req.tenant.razao_social,
+                agencia: req.tenant.bank_agency || '0334',
+                conta: req.tenant.bank_account || '98775',
+                dac: req.tenant.bank_dac || '7',
+                convenio: req.tenant.bank_convenio || ''
+            };
+
+            const mapped = (batchGuides || []).map(g => ({
+                codigoBarras: g.barcode,
+                valor: g.value,
+                dataVencimento: paymentDateChosen,
+                documentoOrigem: g.nf_number,
+                ufFavorecida: g.uf || 'BA'
+            }));
+
+            const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, paymentDateChosen);
+            res.setHeader('Content-Type', 'text/plain');
+            res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
+            return res.send(cnabText);
+        }
+
         const remessaPath = `${req.tenant.id}/remessas/remessa_${batch.id}.txt`;
         const { data, error: downloadError } = await supabase.storage
             .from('tenant-storage')

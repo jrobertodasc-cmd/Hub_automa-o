@@ -1838,14 +1838,150 @@ async function carregarCargasDocaReais() {
         // 5. Atualiza Paginação
         const intervaloEl = document.getElementById('paginacao-intervalo');
         if (intervaloEl && intervaloEl.parentElement) {
-            intervaloEl.parentElement.innerHTML = `Mostrando <strong id="paginacao-intervalo">1 a ${resumo.total}</strong> de <strong>${resumo.total}</strong> cargas reais na doca`;
+            intervaloEl.parentElement.innerHTML = `Mostrando <strong id="paginacao-intervalo">1 a ${resumo.total}</strong> de <strong>${resumo.total}</strong> cargas no lote`;
         }
+
+        // 6. Atualiza Painel Fintech e Metadados do Lote
+        if (data.batch) {
+            const summaryEl = document.getElementById('fintech-batch-summary');
+            if (summaryEl) {
+                const statusFmt = data.batch.status === 'pagamento_autorizado' 
+                    ? '🟢 Pagamento Bancário Autorizado' 
+                    : (data.batch.status === 'aguardando_aprovacao' ? '🟡 Aguardando Autorização / Agendamento' : data.batch.status);
+                summaryEl.textContent = `Lote #${data.batch.receipt || data.batch.id.substring(0, 8)} · ${resumo.total} guias · Total a Recolher: R$ ${resumo.valorTotal.toFixed(2).replace('.', ',')} · Status: ${statusFmt}`;
+            }
+
+            const metaTag = document.getElementById('meta-batch-tag');
+            if (metaTag) {
+                metaTag.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Lote Ativo #${data.batch.receipt || data.batch.id.substring(0, 8)} · ${resumo.total} Guias`;
+            }
+        }
+
+        // 7. Atualiza Contadores das Abas
+        const tabTodas = document.getElementById('tab-cnt-todas');
+        if (tabTodas) tabTodas.textContent = resumo.total;
+        const tabBloq = document.getElementById('tab-cnt-bloqueadas');
+        if (tabBloq) tabBloq.textContent = retidasCount;
+        const tabLib = document.getElementById('tab-cnt-liberadas');
+        if (tabLib) tabLib.textContent = liberadasCount;
+        const isentasCount = (cargas || []).filter(c => c.uf === 'SP').length;
+        const tabIsentas = document.getElementById('tab-cnt-isentas');
+        if (tabIsentas) tabIsentas.textContent = isentasCount;
+
+        // Inicializa controles de data do painel fintech
+        inicializarPainelFintechDoca();
 
     } catch (e) {
         console.error("Erro ao carregar cargas reais da doca:", e);
     }
 }
 window.carregarCargasDocaReais = carregarCargasDocaReais;
+
+// ==========================================
+// CONTROLADORES DO PAINEL DE LIQUIDAÇÃO FINANCEIRA & DATA PERSONALIZADA
+// ==========================================
+function inicializarPainelFintechDoca() {
+    const inputDate = document.getElementById('doca-input-data-pagamento');
+    if (inputDate && !inputDate.value) {
+        inputDate.value = new Date().toISOString().split('T')[0];
+    }
+    atualizarLinksRemessaDoca();
+}
+
+function atualizarDataRemessaDoca(novaData) {
+    console.log("[Fintech] Data de pagamento selecionada pelo usuário:", novaData);
+    atualizarLinksRemessaDoca();
+}
+
+function atualizarBancoRemessaDoca(novoBanco) {
+    const btnText = document.getElementById('btn-doca-baixar-remessa-text');
+    if (btnText) {
+        const bancoLabel = novoBanco === 'bradesco' ? 'Bradesco' : (novoBanco === 'bb' ? 'Banco do Brasil' : 'Itaú');
+        btnText.textContent = `Baixar Remessa ${bancoLabel} (.TXT)`;
+    }
+    atualizarLinksRemessaDoca();
+}
+
+function atualizarLinksRemessaDoca() {
+    const btn = document.getElementById('btn-doca-baixar-remessa');
+    const banco = document.getElementById('doca-select-banco')?.value || 'itau';
+    const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    
+    if (btn && window.activeBatchId) {
+        btn.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${dataPag}`;
+    }
+}
+
+function executarDownloadRemessaDoca(event) {
+    const banco = document.getElementById('doca-select-banco')?.value || 'itau';
+    const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    if (!window.activeBatchId) {
+        event.preventDefault();
+        showToast("Nenhum lote ativo selecionado.", "warn");
+        return;
+    }
+    const [ano, mes, dia] = dataPag.split('-');
+    const dataFmt = `${dia}/${mes}/${ano}`;
+    showToast(`📥 Baixando Remessa ${banco.toUpperCase()} com débito agendado para ${dataFmt}...`, "success");
+}
+
+async function autorizarPagamentoLoteComData() {
+    if (!window.activeBatchId) {
+        showToast("Nenhum lote ativo na doca.", "warn");
+        return;
+    }
+    const banco = document.getElementById('doca-select-banco')?.value || 'itau';
+    const paymentDate = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    const [ano, mes, dia] = paymentDate.split('-');
+    const dataFmt = `${dia}/${mes}/${ano}`;
+
+    if (!confirm(`Confirma a autorização e agendamento bancário do lote para o dia ${dataFmt} via ${banco.toUpperCase()}?`)) {
+        return;
+    }
+
+    const btn = document.getElementById('btn-doca-autorizar-lote');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Processando...</span>`;
+    }
+
+    try {
+        const res = await fetch(`/api/batch/authorize-payment/${window.activeBatchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banco, paymentDate })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Falha ao autorizar pagamento.");
+
+        showToast(`💳 Lote autorizado com sucesso! Remessa gerada com débito agendado para ${dataFmt}.`, 'success');
+
+        // Dispara download automático da remessa com a data escolhida
+        const link = document.createElement('a');
+        link.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${paymentDate}`;
+        link.download = `remessa_${banco.toUpperCase()}_lote_${window.activeBatchId.substring(0, 8)}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if (typeof carregarCargasDocaReais === 'function') {
+            await carregarCargasDocaReais();
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Confirmar Agendamento</span>`;
+        }
+    }
+}
+window.inicializarPainelFintechDoca = inicializarPainelFintechDoca;
+window.atualizarDataRemessaDoca = atualizarDataRemessaDoca;
+window.atualizarBancoRemessaDoca = atualizarBancoRemessaDoca;
+window.atualizarLinksRemessaDoca = atualizarLinksRemessaDoca;
+window.executarDownloadRemessaDoca = executarDownloadRemessaDoca;
+window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
 
 function fecharModalAutorizacaoAsaas() {
     const modal = document.getElementById('modal-autorizar-asaas');
