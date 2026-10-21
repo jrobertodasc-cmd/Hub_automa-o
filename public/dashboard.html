@@ -1638,6 +1638,21 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span>Mostrando <strong id="paginacao-intervalo">0</strong> de <strong id="paginacao-total">0</strong> cargas na doca</span>
                     <span style="color: var(--border-line);">|</span>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);">
+                        <span>Exibir:</span>
+                        <select id="select-itens-por-pagina" onchange="alterarItensPorPagina(this.value)" class="dock-select-input" style="height: 28px; padding: 2px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; background: #fff; cursor: pointer;" title="Quantidade de cargas exibidas por página">
+                            <option value="10">10 por página</option>
+                            <option value="25" selected>25 por página</option>
+                            <option value="50">50 por página</option>
+                            <option value="9999">Todas (Lote Completo)</option>
+                        </select>
+                    </div>
+                    <span style="color: var(--border-line);">|</span>
+                    <button type="button" onclick="selecionarTodasDoLote()" class="btn sm" style="font-weight: 600; color: #1E293B; border-color: #CBD5E1; background: #ffffff;" title="Selecionar todas as cargas do lote de uma vez">
+                        <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        <span>Selecionar Tudo</span>
+                    </button>
+                    <span style="color: var(--border-line);">|</span>
                     <a id="btn-combo-expedicao" href="/api/expedicao/romaneio" target="_blank" class="btn pri sm" title="Emite o pacote documental completo de todas as cargas liberadas hoje">
                         <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                         <span>Documentos de Embarque Geral</span>
@@ -1934,6 +1949,6 @@
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px;"></div>
 
     <script src="/js/auth.js?v=6"></script>
-    <script src="/js/dashboard.js?v=11"></script>
+    <script src="/js/dashboard.js?v=12"></script>
 </body>
 </html>

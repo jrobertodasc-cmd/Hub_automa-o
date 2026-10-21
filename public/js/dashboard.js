@@ -2471,12 +2471,12 @@ let filtroTextoInlineAtivo = '';
 window.todasCargasDoca = [];
 window.cargasFiltradasDoca = [];
 window.paginaAtualDoca = 1;
-window.itensPorPaginaDoca = 12;
+window.itensPorPaginaDoca = 25;
 
 function renderizarPaginaDoca(pagina = 1) {
     const lista = window.cargasFiltradasDoca || [];
     const total = lista.length;
-    const itensPorPag = window.itensPorPaginaDoca || 12;
+    const itensPorPag = window.itensPorPaginaDoca || 25;
     const maxPagina = Math.max(1, Math.ceil(total / itensPorPag));
 
     if (pagina < 1) pagina = 1;
@@ -2504,6 +2504,7 @@ function renderizarPaginaDoca(pagina = 1) {
                 const isLib = isDocaLiberada || g.is_liberada;
                 const isSp = (g.uf === 'SP');
                 const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+                const isChecked = (window.selectedGuideIds && window.selectedGuideIds.has(g.id)) ? 'checked' : '';
 
                 let statusBadge = '';
                 if (isLib) {
@@ -2519,7 +2520,7 @@ function renderizarPaginaDoca(pagina = 1) {
                 return `
                     <tr>
                         <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" onchange="atualizarContagemLote()">
+                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" ${isChecked} onchange="toggleSelectRowGuide('${escapeHtml(g.id)}', this.checked)">
                         </td>
                         <td>
                             <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
@@ -2696,67 +2697,126 @@ function aplicarFiltroTextoInline(val) {
 }
 window.aplicarFiltroTextoInline = aplicarFiltroTextoInline;
 
+function alterarItensPorPagina(qtd) {
+    const val = parseInt(qtd, 10) || 25;
+    window.itensPorPaginaDoca = val;
+    renderizarPaginaDoca(1);
+    const label = val >= 9999 ? 'Todas as cargas' : `${val} por página`;
+    showToast(`Exibindo ${label}`, 'info');
+}
+window.alterarItensPorPagina = alterarItensPorPagina;
+
+function toggleSelectRowGuide(id, checked) {
+    if (!window.selectedGuideIds) window.selectedGuideIds = new Set();
+    if (checked) {
+        window.selectedGuideIds.add(id);
+    } else {
+        window.selectedGuideIds.delete(id);
+    }
+    atualizarContagemLote();
+}
+window.toggleSelectRowGuide = toggleSelectRowGuide;
+
 function toggleSelectAllRows(checked) {
-    const boxes = document.querySelectorAll('.cockpit-table tbody tr:not([style*="display: none"]) .row-select-box');
-    boxes.forEach(box => {
-        box.checked = checked;
+    if (!window.selectedGuideIds) window.selectedGuideIds = new Set();
+    const lista = window.cargasFiltradasDoca || [];
+    if (checked) {
+        lista.forEach(g => window.selectedGuideIds.add(g.id));
+    } else {
+        window.selectedGuideIds.clear();
+    }
+    document.querySelectorAll('.cockpit-table tbody .row-select-box').forEach(cb => {
+        cb.checked = checked;
     });
     atualizarContagemLote();
 }
 window.toggleSelectAllRows = toggleSelectAllRows;
 
-function atualizarContagemLote() {
-    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
-    const bulkBar = document.getElementById('dock-bulk-bar');
-    const countEl = document.getElementById('bulk-selected-count');
-
-    if (countEl) countEl.textContent = selected.length;
-    if (bulkBar) {
-        bulkBar.style.display = selected.length > 0 ? 'flex' : 'none';
+function selecionarTodasDoLote() {
+    if (!window.selectedGuideIds) window.selectedGuideIds = new Set();
+    const lista = window.cargasFiltradasDoca || [];
+    lista.forEach(g => window.selectedGuideIds.add(g.id));
+    document.querySelectorAll('.cockpit-table tbody .row-select-box').forEach(cb => {
+        cb.checked = true;
+    });
+    const masterCb = document.getElementById('check-all-rows');
+    if (masterCb) {
+        masterCb.checked = true;
+        masterCb.indeterminate = false;
     }
+    atualizarContagemLote();
+    showToast(`Todas as ${lista.length} cargas do lote foram selecionadas!`, 'success');
 }
-window.atualizarContagemLote = atualizarContagemLote;
+window.selecionarTodasDoLote = selecionarTodasDoLote;
 
 function desmarcarTodasLinhas() {
+    if (window.selectedGuideIds) window.selectedGuideIds.clear();
     document.querySelectorAll('.table-checkbox').forEach(b => b.checked = false);
+    const masterCb = document.getElementById('check-all-rows');
+    if (masterCb) {
+        masterCb.checked = false;
+        masterCb.indeterminate = false;
+    }
     atualizarContagemLote();
 }
 window.desmarcarTodasLinhas = desmarcarTodasLinhas;
 
-function imprimirDanfesLoteSelecionado() {
-    const selected = Array.from(document.querySelectorAll('.cockpit-table tbody .row-select-box:checked'));
-    if (selected.length === 0) return;
-    const ids = selected.map(cb => cb.dataset.guideId).filter(Boolean);
-    const nfs = selected.map(cb => cb.dataset.nf).filter(Boolean);
-    showToast(`Gerando PDF unificado de ${selected.length} DANFE(s) da Linx Microvix...`, 'success');
-    if (ids.length > 0) {
-        window.open(`/api/guide/danfe-selecionadas?ids=${ids.join(',')}`, '_blank');
-    } else if (nfs.length > 0) {
-        window.open(`/api/guide/danfe-selecionadas?nfs=${nfs.join(',')}`, '_blank');
-    } else {
-        window.open('/api/expedicao/romaneio', '_blank');
+function atualizarContagemLote() {
+    const totalSelecionadas = window.selectedGuideIds ? window.selectedGuideIds.size : 0;
+    const bulkBar = document.getElementById('dock-bulk-bar');
+    const countEl = document.getElementById('bulk-selected-count');
+    const masterCb = document.getElementById('check-all-rows');
+    const lista = window.cargasFiltradasDoca || [];
+
+    if (countEl) countEl.textContent = totalSelecionadas;
+    if (bulkBar) {
+        bulkBar.style.display = totalSelecionadas > 0 ? 'flex' : 'none';
     }
+
+    if (masterCb) {
+        if (lista.length > 0 && totalSelecionadas === lista.length) {
+            masterCb.checked = true;
+            masterCb.indeterminate = false;
+        } else if (totalSelecionadas > 0 && totalSelecionadas < lista.length) {
+            masterCb.checked = false;
+            masterCb.indeterminate = true;
+        } else {
+            masterCb.checked = false;
+            masterCb.indeterminate = false;
+        }
+    }
+}
+window.atualizarContagemLote = atualizarContagemLote;
+
+function imprimirDanfesLoteSelecionado() {
+    const ids = Array.from(window.selectedGuideIds || []);
+    if (ids.length === 0) {
+        showToast("Selecione pelo menos uma carga.", "warning");
+        return;
+    }
+    showToast(`Gerando PDF unificado de ${ids.length} DANFE(s)...`, 'success');
+    window.open(`/api/guide/danfe-selecionadas?ids=${ids.join(',')}`, '_blank');
 }
 window.imprimirDanfesLoteSelecionado = imprimirDanfesLoteSelecionado;
 
 function imprimirGnresLoteSelecionado() {
-    const selected = Array.from(document.querySelectorAll('.cockpit-table tbody .row-select-box:checked'));
-    if (selected.length === 0) return;
-    const ids = selected.map(cb => cb.dataset.guideId).filter(Boolean);
-    const nfs = selected.map(cb => cb.dataset.nf).filter(Boolean);
-    showToast(`Gerando PDF unificado de Guias GNRE selecionadas...`, 'success');
-    if (ids.length > 0) {
-        window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}`, '_blank');
-    } else if (nfs.length > 0) {
-        window.open(`/api/guide/gnre-selecionadas?nfs=${nfs.join(',')}`, '_blank');
+    const ids = Array.from(window.selectedGuideIds || []);
+    if (ids.length === 0) {
+        showToast("Selecione pelo menos uma carga.", "warning");
+        return;
     }
+    showToast(`Gerando PDF unificado de ${ids.length} Guia(s) GNRE...`, 'success');
+    window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}`, '_blank');
 }
 window.imprimirGnresLoteSelecionado = imprimirGnresLoteSelecionado;
 
 function solicitarLiberacaoLoteSelecionado() {
-    const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
-    if (selected.length === 0) return;
-    showToast(`Solicitação de liquidação enviada à Diretoria Financeira para autorizar as ${selected.length} guias selecionadas!`, 'warning');
+    const total = window.selectedGuideIds ? window.selectedGuideIds.size : 0;
+    if (total === 0) {
+        showToast("Selecione pelo menos uma carga.", "warning");
+        return;
+    }
+    showToast(`Solicitação de liquidação enviada à Diretoria Financeira para autorizar as ${total} guias selecionadas!`, 'warning');
 }
 window.solicitarLiberacaoLoteSelecionado = solicitarLiberacaoLoteSelecionado;
 
@@ -3025,6 +3085,12 @@ window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
 window.mudarPaginaDoca = mudarPaginaDoca;
 window.irParaPaginaDoca = irParaPaginaDoca;
 window.renderizarPaginaDoca = renderizarPaginaDoca;
+window.alterarItensPorPagina = alterarItensPorPagina;
+window.toggleSelectRowGuide = toggleSelectRowGuide;
+window.selecionarTodasDoLote = selecionarTodasDoLote;
+window.toggleSelectAllRows = toggleSelectAllRows;
+window.desmarcarTodasLinhas = desmarcarTodasLinhas;
+window.atualizarContagemLote = atualizarContagemLote;
 
 // Auto-abertura via URL param (ex: ?modal=fechamento)
 if (window.location.search.includes('modal=fechamento')) {
