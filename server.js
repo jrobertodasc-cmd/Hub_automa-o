@@ -3605,11 +3605,21 @@ app.post('/api/admin/tenants/create', requireAuth, requireSuperAdmin, async (req
         }
 
         const cleanCnpj = String(cnpj).replace(/\D/g, '');
+        if (cleanCnpj.length !== 14) {
+            return res.status(400).json({ error: "CNPJ inválido. Digite exatamente os 14 dígitos numéricos." });
+        }
+
+        // Verifica se CNPJ já existe
+        const { data: existing } = await supabase.from('tenants').select('id, razao_social').eq('cnpj', cleanCnpj).maybeSingle();
+        if (existing) {
+            return res.status(400).json({ error: `Este CNPJ já está cadastrado para a empresa "${existing.razao_social}".` });
+        }
+
         const { data: newTenant, error } = await supabase.from('tenants').insert([{
             cnpj: cleanCnpj,
-            razao_social,
-            nome_fantasia: nome_fantasia || razao_social,
-            email_admin,
+            razao_social: String(razao_social).trim(),
+            nome_fantasia: nome_fantasia ? String(nome_fantasia).trim() : String(razao_social).trim(),
+            email_admin: email_admin ? String(email_admin).trim() : null,
             plano: plano || 'pro',
             limite_guias_mes: parseInt(limite_guias_mes, 10) || 1000,
             status: 'ativo',
@@ -3619,7 +3629,13 @@ app.post('/api/admin/tenants/create', requireAuth, requireSuperAdmin, async (req
             bank_dac: '0'
         }]).select().single();
 
-        if (error) throw error;
+        if (error) {
+            console.error("[Criar Empresa] Erro Supabase:", error);
+            if (error.code === '23505') {
+                return res.status(400).json({ error: "Este CNPJ já está cadastrado no sistema." });
+            }
+            return res.status(400).json({ error: error.message });
+        }
 
         auditService.logAudit(supabase, {
             tenantId: newTenant.id,
@@ -3631,7 +3647,8 @@ app.post('/api/admin/tenants/create', requireAuth, requireSuperAdmin, async (req
 
         return res.status(201).json({ message: "Empresa cadastrada com sucesso!", tenant: newTenant });
     } catch (err) {
-        return res.status(500).json({ error: err.message });
+        console.error("[Criar Empresa] Erro capturado:", err);
+        return res.status(400).json({ error: err.message || "Erro ao cadastrar empresa." });
     }
 });
 
