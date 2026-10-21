@@ -46,8 +46,11 @@
                 msgEl.style.color = 'var(--ok, #157347)';
             }
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectTarget = urlParams.get('redirect') || '/dashboard.html';
+
             setTimeout(() => {
-                window.location.href = '/dashboard.html';
+                window.location.href = redirectTarget;
             }, 800);
 
             return data;
