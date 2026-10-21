@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>expedi HUB — BI Fiscal & Inteligência Tributária (Lalua / Boah)</title>
+    <title>expedi HUB — BI Fiscal & Inteligência Tributária</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -399,7 +399,7 @@
             <div class="hub-logo-badge">E</div>
             <div class="hub-title-wrap">
                 <h1>expedi HUB <span class="hub-tag-pill">BI FISCAL</span></h1>
-                <div class="hub-subtitle">Lalua / Boah · Loja Shopping Barra (Salvador / BA)</div>
+                <div class="hub-subtitle" id="hub-navbar-subtitle">Painel de Inteligência Tributária</div>
             </div>
         </a>
 
@@ -436,11 +436,11 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
                     Painel Executivo de Inteligência Tributária (DIFAL)
                 </h2>
-                <p id="company-info">LALUA COMERCIO DE MODAS EIRELI (Boah) • CNPJ: 10.436.619/0001-05 • Sincronizado com Linx / Vnda</p>
+                <p id="company-info">Carregando dados da empresa...</p>
             </div>
 
             <div class="exec-actions">
-                <a href="/api/bi/export-csv" download="Relatorio_Fiscal_DIFAL_Lalua_Boah.csv" class="btn-action primary" title="Exporta planilha completa formatada para Excel da contabilidade">
+                <a href="/api/bi/export-csv" download="Relatorio_Fiscal_DIFAL.csv" class="btn-action primary" title="Exporta planilha completa formatada para Excel da contabilidade">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span>Exportar Contabilidade (.CSV)</span>
                 </a>
@@ -488,7 +488,7 @@
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                             Top Estados de Destino (Consumo de DIFAL)
                         </h3>
-                        <p>Estados que mais geram cobrança de tributo nas vendas online da Lalua / Boah.</p>
+                        <p>Estados que mais geram cobrança de tributo nas vendas interestaduais.</p>
                     </div>
                 </div>
                 <div id="ufs-bars-container" class="bar-list">
@@ -515,7 +515,7 @@
 
         <!-- LINHA 2 DE ANÁLISE: PEÇAS MAIS VENDIDAS & DEVOLUÇÕES -->
         <div class="analytics-grid">
-            <!-- PEÇAS MAIS VENDIDAS (CATÁLOGO BOAH / LALUA) -->
+            <!-- PEÇAS MAIS VENDIDAS / PRODUTOS -->
             <div class="card-box">
                 <div class="card-header-row">
                     <div>
@@ -593,8 +593,10 @@
 
                 // Empresa
                 if (data.tenant) {
+                    const subtitleEl = document.getElementById('hub-navbar-subtitle');
+                    if (subtitleEl) subtitleEl.textContent = `${data.tenant.nomeFantasia || data.tenant.razaoSocial} • Painel BI`;
                     document.getElementById('company-info').textContent = 
-                        `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj} • Sincronizado com Linx / Vnda e Asaas`;
+                        `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj} • Sincronizado com ERP e Asaas`;
                 }
 
                 // KPIs

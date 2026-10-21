@@ -323,21 +323,6 @@ function iniciarAgendador(supabase, runBatchProcessFn, intervaloMinutos = 30) {
                 .or('microvix_key.not.is.null,vnda_token_encrypted.not.is.null');
 
             if (error || !tenants || tenants.length === 0) {
-                // Fallback para buscar tenant Lalua especificamente se o filtro retornar vazio
-                const { data: lalua } = await supabase
-                    .from('tenants')
-                    .select('*')
-                    .eq('cnpj', '10436619000105')
-                    .single();
-
-                if (lalua) {
-                    const res = await sincronizarTenant(lalua, supabase, runBatchProcessFn);
-                    syncState.ultimaExecucao = new Date().toISOString();
-                    syncState.status = 'sucesso';
-                    syncState.mensagem = res.mensagem;
-                    syncState.historico.unshift(res);
-                    if (syncState.historico.length > 20) syncState.historico.pop();
-                }
                 return;
             }
 

@@ -14,12 +14,74 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+// ==========================================
+// ATUALIZAÇÃO EM TEMPO REAL NA DOCA (SSE + POLLING REDUNDANTE)
+// ==========================================
+function iniciarSSEAtualizacaoDoca() {
+    try {
+        if (!window.EventSource) {
+            console.warn("[SSE Doca] Navegador sem suporte nativo a EventSource. Usando polling de fallback.");
+            setInterval(carregarCargasDocaReais, 15000);
+            return;
+        }
+
+        const evtSource = new EventSource('/api/events/dock');
+
+        evtSource.onmessage = function(event) {
+            try {
+                if (!event.data || event.data.startsWith(':')) return; // ignorar heartbeat keepalive
+                const data = JSON.parse(event.data);
+                console.log("[SSE Doca] Evento em tempo real recebido:", data);
+
+                if (data.type === 'GUIA_PAGA' || data.type === 'GUIA_ERRO' || data.type === 'LOTE_ATUALIZADO') {
+                    // Atualiza Cockpit da doca instantaneamente sem F5
+                    if (typeof carregarCargasDocaReais === 'function') {
+                        carregarCargasDocaReais();
+                    }
+                    if (window.activeBatchId && typeof carregarDetalhesLote === 'function') {
+                        carregarDetalhesLote(window.activeBatchId);
+                    }
+                    if (data.type === 'GUIA_PAGA') {
+                        if (typeof showToast === 'function') {
+                            showToast(`🟢 NF-e ${data.nf} LIBERADA! Semáforo atualizado na doca.`, 'success');
+                        }
+                    } else if (data.type === 'GUIA_ERRO') {
+                        if (typeof showToast === 'function') {
+                            showToast(`🔴 Falha no pagamento da NF-e ${data.nf}: ${data.motivo || 'Erro'}`, 'error');
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("[SSE Doca] Erro ao interpretar evento:", err);
+            }
+        };
+
+        evtSource.onerror = function() {
+            console.warn("[SSE Doca] Conexão SSE instável. O navegador tentará reconectar automaticamente.");
+        };
+
+        // Polling leve complementar a cada 20 segundos para garantir consistência
+        setInterval(() => {
+            if (typeof carregarCargasDocaReais === 'function') {
+                carregarCargasDocaReais();
+            }
+        }, 20000);
+
+    } catch (e) {
+        console.warn("[SSE Doca] Falha ao iniciar SSE:", e);
+        setInterval(carregarCargasDocaReais, 15000);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verifica login e carrega cabeçalho/empresa
     await carregarDadosDashboard();
 
     // 1.1 Carrega cargas reais da Doca da Linx Microvix
     await carregarCargasDocaReais();
+
+    // 1.2 Inicia escuta em tempo real da Doca (SSE)
+    iniciarSSEAtualizacaoDoca();
 
     // 2. Carrega histórico de lotes
     await carregarHistoricoLotes();
@@ -267,20 +329,25 @@ async function carregarDadosDashboard() {
     try {
         const res = await fetch('/api/auth/me');
         if (!res.ok) {
-            console.warn("Modo local: Mantendo visualização operacional da Lalua Modas.");
             const tenantEl = document.getElementById('tenant-name');
-            if (tenantEl) tenantEl.textContent = 'Lalua Comércio de Modas';
+            if (tenantEl) tenantEl.textContent = 'Empresa Emitente';
             const cnpjEl = document.getElementById('company-cnpj');
             if (cnpjEl) cnpjEl.textContent = 'Operação Ativa';
             return;
         }
 
         const data = await res.json();
+        window.currentUserProfile = data.profile || { role: 'operador' };
         const tenant = Array.isArray(data.tenant) ? data.tenant[0] : data.tenant;
         
-        const tenantName = (tenant && tenant.name) || data.user.name || 'Aurora Store';
+        const tenantName = (tenant && (tenant.nome_fantasia || tenant.razao_social || tenant.name)) || data.user.name || 'Empresa Emitente';
         const tenantEl = document.getElementById('tenant-name');
         if (tenantEl) tenantEl.textContent = tenantName;
+
+        const subtitleEl = document.getElementById('tenant-subtitle');
+        if (subtitleEl) {
+            subtitleEl.textContent = `${tenantName} · Doca & Portão Fiscal`;
+        }
 
         const tenantAvatar = document.getElementById('tenant-avatar-letter');
         if (tenantAvatar) tenantAvatar.textContent = tenantName.charAt(0).toUpperCase();
@@ -1741,9 +1808,19 @@ async function carregarCargasDocaReais() {
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
                             ${g.uf !== 'SP' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : ''}
-                            ${isLib ? '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>' : `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`}
+                            ${(() => {
+                                if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
+                                const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
+                                const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
+                                if (canAuth) {
+                                    return `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`;
+                                } else {
+                                    return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
+                                }
+                            })()}
                         </td>
                     </tr>
+
                 `;
             }).join('');
         }
@@ -1997,7 +2074,7 @@ const defaultMockGuides = [
     { id: 'mock-5', nf_number: '03012004', customer_name: 'Rua M&D - 163', uf: 'SP', carrier_name: 'MT Log', value: 360.00, status: 'ISENTO' }
 ];
 
-function handleBipagemPortaoFiscal(event) {
+async function handleBipagemPortaoFiscal(event) {
     if (event.key !== 'Enter') return;
     event.preventDefault();
 
@@ -2007,31 +2084,87 @@ function handleBipagemPortaoFiscal(event) {
 
     const lista = (window.currentBatchGuides && window.currentBatchGuides.length > 0)
         ? window.currentBatchGuides
-        : defaultMockGuides;
+        : [];
 
-    // Busca exata ou por substring forte da chave, NF ou pedido
     const cleanTermo = termo.replace(/[^0-9a-zA-Z]/g, '').toLowerCase();
+
+    // Extrai número da NF caso seja código de barras de 44 dígitos da DANFE
+    let nfExtraida = cleanTermo;
+    if (cleanTermo.length >= 44) {
+        const extraido = parseInt(cleanTermo.substring(25, 34), 10);
+        if (!isNaN(extraido)) nfExtraida = String(extraido);
+    }
+
+    // 1. Busca rápida em memória no lote atual da doca
     let guiaEncontrada = lista.find(g => {
         const nf = String(g.nf_number || '').replace(/[^0-9]/g, '');
         const chave = String(g.chave_nfe || '').replace(/[^0-9]/g, '');
         const ped = String(g.order_number || g.xPed || '').replace(/[^0-9a-zA-Z]/g, '').toLowerCase();
-        return nf.includes(cleanTermo) || cleanTermo.includes(nf) || chave.includes(cleanTermo) || ped === cleanTermo;
+        
+        return nf === nfExtraida || 
+               nf.includes(cleanTermo) || 
+               cleanTermo.includes(nf) || 
+               chave === cleanTermo || 
+               ped === cleanTermo;
     });
 
+    // 2. Se não estiver no cache de memória, busca diretamente na API de expedição
     if (!guiaEncontrada) {
-        guiaEncontrada = {
-            id: 'mock-scan',
-            nf_number: cleanTermo || '054201',
-            customer_name: 'Rio de Janeiro',
-            uf: 'RJ',
-            carrier_name: 'Total Express',
-            value: 84.50,
-            status: 'PENDENTE'
-        };
+        try {
+            const res = await fetch(`/api/expedicao/bipar?termo=${encodeURIComponent(termo)}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.guia) {
+                    guiaEncontrada = data.guia;
+                }
+            }
+        } catch (e) {
+            console.warn("[Scanner] Falha na consulta remota de bipagem:", e);
+        }
     }
 
-    exibirResultadoPortaoFiscal(guiaEncontrada);
+    // 3. Resultado da conferência
+    if (guiaEncontrada) {
+        exibirResultadoPortaoFiscal(guiaEncontrada);
+    } else {
+        playAudioFeedback('bloqueado');
+        showToast(`❌ Volume não localizado no lote ativo! (Código lido: ${termo.slice(0, 20)}...)`, 'error');
+        if (input) {
+            input.select();
+            input.focus();
+        }
+    }
 }
+
+// Suporte Contínuo para Leitor Físico USB / Bipadeira (Auto-Focus Global)
+window.addEventListener('keydown', (e) => {
+    // Tecla ESC fecha modais e devolve o foco imediatamente para o leitor laser
+    if (e.key === 'Escape') {
+        fecharModalBipagem();
+        const input = document.getElementById('filter-search');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        return;
+    }
+
+    // Se estiver digitando em outros inputs ou textareas, não interfere
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+    if (isEditing && activeEl.id !== 'filter-search') {
+        return;
+    }
+
+    // Se o operador começar a bipar fora do input, redireciona o foco instantaneamente
+    const barcodeInput = document.getElementById('filter-search');
+    if (barcodeInput && activeEl !== barcodeInput) {
+        if (e.key && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            barcodeInput.focus();
+        }
+    }
+});
+
 
 function abrirModalBipagemExemplo(nfNum = '054201') {
     const lista = (window.currentBatchGuides && window.currentBatchGuides.length > 0)

@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 8. Lógica do Formulário Olist Vnda (Boah)
+    // 8. Lógica do Formulário Olist Vnda
     const vndaForm = document.getElementById('vnda-form');
     if (vndaForm) {
         vndaForm.addEventListener('submit', async (e) => {
@@ -274,6 +274,17 @@ async function carregarDados() {
 
         const data = await res.json();
         const tenant = Array.isArray(data.tenant) ? data.tenant[0] : data.tenant;
+
+        if (tenant) {
+            const subtitleEl = document.getElementById('profile-subtitle');
+            if (subtitleEl) {
+                subtitleEl.textContent = `${tenant.nome_fantasia || tenant.razao_social || 'Empresa'} · Configurações`;
+            }
+            const badgeAmb = document.getElementById('badge-ambiente');
+            if (badgeAmb) {
+                badgeAmb.textContent = tenant.environment === 'producao' ? 'Produção Real' : 'Homologação';
+            }
+        }
         
         // Preenche campos cadastrais/bancários
         document.getElementById('cnpj').value = (tenant && tenant.cnpj) || '';
@@ -352,7 +363,7 @@ async function carregarDados() {
                 const vStatus = document.getElementById('vnda-status');
                 if (vStatus) {
                     vStatus.innerHTML = erpStatus.vnda
-                        ? `<span style="color: var(--success); font-weight: 600;">✔ Conectado (www.boah.com.br)</span>`
+                        ? `<span style="color: var(--success); font-weight: 600;">✔ Conectado (${tenant?.vnda_shop_host || 'Ativo'})</span>`
                         : `<span style="color: var(--warning);">⚠ Não configurado</span>`;
                 }
                 if (tenant && tenant.omie_app_key) {

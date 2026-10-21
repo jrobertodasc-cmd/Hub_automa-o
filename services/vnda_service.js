@@ -1,5 +1,5 @@
 // services/vnda_service.js
-// Conector oficial REST para a API v2 da Olist Vnda (E-commerce Boah)
+// Conector oficial REST para a API v2 da Olist Vnda (E-commerce)
 
 const https = require('https');
 
@@ -10,7 +10,7 @@ function requestVnda(path, token, shopHost, options = {}) {
         const headers = {
             'Authorization': `Bearer ${token}`,
             'X-Shop-Host': shopHost,
-            'User-Agent': 'BoahFiscal/1.0',
+            'User-Agent': 'expediHUB/2.4.0',
             'Accept': 'application/json',
             ...(options.headers || {})
         };

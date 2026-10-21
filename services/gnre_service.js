@@ -106,14 +106,13 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
     let xmlGuias = '';
     const hoje = new Date().toISOString().split('T')[0];
 
-    // Se a empresa não fornecer dados de endereço, usamos os valores padrão da Lalua
     const emitente = {
-        cnpj: dadosEmpresa.cnpj ? dadosEmpresa.cnpj.replace(/[^0-9]/g, '') : "10436619000105",
-        razaoSocial: dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || "LALUA COMERCIO DE MODAS EIRELI",
-        endereco: dadosEmpresa.endereco || "RUA MARECHAL ANDREA 82",
-        municipio: dadosEmpresa.municipio || "27408", // Salvador/BA (5 dígitos conforme XSD)
-        uf: dadosEmpresa.uf || "BA",
-        cep: dadosEmpresa.cep ? dadosEmpresa.cep.replace(/[^0-9]/g, '') : "41810105"
+        cnpj: dadosEmpresa.cnpj ? dadosEmpresa.cnpj.replace(/[^0-9]/g, '') : "",
+        razaoSocial: dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || "Empresa Emitente",
+        endereco: dadosEmpresa.endereco || "",
+        municipio: dadosEmpresa.municipio || "",
+        uf: dadosEmpresa.uf || "",
+        cep: dadosEmpresa.cep ? dadosEmpresa.cep.replace(/[^0-9]/g, '') : ""
     };
     
     for (const guia of listaGuias) {

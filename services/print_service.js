@@ -114,12 +114,12 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             doc.on('end', () => resolve(Buffer.concat(chunks)));
             doc.on('error', err => reject(err));
 
-            const cnpjEmitente = (empresa.cnpj || '10436619000105').replace(/[^0-9]/g, '');
+            const cnpjEmitente = (empresa.cnpj || '').replace(/[^0-9]/g, '');
             const cnpjFmt = cnpjEmitente.length === 14
                 ? cnpjEmitente.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
                 : cnpjEmitente;
 
-            const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'LALUA COMERCIO DE MODAS EIRELI';
+            const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'Empresa Emitente';
             const numNf = guia.nf_number || guia.documentoOrigem || '';
             const uf = (guia.uf || guia.ufFavorecida || 'RJ').toUpperCase();
             const valorFmt = formatarMoeda(guia.value || guia.valor);
@@ -317,8 +317,8 @@ async function gerarRomaneioPdfBuffer(empresa, guias = [], options = {}) {
                 ? options.carrier
                 : (guias[0]?.carrier_name || 'TODAS AS TRANSPORTADORAS');
 
-            const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'LALUA COMERCIO DE MODAS EIRELI';
-            const cnpj = (empresa.cnpj || '10436619000105').replace(/[^0-9]/g, '');
+            const razaoSocial = empresa.razao_social || empresa.razaoSocial || 'Empresa Emitente';
+            const cnpj = (empresa.cnpj || '').replace(/[^0-9]/g, '');
             const cnpjFmt = cnpj.length === 14
                 ? cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
                 : cnpj;
@@ -453,7 +453,7 @@ async function gerarRomaneioPdfBuffer(empresa, guias = [], options = {}) {
 
                     // Assinatura Expedição
                     doc.moveTo(x + 30, sigY).lineTo(x + 30 + sigW, sigY).lineWidth(1).stroke('#0f172a');
-                    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text('EXPEDIÇÃO & PORTÃO FISCAL (LALUA MODAS)', x + 30, sigY + 5, { width: sigW, align: 'center' });
+                    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a').text('EXPEDIÇÃO & PORTÃO FISCAL', x + 30, sigY + 5, { width: sigW, align: 'center' });
                     doc.font('Helvetica').fontSize(7.5).fillColor('#64748b').text('Conferência física e liberação fiscal irrevogável para embarque', x + 30, sigY + 16, { width: sigW, align: 'center' });
 
                     // Assinatura Motorista Coletador

@@ -1,0 +1,727 @@
+﻿nf_numero;nf_serie;status;data_baixa;data_pagto;data_vencto;valor_pago;valor_fatura;uf_destino;fatura_id;empresa_cod;fornecedor;observacao;pagina
+16929;2;ESTORNADA;05/01/2022;05/01/22;05/01/22;32,28;32,28;BA;113217;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário - --- Fatura estornada em 18/01/2022 - Usuário: 134248 - Motivo: AJUSTE;1
+17817;2;PAGA;14/02/2022;14/02/22;10/02/22;22,68;22,68;BA;117438;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário ---;1
+17841;2;PAGA;14/02/2022;14/02/22;12/02/22;68,76;68,76;BA;117656;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17868;2;PAGA;14/02/2022;14/02/22;15/02/22;26,68;26,68;BA;117895;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17869;2;PAGA;14/02/2022;14/02/22;15/02/22;12,05;12,05;BA;117898;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17870;2;PAGA;14/02/2022;14/02/22;15/02/22;11,88;11,88;BA;117902;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17871;2;PAGA;14/02/2022;14/02/22;15/02/22;72,54;72,54;BA;117909;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17872;2;PAGA;14/02/2022;14/02/22;15/02/22;50,16;50,16;BA;117916;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+17873;2;PAGA;14/02/2022;14/02/22;15/02/22;26,68;26,68;BA;117923;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+18050;2;PAGA;23/02/2022;23/02/22;24/02/22;8,68;8,68;BA;118927;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+18051;2;PAGA;23/02/2022;23/02/22;24/02/22;24,00;24,00;BA;118931;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+18194;2;PAGA;04/03/2022;04/03/22;05/03/22;22,48;22,48;BA;119888;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;1
+18195;2;PAGA;04/03/2022;04/03/22;05/03/22;29,88;29,88;BA;119894;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18196;2;PAGA;04/03/2022;04/03/22;05/03/22;99,49;99,49;BA;119901;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18197;2;PAGA;04/03/2022;04/03/22;05/03/22;53,76;53,76;BA;119902;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18198;2;PAGA;04/03/2022;04/03/22;05/03/22;17,13;17,13;BA;119903;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18199;2;PAGA;04/03/2022;04/03/22;05/03/22;41,15;41,15;BA;119910;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18200;2;PAGA;04/03/2022;04/03/22;05/03/22;40,02;40,02;BA;119915;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18216;2;PAGA;07/03/2022;07/03/22;08/03/22;49,98;49,98;BA;120186;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18223;2;PAGA;07/03/2022;07/03/22;08/03/22;22,33;22,33;BA;120213;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18224;2;PAGA;07/03/2022;07/03/22;08/03/22;15,54;15,54;BA;120216;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18225;2;PAGA;07/03/2022;07/03/22;08/03/22;28,82;28,82;BA;120221;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18226;2;PAGA;07/03/2022;07/03/22;08/03/22;2,99;2,99;BA;120223;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18228;2;PAGA;07/03/2022;07/03/22;08/03/22;20,87;20,87;BA;120230;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18242;2;PAGA;08/03/2022;08/03/22;09/03/22;17,34;17,34;BA;120298;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;2
+18251;2;ESTORNADA;09/03/2022;09/03/22;09/03/22;19,42;19,42;BA;120359;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário --- Fatura estornada em 10/03/2022 - Usuário: 181509 - Motivo: DATA DE PAGAMENTO ERRADA;2
+18215;2;PAGA;09/03/2022;10/03/22;08/03/22;9,32;9,32;BA;120179;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18260;2;PAGA;09/03/2022;10/03/22;11/03/22;17,41;17,41;BA;120461;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18266;2;PAGA;09/03/2022;10/03/22;11/03/22;32,22;32,22;BA;120478;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18282;2;PAGA;11/03/2022;11/03/22;12/03/22;25,42;25,42;BA;120593;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18284;2;PAGA;11/03/2022;11/03/22;12/03/22;81,84;81,84;BA;120600;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18285;2;PAGA;11/03/2022;11/03/22;12/03/22;53,82;53,82;BA;120601;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18287;2;PAGA;11/03/2022;11/03/22;12/03/22;14,40;14,40;BA;120605;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18286;2;PAGA;14/03/2022;14/03/22;12/03/22;32,44;32,44;BA;120602;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18303;2;PAGA;16/03/2022;16/03/22;15/03/22;31,68;31,68;BA;120858;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18304;2;PAGA;16/03/2022;16/03/22;15/03/22;13,48;13,48;BA;120861;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18313;2;PAGA;16/03/2022;16/03/22;16/03/22;11,30;11,30;BA;120906;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18319;2;PAGA;16/03/2022;16/03/22;16/03/22;11,55;11,55;BA;120955;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18320;2;PAGA;16/03/2022;16/03/22;16/03/22;7,14;7,14;BA;120957;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18321;2;PAGA;16/03/2022;16/03/22;16/03/22;32,67;32,67;BA;120963;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;3
+18369;2;PAGA;21/03/2022;21/03/22;21/03/22;34,75;34,75;BA;121196;1;FAZENDA (16132);;3
+18366;2;PAGA;22/03/2022;22/03/22;18/03/22;44,16;44,16;BA;121189;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18368;2;PAGA;22/03/2022;22/03/22;18/03/22;15,96;15,96;BA;121195;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18367;2;PAGA;23/03/2022;23/03/22;18/03/22;18,19;18,19;BA;121193;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18370;2;PAGA;23/03/2022;23/03/22;18/03/22;70,14;70,14;BA;121210;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18302;2;PAGA;30/03/2022;30/03/22;15/03/22;14,48;14,48;BA;120852;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18414;2;PAGA;30/03/2022;30/03/22;18/03/22;14,26;14,26;BA;121411;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18417;2;PAGA;30/03/2022;30/03/22;18/03/22;15,11;15,11;BA;121420;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18421;2;PAGA;30/03/2022;30/03/22;18/03/22;24,70;24,70;BA;121431;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18466;2;PAGA;30/03/2022;30/03/22;22/03/22;21,45;21,45;BA;121798;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18468;2;PAGA;30/03/2022;30/03/22;22/03/22;37,04;37,04;BA;121807;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18473;2;PAGA;30/03/2022;30/03/22;22/03/22;36,82;36,82;BA;121825;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18475;2;PAGA;30/03/2022;30/03/22;22/03/22;14,30;14,30;BA;121829;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18477;2;PAGA;30/03/2022;30/03/22;22/03/22;14,28;14,28;BA;121832;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18478;2;PAGA;30/03/2022;30/03/22;22/03/22;39,98;39,98;BA;121833;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18479;2;PAGA;30/03/2022;30/03/22;22/03/22;18,84;18,84;BA;121835;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;4
+18483;2;PAGA;30/03/2022;30/03/22;22/03/22;23,06;23,06;BA;121851;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18486;2;PAGA;30/03/2022;30/03/22;22/03/22;10,73;10,73;BA;121852;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18487;2;PAGA;30/03/2022;30/03/22;22/03/22;11,84;11,84;BA;121853;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18496;2;PAGA;30/03/2022;30/03/22;22/03/22;32,87;32,87;BA;121873;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18500;2;PAGA;30/03/2022;30/03/22;22/03/22;25,49;25,49;BA;121888;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18505;2;PAGA;30/03/2022;30/03/22;22/03/22;48,42;48,42;BA;121900;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18509;2;PAGA;30/03/2022;30/03/22;22/03/22;12,25;12,25;BA;121913;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18511;2;PAGA;30/03/2022;30/03/22;22/03/22;22,96;22,96;BA;121925;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18530;2;PAGA;30/03/2022;30/03/22;23/03/22;35,90;35,90;BA;122029;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18534;2;PAGA;30/03/2022;30/03/22;23/03/22;22,74;22,74;BA;122053;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18569;2;PAGA;30/03/2022;30/03/22;24/03/22;24,87;24,87;BA;122168;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+SEM_NF_VINCULADA;;PAGA;30/03/2022;30/03/22;30/03/22;36,96;36,96;RJ;169903;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;5
+18418;2;PAGA;31/03/2022;31/03/22;18/03/22;43,08;43,08;BA;121421;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18419;2;PAGA;31/03/2022;31/03/22;18/03/22;26,12;26,12;BA;121426;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18420;2;PAGA;31/03/2022;31/03/22;18/03/22;16,88;16,88;BA;121427;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18449;2;PAGA;31/03/2022;31/03/22;22/03/22;7,88;7,88;BA;121772;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;5
+18346;2;PAGA;31/03/2022;04/04/22;17/03/22;56,22;56,22;BA;121071;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18410;2;PAGA;31/03/2022;04/04/22;18/03/22;25,11;25,11;BA;121400;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18650;2;PAGA;31/03/2022;04/04/22;26/03/22;24,33;24,33;BA;122448;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18698;2;PAGA;31/03/2022;04/04/22;29/03/22;7,73;7,73;BA;122703;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+SEM_NF_VINCULADA;;PAGA;31/03/2022;04/04/22;04/04/22;9,62;9,62;RJ;167166;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;6
+SEM_NF_VINCULADA;;PAGA;31/03/2022;04/04/22;04/04/22;37,05;37,05;RJ;167169;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;6
+18423;2;PAGA;05/04/2022;05/04/22;18/03/22;54,36;54,36;BA;121440;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18470;2;PAGA;07/04/2022;07/04/22;22/03/22;43,70;43,70;BA;121813;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18494;2;PAGA;07/04/2022;07/04/22;22/03/22;14,33;14,33;BA;121864;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18506;2;PAGA;07/04/2022;07/04/22;22/03/22;10,40;10,40;BA;121901;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18693;2;PAGA;07/04/2022;07/04/22;29/03/22;13,46;13,46;BA;122692;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18695;2;PAGA;07/04/2022;07/04/22;29/03/22;11,84;11,84;BA;122694;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18697;2;PAGA;07/04/2022;07/04/22;29/03/22;44,26;44,26;BA;122702;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18707;2;PAGA;07/04/2022;07/04/22;30/03/22;12,34;12,34;BA;122789;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18714;2;PAGA;07/04/2022;07/04/22;30/03/22;32,88;32,88;BA;122804;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18715;2;PAGA;07/04/2022;07/04/22;30/03/22;66,96;66,96;BA;122805;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;6
+18764;2;PAGA;07/04/2022;07/04/22;01/04/22;21,54;21,54;BA;123082;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18801;2;PAGA;07/04/2022;07/04/22;05/04/22;32,88;32,88;BA;123637;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18807;2;PAGA;07/04/2022;07/04/22;05/04/22;13,46;13,46;BA;123648;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18808;2;PAGA;07/04/2022;07/04/22;05/04/22;59,30;59,30;BA;123655;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18811;2;PAGA;07/04/2022;07/04/22;05/04/22;17,70;17,70;BA;123662;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18812;2;PAGA;07/04/2022;07/04/22;05/04/22;40,02;40,02;BA;123663;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18814;2;PAGA;07/04/2022;07/04/22;05/04/22;30,14;30,14;BA;123668;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+SEM_NF_VINCULADA;;PAGA;07/04/2022;07/04/22;07/04/22;58,86;58,86;BA;167209;1;FAZENDA (16132);Conciliação de Múltiplos Lança - Conciliação de Múltiplos Lançamentos;7
+18868;2;PAGA;11/04/2022;11/04/22;11/04/22;23,25;22,14;BA;124052;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18869;2;PAGA;11/04/2022;11/04/22;09/04/22;14,99;14,99;BA;124055;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+18884;2;PAGA;13/04/2022;13/04/22;12/04/22;94,26;94,26;BA;124384;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+19149;2;PAGA;13/04/2022;13/04/22;28/04/22;15,54;15,54;BA;126295;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;7
+SEM_NF_VINCULADA;;PAGA;13/04/2022;13/04/22;13/04/22;23,88;23,88;SP;167230;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;7
+SEM_NF_VINCULADA;;PAGA;18/04/2022;18/04/22;18/04/22;32,65;32,65;SP;167805;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;7
+18927;2;PAGA;18/04/2022;19/04/22;14/04/22;37,11;37,11;BA;124573;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18928;2;PAGA;18/04/2022;19/04/22;14/04/22;24,48;24,48;BA;124577;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18932;2;PAGA;18/04/2022;19/04/22;14/04/22;104,46;104,46;BA;124592;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18954;2;PAGA;20/04/2022;20/04/22;15/04/22;18,54;18,54;BA;124784;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18972;2;PAGA;20/04/2022;20/04/22;19/04/22;16,22;16,22;BA;125154;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18974;2;PAGA;20/04/2022;20/04/22;19/04/22;20,46;20,46;BA;125165;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18976;2;PAGA;20/04/2022;20/04/22;19/04/22;33,38;33,38;BA;125170;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18977;2;PAGA;20/04/2022;20/04/22;19/04/22;35,55;35,55;BA;125171;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18979;2;PAGA;20/04/2022;20/04/22;19/04/22;23,75;23,75;BA;125178;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18980;2;PAGA;20/04/2022;20/04/22;19/04/22;32,82;32,82;BA;125184;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18982;2;PAGA;20/04/2022;20/04/22;19/04/22;44,30;44,30;BA;125193;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18984;2;PAGA;20/04/2022;20/04/22;19/04/22;56,22;56,22;BA;125196;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18326;2;PAGA;04/05/2022;04/05/22;16/03/22;102,43;102,43;BA;120993;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18341;2;PAGA;04/05/2022;04/05/22;17/03/22;9,32;9,32;BA;121051;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18342;2;PAGA;04/05/2022;04/05/22;17/03/22;9,66;9,66;BA;121052;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18374;2;PAGA;04/05/2022;04/05/22;18/03/22;19,49;19,49;BA;121289;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;8
+18397;2;PAGA;04/05/2022;04/05/22;18/03/22;34,68;34,68;BA;121368;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18398;2;PAGA;04/05/2022;04/05/22;18/03/22;9,59;9,59;BA;121370;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18399;2;PAGA;04/05/2022;04/05/22;18/03/22;14,30;14,30;BA;121373;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18951;2;PAGA;04/05/2022;04/05/22;15/04/22;22,14;22,14;BA;124777;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18994;2;PAGA;04/05/2022;04/05/22;20/04/22;21,54;21,54;BA;125255;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18995;2;PAGA;04/05/2022;04/05/22;20/04/22;13,89;13,89;BA;125258;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18997;2;PAGA;04/05/2022;04/05/22;20/04/22;17,75;17,75;BA;125262;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+18998;2;PAGA;04/05/2022;04/05/22;20/04/22;44,33;44,33;BA;125263;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19000;2;PAGA;04/05/2022;04/05/22;20/04/22;46,56;46,56;BA;125273;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19001;2;PAGA;04/05/2022;04/05/22;20/04/22;26,25;26,25;BA;125275;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19009;2;PAGA;04/05/2022;04/05/22;20/04/22;37,65;37,65;BA;125294;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19012;2;PAGA;04/05/2022;04/05/22;20/04/22;33,33;33,33;BA;125306;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19027;2;PAGA;04/05/2022;04/05/22;21/04/22;14,74;14,74;BA;125435;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19029;2;PAGA;04/05/2022;04/05/22;21/04/22;21,88;21,88;BA;125442;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19033;2;PAGA;04/05/2022;04/05/22;21/04/22;62,75;62,75;BA;125455;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19043;2;PAGA;04/05/2022;04/05/22;21/04/22;22,14;22,14;SP;125489;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;9
+19080;2;PAGA;04/05/2022;04/05/22;26/04/22;78,22;78,22;BA;126002;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19541;2;PAGA;04/05/2022;04/05/22;20/05/22;11,88;11,88;BA;129426;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;9
+19561;2;PAGA;04/05/2022;04/05/22;21/05/22;23,88;23,88;BA;129658;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+SEM_NF_VINCULADA;;PAGA;04/05/2022;04/05/22;04/05/22;36,96;36,96;RJ;138299;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;10
+SEM_NF_VINCULADA;;PAGA;04/05/2022;04/05/22;04/05/22;35,40;35,40;ES;138300;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;10
+18778;2;PAGA;06/05/2022;06/05/22;01/04/22;33,51;33,51;BA;123251;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18779;2;PAGA;06/05/2022;06/05/22;01/04/22;89,62;89,62;BA;123254;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18795;2;PAGA;06/05/2022;06/05/22;05/04/22;22,74;22,74;BA;123600;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18826;2;PAGA;06/05/2022;06/05/22;06/04/22;10,55;10,55;BA;123736;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18860;2;PAGA;06/05/2022;06/05/22;08/04/22;32,65;32,65;BA;123929;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18881;2;PAGA;06/05/2022;06/05/22;12/04/22;23,88;23,88;BA;124379;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18883;2;PAGA;06/05/2022;06/05/22;12/04/22;15,54;15,54;BA;124383;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18944;2;PAGA;06/05/2022;06/05/22;15/04/22;17,48;17,48;BA;124734;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18948;2;PAGA;06/05/2022;06/05/22;15/04/22;61,51;61,51;BA;124765;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18950;2;PAGA;06/05/2022;06/05/22;15/04/22;31,68;31,68;BA;124773;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18952;2;PAGA;06/05/2022;06/05/22;15/04/22;43,86;43,86;BA;124778;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18953;2;PAGA;06/05/2022;06/05/22;15/04/22;40,14;40,14;BA;124783;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18955;2;PAGA;06/05/2022;06/05/22;15/04/22;30,48;30,48;BA;124787;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18959;2;PAGA;06/05/2022;06/05/22;15/04/22;30,42;30,42;BA;124840;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;10
+18986;2;PAGA;06/05/2022;06/05/22;19/04/22;18,54;18,54;BA;125200;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+18993;2;PAGA;06/05/2022;06/05/22;20/04/22;21,96;21,96;BA;125251;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19004;2;PAGA;06/05/2022;06/05/22;20/04/22;31,22;31,22;BA;125286;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19026;2;PAGA;06/05/2022;06/05/22;21/04/22;36,42;36,42;BA;125434;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19028;2;PAGA;06/05/2022;06/05/22;21/04/22;16,09;16,09;BA;125438;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19042;2;PAGA;06/05/2022;06/05/22;21/04/22;22,14;22,14;BA;125487;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19081;2;PAGA;06/05/2022;06/05/22;26/04/22;41,43;41,43;BA;126006;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19083;2;PAGA;06/05/2022;06/05/22;26/04/22;34,08;34,08;BA;126009;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19087;2;PAGA;06/05/2022;06/05/22;26/04/22;20,34;20,34;BA;126015;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19088;2;PAGA;06/05/2022;06/05/22;26/04/22;19,74;19,74;BA;126019;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19094;2;PAGA;06/05/2022;06/05/22;26/04/22;46,62;46,62;BA;126045;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19095;2;PAGA;06/05/2022;06/05/22;26/04/22;17,88;17,88;BA;126051;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19099;2;PAGA;06/05/2022;06/05/22;26/04/22;22,08;22,08;BA;126069;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19150;2;PAGA;06/05/2022;06/05/22;28/04/22;25,74;25,74;BA;126299;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19177;2;PAGA;06/05/2022;06/05/22;29/04/22;20,47;20,47;BA;126462;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19184;2;PAGA;06/05/2022;06/05/22;29/04/22;15,48;15,48;SP;126476;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;11
+19185;2;PAGA;06/05/2022;06/05/22;29/04/22;22,74;22,74;BA;126479;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19187;2;PAGA;06/05/2022;06/05/22;29/04/22;17,23;17,23;BA;126490;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;11
+19189;2;PAGA;06/05/2022;06/05/22;29/04/22;26,78;26,78;BA;126492;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19191;2;PAGA;06/05/2022;06/05/22;29/04/22;21,88;21,88;BA;126503;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19192;2;PAGA;06/05/2022;06/05/22;29/04/22;39,86;39,86;BA;126510;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19194;2;PAGA;06/05/2022;06/05/22;29/04/22;16,09;16,09;BA;126518;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19204;2;PAGA;06/05/2022;06/05/22;29/04/22;41,88;41,88;BA;126596;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19205;2;PAGA;06/05/2022;06/05/22;29/04/22;66,22;66,22;BA;126599;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19207;2;PAGA;06/05/2022;06/05/22;29/04/22;23,17;23,17;BA;126604;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19217;2;PAGA;06/05/2022;06/05/22;30/04/22;54,42;54,42;BA;126703;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19218;2;PAGA;06/05/2022;06/05/22;30/04/22;16,14;16,14;BA;126706;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19219;2;PAGA;06/05/2022;06/05/22;30/04/22;22,74;22,74;BA;126707;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19222;2;PAGA;06/05/2022;06/05/22;01/05/22;11,88;11,88;BA;127050;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19223;2;PAGA;06/05/2022;06/05/22;01/05/22;20,34;20,34;BA;127054;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19226;2;PAGA;06/05/2022;06/05/22;01/05/22;13,14;13,14;BA;127061;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19229;2;PAGA;06/05/2022;06/05/22;01/05/22;48,36;48,36;BA;127069;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19232;2;PAGA;06/05/2022;06/05/22;01/05/22;31,62;31,62;BA;127080;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19240;2;PAGA;06/05/2022;06/05/22;03/05/22;76,74;79,74;SP;127096;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;12
+19249;2;PAGA;06/05/2022;06/05/22;03/05/22;18,56;18,56;BA;127123;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19280;2;PAGA;06/05/2022;06/05/22;05/05/22;15,20;15,20;BA;127329;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;12
+19281;2;PAGA;06/05/2022;06/05/22;05/05/22;18,31;18,31;BA;127332;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19283;2;PAGA;06/05/2022;06/05/22;05/05/22;37,65;37,65;BA;127342;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19284;2;PAGA;06/05/2022;06/05/22;05/05/22;30,76;30,76;BA;127348;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19286;2;PAGA;06/05/2022;06/05/22;05/05/22;69,41;69,41;BA;127370;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+SEM_NF_VINCULADA;;PAGA;06/05/2022;06/05/22;06/05/22;38,41;38,41;RJ;138326;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;13
+SEM_NF_VINCULADA;;PAGA;06/05/2022;06/05/22;06/05/22;22,14;22,14;SP;138327;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;13
+19299;2;PAGA;09/05/2022;09/05/22;06/05/22;12,54;12,54;BA;127535;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19300;2;PAGA;09/05/2022;09/05/22;06/05/22;15,21;15,21;BA;127537;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19301;2;PAGA;09/05/2022;09/05/22;06/05/22;23,34;23,34;SP;127541;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;13
+19356;2;PAGA;13/05/2022;13/05/22;10/05/22;17,88;17,88;BA;128315;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19357;2;PAGA;13/05/2022;13/05/22;10/05/22;20,47;20,47;BA;128316;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19358;2;PAGA;13/05/2022;13/05/22;10/05/22;87,84;87,84;BA;128323;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19359;2;PAGA;13/05/2022;13/05/22;10/05/22;39,32;39,32;BA;128330;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19369;2;PAGA;13/05/2022;13/05/22;10/05/22;122,94;122,94;BA;128346;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19373;2;PAGA;13/05/2022;13/05/22;11/05/22;17,23;17,23;BA;128400;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19374;2;PAGA;13/05/2022;13/05/22;11/05/22;53,27;53,27;BA;128407;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;13
+19402;2;PAGA;13/05/2022;13/05/22;12/05/22;16,84;16,84;BA;128515;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19403;2;PAGA;13/05/2022;13/05/22;12/05/22;22,14;22,14;BA;128533;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19248;2;PAGA;16/05/2022;16/05/22;03/05/22;17,88;17,88;BA;127119;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19408;2;PAGA;17/05/2022;17/05/22;13/05/22;16,27;16,27;BA;128629;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19409;2;PAGA;17/05/2022;17/05/22;13/05/22;57,22;57,22;BA;128632;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19519;2;PAGA;23/05/2022;23/05/22;19/05/22;41,44;41,44;BA;129294;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19520;2;PAGA;23/05/2022;23/05/22;19/05/22;26,88;26,88;BA;129299;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19521;2;PAGA;23/05/2022;23/05/22;19/05/22;23,34;23,34;BA;129301;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19523;2;PAGA;23/05/2022;23/05/22;19/05/22;23,34;23,34;BA;129302;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+SEM_NF_VINCULADA;;PAGA;23/05/2022;23/05/22;23/05/22;11,88;11,88;ES;167125;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;14
+19542;2;PAGA;25/05/2022;25/05/22;20/05/22;74,18;74,18;BA;129431;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19543;2;PAGA;26/05/2022;26/05/22;20/05/22;38,78;38,78;BA;129435;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;14
+19968;2;PAGA;20/06/2022;20/06/22;11/06/22;102,84;102,84;BA;132422;1;BAHIA SECRETARIA DA;;14
+20003;2;PAGA;20/06/2022;20/06/22;14/06/22;32,36;32,36;BA;132840;1;FAZENDA (16132);Fatura referente ao pagamento - PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;10,40;10,40;BA;165632;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;34,02;34,02;BA;165635;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;19,14;19,14;RJ;165640;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;23,88;23,88;RJ;165644;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;10,73;10,73;RJ;165646;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;36,08;36,08;RJ;165647;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;40,20;40,20;RJ;165649;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;26,19;26,19;RJ;165650;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;31,08;31,08;RJ;165651;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;19,14;19,14;ES;165652;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;17,88;17,88;SP;170538;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;54,20;54,20;SP;170540;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;20,47;20,47;SP;170541;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;4,36;4,36;BA;170542;1;FAZENDA (16132);;15
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;18,94;18,94;SP;170543;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;35,69;35,69;SP;170544;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;50,76;50,76;SP;170545;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;12,95;12,95;SP;170546;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;35,09;35,09;SP;170548;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;5,11;5,11;SP;170549;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;50,90;50,90;SP;170550;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;34,49;34,49;SP;170551;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+SEM_NF_VINCULADA;;PAGA;20/06/2022;20/06/22;20/06/22;31,76;31,76;ES;170553;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;16
+20086;2;PAGA;21/06/2022;21/06/22;21/06/22;23,88;23,88;SP;133739;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;16
+20087;2;PAGA;21/06/2022;21/06/22;21/06/22;20,87;20,87;RJ;133743;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;16
+SEM_NF_VINCULADA;;PAGA;21/06/2022;21/06/22;21/06/22;5,50;5,50;BA;170571;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;16
+SEM_NF_VINCULADA;;PAGA;21/06/2022;21/06/22;21/06/22;54,34;54,34;ES;170572;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;16
+SEM_NF_VINCULADA;;PAGA;21/06/2022;21/06/22;21/06/22;17,94;17,94;ES;170573;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;16
+20785;2;PAGA;22/07/2022;22/07/22;14/07/22;18,95;18,95;BA;137404;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;17
+SEM_NF_VINCULADA;;PAGA;22/07/2022;22/07/22;22/07/22;34,08;34,08;BA;163033;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;17
+20886;2;PAGA;25/07/2022;25/07/22;21/07/22;90,98;90,98;BA;138193;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;17
+SEM_NF_VINCULADA;;PAGA;26/07/2022;26/07/22;26/07/22;39,81;39,81;ES;163070;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;17
+SEM_NF_VINCULADA;;PAGA;28/07/2022;28/07/22;28/07/22;81,51;81,51;SP;163087;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+21111;2;PAGA;29/07/2022;29/07/22;06/08/22;24,95;24,95;BA;140054;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;13,68;13,68;SP;163112;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;26,67;26,67;SP;163114;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;32,03;32,03;BA;165495;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;47,76;47,76;SP;165497;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;37,02;37,02;SP;165498;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;22,42;22,42;SP;165499;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;17
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;15,17;15,17;SP;165500;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;18
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;36,28;36,28;SP;165501;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;18
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;24,18;24,18;BA;165502;1;FAZENDA (16132);Conciliação de Múltiplos Lança - Conciliação de Múltiplos Lançamentos;18
+SEM_NF_VINCULADA;;PAGA;29/07/2022;29/07/22;29/07/22;86,03;86,03;BA;165509;1;FAZENDA (16132);Conciliação de Múltiplos Lança - Conciliação de Múltiplos Lançamentos;18
+21195;2;PAGA;26/08/2022;26/08/22;12/08/22;42,42;42,42;BA;141001;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21196;2;PAGA;26/08/2022;26/08/22;12/08/22;24,30;24,30;BA;141005;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21198;2;PAGA;26/08/2022;26/08/22;12/08/22;56,16;56,16;BA;141011;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21199;2;PAGA;26/08/2022;26/08/22;12/08/22;22,35;22,35;BA;141014;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21340;2;PAGA;26/08/2022;26/08/22;23/08/22;18,22;18,70;SP;142305;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;18
+21365;2;PAGA;30/08/2022;30/08/22;24/08/22;31,89;31,89;BA;142403;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;18
+21367;2;PAGA;30/08/2022;30/08/22;24/08/22;37,62;37,62;BA;142416;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;18
+21211;2;PAGA;31/08/2022;31/08/22;13/08/22;17,20;17,20;BA;141165;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21213;2;PAGA;31/08/2022;31/08/22;13/08/22;53,31;53,31;BA;141173;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21234;2;PAGA;31/08/2022;31/08/22;16/08/22;31,08;31,08;BA;141532;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21235;2;PAGA;31/08/2022;31/08/22;16/08/22;36,48;36,48;BA;141536;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;18
+21236;2;PAGA;31/08/2022;31/08/22;16/08/22;11,55;11,55;BA;141538;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21237;2;PAGA;31/08/2022;31/08/22;16/08/22;62,10;62,10;BA;141540;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21244;2;PAGA;31/08/2022;31/08/22;16/08/22;25,76;25,76;BA;141569;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21259;2;PAGA;31/08/2022;31/08/22;16/08/22;47,11;47,11;BA;141597;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21279;2;PAGA;31/08/2022;31/08/22;18/08/22;22,08;22,08;BA;141738;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21294;2;PAGA;31/08/2022;31/08/22;19/08/22;34,68;34,68;BA;141881;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21337;2;PAGA;31/08/2022;31/08/22;23/08/22;37,11;37,11;BA;142298;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21338;2;PAGA;31/08/2022;31/08/22;23/08/22;46,02;46,02;BA;142300;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21368;2;PAGA;31/08/2022;31/08/22;24/08/22;39,07;39,07;BA;142422;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21378;2;PAGA;31/08/2022;31/08/22;25/08/22;30,48;30,48;BA;142534;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21379;2;PAGA;31/08/2022;31/08/22;25/08/22;43,05;43,05;BA;142541;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21391;2;PAGA;31/08/2022;31/08/22;26/08/22;20,98;20,98;BA;142698;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21409;2;PAGA;29/09/2022;29/09/22;26/08/22;7,05;7,05;BA;142751;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;19
+21412;2;PAGA;29/09/2022;29/09/22;26/08/22;17,70;17,70;BA;142758;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;19
+21431;2;PAGA;29/09/2022;29/09/22;30/08/22;17,88;17,88;BA;143113;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;19
+21433;2;PAGA;29/09/2022;29/09/22;30/08/22;15,27;15,27;BA;143121;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;19
+21444;2;PAGA;29/09/2022;29/09/22;30/08/22;22,74;22,74;BA;143139;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;19
+21446;2;PAGA;29/09/2022;29/09/22;30/08/22;12,35;12,35;BA;143142;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21470;2;PAGA;29/09/2022;29/09/22;31/08/22;40,04;40,04;BA;143290;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21511;2;PAGA;29/09/2022;29/09/22;03/09/22;29,73;29,73;BA;143631;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;20
+21515;2;PAGA;29/09/2022;29/09/22;03/09/22;46,68;46,68;BA;143642;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21526;2;PAGA;29/09/2022;29/09/22;03/09/22;59,82;59,82;BA;143699;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21529;2;PAGA;29/09/2022;29/09/22;06/09/22;37,60;37,60;BA;143987;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21530;2;PAGA;29/09/2022;29/09/22;06/09/22;31,22;31,22;BA;143993;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21531;2;PAGA;29/09/2022;29/09/22;06/09/22;110,58;110,58;BA;144000;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21533;2;PAGA;29/09/2022;29/09/22;06/09/22;19,49;19,49;BA;144006;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;20
+21534;2;PAGA;29/09/2022;29/09/22;06/09/22;38,88;38,88;BA;144013;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21556;2;PAGA;29/09/2022;29/09/22;07/09/22;28,47;28,47;BA;144194;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21567;2;PAGA;29/09/2022;29/09/22;07/09/22;7,50;7,50;BA;144267;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21568;2;PAGA;29/09/2022;29/09/22;07/09/22;18,35;18,35;BA;144271;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21570;2;PAGA;29/09/2022;29/09/22;07/09/22;22,47;22,47;BA;144275;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21576;2;PAGA;29/09/2022;29/09/22;07/09/22;43,02;43,02;BA;144294;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21581;2;PAGA;29/09/2022;29/09/22;09/09/22;32,82;32,82;BA;144439;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21585;2;PAGA;29/09/2022;29/09/22;09/09/22;16,09;16,09;BA;144457;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;20
+21586;2;PAGA;29/09/2022;29/09/22;09/09/22;74,10;74,10;BA;144464;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;20
+21589;2;PAGA;29/09/2022;29/09/22;09/09/22;47,13;47,13;BA;144479;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21610;2;PAGA;29/09/2022;29/09/22;10/09/22;18,84;18,84;BA;144605;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21627;2;PAGA;29/09/2022;29/09/22;13/09/22;33,42;33,42;BA;144898;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21628;2;PAGA;29/09/2022;29/09/22;13/09/22;21,35;21,35;BA;144902;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21629;2;PAGA;29/09/2022;29/09/22;13/09/22;20,72;20,72;BA;144906;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21631;2;PAGA;29/09/2022;29/09/22;13/09/22;24,29;24,29;BA;144914;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21632;2;PAGA;29/09/2022;29/09/22;13/09/22;35,00;35,00;BA;144918;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21698;2;PAGA;29/09/2022;29/09/22;16/09/22;105,12;105,12;BA;145362;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21704;2;PAGA;29/09/2022;29/09/22;16/09/22;29,15;29,15;BA;145393;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21711;2;PAGA;29/09/2022;29/09/22;16/09/22;11,17;11,17;BA;145440;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;21
+21737;2;PAGA;29/09/2022;29/09/22;17/09/22;19,92;19,92;BA;145649;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21740;2;PAGA;29/09/2022;29/09/22;17/09/22;19,92;19,92;BA;145658;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21761;2;PAGA;29/09/2022;29/09/22;17/09/22;30,05;30,05;BA;145736;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21785;2;PAGA;29/09/2022;29/09/22;21/09/22;55,02;55,02;BA;146056;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;21
+21935;2;PAGA;24/10/2022;24/10/22;04/10/22;32,96;32,96;BA;147731;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;21
+22107;2;PAGA;24/10/2022;24/10/22;19/10/22;30,48;30,48;BA;149645;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;21
+18395;2;PAGA;24/10/2022;08/12/22;08/12/22;34,40;34,40;ES;121361;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;22
+18493;2;PAGA;24/10/2022;08/12/22;08/12/22;19,10;19,10;BA;121861;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;22
+18543;2;PAGA;09/12/2022;09/12/22;09/12/22;1,80;1,80;ES;122094;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;22
+18682;2;PAGA;09/12/2022;09/12/22;09/12/22;7,24;7,24;SP;122667;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;22
+18717;2;PAGA;12/12/2022;12/12/22;12/12/22;1,34;1,34;BA;122809;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;22
+18718;2;PAGA;12/12/2022;12/12/22;12/12/22;4,75;4,75;BA;122811;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;22
+18739;2;PAGA;12/12/2022;12/12/22;12/12/22;20,28;20,28;RJ;122903;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;22
+18766;2;PAGA;12/12/2022;12/12/22;12/12/22;13,43;13,43;BA;123090;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;22
+18790;2;PAGA;12/12/2022;12/12/22;12/12/22;12,74;12,74;SP;123317;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;22
+18827;2;PAGA;12/12/2022;12/12/22;12/12/22;2,21;2,21;SP;123738;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;22
+18981;2;PAGA;12/12/2022;12/12/22;12/12/22;19,22;19,22;RJ;125188;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;22
+19024;2;PAGA;12/12/2022;12/12/22;12/12/22;112,26;112,26;BA;125432;1;BAHIA SECRETARIA DA;PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;22
+19045;2;PAGA;12/12/2022;12/12/22;12/12/22;10,21;10,21;BA;125498;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;22
+19082;2;PAGA;12/12/2022;12/12/22;12/12/22;12,54;12,54;RJ;126008;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;22
+19085;2;PAGA;12/12/2022;12/12/22;12/12/22;16,14;16,14;RJ;126011;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;22
+19086;2;PAGA;12/12/2022;12/12/22;12/12/22;13,28;13,28;RJ;126014;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;22
+19089;2;PAGA;12/12/2022;12/12/22;12/12/22;19,14;19,14;BA;126024;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;23
+19148;2;PAGA;12/12/2022;12/12/22;12/12/22;67,67;67,67;BA;126294;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;23
+19151;2;PAGA;12/12/2022;12/12/22;12/12/22;10,74;10,74;BA;126301;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;23
+19180;2;PAGA;12/12/2022;12/12/22;12/12/22;22,14;22,14;BA;126470;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;23
+19182;2;PAGA;12/12/2022;12/12/22;12/12/22;29,60;29,60;RJ;126473;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;23
+19265;2;PAGA;12/12/2022;12/12/22;12/12/22;27,95;27,95;RJ;127218;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;23
+19276;2;PAGA;12/12/2022;12/12/22;12/12/22;20,42;20,42;SP;127321;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19309;2;PAGA;12/12/2022;12/12/22;12/12/22;56,91;56,91;SP;127601;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19321;2;PAGA;12/12/2022;12/12/22;12/12/22;60,28;60,28;SP;127692;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19322;2;PAGA;12/12/2022;12/12/22;12/12/22;54,42;54,42;BA;127699;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;23
+19323;2;PAGA;12/12/2022;12/12/22;12/12/22;20,42;20,42;SP;127700;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19325;2;PAGA;12/12/2022;12/12/22;12/12/22;4,81;4,81;RJ;127707;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;23
+19340;2;PAGA;12/12/2022;12/12/22;12/12/22;14,53;14,53;ES;127891;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;23
+19344;2;PAGA;12/12/2022;12/12/22;12/12/22;4,14;4,14;BA;127983;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;23
+19350;2;PAGA;12/12/2022;12/12/22;12/12/22;26,34;26,34;SP;127988;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19411;2;PAGA;12/12/2022;12/12/22;12/12/22;26,88;26,88;BA;128641;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;23
+19443;2;PAGA;12/12/2022;12/12/22;12/12/22;10,74;10,74;BA;128762;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;23
+19452;2;PAGA;12/12/2022;12/12/22;12/12/22;29,28;29,28;SP;128781;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;23
+19453;2;PAGA;12/12/2022;12/12/22;12/12/22;17,17;17,17;SP;128784;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;24
+19455;2;PAGA;12/12/2022;12/12/22;12/12/22;72,36;72,36;BA;128792;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;24
+19470;2;PAGA;12/12/2022;12/12/22;12/12/22;23,59;23,59;RJ;128861;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+19472;2;PAGA;12/12/2022;12/12/22;12/12/22;8,05;8,05;RJ;128911;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+19473;2;PAGA;12/12/2022;12/12/22;12/12/22;39,78;39,78;BA;128918;1;FAZENDA (16132);PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;24
+19476;2;PAGA;12/12/2022;12/12/22;12/12/22;30,50;30,50;SP;129055;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;24
+19477;2;PAGA;12/12/2022;12/12/22;12/12/22;26,60;26,60;CE;129060;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;24
+19657;2;PAGA;12/12/2022;12/12/22;12/12/22;19,93;19,93;RJ;130310;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+19798;2;PAGA;12/12/2022;12/12/22;12/12/22;10,74;10,74;BA;131096;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;24
+20261;2;PAGA;12/12/2022;12/12/22;12/12/22;22,14;22,14;BA;134319;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;24
+20351;2;PAGA;12/12/2022;12/12/22;28/06/22;13,74;13,74;BA;134696;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;24
+20381;2;PAGA;12/12/2022;12/12/22;12/12/22;13,64;13,64;ES;134839;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;24
+21377;2;PAGA;12/12/2022;12/12/22;12/12/22;11,34;11,34;RJ;142532;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+21630;2;PAGA;12/12/2022;12/12/22;12/12/22;21,88;21,88;SP;144910;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;24
+22272;2;PAGA;12/12/2022;12/12/22;12/12/22;27,98;27,98;RJ;150724;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+22344;2;PAGA;12/12/2022;12/12/22;12/12/22;29,22;29,22;RJ;151238;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;24
+22474;2;PAGA;12/12/2022;12/12/22;12/12/22;46,34;46,34;BA;152693;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ BAHIA;24
+22582;2;PAGA;12/12/2022;12/12/22;12/12/22;13,74;13,74;BA;153706;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;24
+23008;2;PAGA;12/12/2022;12/12/22;12/12/22;22,14;22,14;SP;156558;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+23054;2;PAGA;12/12/2022;12/12/22;12/12/22;31,08;31,08;RJ;157009;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;25
+19002;2;PAGA;14/12/2022;14/12/22;14/12/22;10,74;10,74;SP;125279;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19152;2;PAGA;14/12/2022;14/12/22;14/12/22;19,93;19,93;SP;126302;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19206;2;PAGA;14/12/2022;14/12/22;14/12/22;20,47;20,47;BA;126600;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ AMAZO;25
+19493;2;PAGA;14/12/2022;14/12/22;14/12/22;13,68;13,68;SP;129146;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19494;2;PAGA;14/12/2022;14/12/22;14/12/22;63,14;63,14;SP;129153;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19559;2;PAGA;14/12/2022;14/12/22;14/12/22;0,10;0,10;RJ;129578;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;25
+19572;2;PAGA;14/12/2022;14/12/22;14/12/22;52,67;52,67;RJ;129941;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;25
+19573;2;PAGA;14/12/2022;14/12/22;14/12/22;92,00;92,00;RJ;129943;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;25
+19577;2;PAGA;14/12/2022;14/12/22;14/12/22;35,02;35,02;PA;129957;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFA PARANA;25
+19600;2;PAGA;14/12/2022;14/12/22;14/12/22;5,98;5,98;SP;130045;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19604;2;PAGA;14/12/2022;14/12/22;14/12/22;5,58;5,58;BA;130055;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ MATO;25
+19656;2;PAGA;14/12/2022;14/12/22;14/12/22;6,94;6,94;RJ;130307;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;25
+19683;2;PAGA;14/12/2022;14/12/22;14/12/22;3,92;3,92;SP;130470;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;25
+19709;2;PAGA;14/12/2022;14/12/22;14/12/22;12,57;12,57;RJ;130596;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;25
+19710;2;PAGA;14/12/2022;14/12/22;14/12/22;4,30;4,30;ES;130598;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;25
+19713;2;PAGA;14/12/2022;14/12/22;14/12/22;8,60;8,60;SP;130609;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19729;2;PAGA;14/12/2022;14/12/22;14/12/22;23,88;23,88;ES;130810;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;26
+19730;2;PAGA;14/12/2022;14/12/22;14/12/22;30,48;30,48;RJ;130816;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;26
+19731;2;PAGA;14/12/2022;14/12/22;14/12/22;27,21;27,21;SP;130821;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19744;2;PAGA;14/12/2022;14/12/22;14/12/22;10,73;10,73;SP;130837;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19760;2;PAGA;14/12/2022;14/12/22;14/12/22;29,23;29,23;BA;130937;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;26
+19773;2;PAGA;14/12/2022;14/12/22;14/12/22;30,29;30,29;SP;130965;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19774;2;PAGA;14/12/2022;14/12/22;14/12/22;17,10;17,10;BA;130967;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;26
+19776;2;PAGA;14/12/2022;14/12/22;14/12/22;13,14;13,14;SP;130996;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19790;2;PAGA;14/12/2022;14/12/22;14/12/22;20,47;20,47;RJ;131052;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;26
+19800;2;PAGA;14/12/2022;14/12/22;14/12/22;25,62;25,62;RJ;131099;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;26
+SEM_NF_VINCULADA;;PAGA;14/12/2022;14/12/22;14/12/22;28,97;28,97;BA;158776;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;26
+18904;2;PAGA;15/12/2022;15/12/22;15/12/22;31,08;31,08;RJ;124449;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;26
+19044;2;PAGA;15/12/2022;15/12/22;15/12/22;21,88;21,88;ES;125493;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;26
+19109;2;PAGA;15/12/2022;15/12/22;15/12/22;22,14;22,14;CE;126177;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;26
+19260;2;PAGA;15/12/2022;15/12/22;15/12/22;13,64;13,64;BA;127196;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;26
+19823;2;PAGA;15/12/2022;15/12/22;15/12/22;20,47;20,47;SP;131310;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;26
+19824;2;PAGA;15/12/2022;15/12/22;15/12/22;17,23;17,23;BA;131313;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;27
+19825;2;PAGA;15/12/2022;15/12/22;15/12/22;40,40;40,40;RJ;131320;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;27
+19826;2;PAGA;15/12/2022;15/12/22;15/12/22;38,22;38,22;BA;131322;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;27
+19859;2;PAGA;15/12/2022;15/12/22;15/12/22;10,68;10,68;SP;131669;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19863;2;PAGA;15/12/2022;15/12/22;15/12/22;10,73;10,73;SP;131680;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19865;2;PAGA;15/12/2022;15/12/22;15/12/22;23,34;23,34;SP;131684;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19871;2;PAGA;15/12/2022;15/12/22;15/12/22;45,41;45,41;SP;131702;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19884;2;PAGA;15/12/2022;15/12/22;15/12/22;36,08;36,08;RJ;131774;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;27
+19885;2;PAGA;15/12/2022;15/12/22;15/12/22;10,73;10,73;RJ;131776;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;27
+19905;2;PAGA;15/12/2022;15/12/22;15/12/22;31,76;31,76;ES;131863;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;27
+19906;2;PAGA;15/12/2022;15/12/22;15/12/22;37,02;37,02;SP;131870;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19907;2;PAGA;15/12/2022;15/12/22;15/12/22;26,19;26,19;RJ;131874;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;27
+19916;2;PAGA;15/12/2022;15/12/22;15/12/22;34,02;34,02;BA;131972;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;27
+19929;2;PAGA;15/12/2022;15/12/22;15/12/22;19,14;19,14;RJ;132046;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;27
+19930;2;PAGA;15/12/2022;15/12/22;15/12/22;35,09;35,09;SP;132051;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19931;2;PAGA;15/12/2022;15/12/22;15/12/22;5,11;5,11;SP;132053;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19932;2;PAGA;15/12/2022;15/12/22;15/12/22;12,95;12,95;SP;132056;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;27
+19933;2;PAGA;15/12/2022;15/12/22;15/12/22;35,69;35,69;BA;132060;1;FAZENDA (16132);;27
+19946;2;PAGA;15/12/2022;15/12/22;15/12/22;25,49;25,49;BA;132171;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;28
+19950;2;PAGA;15/12/2022;15/12/22;15/12/22;60,66;60,66;BA;132299;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;28
+19972;2;PAGA;15/12/2022;15/12/22;15/12/22;54,20;54,20;SP;132494;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+19973;2;PAGA;15/12/2022;15/12/22;15/12/22;18,95;18,95;SP;132497;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+19974;2;PAGA;15/12/2022;15/12/22;15/12/22;40,20;40,20;RJ;132504;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;28
+19984;2;PAGA;15/12/2022;15/12/22;15/12/22;31,12;31,12;BA;132779;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;28
+19987;2;PAGA;15/12/2022;15/12/22;15/12/22;50,90;50,90;SP;132794;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+19992;2;PAGA;15/12/2022;15/12/22;15/12/22;10,40;10,40;BA;132798;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;28
+19993;2;PAGA;15/12/2022;15/12/22;15/12/22;40,29;40,29;ES;132831;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;28
+20013;2;PAGA;15/12/2022;15/12/22;15/12/22;23,88;23,88;RJ;132934;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;28
+20034;2;PAGA;15/12/2022;15/12/22;15/12/22;10,73;10,73;RJ;133117;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;28
+20038;2;PAGA;15/12/2022;15/12/22;15/12/22;38,78;38,78;SP;133191;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+20039;2;PAGA;15/12/2022;15/12/22;15/12/22;1,91;1,91;SP;133193;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+20055;2;PAGA;15/12/2022;15/12/22;15/12/22;4,36;4,36;SP;133387;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+20056;2;PAGA;15/12/2022;15/12/22;15/12/22;50,76;50,76;SP;133389;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;28
+20071;2;PAGA;15/12/2022;15/12/22;15/12/22;54,34;54,34;ES;133555;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;28
+20081;2;PAGA;15/12/2022;15/12/22;15/12/22;67,25;67,25;BA;133731;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;28
+20112;2;PAGA;15/12/2022;15/12/22;15/12/22;17,94;17,94;BA;133858;1;FAZENDA (16132);;28
+20113;2;PAGA;15/12/2022;15/12/22;15/12/22;5,50;5,50;BA;133860;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;29
+20125;2;PAGA;15/12/2022;15/12/22;15/12/22;48,90;48,90;SP;133946;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;29
+20158;2;PAGA;15/12/2022;15/12/22;15/12/22;24,41;24,41;SP;134036;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;29
+20165;2;PAGA;15/12/2022;15/12/22;15/12/22;23,76;23,76;RJ;134054;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;29
+20174;2;PAGA;15/12/2022;15/12/22;15/12/22;15,57;15,57;SP;134081;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;29
+20198;2;PAGA;15/12/2022;15/12/22;15/12/22;11,67;11,67;BA;134145;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;29
+20200;2;PAGA;15/12/2022;15/12/22;15/12/22;12,47;12,47;BA;134149;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;29
+20201;2;PAGA;15/12/2022;15/12/22;15/12/22;21,87;21,87;BA;134150;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;29
+20204;2;PAGA;15/12/2022;15/12/22;15/12/22;8,49;8,49;BA;134160;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;29
+20228;2;PAGA;15/12/2022;15/12/22;15/12/22;17,88;17,88;SP;134216;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;29
+20259;2;PAGA;15/12/2022;15/12/22;15/12/22;5,83;5,83;BA;134314;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;29
+20262;2;PAGA;15/12/2022;15/12/22;15/12/22;17,91;17,91;BA;134321;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;29
+20293;2;PAGA;15/12/2022;15/12/22;15/12/22;18,82;18,82;BA;134545;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;29
+20294;2;PAGA;15/12/2022;15/12/22;15/12/22;4,06;4,06;BA;134547;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;29
+20298;2;PAGA;15/12/2022;15/12/22;15/12/22;10,76;10,76;ES;134553;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;29
+20322;2;PAGA;15/12/2022;15/12/22;15/12/22;13,06;13,06;BA;134616;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;29
+20323;2;PAGA;15/12/2022;15/12/22;15/12/22;12,47;12,47;BA;134618;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;29
+20325;2;PAGA;15/12/2022;15/12/22;15/12/22;13,10;13,10;SP;134622;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;30
+20329;2;PAGA;15/12/2022;15/12/22;15/12/22;47,50;47,50;SP;134641;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;30
+20334;2;PAGA;15/12/2022;15/12/22;15/12/22;22,51;22,51;RJ;134649;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;30
+20335;2;PAGA;15/12/2022;15/12/22;15/12/22;13,96;13,96;BA;134652;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20336;2;PAGA;15/12/2022;15/12/22;15/12/22;31,34;31,34;BA;134658;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;30
+20377;2;PAGA;15/12/2022;15/12/22;15/12/22;13,16;13,16;BA;134834;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20385;2;PAGA;15/12/2022;15/12/22;15/12/22;14,60;14,60;BA;134847;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20420;2;PAGA;15/12/2022;15/12/22;15/12/22;22,78;22,78;RJ;135080;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;30
+20434;2;PAGA;15/12/2022;15/12/22;15/12/22;10,31;10,31;BA;135108;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;30
+20458;2;PAGA;15/12/2022;15/12/22;15/12/22;33,70;33,70;CE;135395;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;30
+20464;2;PAGA;15/12/2022;15/12/22;15/12/22;40,62;40,62;RJ;135410;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;30
+20467;2;PAGA;15/12/2022;15/12/22;15/12/22;16,15;16,15;BA;135415;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;30
+20470;2;PAGA;15/12/2022;15/12/22;15/12/22;11,48;11,48;BA;135420;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;30
+20483;2;PAGA;15/12/2022;15/12/22;15/12/22;40,02;40,02;BA;135601;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;30
+20490;2;PAGA;15/12/2022;15/12/22;15/12/22;30,70;30,70;BA;135616;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20491;2;PAGA;15/12/2022;15/12/22;15/12/22;11,93;11,93;BA;135618;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20522;2;PAGA;15/12/2022;15/12/22;15/12/22;4,30;4,30;BA;136032;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20527;2;PAGA;15/12/2022;15/12/22;15/12/22;11,23;11,23;BA;136038;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;30
+20537;2;PAGA;15/12/2022;15/12/22;15/12/22;27,14;27,14;SP;136057;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+20558;2;PAGA;15/12/2022;15/12/22;15/12/22;32,91;32,91;BA;136142;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;31
+20559;2;PAGA;15/12/2022;15/12/22;15/12/22;10,90;10,90;BA;136144;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;31
+20579;2;PAGA;15/12/2022;15/12/22;15/12/22;14,63;14,63;RJ;136281;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;31
+21667;2;PAGA;15/12/2022;15/12/22;15/12/22;19,14;19,14;ES;145139;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;31
+18416;2;PAGA;16/12/2022;16/12/22;16/12/22;36,93;36,93;RJ;121417;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;31
+19379;2;PAGA;16/12/2022;16/12/22;16/12/22;11,34;11,34;SP;128416;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+19578;2;PAGA;16/12/2022;16/12/22;16/12/22;37,62;37,62;RJ;129963;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;31
+19655;2;PAGA;16/12/2022;16/12/22;14/12/22;23,34;23,34;ES;130305;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;31
+19949;2;PAGA;16/12/2022;16/12/22;16/12/22;19,14;19,14;RJ;132297;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;31
+20043;2;PAGA;16/12/2022;16/12/22;16/12/22;19,84;19,84;SP;133208;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+20638;2;PAGA;16/12/2022;16/12/22;16/12/22;11,16;11,16;SP;136494;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+20649;2;PAGA;16/12/2022;16/12/22;16/12/22;11,48;11,48;CE;136609;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;31
+20650;2;PAGA;16/12/2022;16/12/22;16/12/22;18,05;18,05;BA;136613;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;31
+20677;2;PAGA;16/12/2022;16/12/22;16/12/22;22,62;22,62;SP;136775;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+20699;2;PAGA;16/12/2022;16/12/22;16/12/22;6,87;6,87;SP;136955;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;31
+20704;2;PAGA;16/12/2022;16/12/22;16/12/22;5,74;5,74;BA;137033;1;FAZENDA (16132);PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;32
+20726;2;PAGA;16/12/2022;16/12/22;16/12/22;16,49;16,49;BA;137122;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;32
+20733;2;PAGA;16/12/2022;16/12/22;16/12/22;6,63;6,63;SP;137134;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20735;2;PAGA;16/12/2022;16/12/22;16/12/22;9,51;9,51;SP;137137;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20741;2;PAGA;16/12/2022;16/12/22;16/12/22;10,66;10,66;SP;137146;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20754;2;PAGA;16/12/2022;16/12/22;16/12/22;29,33;29,33;SP;137190;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20762;2;PAGA;16/12/2022;16/12/22;16/12/22;18,28;18,28;RJ;137206;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;32
+20768;2;PAGA;16/12/2022;16/12/22;16/12/22;21,56;21,56;SP;137250;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20778;2;PAGA;16/12/2022;16/12/22;16/12/22;17,67;17,67;SP;137292;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20779;2;PAGA;16/12/2022;16/12/22;16/12/22;12,07;12,07;RJ;137294;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;32
+20786;2;PAGA;16/12/2022;16/12/22;16/12/22;34,08;34,08;BA;137410;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;32
+20810;2;PAGA;16/12/2022;16/12/22;16/12/22;19,14;19,14;RJ;137534;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;32
+20821;2;PAGA;16/12/2022;16/12/22;16/12/22;13,68;13,68;SP;137640;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20834;2;PAGA;16/12/2022;16/12/22;16/12/22;39,81;39,81;ES;137686;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;32
+20835;2;PAGA;16/12/2022;16/12/22;16/12/22;18,30;18,30;SP;137690;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;32
+20854;2;PAGA;16/12/2022;16/12/22;16/12/22;54,87;54,87;RJ;137964;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;32
+20858;2;PAGA;16/12/2022;16/12/22;16/12/22;41,64;41,64;BA;137974;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;32
+20861;2;PAGA;16/12/2022;16/12/22;16/12/22;18,28;18,28;BA;137980;1;FAZENDA (16132);;32
+20926;2;PAGA;16/12/2022;16/12/22;16/12/22;41,98;41,98;GO;138584;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ GOIAS;33
+20927;2;PAGA;16/12/2022;16/12/22;16/12/22;47,76;47,76;SP;138588;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20929;2;PAGA;16/12/2022;16/12/22;16/12/22;16,12;16,12;SP;138594;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20935;2;PAGA;16/12/2022;16/12/22;16/12/22;36,28;36,28;SP;138752;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20936;2;PAGA;16/12/2022;16/12/22;16/12/22;37,02;37,02;BA;138759;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;33
+20937;2;PAGA;16/12/2022;16/12/22;16/12/22;24,95;24,95;SP;138761;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20938;2;PAGA;16/12/2022;16/12/22;16/12/22;51,80;51,80;SP;138763;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20944;2;PAGA;16/12/2022;16/12/22;16/12/22;32,03;32,03;BA;138840;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;33
+20945;2;PAGA;16/12/2022;16/12/22;16/12/22;48,95;48,95;ES;138842;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;33
+20948;2;PAGA;16/12/2022;16/12/22;16/12/22;22,42;22,42;SP;138847;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20962;2;PAGA;16/12/2022;16/12/22;16/12/22;58,22;58,22;BA;138940;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;33
+20975;2;PAGA;16/12/2022;16/12/22;16/12/22;30,68;30,68;BA;138986;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;33
+20979;2;PAGA;16/12/2022;16/12/22;16/12/22;8,06;8,06;SP;139020;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;33
+20985;2;PAGA;16/12/2022;16/12/22;16/12/22;23,34;23,34;BA;139088;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;33
+21008;2;PAGA;16/12/2022;16/12/22;16/12/22;20,48;20,48;CE;139417;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;33
+21009;2;PAGA;16/12/2022;16/12/22;16/12/22;18,47;18,47;BA;139418;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;33
+21015;2;PAGA;16/12/2022;16/12/22;16/12/22;24,39;24,39;BA;139532;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;33
+21016;2;PAGA;16/12/2022;16/12/22;16/12/22;7,79;7,79;RJ;139534;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;34
+21017;2;PAGA;16/12/2022;16/12/22;16/12/22;14,99;14,99;RJ;139537;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;34
+21020;2;PAGA;16/12/2022;16/12/22;16/12/22;40,08;40,08;SP;139548;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21031;2;PAGA;16/12/2022;16/12/22;16/12/22;30,22;30,22;SP;139634;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21068;2;PAGA;16/12/2022;16/12/22;16/12/22;13,46;13,46;BA;139680;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;34
+21069;2;PAGA;16/12/2022;16/12/22;16/12/22;18,68;18,68;RJ;139684;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;34
+21097;2;PAGA;16/12/2022;16/12/22;16/12/22;20,03;20,03;SP;139930;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21107;2;PAGA;16/12/2022;16/12/22;16/12/22;35,88;35,88;RJ;140042;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;34
+21113;2;PAGA;16/12/2022;16/12/22;16/12/22;42,48;42,48;BA;140059;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;34
+21119;2;PAGA;16/12/2022;16/12/22;16/12/22;20,94;20,94;SP;140194;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21124;2;PAGA;16/12/2022;16/12/22;16/12/22;22,88;22,88;BA;140310;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;34
+21126;2;PAGA;16/12/2022;16/12/22;16/12/22;29,88;29,88;SP;140319;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21127;2;PAGA;16/12/2022;16/12/22;16/12/22;39,48;39,48;RJ;140323;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;34
+21140;2;PAGA;16/12/2022;16/12/22;16/12/22;18,08;18,08;RJ;140558;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;34
+21141;2;PAGA;16/12/2022;16/12/22;16/12/22;9,00;9,00;SP;140560;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21143;2;PAGA;16/12/2022;16/12/22;16/12/22;16,41;16,41;BA;140565;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;34
+21148;2;PAGA;16/12/2022;16/12/22;16/12/22;20,19;20,19;BA;140591;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;34
+21163;2;PAGA;16/12/2022;16/12/22;16/12/22;23,28;23,28;SP;140672;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;34
+21164;2;PAGA;16/12/2022;16/12/22;16/12/22;30,68;30,68;SP;140678;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21176;2;PAGA;16/12/2022;16/12/22;16/12/22;21,49;21,49;BA;140713;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;35
+21178;2;PAGA;16/12/2022;16/12/22;16/12/22;30,35;30,35;BA;140845;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;35
+21179;2;PAGA;16/12/2022;16/12/22;16/12/22;14,48;14,48;SP;140848;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21180;2;PAGA;16/12/2022;16/12/22;16/12/22;20,15;20,15;GO;140851;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ GOIAS;35
+21181;2;PAGA;16/12/2022;16/12/22;16/12/22;23,34;23,34;SP;140853;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21197;2;PAGA;16/12/2022;16/12/22;16/12/22;11,82;11,82;SP;141007;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21210;2;PAGA;16/12/2022;16/12/22;16/12/22;22,08;22,08;SP;141162;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21268;2;PAGA;16/12/2022;16/12/22;16/12/22;30,48;30,48;SP;141643;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21278;2;PAGA;16/12/2022;16/12/22;16/12/22;24,37;24,37;ES;141734;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;35
+21295;2;PAGA;16/12/2022;16/12/22;16/12/22;56,08;56,08;RJ;141883;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;35
+21314;2;PAGA;16/12/2022;16/12/22;16/12/22;105,21;105,21;BA;142000;1;BAHIA SECRETARIA DA;PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21349;2;PAGA;16/12/2022;16/12/22;16/12/22;3,53;3,53;SP;142327;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21356;2;PAGA;16/12/2022;16/12/22;16/12/22;23,75;23,75;SP;142364;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+21406;2;PAGA;16/12/2022;16/12/22;16/12/22;15,07;15,07;SP;142736;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+22842;2;PAGA;16/12/2022;16/12/22;16/12/22;11,48;11,48;SP;155901;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;35
+20223;2;PAGA;19/12/2022;19/12/22;19/12/22;21,88;21,88;BA;134206;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;35
+20928;2;PAGA;19/12/2022;19/12/22;19/12/22;19,14;19,14;RJ;138592;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;36
+21469;2;PAGA;19/12/2022;19/12/22;19/12/22;18,99;18,99;RJ;143286;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;36
+21522;2;PAGA;19/12/2022;19/12/22;19/12/22;52,56;52,56;ES;143677;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;36
+21532;2;PAGA;19/12/2022;19/12/22;19/12/22;22,98;22,98;SP;144002;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;36
+21548;2;PAGA;19/12/2022;19/12/22;19/12/22;29,99;29,99;BA;144071;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;36
+21582;2;PAGA;19/12/2022;19/12/22;19/12/22;54,36;54,36;RJ;144446;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;36
+21587;2;PAGA;19/12/2022;19/12/22;19/12/22;31,11;31,11;BA;144470;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;36
+21588;2;PAGA;19/12/2022;19/12/22;19/12/22;26,48;26,48;RJ;144474;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;36
+21590;2;PAGA;19/12/2022;19/12/22;19/12/22;42,02;42,02;BA;144481;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SANTA;36
+21605;2;PAGA;19/12/2022;19/12/22;19/12/22;45,75;45,75;BA;144523;1;FAZENDA (16132);PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;36
+21613;2;PAGA;19/12/2022;19/12/22;19/12/22;19,08;19,08;ES;144613;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;36
+21614;2;PAGA;19/12/2022;19/12/22;19/12/22;27,47;27,47;RJ;144615;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;36
+21624;2;PAGA;19/12/2022;19/12/22;19/12/22;18,99;18,99;SP;144761;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;36
+21652;2;PAGA;19/12/2022;19/12/22;19/12/22;31,51;31,51;SP;145017;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;36
+21653;2;PAGA;19/12/2022;19/12/22;19/12/22;27,44;27,44;ES;145020;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;36
+21654;2;PAGA;19/12/2022;19/12/22;19/12/22;47,10;47,10;SP;145022;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;36
+21694;2;PAGA;19/12/2022;19/12/22;19/12/22;31,02;31,02;BA;145312;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;36
+21700;2;PAGA;19/12/2022;19/12/22;19/12/22;34,47;34,47;BA;145376;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;37
+21707;2;PAGA;19/12/2022;19/12/22;19/12/22;109,76;109,76;BA;145407;1;BAHIA SECRETARIA DA;PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;37
+21710;2;PAGA;19/12/2022;19/12/22;19/12/22;46,56;46,56;SP;145418;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21765;2;PAGA;19/12/2022;19/12/22;19/12/22;34,17;34,17;RJ;145932;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;37
+21793;2;PAGA;19/12/2022;19/12/22;19/12/22;62,25;62,25;RJ;146193;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;37
+21794;2;PAGA;19/12/2022;19/12/22;19/12/22;21,35;21,35;SP;146196;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21805;2;PAGA;19/12/2022;19/12/22;19/12/22;31,53;31,53;BA;146220;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;37
+21814;2;PAGA;19/12/2022;19/12/22;19/12/22;21,54;21,54;ES;146231;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;37
+21822;2;PAGA;19/12/2022;19/12/22;19/12/22;70,66;70,66;BA;146330;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;37
+21845;2;PAGA;19/12/2022;19/12/22;19/12/22;20,75;20,75;SP;146612;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21853;2;PAGA;19/12/2022;19/12/22;19/12/22;3,31;3,31;SP;146948;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21854;2;PAGA;19/12/2022;19/12/22;19/12/22;14,37;14,37;RJ;146951;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;37
+21856;2;PAGA;19/12/2022;19/12/22;19/12/22;52,30;52,30;SP;146957;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21858;2;PAGA;19/12/2022;19/12/22;19/12/22;10,73;10,73;BA;146971;1;FAZENDA (16132);PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;37
+21875;2;PAGA;19/12/2022;19/12/22;19/12/22;62,10;62,10;PA;147154;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFA PARANA;37
+21878;2;PAGA;19/12/2022;19/12/22;19/12/22;32,88;32,88;SP;147167;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21906;2;PAGA;19/12/2022;19/12/22;19/12/22;42,90;42,90;SP;147473;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;37
+21907;2;PAGA;19/12/2022;19/12/22;19/12/22;42,36;42,36;ES;147477;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;37
+21908;2;PAGA;19/12/2022;19/12/22;19/12/22;28,82;28,82;BA;147482;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;38
+21931;2;PAGA;19/12/2022;19/12/22;19/12/22;30,48;30,48;SP;147713;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+21937;2;PAGA;19/12/2022;19/12/22;19/12/22;19,14;19,14;RJ;147735;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO G;38
+21960;2;PAGA;19/12/2022;19/12/22;19/12/22;19,08;19,08;ES;147887;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;38
+21993;2;PAGA;19/12/2022;19/12/22;19/12/22;15,16;15,16;ES;148256;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;38
+21994;2;PAGA;19/12/2022;19/12/22;19/12/22;41,28;40,61;SP;148261;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+21995;2;PAGA;19/12/2022;19/12/22;19/12/22;22,35;22,35;BA;148265;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;38
+22055;2;PAGA;19/12/2022;19/12/22;19/12/22;25,14;25,14;SP;149064;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+22108;2;PAGA;19/12/2022;19/12/22;19/12/22;27,98;27,98;SP;149649;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+22140;2;PAGA;19/12/2022;19/12/22;19/12/22;37,08;37,08;SP;149833;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+22153;2;PAGA;19/12/2022;19/12/22;19/12/22;1,46;1,46;RJ;149940;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;38
+22154;2;PAGA;19/12/2022;19/12/22;19/12/22;24,68;24,68;RJ;149943;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;38
+22155;2;PAGA;19/12/2022;19/12/22;19/12/22;27,92;27,92;RJ;149948;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;38
+22159;2;PAGA;19/12/2022;19/12/22;19/12/22;29,14;29,14;BA;149972;1;FAZENDA (16132);PAGAMENTO TRIBUTOS INTERNET GNRE SEFAZ PERNA;38
+22160;2;PAGA;19/12/2022;19/12/22;19/12/22;13,21;13,21;SP;149975;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;38
+22161;2;PAGA;19/12/2022;19/12/22;19/12/22;19,28;19,28;BA;149979;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;38
+22162;2;PAGA;19/12/2022;19/12/22;19/12/22;22,23;22,23;BA;149982;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;38
+22171;2;PAGA;19/12/2022;19/12/22;19/12/22;24,69;24,69;BA;149993;1;FAZENDA (16132);;38
+22185;2;PAGA;19/12/2022;19/12/22;19/12/22;102,67;102,67;BA;150068;1;BAHIA SECRETARIA DA;PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;39
+22190;2;PAGA;19/12/2022;19/12/22;19/12/22;64,59;64,59;BA;150088;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;39
+22191;2;PAGA;19/12/2022;19/12/22;19/12/22;44,78;44,78;BA;150092;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ SERGI;39
+22203;2;PAGA;19/12/2022;19/12/22;19/12/22;34,59;34,59;SP;150163;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;39
+22211;2;PAGA;19/12/2022;19/12/22;19/12/22;35,15;35,15;RJ;150201;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;39
+22214;2;PAGA;19/12/2022;19/12/22;19/12/22;57,98;57,98;ES;150206;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;39
+22240;2;PAGA;19/12/2022;19/12/22;19/12/22;13,21;13,21;BA;150314;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEF MINAS G;39
+22250;2;PAGA;19/12/2022;19/12/22;19/12/22;24,45;24,45;CE;150329;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ CEARA;39
+22270;2;PAGA;19/12/2022;19/12/22;19/12/22;12,34;12,34;SP;150705;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;39
+22283;2;PAGA;19/12/2022;19/12/22;19/12/22;29,67;29,67;SP;150747;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;39
+22306;2;PAGA;19/12/2022;19/12/22;19/12/22;34,86;34,68;SP;150837;1;FAZENDA (16132);Fatura referente ao pagamento - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;39
+23302;2;PAGA;19/12/2022;19/12/22;19/12/22;27,54;27,54;ES;159962;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ ES DUA ELE;39
+18309;2;PAGA;23/12/2022;23/12/22;15/03/22;1.200,90;1.200,90;BA;120900;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;39
+18311;2;PAGA;23/12/2022;23/12/22;16/03/22;284,10;284,10;BA;120901;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;39
+18329;2;PAGA;23/12/2022;23/12/22;16/03/22;135,24;135,24;BA;120998;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;39
+18331;2;PAGA;23/12/2022;23/12/22;16/03/22;111,99;111,99;BA;121005;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;39
+18573;2;PAGA;23/12/2022;23/12/22;24/03/22;185,28;185,28;BA;122216;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;39
+18575;2;PAGA;23/12/2022;23/12/22;24/03/22;184,17;184,17;BA;122220;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18576;2;PAGA;23/12/2022;23/12/22;24/03/22;61,02;61,02;BA;122227;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18704;2;PAGA;23/12/2022;23/12/22;29/03/22;380,94;380,94;BA;122754;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18775;2;PAGA;23/12/2022;23/12/22;01/04/22;699,33;699,33;BA;123211;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18777;2;PAGA;23/12/2022;23/12/22;01/04/22;305,85;305,85;BA;123238;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18842;2;PAGA;23/12/2022;23/12/22;07/04/22;92,40;92,40;BA;123814;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18889;2;PAGA;23/12/2022;23/12/22;12/04/22;85,83;85,83;BA;124389;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18892;2;PAGA;23/12/2022;23/12/22;12/04/22;488,82;488,82;BA;124404;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18971;2;PAGA;23/12/2022;23/12/22;19/04/22;173,40;173,40;BA;125150;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+18991;2;PAGA;23/12/2022;23/12/22;19/04/22;230,49;230,49;BA;125234;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+19019;2;PAGA;23/12/2022;23/12/22;20/04/22;75,57;75,57;BA;125314;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+19065;2;PAGA;23/12/2022;23/12/22;22/04/22;266,43;266,43;BA;125610;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+19209;2;PAGA;23/12/2022;23/12/22;29/04/22;929,04;929,04;BA;126663;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+19644;2;PAGA;23/12/2022;23/12/22;27/05/22;641,32;641,32;BA;130226;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+20900;2;PAGA;23/12/2022;23/12/22;22/07/22;614,58;614,58;BA;138314;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+20905;2;PAGA;23/12/2022;23/12/22;22/07/22;125,12;125,12;BA;138393;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+21092;2;PAGA;23/12/2022;23/12/22;05/08/22;1.009,13;1.009,13;BA;139918;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+21145;2;PAGA;23/12/2022;23/12/22;09/08/22;718,46;718,46;BA;140578;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;40
+21187;2;PAGA;23/12/2022;23/12/22;11/08/22;663,30;663,30;BA;140893;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+21207;2;PAGA;23/12/2022;23/12/22;12/08/22;132,73;132,73;BA;141095;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+21373;2;PAGA;23/12/2022;23/12/22;24/08/22;429,81;429,81;BA;142492;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+21642;2;PAGA;23/12/2022;23/12/22;13/09/22;444,32;444,32;BA;144956;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+21735;2;PAGA;23/12/2022;23/12/22;17/09/22;333,96;333,96;BA;145644;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+21778;2;PAGA;23/12/2022;23/12/22;20/09/22;924,12;924,12;BA;146006;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+19986;2;PAGA;26/12/2022;26/12/22;14/06/22;31,08;31,08;BA;132789;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22065;2;PAGA;26/12/2022;26/12/22;12/12/22;27,54;27,54;BA;149149;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22345;2;PAGA;26/12/2022;26/12/22;28/10/22;31,08;31,08;BA;151241;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22370;2;PAGA;26/12/2022;26/12/22;29/10/22;7,49;7,49;BA;151445;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22422;2;PAGA;26/12/2022;26/12/22;04/11/22;14,34;14,34;BA;152231;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22523;2;PAGA;26/12/2022;26/12/22;12/11/22;10,88;10,88;BA;153151;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+22639;2;PAGA;26/12/2022;26/12/22;22/11/22;14,48;14,48;BA;154363;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+23016;2;PAGA;26/12/2022;26/12/22;03/12/22;0,36;0,36;BA;156588;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+23033;2;PAGA;26/12/2022;26/12/22;06/12/22;8,33;8,33;BA;156877;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+23042;2;PAGA;26/12/2022;26/12/22;06/12/22;15,95;15,95;BA;156929;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+23043;2;PAGA;26/12/2022;26/12/22;06/12/22;32,88;32,88;BA;156935;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;41
+23046;2;PAGA;26/12/2022;26/12/22;06/12/22;18,95;18,95;BA;156940;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23048;2;PAGA;26/12/2022;26/12/22;06/12/22;104,04;104,04;BA;156945;1;BAHIA SECRETARIA DA;Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23060;2;PAGA;26/12/2022;26/12/22;07/12/22;38,88;38,88;BA;157027;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23126;2;PAGA;26/12/2022;26/12/22;11/12/22;36,11;36,11;BA;157812;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23127;2;PAGA;26/12/2022;26/12/22;11/12/22;47,82;47,82;BA;157819;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23143;2;PAGA;26/12/2022;26/12/22;13/12/22;8,34;8,34;BA;158114;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23145;2;PAGA;26/12/2022;26/12/22;13/12/22;46,83;46,83;BA;158127;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23165;2;PAGA;26/12/2022;26/12/22;13/12/22;1,15;1,15;BA;158242;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23166;2;PAGA;26/12/2022;26/12/22;13/12/22;13,29;13,29;BA;158245;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23183;2;PAGA;26/12/2022;26/12/22;14/12/22;58,66;58,66;BA;158369;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23185;2;PAGA;26/12/2022;26/12/22;14/12/22;49,53;49,53;BA;158373;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23198;2;PAGA;26/12/2022;26/12/22;14/12/22;16,47;16,47;BA;158483;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23207;2;PAGA;26/12/2022;26/12/22;15/12/22;32,96;32,96;BA;158622;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23208;2;PAGA;26/12/2022;26/12/22;15/12/22;30,87;30,87;BA;158626;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23209;2;PAGA;26/12/2022;26/12/22;15/12/22;7,88;7,88;BA;158628;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23219;2;PAGA;26/12/2022;26/12/22;15/12/22;60,01;60,01;BA;158671;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23224;2;PAGA;26/12/2022;26/12/22;15/12/22;31,29;31,29;BA;158767;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23227;2;PAGA;26/12/2022;26/12/22;15/12/22;59,44;59,44;BA;158772;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;42
+23247;2;PAGA;26/12/2022;26/12/22;16/12/22;38,58;38,58;BA;159129;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23259;2;PAGA;26/12/2022;26/12/22;17/12/22;24,20;24,20;BA;159251;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23260;2;PAGA;26/12/2022;26/12/22;17/12/22;10,14;10,14;BA;159253;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23265;2;PAGA;26/12/2022;26/12/22;17/12/22;22,01;22,01;BA;159272;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23267;2;PAGA;26/12/2022;26/12/22;17/12/22;10,29;10,29;BA;159277;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23281;2;PAGA;26/12/2022;26/12/22;17/12/22;36,84;36,84;BA;159393;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23282;2;PAGA;26/12/2022;26/12/22;17/12/22;45,70;45,70;BA;159400;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23288;2;PAGA;26/12/2022;26/12/22;19/12/22;49,68;49,68;BA;159899;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23293;2;PAGA;26/12/2022;26/12/22;19/12/22;28,09;28,09;BA;159907;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23296;2;PAGA;26/12/2022;26/12/22;19/12/22;44,88;44,88;BA;159915;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+23303;2;PAGA;26/12/2022;26/12/22;19/12/22;16,24;16,24;BA;159964;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;43
+SEM_NF_VINCULADA;;PAGA;26/12/2022;26/12/22;26/12/22;33,50;33,50;SP;165282;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET SEFAZ SP DARE;43
+19188;2;PAGA;29/12/2022;29/12/22;29/04/22;88,77;88,77;BA;126491;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;43
+19193;2;PAGA;29/12/2022;29/12/22;29/04/22;29,22;29,22;BA;126515;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;43
+22783;2;PAGA;29/12/2022;29/12/22;27/11/22;47,19;47,19;BA;155458;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;43
+23069;2;PAGA;29/12/2022;29/12/22;07/12/22;74,67;74,67;BA;157086;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;43
+23070;2;PAGA;29/12/2022;29/12/22;07/12/22;28,47;28,47;BA;157089;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;43
+23083;2;PAGA;29/12/2022;29/12/22;08/12/22;17,38;17,38;BA;157230;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23133;2;PAGA;29/12/2022;29/12/22;11/12/22;29,15;29,15;BA;157847;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23144;2;PAGA;29/12/2022;29/12/22;13/12/22;51,57;51,57;BA;158121;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23266;2;PAGA;29/12/2022;29/12/22;17/12/22;40,00;40,00;BA;159275;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23280;2;PAGA;29/12/2022;29/12/22;17/12/22;19,77;19,77;BA;159388;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23316;2;PAGA;29/12/2022;29/12/22;20/12/22;23,07;23,07;BA;160171;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23373;2;PAGA;29/12/2022;29/12/22;22/12/22;48,37;48,37;BA;161039;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+23415;2;PAGA;29/12/2022;29/12/22;24/12/22;6,62;6,62;BA;161844;1;FAZENDA (16132);Multiplos lançamentos bancários conciliados;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;6,54;6,54;BA;164425;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;8,34;8,34;BA;164426;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;20,70;20,70;BA;164427;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ DISTR;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;13,79;13,79;RJ;164541;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;13,79;13,79;RJ;164542;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;44
+SEM_NF_VINCULADA;;PAGA;29/12/2022;29/12/22;29/12/22;28,07;28,07;RJ;164543;1;FAZENDA (16132);PGTO TRIBUTO ESTADUAL EM CANAI - PGTO TRIBUTO ESTADUAL EM CANAIS INTERNET GNRE SEFAZ RIO D;44
+20292;2;PAGA;31/12/2022;31/12/22;28/06/22;22,10;22,10;BA;134542;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;44
+18293;2;PAGA;14/03/2022;14/03/22;15/03/22;81,25;81,25;BA;120823;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;45
+18294;2;PAGA;14/03/2022;14/03/22;15/03/22;2,14;2,14;BA;120825;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;45
+18295;2;PAGA;14/03/2022;14/03/22;15/03/22;38,51;38,51;BA;120828;1;FAZENDA (16132);Fatura referente ao pagamento do Diferencial de Alíquota a Recolher - UF Destinatário;45

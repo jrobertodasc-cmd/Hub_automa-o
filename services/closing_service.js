@@ -8,6 +8,7 @@ const PDFDocument = require('pdfkit');
 const AdmZip = require('adm-zip');
 const asaasService = require('./asaas_service');
 const printService = require('./print_service');
+const danfeService = require('./danfe_service');
 
 function formatarMoeda(val) {
     return parseFloat(val || 0).toFixed(2).replace('.', ',');
@@ -112,8 +113,8 @@ function conciliarLoteOuDia(tenant, guides = []) {
 
     return {
         tenant: {
-            razaoSocial: tenant.razao_social || 'LALUA COMERCIO DE MODAS EIRELI',
-            cnpj: tenant.cnpj || '10436619000105'
+            razaoSocial: tenant.razao_social || 'Empresa Emitente',
+            cnpj: tenant.cnpj || ''
         },
         dataFechamento: new Date().toISOString(),
         hashAuditoria,
@@ -377,6 +378,21 @@ async function gerarPacoteFechamentoZip(tenant, guides = [], supabaseClient) {
             if (receiptBuffer) {
                 zip.addFile(`comprovantes/Comprovante_Asaas_NF_${g.nf_number}.pdf`, receiptBuffer);
             }
+        }
+    }
+
+    // 5. Pasta /danfes/ com os PDFs das DANFEs oficiais (DANFE Simplificada A4)
+    const guidesParaDanfes = guides.slice(0, 30);
+    for (const g of guidesParaDanfes) {
+        try {
+            if (supabaseClient) {
+                const danfeBuf = await danfeService.obterOuGerarDanfePdfGuia(supabaseClient, tenant.id, g);
+                if (danfeBuf) {
+                    zip.addFile(`danfes/DANFE_NF_${g.nf_number}.pdf`, danfeBuf);
+                }
+            }
+        } catch (dErr) {
+            console.warn(`[Fechamento ZIP] Falha ao adicionar DANFE da NF ${g.nf_number}:`, dErr.message);
         }
     }
 

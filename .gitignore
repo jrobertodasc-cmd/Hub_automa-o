@@ -25,3 +25,5 @@ scratch/
 scratch_*.js
 .agents/
 EXPEDI/
+*.bak
+

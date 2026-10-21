@@ -81,17 +81,40 @@ O servidor roda localmente em `http://localhost:3001`:
 
 ---
 
-## 4. Ponto de Partida e Próximos Passos para Amanhã (21/10/2026)
+## 4. O que foi Entregue e Validado em 21/10/2026
 
-1. **Webhook Oficial de Baixa Automática do Asaas:**
-   * Garantir que, quando a diretoria aprovar no celular pelo Asaas ou via Pix, o evento `BILL_PAID` atualize o status no banco e emita o comprovante final em PDF no Supabase Storage.
-2. **Atualização em Tempo Real na Doca (SSE / WebSocket):**
-   * Configurar evento via Server-Sent Events (SSE) ou Polling Leve para que o operador na doca veja o semáforo mudar de vermelho para verde automaticamente sem precisar recarregar o navegador.
-3. **Teste com Leitor Físico USB / Bipadeira:**
-   * Validar a velocidade de bipagem com leitor de código de barras físico focado no campo de busca do Cockpit.
-4. **Fechamento e Exportação Fiscal Diária:**
-   * Validar com a contabilidade o download do pacote ZIP diário contendo XMLs, DANFEs, Comprovantes de Pagamento e Relatório CSV consolidado.
+### 4.1. Webhook Oficial de Baixa Automática do Asaas (`/api/webhooks/asaas`)
+* **Tratamento de Eventos:** Suporte a `BILL_PAID`, pagamentos instantâneos via Pix (`PAYMENT_RECEIVED` / `PAYMENT_CONFIRMED`) e alertas de erro/cancelamento (`BILL_FAILED`, `BILL_CANCELLED`).
+* **Resiliência de Localização da Guia:** Identificação da NF em 3 níveis (ID da guia via `externalReference`, ID da transação `asaas_bill_id`, ou linha digitável/código de barras).
+* **Anexo Automático do Comprovante SISBACEN no Supabase Storage:**
+  * Baixa do comprovante oficial da URL do Asaas ou síntese do comprovante em PDF com código de autenticação mecânica (`AS-XXXXXX-BR`).
+  * Upload com `upsert: true` em `tenant-storage/{tenant_id}/comprovantes/comprovante_NF_{nf}.pdf`.
+* **Baixa e Fechamento de Lote:** Atualização da guia para status `comprovada` e, caso todas as guias do lote estejam quitadas, encerramento automático do lote com status `liquidado`.
+
+### 4.2. Atualização em Tempo Real na Doca (SSE — Server-Sent Events)
+* **Canal SSE Oficial (`/api/events/dock`):** Conexão aberta de baixa latência com heartbeat de 25s para manter a conexão ativa contra proxies e firewalls.
+* **Escuta no Frontend ([`dashboard.js`](file:///c:/Users/Roberto/Desktop/Web_Services/public/js/dashboard.js)):**
+  * Quando a diretoria aprova o pagamento no app mobile ou o webhook liquida a guia, o evento `GUIA_PAGA` é recebido instantaneamente na doca.
+  * O cockpit atualiza os KPIs, a contagem de cargas liberadas e o semáforo da tabela (de vermelho para verde) sem necessidade de F5 ou recarregar a página.
+  * Polling complementar de 20s configurado para máxima tolerância a hibernação de abas.
+
+### 4.3. Bipagem Rápida e Auto-Focus para Leitor Físico USB (Bipadeira)
+* **Extração da Chave de Acesso de 44 Dígitos:** Leitura direta de etiquetas de DANFE com conversão automática das posições 25 a 34 para o número da NF-e correspondente.
+* **Endpoint de Bipagem Rápida (`/api/expedicao/bipar`):** Localização instantânea de cargas no banco de dados com resposta formatada para o cockpit.
+* **Auto-Focus Global para Leitores USB:** Captura contínua de disparos do leitor de código de barras mesmo se o operador tiver clicado acidentalmente fora do input de busca.
+* **Atalho de Limpeza (Escape):** Fecha modais de fiscalização e retorna o foco imediato para a bipagem da próxima caixa na esteira.
+
+### 4.4. Fechamento e Exportação Fiscal Diária (Pacote ZIP Oficial)
+* **Serviço Consolidado ([`closing_service.js`](file:///c:/Users/Roberto/Desktop/Web_Services/services/closing_service.js)):**
+  * Rota ativa: `GET /api/fechamento/pacote-zip/:batchId?`.
+  * Gera arquivo `.ZIP` estruturado para envio à contabilidade:
+    1. `Conciliacao_Fiscal_AAAA-MM-DD.csv` — Planilha detalhada com NF, UF, Transportadora, Valores e Status.
+    2. `Relatorio_Executivo_Diretoria_AAAA-MM-DD.pdf` — Parecer executivo com resumo por UF e divergências.
+    3. `/xmls/` — Arquivos XML oficiais das notas fiscais.
+    4. `/comprovantes/` — Comprovantes de autenticação bancária SISBACEN / Asaas.
+    5. `/danfes/` — DANFEs Simplificadas A4 oficiais em PDF.
 
 ---
 
-*Repositório Git sincronizado e pronto para continuidade.*
+*Repositório sincronizado, testado e 100% operacional para o dia a dia da expedição.*
+

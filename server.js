@@ -22,6 +22,7 @@ const vndaService = require('./services/vnda_service');
 const syncService = require('./services/sync_service');
 const asaasService = require('./services/asaas_service');
 const closingService = require('./services/closing_service');
+const auditService = require('./services/audit_service');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -67,13 +68,32 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use((req, res, next) => {
-    console.log(`[Request] ${req.method} ${req.url} - Cookie: ${!!req.cookies?.sb_access_token} - AuthHeader: ${!!req.headers.authorization}`);
+    console.log(`[Request] ${req.method} ${req.path} - Cookie: ${!!req.cookies?.sb_access_token} - AuthHeader: ${!!req.headers.authorization}`);
     next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Estado das tarefas ativas em processamento na memória para exibição em tempo real
 const activeTasks = {};
+
+// Clientes conectados ao SSE para atualização em tempo real do Cockpit / Doca
+const sseClients = new Set();
+
+function broadcastDockEvent(payload, targetTenantId = null) {
+    if (sseClients.size === 0) return;
+    const msg = `data: ${JSON.stringify(payload)}\n\n`;
+    for (const client of sseClients) {
+        try {
+            // Isolamento multi-tenant: se o evento possui tenant_id específico, só entrega aos clientes daquele tenant
+            if (targetTenantId && client.tenantId && client.tenantId !== targetTenantId) {
+                continue;
+            }
+            client.write(msg);
+        } catch (err) {
+            sseClients.delete(client);
+        }
+    }
+}
 
 const PLAN_LIMITS = {
     'trial': 10,
@@ -122,44 +142,56 @@ function escapeHtml(str) {
 // ==========================================
 // MIDDLEWARE DE AUTENTICAÇÃO E MULTI-TENANCY
 // ==========================================
-const defaultLaluaTenant = {
-    id: '607ca6d1-0ec1-4de3-b4d9-056145274af5',
-    razao_social: 'LALUA COMERCIO DE MODAS EIRELI (Boah)',
-    cnpj: '10436619000105',
-    environment: 'producao'
-};
+
+// Comparação estrita e resistente a timing attacks
+function safeCompareTokens(a, b) {
+    if (!a || !b) return false;
+    try {
+        const bufA = Buffer.from(String(a));
+        const bufB = Buffer.from(String(b));
+        if (bufA.length !== bufB.length) return false;
+        return crypto.timingSafeEqual(bufA, bufB);
+    } catch (e) {
+        return false;
+    }
+}
+
+// Administradores Master da Plataforma (SuperAdmin)
+const MASTER_SUPERADMIN_EMAILS = [
+    'jrobertodasc@gmail.com',
+    'grupoaliadoshubtech@gmail.com'
+];
 
 const requireAuth = async (req, res, next) => {
-    const token = req.cookies?.sb_access_token || req.headers.authorization?.split(' ')[1];
+    const token = req.cookies?.sb_access_token || 
+                  req.headers.authorization?.replace(/^Bearer\s+/i, '') || 
+                  req.query?.token;
+
     if (!token) {
-        // Fallback gracioso para visualização da expedição Lalua / Boah em ambiente da doca/loja
-        req.user = { id: 'lalua-operator', email: 'diretoria@boah.com.br' };
-        req.profile = { full_name: 'Expedição Lalua / Boah', role: 'operator' };
-        req.tenant = defaultLaluaTenant;
-        return next();
+        if (req.accepts('html') && !req.path.startsWith('/api/')) {
+            return res.redirect('/login.html');
+        }
+        return res.status(401).json({ error: "Acesso não autorizado: credenciais ausentes. Realize login." });
     }
     
     try {
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) {
-            req.user = { id: 'lalua-operator', email: 'diretoria@boah.com.br' };
-            req.profile = { full_name: 'Expedição Lalua / Boah', role: 'operator' };
-            req.tenant = defaultLaluaTenant;
-            return next();
+            if (req.accepts('html') && !req.path.startsWith('/api/')) {
+                return res.redirect('/login.html');
+            }
+            return res.status(401).json({ error: "Sessão inválida ou expirada. Realize login novamente." });
         }
 
-        // Busca o perfil e dados do tenant correspondente
+        // Busca o perfil do usuário e dados do tenant correspondente
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*, tenants(*)')
             .eq('id', user.id)
             .single();
 
-        if (profileError || !profile || !profile.tenants) {
-            req.user = user;
-            req.profile = { full_name: 'Expedição Lalua / Boah', role: 'operator' };
-            req.tenant = defaultLaluaTenant;
-            return next();
+        if (profileError || !profile) {
+            return res.status(403).json({ error: "Perfil de usuário não localizado no sistema." });
         }
 
         let tenant = profile.tenants;
@@ -167,28 +199,156 @@ const requireAuth = async (req, res, next) => {
             tenant = tenant[0];
         }
 
+        if (!tenant) {
+            return res.status(403).json({ error: "Nenhuma empresa vinculada ao perfil deste usuário." });
+        }
+
+        // Resolução estrita de privilégios (RBAC)
+        const userEmail = (user.email || profile.email || '').toLowerCase().trim();
+        let determinedRole = 'operador';
+
+        if (MASTER_SUPERADMIN_EMAILS.includes(userEmail)) {
+            determinedRole = 'superadmin';
+            profile.is_admin = true;
+        } else if (profile.role) {
+            const r = String(profile.role).toLowerCase().trim();
+            determinedRole = (r === 'operator') ? 'operador' : r;
+        } else if (profile.is_admin) {
+            determinedRole = 'admin';
+        }
+
+        profile.role = determinedRole;
+
         req.user = user;
         req.profile = profile;
-        req.tenant = tenant || defaultLaluaTenant;
+        req.tenant = tenant;
         next();
     } catch (err) {
-        req.user = { id: 'lalua-operator', email: 'diretoria@boah.com.br' };
-        req.tenant = defaultLaluaTenant;
-        return next();
+        console.error("[requireAuth] Erro ao validar credenciais:", err.message);
+        if (req.accepts('html') && !req.path.startsWith('/api/')) {
+            return res.redirect('/login.html');
+        }
+        return res.status(401).json({ error: "Falha na validação de credenciais: " + err.message });
     }
 };
 
+// Middleware de RBAC (Role-Based Access Control)
+const requireRole = (allowedRoles = []) => {
+    return (req, res, next) => {
+        if (!req.profile) {
+            return res.status(401).json({ error: "Usuário não autenticado." });
+        }
+
+        const userRole = (req.profile.role || 'operador').toLowerCase();
+
+        // SuperAdmin tem acesso irrestrito
+        if (userRole === 'superadmin') {
+            return next();
+        }
+
+        const normalizedAllowed = allowedRoles.map(r => {
+            const low = r.toLowerCase();
+            return low === 'operator' ? 'operador' : low;
+        });
+
+        if (!normalizedAllowed.includes(userRole)) {
+            auditService.logAudit(supabase, {
+                tenantId: req.tenant?.id,
+                userId: req.user?.id,
+                acao: 'ACESSO_NEGADO_RBAC',
+                detalhe: `Perfil '${userRole}' tentou acessar rota restrita: ${req.method} ${req.originalUrl}`,
+                ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+            });
+
+            return res.status(403).json({
+                error: `Acesso não autorizado: seu perfil ('${userRole}') não tem permissão para esta ação. Requer: [${allowedRoles.join(', ')}].`,
+                currentRole: userRole,
+                allowedRoles: allowedRoles
+            });
+        }
+        next();
+    };
+};
+
+// Middleware exclusivo para SuperAdmin Master da plataforma SaaS
+const requireSuperAdmin = (req, res, next) => {
+    const userRole = (req.profile?.role || '').toLowerCase();
+    if (userRole !== 'superadmin') {
+        auditService.logAudit(supabase, {
+            tenantId: req.tenant?.id,
+            userId: req.user?.id,
+            acao: 'ACESSO_NEGADO_SUPERADMIN',
+            detalhe: `Tentativa de acesso não autorizado à rota administrativa master: ${req.method} ${req.originalUrl}`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+        return res.status(403).json({ error: "Acesso restrito exclusivamente aos administradores master da plataforma (SuperAdmin)." });
+    }
+    next();
+};
+
+// Middleware para administradores (da loja ou master)
+const requireAdmin = (req, res, next) => {
+    const role = (req.profile?.role || '').toLowerCase();
+    const isAdmin = req.profile?.is_admin || role === 'admin' || role === 'superadmin';
+    if (!isAdmin) {
+        return res.status(403).json({ error: "Acesso negado. Apenas administradores podem acessar esta área." });
+    }
+    next();
+};
+
 const requireActiveSubscription = (req, res, next) => {
-    if (req.tenant && req.tenant.subscription_status === 'inativo') {
-        return res.status(403).json({ error: "Assinatura pendente ou suspensa. Regularize o pagamento para emitir novas guias." });
+    if (req.tenant) {
+        const status = (req.tenant.status || req.tenant.subscription_status || 'ativo').toLowerCase();
+        if (status === 'bloqueado' || status === 'inativo' || status === 'suspenso') {
+            return res.status(403).json({ error: "Assinatura do expedi HUB suspensa ou bloqueada. Regularize seu plano com o administrador." });
+        }
+
+        const limite = req.tenant.limite_guias_mes || req.tenant.plan_limit_guides || 1000;
+        const usadas = req.tenant.guias_usadas_mes || 0;
+        if (limite > 0 && usadas >= limite) {
+            return res.status(403).json({ error: `Limite mensal de emissão de guias do seu plano atingido (${usadas}/${limite} guias). Contate o suporte para upgrade de plano.` });
+        }
     }
     next();
 };
 
 // ==========================================
+// CANAL EM TEMPO REAL (SSE - COCKPIT DA DOCA)
+// ==========================================
+app.get('/api/events/dock', requireAuth, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    if (res.flushHeaders) res.flushHeaders();
+
+    // Atrela a conexão SSE ao tenant autenticado do operador/usuário
+    res.tenantId = req.tenant.id;
+    res.userId = req.user.id;
+
+    // Envia evento inicial de conexão estabelecida informando o tenant
+    res.write(`data: ${JSON.stringify({ type: 'CONNECTED', tenantId: req.tenant.id, timestamp: new Date().toISOString() })}\n\n`);
+
+    sseClients.add(res);
+
+    const heartbeat = setInterval(() => {
+        try {
+            res.write(': keepalive\n\n');
+        } catch (e) {
+            clearInterval(heartbeat);
+            sseClients.delete(res);
+        }
+    }, 25000);
+
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        sseClients.delete(res);
+    });
+});
+
+// ==========================================
 // ROTAS DE AUTENTICAÇÃO
 // ==========================================
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', requireAuth, requireSuperAdmin, async (req, res) => {
     const { email, password, name, cnpj, razao_social, plan } = req.body;
     if (!email || !password || !cnpj || !razao_social) {
         return res.status(400).json({ error: "Campos obrigatórios ausentes." });
@@ -296,25 +456,43 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 app.get('/api/auth/me', requireAuth, (req, res) => {
+    const t = req.tenant || {};
     return res.status(200).json({
         user: {
             id: req.user.id,
             email: req.user.email,
-            name: req.profile.name
+            name: req.profile?.name || req.user.email
         },
         profile: {
-            is_admin: req.profile.is_admin,
-            name: req.profile.name,
-            email: req.profile.email
+            is_admin: req.profile?.is_admin || req.profile?.role === 'admin' || req.profile?.role === 'superadmin',
+            role: req.profile?.role || 'operador',
+            name: req.profile?.name || req.user.email,
+            email: req.profile?.email || req.user.email
         },
-        tenant: req.tenant
+        tenant: {
+            id: t.id,
+            razao_social: t.razao_social,
+            nome_fantasia: t.nome_fantasia || t.razao_social,
+            cnpj: t.cnpj,
+            environment: t.environment || 'simulado',
+            status: t.status || t.subscription_status || 'ativo',
+            plano: t.plano || t.subscription_status || 'starter',
+            bank_agency: t.bank_agency,
+            bank_account: t.bank_account,
+            bank_dac: t.bank_dac,
+            notification_phone: t.notification_phone || null,
+            notification_email: t.notification_email || null,
+            has_pfx: !!(t.pfx_certificate || t.pfx_filename),
+            has_asaas: !!(t.asaas_api_key || t.asaas_api_key_encrypted),
+            has_microvix: !!(t.microvix_token || t.microvix_key)
+        }
     });
 });
 
 // ==========================================
 // ROTAS DE CONFIGURAÇÃO DO TENANT
 // ==========================================
-app.post('/api/tenant/settings', requireAuth, async (req, res) => {
+app.post('/api/tenant/settings', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     const { cnpj, razao_social, bank_agency, bank_account, bank_dac, environment } = req.body;
     if (!cnpj || !razao_social || !bank_agency || !bank_account || !bank_dac) {
         return res.status(400).json({ error: "Todos os dados cadastrais e bancários são obrigatórios." });
@@ -342,7 +520,7 @@ app.post('/api/tenant/settings', requireAuth, async (req, res) => {
 });
 
 // Endpoint para salvar contatos privados de notificação da responsável / diretoria
-app.post('/api/tenant/notifications', requireAuth, async (req, res) => {
+app.post('/api/tenant/notifications', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     const { notification_phone, notification_email } = req.body;
 
     try {
@@ -362,9 +540,12 @@ app.post('/api/tenant/notifications', requireAuth, async (req, res) => {
     }
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024, files: 100 }
+});
 
-app.post('/api/tenant/upload-pfx', requireAuth, upload.single('pfx'), async (req, res) => {
+app.post('/api/tenant/upload-pfx', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), upload.single('pfx'), async (req, res) => {
     const { passphrase } = req.body;
     if (!req.file || !passphrase) {
         return res.status(400).json({ error: "Arquivo do certificado .pfx e senha são obrigatórios." });
@@ -411,7 +592,7 @@ app.post('/api/tenant/upload-pfx', requireAuth, upload.single('pfx'), async (req
     }
 });
 
-app.post('/api/tenant/plan', requireAuth, async (req, res) => {
+app.post('/api/tenant/plan', requireAuth, requireSuperAdmin, async (req, res) => {
     const { plan } = req.body;
     const validPlans = ['trial', 'starter', 'pro', 'advanced', 'ativo'];
     if (!plan || !validPlans.includes(plan)) {
@@ -442,6 +623,9 @@ app.post('/api/batch/process', requireAuth, requireActiveSubscription, upload.ar
         let filesData = [];
 
         if (source === 'local') {
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(400).json({ error: "O modo de leitura local de arquivos em disco está desativado em ambiente de produção. Utilize o upload de arquivos." });
+            }
             // Caso escolha processar a pasta local padrão do servidor
             const pastaLocal = process.env.NODE_ENV === 'production' || process.env.VERCEL
                 ? path.join('/tmp', 'xml_nfe')
@@ -540,19 +724,17 @@ app.post('/api/batch/authorize-emission/:batchId', requireAuth, requireActiveSub
     const tenant = req.tenant;
 
     try {
-        const { data: batch, error: bErr } = await supabase
+        // Lock atômico: altera status para 'processando' somente se estiver 'aguardando_aprovacao'
+        const { data: lockedBatch, error: lockErr } = await supabase
             .from('batches')
-            .select('*')
+            .update({ status: 'processando' })
             .eq('id', batchId)
             .eq('tenant_id', tenant.id)
-            .single();
+            .eq('status', 'aguardando_aprovacao')
+            .select('id');
 
-        if (bErr || !batch) {
-            return res.status(404).json({ error: "Lote não localizado." });
-        }
-
-        if (batch.status !== 'aguardando_aprovacao') {
-            return res.status(400).json({ error: `Este lote não está aguardando aprovação (status atual: ${batch.status}).` });
+        if (lockErr || !lockedBatch || lockedBatch.length === 0) {
+            return res.status(409).json({ error: "Este lote já está em processamento ou já foi emitido." });
         }
 
         // Dispara a transmissão oficial para a SEFAZ
@@ -570,7 +752,7 @@ app.post('/api/batch/authorize-emission/:batchId', requireAuth, requireActiveSub
 /**
  * ROTA: Descartar / Cancelar Lote que estava aguardando aprovação
  */
-app.post('/api/batch/discard/:batchId', requireAuth, async (req, res) => {
+app.post('/api/batch/discard/:batchId', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin']), async (req, res) => {
     const { batchId } = req.params;
     const tenant = req.tenant;
 
@@ -603,7 +785,7 @@ app.post('/api/batch/discard/:batchId', requireAuth, async (req, res) => {
 /**
  * ROTA: Autorizar Pagamento Bancário e Gerar Remessa CNAB 240
  */
-app.post('/api/batch/authorize-payment/:batchId', requireAuth, async (req, res) => {
+app.post('/api/batch/authorize-payment/:batchId', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin']), async (req, res) => {
     const { batchId } = req.params;
     const { banco, paymentDate } = req.body;
     const tenant = req.tenant;
@@ -734,7 +916,7 @@ app.get('/api/asaas/balance', requireAuth, async (req, res) => {
 /**
  * 2. Salvar Chave de API e Ambiente do Asaas
  */
-app.post('/api/tenant/asaas-credentials', requireAuth, async (req, res) => {
+app.post('/api/tenant/asaas-credentials', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     try {
         const { asaas_api_key, asaas_environment } = req.body;
         const tenant = req.tenant;
@@ -830,7 +1012,7 @@ app.get('/api/batch/pending-payment', requireAuth, async (req, res) => {
 /**
  * 3. AUTORIZAÇÃO DO RESPONSÁVEL: Liquidar Lote de Guias via Asaas (Idempotência Estrita)
  */
-app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req, res) => {
+app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole(['diretoria', 'financeiro', 'admin']), requireActiveSubscription, async (req, res) => {
     const { batchId } = req.params;
     const tenant = req.tenant;
     const aprovador = req.profile?.name || req.user?.email || 'Responsável';
@@ -888,7 +1070,11 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
         }
 
         const apiKey = getAsaasApiKey(tenant);
-        const env = tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado');
+        const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
+        if (!isSimulado && !apiKey) {
+            return res.status(400).json({ error: "Chave de API do Asaas não configurada ou inválida para ambiente de Produção. Configure em Empresa > Integrações." });
+        }
+        const env = isSimulado ? 'simulado' : (tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado'));
 
         console.log(`[Asaas] Autorizando pagamento de ${guiasPendentes.length} guia(s) no lote ${batchId} por: ${aprovador}`);
 
@@ -898,6 +1084,29 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
         for (const g of guiasPendentes) {
             const linha = g.line_digitizable || g.barcode;
             const extRef = `guia_${g.id}`;
+
+            // Claim atômico: trava a guia com status 'pagamento_em_processamento'
+            // Somente a requisição que conseguir alterar status executa o pagamento no Asaas
+            const { data: claimed, error: claimErr } = await supabase
+                .from('guides')
+                .update({
+                    status: 'pagamento_em_processamento',
+                    payment_authorized_by: aprovador,
+                    payment_authorized_at: agora
+                })
+                .eq('id', g.id)
+                .eq('tenant_id', tenant.id)
+                .is('asaas_bill_id', null)
+                .neq('status', 'pagamento_em_processamento')
+                .neq('status', 'pagamento_enviado')
+                .neq('status', 'comprovada')
+                .neq('status', 'paga')
+                .select('id');
+
+            if (claimErr || !claimed || claimed.length === 0) {
+                console.warn(`[Asaas] Guia NF ${g.nf_number} ignorada: já capturada ou liquidada concorrentemente.`);
+                continue;
+            }
 
             try {
                 // 1. Dispara o pagamento na API do Asaas
@@ -916,8 +1125,8 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
                     status: 'pagamento_enviado'
                 };
 
-                // Se for simulado ou teste rápido sem chave real, gera o comprovante oficial imediatamente
-                if (billRes.simulated || !apiKey || env === 'simulado') {
+                // Se for simulado, gera o comprovante oficial simulado imediatamente
+                if (isSimulado) {
                     const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
                         nfNumber: g.nf_number,
                         uf: g.uf,
@@ -940,11 +1149,17 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
                     updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${g.id.substring(0, 8).toUpperCase()}`;
                 }
 
-                await supabase.from('guides').update(updatesGuia).eq('id', g.id);
+                await supabase.from('guides').update(updatesGuia).eq('id', g.id).eq('tenant_id', tenant.id);
                 resultados.push({ id: g.id, nf: g.nf_number, billId: billRes.id, sucesso: true });
 
             } catch (pErr) {
                 console.error(`[Asaas] Erro ao pagar guia NF ${g.nf_number}:`, pErr.message);
+                // Libera o claim caso o Asaas retorne erro
+                await supabase.from('guides').update({
+                    status: 'pendente',
+                    rejection_reason: pErr.message
+                }).eq('id', g.id).eq('tenant_id', tenant.id);
+
                 resultados.push({ id: g.id, nf: g.nf_number, erro: pErr.message, sucesso: false });
             }
         }
@@ -978,7 +1193,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, async (req,
 /**
  * 4. AUTORIZAÇÃO DO RESPONSÁVEL: Pagar Guia Individual
  */
-app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req, res) => {
+app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole(['diretoria', 'financeiro', 'admin']), requireActiveSubscription, async (req, res) => {
     const { guideId } = req.params;
     const tenant = req.tenant;
     const aprovador = req.profile?.name || req.user?.email || 'Responsável';
@@ -1012,9 +1227,34 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req,
             return res.status(400).json({ error: "Guia não possui linha digitável ou código de barras de arrecadação emitido." });
         }
 
+        const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
         const apiKey = getAsaasApiKey(tenant);
-        const env = tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado');
+        if (!isSimulado && !apiKey) {
+            return res.status(400).json({ error: "Chave de API do Asaas não configurada ou inválida para ambiente de Produção. Configure em Empresa > Integrações." });
+        }
+        const env = isSimulado ? 'simulado' : (tenant.asaas_environment || (apiKey ? 'sandbox' : 'simulado'));
         const agora = new Date().toISOString();
+
+        // Claim atômico: trava a guia com status 'pagamento_em_processamento'
+        const { data: claimed, error: claimErr } = await supabase
+            .from('guides')
+            .update({
+                status: 'pagamento_em_processamento',
+                payment_authorized_by: aprovador,
+                payment_authorized_at: agora
+            })
+            .eq('id', guia.id)
+            .eq('tenant_id', tenant.id)
+            .is('asaas_bill_id', null)
+            .neq('status', 'pagamento_em_processamento')
+            .neq('status', 'pagamento_enviado')
+            .neq('status', 'comprovada')
+            .neq('status', 'paga')
+            .select('id');
+
+        if (claimErr || !claimed || claimed.length === 0) {
+            return res.status(409).json({ error: "Esta guia já está em processamento de pagamento ou já foi liquidada por outro operador/sessão." });
+        }
 
         const billRes = await asaasService.pagarGuia({
             identificationField: linha,
@@ -1031,7 +1271,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req,
             status: 'pagamento_enviado'
         };
 
-        if (billRes.simulated || !apiKey || env === 'simulado') {
+        if (isSimulado) {
             const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
                 nfNumber: guia.nf_number,
                 uf: guia.uf,
@@ -1054,7 +1294,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req,
             updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${guia.id.substring(0, 8).toUpperCase()}`;
         }
 
-        await supabase.from('guides').update(updatesGuia).eq('id', guia.id);
+        await supabase.from('guides').update(updatesGuia).eq('id', guia.id).eq('tenant_id', tenant.id);
 
         return res.status(200).json({
             message: `Pagamento da NF ${guia.nf_number} autorizado com sucesso!`,
@@ -1064,6 +1304,12 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, async (req,
 
     } catch (err) {
         console.error("[Asaas] Erro na autorização da guia:", err);
+        if (typeof guia !== 'undefined' && guia && guia.id) {
+            await supabase.from('guides').update({
+                status: 'pendente',
+                rejection_reason: err.message
+            }).eq('id', guia.id).eq('tenant_id', tenant.id);
+        }
         return res.status(500).json({ error: err.message });
     }
 });
@@ -1122,75 +1368,204 @@ app.get('/api/guide/comprovante/:guideId', requireAuth, async (req, res) => {
 });
 
 /**
- * 6. WEBHOOK DO ASAAS: Notificação assíncrona de Liquidação (BILL_PAID)
+ * 6. WEBHOOK DO ASAAS: Notificação assíncrona de Liquidação (BILL_PAID / BILL_FAILED / PIX)
  */
 app.post('/api/webhooks/asaas', async (req, res) => {
     try {
-        // Validação de segurança de origem do webhook se configurado no servidor
+        // Validação estrita de segurança de origem do webhook via timingSafeEqual (fail-closed)
         const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
         const receivedToken = req.headers['asaas-access-token'];
-        if (expectedToken && receivedToken !== expectedToken) {
-            console.warn("[Webhook Asaas] Acesso rejeitado: token de webhook inválido ou ausente.");
+        if (!expectedToken || !safeCompareTokens(receivedToken, expectedToken)) {
+            console.warn("[Webhook Asaas] Acesso rejeitado: token ausente ou inválido.");
             return res.status(401).json({ error: "Token de webhook não autorizado." });
         }
 
         const event = req.body?.event;
-        const bill = req.body?.bill;
+        const bill = req.body?.bill || req.body?.payment;
 
-        console.log(`[Webhook Asaas] Recebido evento: ${event} para Bill ID: ${bill?.id}`);
+        console.log(`[Webhook Asaas] Recebido evento: ${event} para ID: ${bill?.id}`);
 
         if (!event || !bill) {
             return res.status(200).json({ received: true });
         }
 
+        // ==========================================
+        // CASO 1: GUIA/TRIBUTO QUITADO (BILL_PAID)
+        // ==========================================
         if (event === 'BILL_PAID') {
             const billId = bill.id;
-            const extRef = bill.externalReference; // "guia_UUID"
+            const extRef = bill.externalReference;
             const receiptUrl = bill.transactionReceiptUrl;
+            const identField = bill.identificationField ? String(bill.identificationField).replace(/[^0-9]/g, '') : null;
 
-            let query = supabase.from('guides').select('*, tenants(*)');
-            if (extRef && extRef.startsWith('guia_')) {
-                const guideId = extRef.replace('guia_', '');
-                query = query.eq('id', guideId);
-            } else {
-                query = query.eq('asaas_bill_id', billId);
+            // Busca da guia em múltiplos níveis (Resiliência Operacional)
+            let guia = null;
+
+            // Nível 1: Pela referência externa (ID da guia)
+            if (extRef) {
+                const guideId = extRef.startsWith('guia_') ? extRef.replace('guia_', '') : extRef;
+                const { data: gList } = await supabase.from('guides').select('*, tenants(*)').eq('id', guideId).limit(1);
+                if (gList && gList.length > 0) guia = gList[0];
             }
 
-            const { data: guias } = await query.limit(1);
-            if (guias && guias.length > 0) {
-                const guia = guias[0];
-                const updates = {
-                    status: 'comprovada',
-                    paid_at: new Date().toISOString(),
-                    receipt_url: receiptUrl || null
-                };
+            // Nível 2: Pelo ID da transação Asaas (asaas_bill_id)
+            if (!guia && billId) {
+                const { data: gList } = await supabase.from('guides').select('*, tenants(*)').eq('asaas_bill_id', billId).limit(1);
+                if (gList && gList.length > 0) guia = gList[0];
+            }
 
-                // Baixa o comprovante oficial em PDF se disponível
+            // Nível 3: Pela linha digitável / código de barras
+            if (!guia && identField) {
+                const { data: gList } = await supabase.from('guides').select('*, tenants(*)').or(`line_digitizable.eq.${identField},barcode.eq.${identField}`).limit(1);
+                if (gList && gList.length > 0) guia = gList[0];
+            }
+
+            if (guia) {
+                const agora = new Date().toISOString();
+                const authCode = bill.bankAuthentication || bill.authenticationCode || guia.bank_authentication || `AS-${(billId || guia.id).substring(0, 8).toUpperCase()}-BR`;
+                const storagePath = `${guia.tenant_id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
+
+                let pdfBuffer = null;
+
+                // 1. Tenta baixar o comprovante oficial da URL do Asaas se existir
                 if (receiptUrl) {
                     try {
-                        const pdfBuffer = await asaasService.downloadExternalPdf(receiptUrl);
-                        const storagePath = `${guia.tenant_id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
+                        pdfBuffer = await asaasService.downloadExternalPdf(receiptUrl);
+                    } catch (eDl) {
+                        console.warn("[Webhook Asaas] Falha ao baixar PDF do Asaas:", eDl.message);
+                    }
+                }
+
+                // 2. Se não houver URL ou o download falhar, gera o comprovante oficial SISBACEN
+                if (!pdfBuffer) {
+                    try {
+                        pdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
+                            nfNumber: guia.nf_number,
+                            uf: guia.uf,
+                            valor: guia.value || bill.value,
+                            billId: billId,
+                            razaoSocial: guia.tenants?.razao_social || 'Empresa Emitente',
+                            autenticacaoBancaria: authCode
+                        });
+                    } catch (eGen) {
+                        console.error("[Webhook Asaas] Erro ao gerar comprovante em fallback:", eGen.message);
+                    }
+                }
+
+                // 3. Faz upload para o Supabase Storage
+                if (pdfBuffer) {
+                    try {
                         await supabase.storage
                             .from('tenant-storage')
                             .upload(storagePath, pdfBuffer, {
                                 contentType: 'application/pdf',
                                 upsert: true
                             });
-                        updates.receipt_storage_path = storagePath;
-                    } catch (eDl) {
-                        console.warn("[Webhook Asaas] Falha ao baixar PDF do comprovante oficial:", eDl.message);
+                    } catch (eUp) {
+                        console.warn("[Webhook Asaas] Erro ao salvar comprovante no Supabase Storage:", eUp.message);
                     }
                 }
 
-                await supabase.from('guides').update(updates).eq('id', guia.id);
-                console.log(`[Webhook Asaas] Guia NF ${guia.nf_number} atualizada para COMPROVADA!`);
+                // 4. Atualiza o registro da guia no banco de dados com escopo restrito de tenant
+                const updates = {
+                    status: 'comprovada',
+                    paid_at: bill.paymentDate || agora,
+                    receipt_url: receiptUrl || null,
+                    receipt_storage_path: storagePath,
+                    bank_authentication: authCode,
+                    asaas_bill_id: billId || guia.asaas_bill_id
+                };
+
+                await supabase.from('guides').update(updates).eq('id', guia.id).eq('tenant_id', guia.tenant_id);
+                console.log(`[Webhook Asaas] Guia NF ${guia.nf_number} atualizada para COMPROVADA! Autenticação: ${authCode}`);
+
+                // 5. Verifica se todas as guias do lote foram liquidadas para fechar o lote
+                if (guia.batch_id) {
+                    try {
+                        const { data: batchGuides } = await supabase
+                            .from('guides')
+                            .select('id, status, uf, value')
+                            .eq('batch_id', guia.batch_id)
+                            .eq('tenant_id', guia.tenant_id);
+
+                        if (batchGuides && batchGuides.length > 0) {
+                            const pendentes = batchGuides.filter(g => {
+                                const uf = (g.uf || '').toUpperCase();
+                                if (uf === 'SP' || parseFloat(g.value || 0) === 0) return false;
+                                return g.status !== 'comprovada' && g.status !== 'paga';
+                            });
+
+                            if (pendentes.length === 0) {
+                                await supabase.from('batches').update({
+                                    status: 'liquidado',
+                                    closed_at: agora
+                                }).eq('id', guia.batch_id).eq('tenant_id', guia.tenant_id);
+                                console.log(`[Webhook Asaas] Lote ${guia.batch_id} totalmente liquidado!`);
+                            }
+                        }
+                    } catch (eBatch) {
+                        console.warn("[Webhook Asaas] Falha ao verificar status global do lote:", eBatch.message);
+                    }
+                }
+
+                // 6. Notifica Cockpit da Doca em tempo real via SSE isolado por tenant
+                broadcastDockEvent({
+                    type: 'GUIA_PAGA',
+                    guiaId: guia.id,
+                    nf: guia.nf_number,
+                    uf: guia.uf,
+                    batchId: guia.batch_id,
+                    status: 'comprovada',
+                    bank_authentication: authCode,
+                    receipt_storage_path: storagePath,
+                    timestamp: agora
+                }, guia.tenant_id);
+            } else {
+                console.warn(`[Webhook Asaas] Nenhuma guia encontrada para Bill ID: ${billId} / Ref: ${extRef}`);
+            }
+        }
+
+        // ==========================================
+        // CASO 2: FALHA OU CANCELAMENTO DO PAGAMENTO
+        // ==========================================
+        if (event === 'BILL_FAILED' || event === 'BILL_CANCELLED') {
+            const billId = bill.id;
+            const extRef = bill.externalReference;
+            const motivo = bill.failReason || bill.description || 'Pagamento cancelado ou rejeitado no Asaas';
+
+            let { data: guias } = await supabase.from('guides').select('*').eq('asaas_bill_id', billId).limit(1);
+            if ((!guias || guias.length === 0) && extRef) {
+                const guideId = extRef.startsWith('guia_') ? extRef.replace('guia_', '') : extRef;
+                const { data: gList } = await supabase.from('guides').select('*').eq('id', guideId).limit(1);
+                guias = gList;
+            }
+
+            if (guias && guias.length > 0) {
+                const guia = guias[0];
+                await supabase.from('guides').update({
+                    status: 'erro_pagamento',
+                    rejection_reason: motivo
+                }).eq('id', guia.id).eq('tenant_id', guia.tenant_id);
+
+                console.warn(`[Webhook Asaas] Guia NF ${guia.nf_number} marcada com ERRO DE PAGAMENTO: ${motivo}`);
+
+                broadcastDockEvent({
+                    type: 'GUIA_ERRO',
+                    guiaId: guia.id,
+                    nf: guia.nf_number,
+                    uf: guia.uf,
+                    batchId: guia.batch_id,
+                    status: 'erro_pagamento',
+                    motivo: motivo,
+                    timestamp: new Date().toISOString()
+                }, guia.tenant_id);
             }
         }
 
         return res.status(200).json({ received: true });
     } catch (err) {
         console.error("[Webhook Asaas] Erro ao processar webhook:", err);
-        return res.status(200).json({ error: err.message }); // Responde 200 para evitar retries desnecessários
+        return res.status(500).json({ error: "Erro interno ao processar webhook" });
     }
 });
 
@@ -1428,13 +1803,7 @@ app.post('/api/batch/query-receipt', requireAuth, async (req, res) => {
             try {
                 const cnabContent = cnabService.gerarRemessaSispag(dadosBancarios, mappedGuides, paymentDate);
 
-                // Grava remessa.txt física local para compatibilidade
-                const remessaLocalPath = process.env.NODE_ENV === 'production' || process.env.VERCEL
-                    ? path.join('/tmp', 'remessa.txt')
-                    : path.join(__dirname, 'remessa.txt');
-                await fs.writeFile(remessaLocalPath, cnabContent, 'utf-8');
-
-                // Envia remessa.txt para Supabase Storage
+                // Envia remessa.txt exclusivamente para Supabase Storage privado
                 const remessaFilename = `remessa_${batchId}.txt`;
                 await supabase.storage
                     .from('tenant-storage')
@@ -1547,27 +1916,15 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
     }
 });
 
-// Suporta o download local também na raiz (remessa.txt) por compatibilidade com o script antigo
-app.get('/download/remessa.txt', async (req, res) => {
-    try {
-        const localPath = process.env.NODE_ENV === 'production' || process.env.VERCEL
-            ? path.join('/tmp', 'remessa.txt')
-            : path.join(__dirname, 'remessa.txt');
-        await fs.access(localPath);
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', 'attachment; filename="remessa.txt"');
-        return res.sendFile(localPath);
-    } catch (e) {
-        return res.status(404).send("Arquivo remessa.txt não localizado. Processe um lote primeiro.");
-    }
-});
-
 /**
  * Upload e Processamento de Arquivo de Retorno Bancário CNAB 240 (.RET)
  * Realiza a conciliação automática das guias, gravando data de pagamento e autenticação bancária
  */
-const uploadRetorno = multer({ storage: multer.memoryStorage() });
-app.post('/api/cnab/upload-retorno', requireAuth, uploadRetorno.single('retornoFile'), async (req, res) => {
+const uploadRetorno = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024, files: 1 }
+});
+app.post('/api/cnab/upload-retorno', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin']), uploadRetorno.single('retornoFile'), async (req, res) => {
     try {
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ error: "Nenhum arquivo de retorno (.RET) foi enviado." });
@@ -1596,7 +1953,7 @@ app.post('/api/cnab/upload-retorno', requireAuth, uploadRetorno.single('retornoF
             if (guiasEncontradas && guiasEncontradas.length > 0) {
                 for (const g of guiasEncontradas) {
                     const updateData = {
-                        status: pag.status === 'PAGO' ? 'PAGA' : (pag.status === 'AGENDADO' ? 'AGENDADA' : 'REJEITADA')
+                        status: pag.status === 'PAGO' ? 'paga' : (pag.status === 'AGENDADO' ? 'agendada' : 'rejeitada')
                     };
                     if (pag.dataPagamento) {
                         updateData.paid_at = pag.dataPagamento;
@@ -1605,7 +1962,7 @@ app.post('/api/cnab/upload-retorno', requireAuth, uploadRetorno.single('retornoF
                         updateData.bank_authentication = pag.autenticacao;
                     }
 
-                    await supabase.from('guides').update(updateData).eq('id', g.id);
+                    await supabase.from('guides').update(updateData).eq('id', g.id).eq('tenant_id', req.tenant.id);
                     atualizadas.push({
                         nf: g.nf_number,
                         uf: g.uf,
@@ -1722,8 +2079,8 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                 chave_nfe: g.chave_nfe,
                 uf: g.uf,
                 value: parseFloat(g.value || 0),
-                customer_name: g.customer_name || 'Cliente Lalua / Boah',
-                carrier_name: g.carrier_name || 'Total Express',
+                customer_name: g.customer_name || 'Consumidor Final',
+                carrier_name: g.carrier_name || 'Transportadora Padrão',
                 status: g.status,
                 is_liberada: printService.isGuiaLiberada(g),
                 created_at: g.created_at
@@ -1731,6 +2088,58 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
         });
     } catch (err) {
         console.error("Erro ao buscar cargas ativas:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * Consulta de Bipagem Rápida na Doca (Suporta Chave de Acesso 44 dígitos, NF ou Pedido)
+ */
+app.get('/api/expedicao/bipar', requireAuth, async (req, res) => {
+    try {
+        const { termo } = req.query;
+        if (!termo) return res.status(400).json({ error: "Termo de busca não informado." });
+
+        const clean = String(termo).replace(/[^0-9a-zA-Z\-]/g, '').substring(0, 44);
+        let nfNumero = clean;
+        if (clean.length >= 44) {
+            // Extrai número da NF das posições 25 a 34 da chave de 44 dígitos
+            const extraido = parseInt(clean.substring(25, 34), 10);
+            if (!isNaN(extraido)) nfNumero = String(extraido);
+        }
+
+        const tenant = req.tenant;
+        // Busca no banco por chave, número da NF ou pedido
+        const { data: guias } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .or(`chave_nfe.eq.${clean},nf_number.eq.${nfNumero},nf_number.eq.${clean},order_number.eq.${clean}`)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (!guias || guias.length === 0) {
+            return res.status(404).json({ error: "Guia não encontrada para o código informado." });
+        }
+
+        const guia = guias[0];
+        return res.json({
+            guia: {
+                id: guia.id,
+                nf_number: guia.nf_number,
+                chave_nfe: guia.chave_nfe,
+                uf: guia.uf,
+                value: parseFloat(guia.value || 0),
+                customer_name: guia.customer_name || 'Consumidor Final',
+                carrier_name: guia.carrier_name || 'Transportadora Padrão',
+                status: guia.status,
+                is_liberada: printService.isGuiaLiberada(guia),
+                barcode: guia.barcode,
+                line_digitizable: guia.line_digitizable
+            }
+        });
+    } catch (err) {
+        console.error("Erro na busca de bipagem:", err);
         return res.status(500).json({ error: err.message });
     }
 });
@@ -1755,20 +2164,7 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
         }
 
         const { data: guiasDb } = await query;
-
-        // Conjunto rico de moda e-commerce para Lalua / Boah (Shopping Barra) caso dados estejam nulos
-        const dadosPadraoModa = [
-            { id: 'g-1', order_number: 'VD-89412', nf_number: '03001006', uf: 'RJ', customer_name: 'Mariana Silveira Ramos', city: 'Rio de Janeiro', carrier_name: 'Total Express', value: 420.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91823-BR' },
-            { id: 'g-2', order_number: 'VD-89350', nf_number: '03001003', uf: 'MG', customer_name: 'Camila Fagundes Mendes', city: 'Belo Horizonte', carrier_name: 'Total Express', value: 1840.50, status: 'PENDENTE', asaas_bill_id: null },
-            { id: 'g-3', order_number: 'VD-89405', nf_number: '03001013', uf: 'SP', customer_name: 'Beatriz Alencar Costa', city: 'São Paulo', carrier_name: 'Total Express', value: 0.00, status: 'ISENTO', asaas_bill_id: 'ISENTO_SP' },
-            { id: 'g-4', order_number: 'VD-89392', nf_number: '03001005', uf: 'PR', customer_name: 'Letícia Toledo Barros', city: 'Curitiba', carrier_name: 'Total Express', value: 130.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91824-BR' },
-            { id: 'g-5', order_number: 'VD-89311', nf_number: '03001007', uf: 'BA', customer_name: 'Juliana Rocha Paes', city: 'Salvador', carrier_name: 'Correios', value: 130.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91825-BR' },
-            { id: 'g-6', order_number: 'VD-89304', nf_number: '03001009', uf: 'PE', customer_name: 'Patrícia Albuquerque', city: 'Recife', carrier_name: 'Correios', value: 210.50, status: 'PENDENTE', asaas_bill_id: null },
-            { id: 'g-7', order_number: 'VD-89290', nf_number: '03001015', uf: 'PR', customer_name: 'Renata Lemos Guimarães', city: 'Curitiba', carrier_name: 'Correios', value: 140.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91826-BR' },
-            { id: 'g-8', order_number: 'VD-89102', nf_number: '03012004', uf: 'ES', customer_name: 'Fernanda Martins', city: 'Vitória', carrier_name: 'MT Log', value: 240.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91827-BR' }
-        ];
-
-        let guias = (guiasDb && guiasDb.length > 0) ? guiasDb : dadosPadraoModa;
+        let guias = guiasDb || [];
         if (carrier && carrier !== 'TODAS') {
             const filtradas = guias.filter(g => (g.carrier_name || '').toLowerCase() === carrier.toLowerCase());
             if (filtradas.length > 0) guias = filtradas;
@@ -1790,7 +2186,7 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>expedi HUB — Documentos de Embarque · Lalua / Boah (Shopping Barra)</title>
+    <title>expedi HUB — Documentos de Embarque · ${escapeHtml(req.tenant.nome_fantasia || req.tenant.razao_social)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -2150,7 +2546,7 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
                         <span class="official-tag">100% Liberado p/ Coleta</span>
                     </h1>
                     <div class="store-location">
-                        <strong>Lalua / Boah</strong> · Loja Shopping Barra (Salvador / BA) &nbsp;|&nbsp; CNPJ: 10.436.619/0001-05 &nbsp;|&nbsp; Lote Doca #20261016-01
+                        <strong>${escapeHtml(req.tenant.nome_fantasia || req.tenant.razao_social)}</strong> &nbsp;|&nbsp; CNPJ: ${escapeHtml(req.tenant.cnpj)}
                     </div>
                 </div>
             </div>
@@ -2191,8 +2587,8 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
             <thead>
                 <tr>
                     <th style="width: 32px; text-align: center;">Item</th>
-                    <th style="width: 80px;">Pedido Vnda</th>
-                    <th style="width: 85px;">NF-e Linx</th>
+                    <th style="width: 80px;">Pedido</th>
+                    <th style="width: 85px;">NF-e</th>
                     <th style="width: 45px; text-align: center;">UF</th>
                     <th>Destinatário / Cliente</th>
                     <th style="width: 140px;">Cidade / Destino</th>
@@ -2213,10 +2609,10 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
                     return `
                     <tr>
                         <td style="text-align: center; color: #5B6B7F;">${idx + 1}</td>
-                        <td><strong style="color: #2563EB;">#${escapeHtml(g.order_number || g.xPed || 'VD-89400')}</strong></td>
+                        <td><strong style="color: #2563EB;">#${escapeHtml(g.order_number || g.xPed || 'PEDIDO')}</strong></td>
                         <td class="cell-mono">${escapeHtml(g.nf_number)}</td>
                         <td style="text-align: center;"><strong>${escapeHtml(g.uf)}</strong></td>
-                        <td><strong>${escapeHtml(g.customer_name || 'Mariana Silveira Ramos')}</strong></td>
+                        <td><strong>${escapeHtml(g.customer_name || 'Consumidor Final')}</strong></td>
                         <td>${escapeHtml(g.city || 'Destino')} / ${escapeHtml(g.uf)}</td>
                         <td style="text-align: right;" class="cell-mono">${valorStr}</td>
                         <td style="text-align: center;"><span class="badge-status ${badgeClass}">${badgeText}</span></td>
@@ -2230,15 +2626,15 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
 
         <div class="legal-term-box">
             <strong>DECLARAÇÃO FORMAL DE RECEBIMENTO & TRANSPORTE:</strong><br>
-            O transportador abaixo assinado declara ter conferido e recebido na loja Lalua / Boah (Shopping Barra, Salvador/BA) os <strong>${guiasLiberadas.length} volumes</strong> acima relacionados em perfeito estado físico, acompanhados de suas respectivas DANFEs e das Guias GNREs autenticadas pelo SISBACEN via Asaas, assumindo integral responsabilidade pela guarda e entrega aos destinatários finais.
+            O transportador abaixo assinado declara ter conferido e recebido do remetente <strong>${escapeHtml(req.tenant.nome_fantasia || req.tenant.razao_social)}</strong> os <strong>${guiasLiberadas.length} volumes</strong> acima relacionados em perfeito estado físico, acompanhados de suas respectivas DANFEs e das Guias GNREs autenticadas pelo SISBACEN via Asaas, assumindo integral responsabilidade pela guarda e entrega aos destinatários finais.
         </div>
 
         <div class="signatures-grid">
             <div class="sig-card">
-                <div class="sig-card-title">1. Expedição E-commerce — Lalua / Boah (Shopping Barra)</div>
+                <div class="sig-card-title">1. Expedição E-commerce — ${escapeHtml(req.tenant.nome_fantasia || req.tenant.razao_social)}</div>
                 <div class="sig-line"></div>
                 <div class="sig-fields-row">
-                    <div>Responsável: <strong>Conferência Loja Barra</strong></div>
+                    <div>Responsável: <strong>Conferência Expedição</strong></div>
                     <div>Data: <strong>${dataHoje} às ${horaHoje}</strong></div>
                 </div>
             </div>
@@ -2271,7 +2667,7 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
                         <span class="official-tag" style="background: #FDEEEE; color: #B42318;">Controle Interno Loja</span>
                     </h1>
                     <div class="store-location">
-                        <strong>Lalua / Boah</strong> · Loja Shopping Barra (Salvador / BA) &nbsp;|&nbsp; Cargas Retidas Proibidas de Embarcar sem Pagamento
+                        <strong>${escapeHtml(req.tenant.nome_fantasia || req.tenant.razao_social)}</strong> &nbsp;|&nbsp; CNPJ: ${escapeHtml(req.tenant.cnpj)} &nbsp;|&nbsp; Cargas Retidas Proibidas de Embarcar sem Pagamento
                     </div>
                 </div>
             </div>
@@ -2308,8 +2704,8 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
             <thead>
                 <tr style="background: #7F1D1D;">
                     <th style="width: 32px; text-align: center;">Item</th>
-                    <th style="width: 85px;">Pedido Vnda</th>
-                    <th style="width: 85px;">NF-e Linx</th>
+                    <th style="width: 85px;">Pedido</th>
+                    <th style="width: 85px;">NF-e</th>
                     <th style="width: 45px; text-align: center;">UF</th>
                     <th>Destinatário / Cliente</th>
                     <th style="width: 140px;">Cidade / Destino</th>
@@ -2326,14 +2722,14 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
                         return `
                         <tr>
                             <td style="text-align: center; color: #5B6B7F;">${idx + 1}</td>
-                            <td><strong style="color: #B42318;">#${escapeHtml(g.order_number || g.xPed || 'VD-89350')}</strong></td>
+                            <td><strong style="color: #B42318;">#${escapeHtml(g.order_number || g.xPed || 'PEDIDO')}</strong></td>
                             <td class="cell-mono" style="color: #B42318;">${escapeHtml(g.nf_number)}</td>
                             <td style="text-align: center;"><strong>${escapeHtml(g.uf)}</strong></td>
-                            <td><strong>${escapeHtml(g.customer_name || 'Camila Fagundes Mendes')}</strong></td>
-                            <td>${escapeHtml(g.city || 'Belo Horizonte')} / ${escapeHtml(g.uf)}</td>
+                            <td><strong>${escapeHtml(g.customer_name || 'Consumidor Final')}</strong></td>
+                            <td>${escapeHtml(g.city || 'Destino')} / ${escapeHtml(g.uf)}</td>
                             <td style="text-align: right; color: #B42318;" class="cell-mono">${valorStr}</td>
                             <td style="text-align: center;"><span class="badge-status badge-retido">⛔ RETIDO SEFAZ</span></td>
-                            <td style="font-size: 10px; color: #5B6B7F;">Guia não liquidada no Asaas. Manter caixa na prateleira B.</td>
+                            <td style="font-size: 10px; color: #5B6B7F;">Guia não liquidada no Asaas. Manter caixa na bancada.</td>
                         </tr>
                         `;
                     }).join('')
@@ -2342,13 +2738,13 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
         </table>
 
         <div class="legal-term-box" style="border-color: #F8B4B4; background: #FFFBFB; color: #7F1D1D;">
-            <strong>PROCEDIMENTO INTERNO OBRIGATÓRIO (SHOPPING BARRA):</strong><br>
-            As caixas acima relacionadas <strong>NÃO PODEM</strong> ser entregues ao motorista da van em nenhuma hipótese até que o pagamento da guia seja confirmado no App Mobile da Diretoria e o status mude para Liberado.
+            <strong>PROCEDIMENTO INTERNO OBRIGATÓRIO:</strong><br>
+            As caixas acima relacionadas <strong>NÃO PODEM</strong> ser entregues ao motorista da van em nenhuma hipótese até que o pagamento da guia seja confirmado no sistema e o status mude para Liberado.
         </div>
 
         <div class="signatures-grid" style="grid-template-columns: 1fr;">
             <div class="sig-card">
-                <div class="sig-card-title">Visto do Conferente da Loja (Shopping Barra)</div>
+                <div class="sig-card-title">Visto do Conferente da Loja / Expedição</div>
                 <div class="sig-line" style="height: 32px;"></div>
                 <div class="sig-fields-row">
                     <div>Conferente: _____________________________________</div>
@@ -2506,17 +2902,7 @@ async function obterGuiasParaFechamento(tenantId, batchId, dataFiltro) {
     }
 
     if (!guias || guias.length === 0) {
-        // Padrão de dados ricos do e-commerce da Lalua / Boah (Shopping Barra)
-        guias = [
-            { id: 'g-1', order_number: 'VD-89412', nf_number: '03001006', chave_nfe: '29261010436619000105550010003001006123456789', uf: 'RJ', customer_name: 'Mariana Silveira Ramos', city: 'Rio de Janeiro', carrier_name: 'Total Express', value: 420.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91823-BR', payment_authorized_by: 'Diretoria (App Mobile)' },
-            { id: 'g-2', order_number: 'VD-89350', nf_number: '03001003', chave_nfe: '29261010436619000105550010003001003123456789', uf: 'MG', customer_name: 'Camila Fagundes Mendes', city: 'Belo Horizonte', carrier_name: 'Total Express', value: 1840.50, status: 'PENDENTE', asaas_bill_id: null, payment_authorized_by: null },
-            { id: 'g-3', order_number: 'VD-89405', nf_number: '03001013', chave_nfe: '29261010436619000105550010003001013123456789', uf: 'SP', customer_name: 'Beatriz Alencar Costa', city: 'São Paulo', carrier_name: 'Total Express', value: 0.00, status: 'ISENTO', asaas_bill_id: 'ISENTO_SP', payment_authorized_by: 'Isenção Tributária SP' },
-            { id: 'g-4', order_number: 'VD-89392', nf_number: '03001005', chave_nfe: '29261010436619000105550010003001005123456789', uf: 'PR', customer_name: 'Letícia Toledo Barros', city: 'Curitiba', carrier_name: 'Total Express', value: 130.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91824-BR', payment_authorized_by: 'Diretoria (App Mobile)' },
-            { id: 'g-5', order_number: 'VD-89311', nf_number: '03001007', chave_nfe: '29261010436619000105550010003001007123456789', uf: 'BA', customer_name: 'Juliana Rocha Paes', city: 'Salvador', carrier_name: 'Correios', value: 130.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91825-BR', payment_authorized_by: 'Diretoria (App Mobile)' },
-            { id: 'g-6', order_number: 'VD-89304', nf_number: '03001009', chave_nfe: '29261010436619000105550010003001009123456789', uf: 'PE', customer_name: 'Patrícia Albuquerque', city: 'Recife', carrier_name: 'Correios', value: 210.50, status: 'PENDENTE', asaas_bill_id: null, payment_authorized_by: null },
-            { id: 'g-7', order_number: 'VD-89290', nf_number: '03001015', chave_nfe: '29261010436619000105550010003001015123456789', uf: 'PR', customer_name: 'Renata Lemos Guimarães', city: 'Curitiba', carrier_name: 'Correios', value: 140.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91826-BR', payment_authorized_by: 'Diretoria (App Mobile)' },
-            { id: 'g-8', order_number: 'VD-89102', nf_number: '03012004', chave_nfe: '29261010436619000105550010003012004123456789', uf: 'ES', customer_name: 'Fernanda Martins', city: 'Vitória', carrier_name: 'MT Log', value: 240.00, status: 'COMPROVADA', asaas_bill_id: 'AS-91827-BR', payment_authorized_by: 'Diretoria (App Mobile)' }
-        ];
+        guias = [];
     }
 
     return guias;
@@ -2576,7 +2962,7 @@ app.get('/api/fechamento/planilha-csv/:batchId?', requireAuth, async (req, res) 
 });
 
 // 4. Pacote Completo de Auditoria em formato .ZIP
-app.get('/api/fechamento/pacote-zip/:batchId?', requireAuth, async (req, res) => {
+app.get('/api/fechamento/pacote-zip/:batchId?', requireAuth, requireRole(['diretoria', 'financeiro', 'admin']), async (req, res) => {
     try {
         const batchId = req.params.batchId || req.query.batchId;
         const dataFiltro = req.query.data;
@@ -3149,32 +3535,109 @@ app.get('/api/guide/print-interleaved/:batchId', requireAuth, async (req, res) =
 // ROTAS DO PAINEL ADMINISTRATIVO (ADMIN)
 // ==========================================
 
-// Middleware para validar se o usuário logado é administrador
-const requireAdmin = (req, res, next) => {
-    if (!req.profile || !req.profile.is_admin) {
-        return res.status(403).json({ error: "Acesso negado. Apenas administradores podem acessar esta área." });
-    }
-    next();
-};
-
-// 1. Listar todas as empresas (Tenants)
-app.get('/api/admin/tenants', requireAuth, requireAdmin, async (req, res) => {
+// 1. Métricas Consolidadas do SaaS (SuperAdmin Master)
+app.get('/api/admin/metrics', requireAuth, requireSuperAdmin, async (req, res) => {
     try {
-        const { data: tenants, error } = await supabase
+        const { data: tenants } = await supabase.from('tenants').select('id, status, subscription_status, plano, guias_usadas_mes, limite_guias_mes');
+        const { count: totalGuias } = await supabase.from('guides').select('id', { count: 'exact', head: true });
+        const { data: guiasPagas } = await supabase.from('guides').select('value').eq('status', 'comprovada');
+
+        const totalTenants = tenants ? tenants.length : 0;
+        const ativos = tenants ? tenants.filter(t => (t.status || t.subscription_status) === 'ativo').length : 0;
+        const bloqueados = totalTenants - ativos;
+        const totalDifalLiquidado = (guiasPagas || []).reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0);
+
+        return res.json({
+            totalTenants,
+            ativos,
+            bloqueados,
+            totalGuias: totalGuias || 0,
+            totalDifalLiquidado: parseFloat(totalDifalLiquidado.toFixed(2))
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 2. Listar todas as empresas (Tenants) - Sanitizado sem expor credenciais privadas
+app.get('/api/admin/tenants', requireAuth, requireSuperAdmin, async (req, res) => {
+    try {
+        const { data: rawTenants, error } = await supabase
             .from('tenants')
-            .select('*')
+            .select('id, cnpj, razao_social, nome_fantasia, email_admin, plano, limite_guias_mes, guias_usadas_mes, status, subscription_status, environment, bank_agency, bank_account, bank_dac, pfx_filename, asaas_api_key_encrypted, microvix_token, created_at, updated_at')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
+
+        const tenants = (rawTenants || []).map(t => ({
+            id: t.id,
+            cnpj: t.cnpj,
+            razao_social: t.razao_social,
+            nome_fantasia: t.nome_fantasia || t.razao_social,
+            email_admin: t.email_admin,
+            plano: t.plano || t.subscription_status || 'pro',
+            limite_guias_mes: t.limite_guias_mes || 1000,
+            guias_usadas_mes: t.guias_usadas_mes || 0,
+            status: t.status || t.subscription_status || 'ativo',
+            environment: t.environment || 'simulado',
+            bank_agency: t.bank_agency,
+            bank_account: t.bank_account,
+            bank_dac: t.bank_dac,
+            has_pfx: !!t.pfx_filename,
+            has_asaas: !!t.asaas_api_key_encrypted,
+            has_microvix: !!t.microvix_token,
+            created_at: t.created_at,
+            updated_at: t.updated_at
+        }));
+
         return res.status(200).json(tenants);
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
 
-// 2. Bloquear/Desbloquear Empresa (Status da Assinatura)
-app.post('/api/admin/tenants/status', requireAuth, requireAdmin, async (req, res) => {
-    const { tenantId, status } = req.body; // status: 'ativo' ou 'inativo'
+// 3. Cadastrar Nova Empresa Cliente (Tenant)
+app.post('/api/admin/tenants/create', requireAuth, requireSuperAdmin, async (req, res) => {
+    try {
+        const { cnpj, razao_social, nome_fantasia, email_admin, plano, limite_guias_mes } = req.body;
+        if (!cnpj || !razao_social) {
+            return res.status(400).json({ error: "CNPJ e Razão Social são obrigatórios." });
+        }
+
+        const cleanCnpj = String(cnpj).replace(/\D/g, '');
+        const { data: newTenant, error } = await supabase.from('tenants').insert([{
+            cnpj: cleanCnpj,
+            razao_social,
+            nome_fantasia: nome_fantasia || razao_social,
+            email_admin,
+            plano: plano || 'pro',
+            limite_guias_mes: parseInt(limite_guias_mes, 10) || 1000,
+            status: 'ativo',
+            subscription_status: 'ativo',
+            bank_agency: '0000',
+            bank_account: '00000',
+            bank_dac: '0'
+        }]).select().single();
+
+        if (error) throw error;
+
+        auditService.logAudit(supabase, {
+            tenantId: newTenant.id,
+            userId: req.user?.id,
+            acao: 'CRIAR_EMPRESA',
+            detalhe: `Nova empresa criada: ${razao_social} (CNPJ: ${cleanCnpj}) no plano ${plano || 'pro'}`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+
+        return res.status(201).json({ message: "Empresa cadastrada com sucesso!", tenant: newTenant });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 4. Bloquear/Desbloquear Empresa (Status da Licença)
+app.post('/api/admin/tenants/status', requireAuth, requireSuperAdmin, async (req, res) => {
+    const { tenantId, status } = req.body; // status: 'ativo' ou 'bloqueado'
     if (!tenantId || !status) {
         return res.status(400).json({ error: "Empresa e status são obrigatórios." });
     }
@@ -3182,18 +3645,73 @@ app.post('/api/admin/tenants/status', requireAuth, requireAdmin, async (req, res
     try {
         const { error } = await supabase
             .from('tenants')
-            .update({ subscription_status: status })
+            .update({ 
+                subscription_status: status,
+                status: status
+            })
             .eq('id', tenantId);
 
         if (error) throw error;
+
+        auditService.logAudit(supabase, {
+            tenantId,
+            userId: req.user?.id,
+            acao: status === 'ativo' ? 'DESBLOQUEAR_EMPRESA' : 'BLOQUEAR_EMPRESA',
+            detalhe: `Status da licença da empresa alterado para '${status}'`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+
         return res.status(200).json({ message: `Empresa atualizada para '${status}' com sucesso!` });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });
 
-// 3. Listar todos os usuários/perfis cadastrados com seus respectivos tenants
-app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
+// 5. Atualizar Plano e Limite de Guias da Empresa
+app.post('/api/admin/tenants/plan', requireAuth, requireSuperAdmin, async (req, res) => {
+    try {
+        const { tenantId, plano, limite_guias_mes } = req.body;
+        if (!tenantId || !plano) {
+            return res.status(400).json({ error: "ID da empresa e plano são obrigatórios." });
+        }
+
+        const updates = { plano };
+        if (limite_guias_mes !== undefined) {
+            updates.limite_guias_mes = parseInt(limite_guias_mes, 10);
+            updates.plan_limit_guides = parseInt(limite_guias_mes, 10);
+        }
+
+        const { error } = await supabase.from('tenants').update(updates).eq('id', tenantId);
+        if (error) throw error;
+
+        auditService.logAudit(supabase, {
+            tenantId,
+            userId: req.user?.id,
+            acao: 'ALTERAR_PLANO',
+            detalhe: `Plano alterado para ${plano} com limite de ${limite_guias_mes || 'padrão'} guias/mês`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+
+        return res.json({ message: `Plano da empresa atualizado para '${plano}' com sucesso!` });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 6. Trilha de Auditoria Geral (LGPD & Compliance)
+app.get('/api/admin/audit-logs', requireAuth, requireSuperAdmin, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit, 10) || 50;
+        const tenantId = req.query.tenantId || null;
+        const logs = await auditService.getRecentAuditLogs(supabase, { tenantId, limit });
+        return res.json(logs);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 7. Listar todos os usuários/perfis cadastrados com seus respectivos tenants
+app.get('/api/admin/users', requireAuth, requireSuperAdmin, async (req, res) => {
     try {
         const { data: profiles, error } = await supabase
             .from('profiles')
@@ -3207,9 +3725,9 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
     }
 });
 
-// 4. Criar um novo usuário vinculado a uma empresa (Tenant)
-app.post('/api/admin/users/create', requireAuth, requireAdmin, async (req, res) => {
-    const { email, password, name, tenantId, is_admin } = req.body;
+// 8. Criar um novo usuário vinculado a uma empresa (Tenant)
+app.post('/api/admin/users/create', requireAuth, requireSuperAdmin, async (req, res) => {
+    const { email, password, name, tenantId, role, is_admin } = req.body;
     if (!email || !password || !tenantId) {
         return res.status(400).json({ error: "E-mail, senha e empresa são obrigatórios." });
     }
@@ -3228,7 +3746,8 @@ app.post('/api/admin/users/create', requireAuth, requireAdmin, async (req, res) 
 
         const newUser = userData.user;
 
-        // Cria o registro na tabela profiles do banco
+        // Cria o registro na tabela profiles do banco com a role especificada
+        const userRole = role || (is_admin ? 'admin' : 'operador');
         const { error: profileError } = await supabase
             .from('profiles')
             .insert({
@@ -3236,14 +3755,22 @@ app.post('/api/admin/users/create', requireAuth, requireAdmin, async (req, res) 
                 tenant_id: tenantId,
                 email: email,
                 name: name || email.split('@')[0],
-                is_admin: !!is_admin
+                role: userRole,
+                is_admin: userRole === 'admin' || userRole === 'superadmin' || !!is_admin
             });
 
         if (profileError) {
-            // Se falhar no banco, tenta remover do auth para não gerar inconsistência
             await supabase.auth.admin.deleteUser(newUser.id);
             return res.status(400).json({ error: "Erro ao criar perfil de usuário: " + profileError.message });
         }
+
+        auditService.logAudit(supabase, {
+            tenantId: tenantId,
+            userId: req.user?.id,
+            acao: 'CRIAR_USUARIO',
+            detalhe: `Usuário ${email} criado com perfil '${userRole}'`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
 
         return res.status(200).json({ message: "Usuário criado com sucesso!" });
     } catch (err) {
@@ -3251,20 +3778,27 @@ app.post('/api/admin/users/create', requireAuth, requireAdmin, async (req, res) 
     }
 });
 
-// 5. Redefinir senha de um usuário existente
-app.post('/api/admin/users/reset-password', requireAuth, requireAdmin, async (req, res) => {
+// 9. Redefinir senha de um usuário existente
+app.post('/api/admin/users/reset-password', requireAuth, requireSuperAdmin, async (req, res) => {
     const { userId, password } = req.body;
     if (!userId || !password) {
         return res.status(400).json({ error: "Usuário e nova senha são obrigatórios." });
     }
 
     try {
-        // Atualiza a senha usando a API de administração do Supabase Auth
         const { error } = await supabase.auth.admin.updateUserById(userId, {
             password: password
         });
 
         if (error) throw error;
+
+        auditService.logAudit(supabase, {
+            userId: req.user?.id,
+            acao: 'REDEFINIR_SENHA',
+            detalhe: `Senha do usuário ID ${userId} redefinida pelo administrador`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+
         return res.status(200).json({ message: "Senha redefinida com sucesso!" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -3289,13 +3823,13 @@ app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (re
         .from('batches')
         .select('id, created_at')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'processando')
+        .in('status', ['processando', 'aguardando_aprovacao'])
         .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
         .limit(1);
 
     if (lotesAtivos && lotesAtivos.length > 0) {
         return res.status(409).json({
-            error: 'Já existe um lote de emissão sendo processado no momento. Aguarde a finalização para evitar guias duplicadas.'
+            error: 'Já existe um lote de emissão sendo processado ou aguardando aprovação. Finalize ou aprove o lote pendente para evitar guias duplicadas.'
         });
     }
 
@@ -3306,19 +3840,14 @@ app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (re
     const paymentDate = req.body.payment_date  || hoje;
 
     try {
-        // 1. Descriptografa a senha Microvix com tolerância
+        // 1. Descriptografa a senha Microvix
         let microvixPassword = tenant.microvix_password_encrypted || '';
         if (microvixPassword.includes(':')) {
             try {
                 const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
                 microvixPassword = decrypt(microvixPassword, key);
             } catch (errKey) {
-                try {
-                    const fallbackKey = getEncryptionKey('undefined');
-                    microvixPassword = decrypt(microvixPassword, fallbackKey);
-                } catch {
-                    return res.status(500).json({ error: 'Falha ao descriptografar senha Microvix. Recadastre as credenciais.' });
-                }
+                return res.status(500).json({ error: 'Falha ao descriptografar senha Microvix. Recadastre as credenciais em Empresa > Integrações.' });
             }
         }
 
@@ -3488,11 +4017,11 @@ app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (re
         if (batchError) throw batchError;
         const batchId = batchData.id;
 
-        // 8. Dispara prǸ-validaǜo e staging em background
+        // 8. Dispara pré-validação e staging em background
         runBatchProcessInBackground(batchId, tenant, xmlsParaProcessar, paymentDate);
 
         return res.status(200).json({
-            message: `Notas importadas do Linx Microvix! O lote #${batchId.substring(0, 8)} estǭ pronto e aguardando sua autorizaǜo para emissǜo.`,
+            message: `Notas importadas do Linx Microvix! O lote #${batchId.substring(0, 8)} está pronto e aguardando sua autorização para emissão.`,
             total:        notasBrutas.length,
             novas:        notasNovas.length,
             com_difal:    xmlsParaProcessar.length,
@@ -3508,7 +4037,7 @@ app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (re
 });
 
 // Endpoint para salvar credenciais Microvix do tenant
-app.post('/api/microvix/credentials', requireAuth, async (req, res) => {
+app.post('/api/microvix/credentials', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     const { microvix_key, microvix_user, microvix_password, microvix_cnpj } = req.body;
     if (!microvix_key || !microvix_cnpj) {
         return res.status(400).json({ error: 'Chave API e CNPJ são obrigatórios.' });
@@ -3556,7 +4085,7 @@ app.get('/api/erp/status', requireAuth, async (req, res) => {
 });
 
 // ==========================================
-// ROTAS: E-COMMERCE OLIST VNDA (BOAH)
+// ROTAS: E-COMMERCE OLIST VNDA
 // ==========================================
 
 // Status da conexão da Vnda
@@ -3564,19 +4093,19 @@ app.get('/api/vnda/status', requireAuth, async (req, res) => {
     const t = req.tenant;
     return res.json({
         conectado: !!t.vnda_token_encrypted,
-        shop_host: t.vnda_shop_host || 'www.boah.com.br'
+        shop_host: t.vnda_shop_host || ''
     });
 });
 
 // Salvar credenciais da Vnda
-app.post('/api/vnda/credentials', requireAuth, async (req, res) => {
+app.post('/api/vnda/credentials', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     const { token, shop_host } = req.body;
     if (!token) return res.status(400).json({ error: 'Token da Vnda é obrigatório.' });
 
     try {
         const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
         const encToken = encrypt(token.trim(), key);
-        const host = (shop_host || 'www.boah.com.br').trim();
+        const host = (shop_host || '').trim();
 
         const { error } = await supabase
             .from('tenants')
@@ -3605,7 +4134,7 @@ app.get('/api/vnda/pedidos', requireAuth, async (req, res) => {
         const token = t.vnda_token_encrypted.includes(':') 
             ? decrypt(t.vnda_token_encrypted, key) 
             : t.vnda_token_encrypted;
-        const shopHost = t.vnda_shop_host || 'www.boah.com.br';
+        const shopHost = t.vnda_shop_host || '';
 
         const pedidos = await vndaService.listarPedidos(token, shopHost, {
             per_page: 30,
@@ -3644,7 +4173,7 @@ app.post('/api/sync/run', requireAuth, requireActiveSubscription, async (req, re
 });
 
 // 2. Salvar credenciais de um ERP específico
-app.post('/api/erp/credentials', requireAuth, async (req, res) => {
+app.post('/api/erp/credentials', requireAuth, requireRole(['admin', 'superadmin', 'diretoria']), async (req, res) => {
     const { erp, bling_token, tiny_token, omie_app_key, omie_app_secret } = req.body;
     const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
 
@@ -3690,13 +4219,13 @@ app.post('/api/erp/sync', requireAuth, requireActiveSubscription, async (req, re
         .from('batches')
         .select('id, created_at')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'processando')
+        .in('status', ['processando', 'aguardando_aprovacao'])
         .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
         .limit(1);
 
     if (lotesAtivos && lotesAtivos.length > 0) {
         return res.status(409).json({
-            error: 'Já existe um lote de emissão sendo processado no momento. Aguarde a finalização para evitar guias duplicadas.'
+            error: 'Já existe um lote de emissão sendo processado ou aguardando aprovação. Finalize ou aprove o lote pendente para evitar guias duplicadas.'
         });
     }
 
@@ -3889,7 +4418,7 @@ app.post('/api/erp/sync', requireAuth, requireActiveSubscription, async (req, re
         runBatchProcessInBackground(batchId, tenant, xmlsParaProcessar, paymentDate);
 
         return res.status(200).json({
-            message: `Notas importadas do ${erp.toUpperCase()}! O lote #${batchId.substring(0, 8)} estǭ pronto e aguardando sua autorizaǜo para emissǜo.`,
+            message: `Notas importadas do ${erp.toUpperCase()}! O lote #${batchId.substring(0, 8)} está pronto e aguardando sua autorização para emissão.`,
             total:        notasBrutas.length,
             novas:        notasNovas.length,
             com_difal:    xmlsParaProcessar.length,
@@ -4371,7 +4900,7 @@ app.get('*', (req, res, next) => {
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
     app.listen(PORT, () => {
         console.log(`\n==================================================`);
-        console.log(`🚀 Apex GNRE SaaS rodando localmente na porta ${PORT}`);
+        console.log(`🚀 expedi HUB SaaS rodando localmente na porta ${PORT}`);
         console.log(`🔗 Acesse: http://localhost:${PORT}`);
         console.log(`==================================================\n`);
 

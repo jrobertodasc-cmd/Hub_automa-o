@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#111F33">
-    <title>expedi HUB — App Mobile da Diretoria (Lalua / Boah)</title>
+<title>expedi HUB — App Mobile da Diretoria</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -134,7 +134,7 @@
             background: #1E2E48;
         }
 
-        /* CABEÇALHO DO APP (EXPEDI HUB + LALUA / BOAH SHOPPING BARRA) */
+        /* CABEÇALHO DO APP (EXPEDI HUB) */
         .app-top-header {
             display: flex;
             justify-content: space-between;
@@ -722,7 +722,7 @@
             <div class="camera-lens"></div>
         </div>
 
-        <!-- CABEÇALHO DO APP: MARCA HUB + LALUA / BOAH SHOPPING BARRA -->
+        <!-- CABEÇALHO DO APP: MARCA HUB -->
         <header class="app-top-header">
             <div class="brand-hub-combo">
                 <div class="brand-avatar">E</div>
@@ -730,7 +730,7 @@
                     <h1>
                         expedi <span class="hub-tag">HUB</span>
                     </h1>
-                    <div class="store-location">Lalua / Boah · Shopping Barra (Salvador)</div>
+                    <div class="store-location" id="app-store-location">Expedição & Doca</div>
                 </div>
             </div>
             <div class="live-status-pill" id="live-connection-tag" title="Conexão persistente com a doca">
@@ -909,7 +909,7 @@
             </div>
             <div class="success-title">Expedição 100% Liberada!</div>
             <div class="success-desc">
-                Pagamentos autorizados e liquidados na conta Asaas. Todas as cargas foram liberadas na doca da loja Shopping Barra.
+                Pagamentos autorizados e liquidados na conta Asaas. Todas as cargas foram liberadas na doca de expedição.
             </div>
 
             <div class="success-meta-box">
@@ -1292,6 +1292,18 @@
         // CARREGAMENTO INICIAL
         async function initApp() {
             updateMaxDrag();
+            try {
+                const resMe = await fetch('/api/auth/me');
+                if (resMe.ok) {
+                    const meData = await resMe.json();
+                    if (meData?.tenant) {
+                        const locEl = document.getElementById('app-store-location');
+                        if (locEl) {
+                            locEl.textContent = meData.tenant.nome_fantasia || meData.tenant.razao_social || 'Expedição & Doca';
+                        }
+                    }
+                }
+            } catch (e) {}
             await carregarDadosAprovacaoMobile();
             if (localStorage.getItem('doca_liberada') === 'true') {
                 mostrarTelaSucesso();
