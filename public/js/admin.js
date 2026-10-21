@@ -239,6 +239,7 @@ async function carregarUsuarios() {
                     <td>
                         <div class="action-group">
                             <button class="btn-table" onclick="abrirModalResetSenha('${escapeHtml(u.id)}', '${escapeHtml(u.email)}')">Redefinir Senha</button>
+                            <button class="btn-table btn-table-danger" onclick="excluirUsuario('${escapeHtml(u.id)}', '${escapeHtml(u.email)}')">Excluir</button>
                         </div>
                     </td>
                 </tr>
@@ -482,6 +483,28 @@ async function salvarResetSenha(e) {
 
         showToast("Nova senha cadastrada com sucesso!", 'success');
         fecharModalResetSenha();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+async function excluirUsuario(userId, email) {
+    if (!confirm(`Tem certeza que deseja EXCLUIR o usuário "${email}" permanentemente do sistema?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/users/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao excluir usuário.");
+
+        showToast("Usuário excluído com sucesso!", 'success');
+        await carregarUsuarios();
     } catch (err) {
         showToast(err.message, 'error');
     }

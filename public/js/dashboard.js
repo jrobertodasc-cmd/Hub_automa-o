@@ -338,6 +338,16 @@ async function carregarDadosDashboard() {
 
         const data = await res.json();
         window.currentUserProfile = data.profile || { role: 'operador' };
+        
+        // Exibe o botão Master Admin exclusivamente para SuperAdmin Master
+        const userEmail = (data.user?.email || data.profile?.email || '').toLowerCase().trim();
+        const userRole = (data.profile?.role || '').toLowerCase();
+        const isMaster = userRole === 'superadmin' || !!data.profile?.is_admin || ['jrobertodasc@gmail.com', 'grupoaliadoshubtech@gmail.com'].includes(userEmail);
+        const navMaster = document.getElementById('nav-master-admin');
+        if (navMaster) {
+            navMaster.style.display = isMaster ? 'inline-flex' : 'none';
+        }
+
         const tenant = Array.isArray(data.tenant) ? data.tenant[0] : data.tenant;
         
         const tenantName = (tenant && (tenant.nome_fantasia || tenant.razao_social || tenant.name)) || data.user.name || 'Empresa Emitente';

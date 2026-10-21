@@ -3780,7 +3780,8 @@ app.post('/api/admin/users/create', requireAuth, requireSuperAdmin, async (req, 
 
 // 9. Redefinir senha de um usuário existente
 app.post('/api/admin/users/reset-password', requireAuth, requireSuperAdmin, async (req, res) => {
-    const { userId, password } = req.body;
+    const userId = req.body.userId;
+    const password = req.body.password || req.body.newPassword;
     if (!userId || !password) {
         return res.status(400).json({ error: "Usuário e nova senha são obrigatórios." });
     }
@@ -3800,6 +3801,38 @@ app.post('/api/admin/users/reset-password', requireAuth, requireSuperAdmin, asyn
         });
 
         return res.status(200).json({ message: "Senha redefinida com sucesso!" });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// 10. Excluir usuário do sistema permanentemente
+app.post('/api/admin/users/delete', requireAuth, requireSuperAdmin, async (req, res) => {
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório." });
+    }
+
+    if (userId === req.user?.id) {
+        return res.status(400).json({ error: "Você não pode excluir sua própria conta de administrador em uso." });
+    }
+
+    try {
+        const { data: profile } = await supabase.from('profiles').select('email, name').eq('id', userId).single();
+        const userEmail = profile?.email || userId;
+
+        await supabase.from('profiles').delete().eq('id', userId);
+        const { error: authErr } = await supabase.auth.admin.deleteUser(userId);
+        if (authErr) throw authErr;
+
+        auditService.logAudit(supabase, {
+            userId: req.user?.id,
+            acao: 'EXCLUIR_USUARIO',
+            detalhe: `Usuário ${userEmail} removido pelo administrador master`,
+            ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+        });
+
+        return res.status(200).json({ message: "Usuário removido com sucesso!" });
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
