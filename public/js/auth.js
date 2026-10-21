@@ -2,6 +2,7 @@
 // Lógica de Autenticação do Cliente SaaS
 
 // Interceptador global do fetch para injetar o token JWT do Supabase
+const originalFetch = window.fetch;
 let isRedirectingToLogin = false;
 window.fetch = async function (resource, options = {}) {
     const url = typeof resource === 'string' ? resource : (resource ? resource.url : '');
