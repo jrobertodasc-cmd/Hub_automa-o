@@ -72,6 +72,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // Estado das tarefas ativas em processamento na memória para exibição em tempo real
 const activeTasks = {};

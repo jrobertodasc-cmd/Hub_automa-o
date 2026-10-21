@@ -2,7 +2,7 @@
 // Lógica de Autenticação do Cliente SaaS
 
 // Interceptador global do fetch para injetar o token JWT do Supabase
-const originalFetch = window.fetch;
+let isRedirectingToLogin = false;
 window.fetch = async function (resource, options = {}) {
     const url = typeof resource === 'string' ? resource : (resource ? resource.url : '');
     if (url && (url.startsWith('/api/') || url.includes('/api/'))) {
@@ -18,7 +18,20 @@ window.fetch = async function (resource, options = {}) {
             }
         }
     }
-    return originalFetch(resource, options);
+    const response = await originalFetch(resource, options);
+    
+    // Auto-redirecionamento caso a sessão expire ou o usuário acesse sem estar logado
+    if (response.status === 401 && !url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
+        const path = window.location.pathname;
+        if (!isRedirectingToLogin && (path.includes('dashboard') || path.includes('profile') || path.includes('admin'))) {
+            isRedirectingToLogin = true;
+            console.warn("[Auth] Sessão não autenticada (401). Redirecionando para login...");
+            localStorage.removeItem('sb_access_token');
+            const targetUrl = window.location.pathname + window.location.search;
+            window.location.href = `/login.html?redirect=${encodeURIComponent(targetUrl)}`;
+        }
+    }
+    return response;
 };
 
 const toast = document.getElementById('toast');

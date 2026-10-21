@@ -19,13 +19,20 @@ function escapeHtml(str) {
 // ==========================================
 function iniciarSSEAtualizacaoDoca() {
     try {
+        const token = localStorage.getItem('sb_access_token');
+        if (!token) {
+            console.log("[SSE Doca] Aguardando autenticação para conectar canal em tempo real.");
+            return;
+        }
+
         if (!window.EventSource) {
             console.warn("[SSE Doca] Navegador sem suporte nativo a EventSource. Usando polling de fallback.");
             setInterval(carregarCargasDocaReais, 15000);
             return;
         }
 
-        const evtSource = new EventSource('/api/events/dock');
+        const sseUrl = `/api/events/dock?token=${encodeURIComponent(token)}`;
+        const evtSource = new EventSource(sseUrl);
 
         evtSource.onmessage = function(event) {
             try {
@@ -56,8 +63,15 @@ function iniciarSSEAtualizacaoDoca() {
             }
         };
 
+        let sseErrorCount = 0;
         evtSource.onerror = function() {
-            console.warn("[SSE Doca] Conexão SSE instável. O navegador tentará reconectar automaticamente.");
+            sseErrorCount++;
+            if (sseErrorCount > 3) {
+                console.warn("[SSE Doca] Limite de tentativas SSE atingido. Pausando reconexão.");
+                evtSource.close();
+            } else {
+                console.warn("[SSE Doca] Conexão SSE instável. O navegador tentará reconectar automaticamente.");
+            }
         };
 
         // Polling leve complementar a cada 20 segundos para garantir consistência
@@ -327,8 +341,21 @@ function iniciarPollingLote(batchId) {
 
 async function carregarDadosDashboard() {
     try {
+        const token = localStorage.getItem('sb_access_token');
+        if (!token) {
+            console.warn("[Dashboard] Usuário não autenticado. Redirecionando para login...");
+            window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+            return;
+        }
+
         const res = await fetch('/api/auth/me');
         if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                console.warn("[Dashboard] Sessão não autorizada ou expirada (401). Redirecionando para login...");
+                localStorage.removeItem('sb_access_token');
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
             const tenantEl = document.getElementById('tenant-name');
             if (tenantEl) tenantEl.textContent = 'Empresa Emitente';
             const cnpjEl = document.getElementById('company-cnpj');
