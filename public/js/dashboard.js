@@ -1603,7 +1603,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// AUTORIZAÇÃO DE PAGAMENTO ASAAS (RESPONSÁVEL / DONA)
+// AUTORIZAÇÃO DE PAGAMENTO & LIQUIDAÇÃO (DIRETORIA FINANCEIRA)
 // ==========================================
 async function abrirModalAutorizacaoAsaas() {
     if (!window.activeBatchId || !window.currentBatchGuides) {
@@ -2502,9 +2502,9 @@ function solicitarLiberacaoDiretoria(nf, valor) {
     if (btn) {
         btn.disabled = true;
         btn.style.background = '#1e293b';
-        btn.innerHTML = '<span>Notificação Enviada (Aguardando Dona)</span>';
+        btn.innerHTML = '<span>Notificação Enviada (Aguardando Diretoria)</span>';
     }
-    showToast(`Notificação enviada ao App da Diretoria para a NF ${nf} (R$ ${valor})! A carga será liberada na doca assim que aprovada no celular.`, 'warning');
+    showToast(`Solicitação de alçada enviada à Diretoria Financeira para a NF ${nf} (R$ ${valor})! A carga será liberada na doca após autorização de pagamento.`, 'warning');
 }
 window.solicitarLiberacaoDiretoria = solicitarLiberacaoDiretoria;
 
@@ -2648,7 +2648,7 @@ window.imprimirGnresLoteSelecionado = imprimirGnresLoteSelecionado;
 function solicitarLiberacaoLoteSelecionado() {
     const selected = document.querySelectorAll('.cockpit-table tbody .row-select-box:checked');
     if (selected.length === 0) return;
-    showToast(`Notificação enviada ao celular da dona para autorizar as ${selected.length} cargas selecionadas!`, 'warning');
+    showToast(`Solicitação de liquidação enviada à Diretoria Financeira para autorizar as ${selected.length} guias selecionadas!`, 'warning');
 }
 window.solicitarLiberacaoLoteSelecionado = solicitarLiberacaoLoteSelecionado;
 
@@ -2908,6 +2908,12 @@ window.mudarPaginaTabela = mudarPaginaTabela;
 window.irParaPagina = irParaPagina;
 window.toggleMaisFiltros = toggleMaisFiltros;
 window.imprimirGuiasLoteIntercaladas = imprimirGuiasLoteIntercaladas;
+window.inicializarPainelFintechDoca = inicializarPainelFintechDoca;
+window.atualizarDataRemessaDoca = atualizarDataRemessaDoca;
+window.atualizarBancoRemessaDoca = atualizarBancoRemessaDoca;
+window.atualizarLinksRemessaDoca = atualizarLinksRemessaDoca;
+window.executarDownloadRemessaDoca = executarDownloadRemessaDoca;
+window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
 
 // Auto-abertura via URL param (ex: ?modal=fechamento)
 if (window.location.search.includes('modal=fechamento')) {
