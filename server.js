@@ -1901,50 +1901,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         }
 
         // Caso padrão (Itaú SISPAG)
-        // Se o usuário escolheu uma data de pagamento personalizada, gera o arquivo na hora com essa data
-        if (paymentDateChosen) {
-            const { data: batchGuides } = await supabase
-                .from('guides')
-                .select('*')
-                .eq('batch_id', batch.id)
-                .eq('tenant_id', req.tenant.id);
-
-            const dadosBancarios = {
-                cnpj: req.tenant.cnpj,
-                razaoSocial: req.tenant.razao_social,
-                agencia: req.tenant.bank_agency || '0334',
-                conta: req.tenant.bank_account || '98775',
-                dac: req.tenant.bank_dac || '7',
-                convenio: req.tenant.bank_convenio || ''
-            };
-
-            const mapped = (batchGuides || []).map(g => ({
-                codigoBarras: g.barcode,
-                valor: g.value,
-                dataVencimento: paymentDateChosen,
-                documentoOrigem: g.nf_number,
-                ufFavorecida: g.uf || 'BA'
-            }));
-
-            const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, paymentDateChosen);
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
-            return res.send(cnabText);
-        }
-
-        const remessaPath = `${req.tenant.id}/remessas/remessa_${batch.id}.txt`;
-        const { data, error: downloadError } = await supabase.storage
-            .from('tenant-storage')
-            .download(remessaPath);
-
-        if (!downloadError && data) {
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
-            const buffer = Buffer.from(await data.arrayBuffer());
-            return res.send(buffer);
-        }
-
-        // Se ainda não gerado ou não salvo no storage, gera dinamicamente agora
+        // Busca guias do lote no banco de dados e gera o CNAB 240 sempre atualizado
         const { data: batchGuides } = await supabase
             .from('guides')
             .select('*')
@@ -1960,26 +1917,28 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             convenio: req.tenant.bank_convenio || ''
         };
 
+        const dataPagamentoEfetiva = paymentDateChosen || new Date().toISOString().split('T')[0];
+
         const mapped = (batchGuides || []).map(g => ({
             codigoBarras: g.barcode,
             valor: g.value,
-            dataVencimento: g.due_date || new Date().toISOString().split('T')[0],
+            dataVencimento: g.due_date || dataPagamentoEfetiva,
             documentoOrigem: g.nf_number,
             ufFavorecida: g.uf || 'BA'
         }));
 
-        const hojeStr = new Date().toISOString().split('T')[0];
-        const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, hojeStr);
+        const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, dataPagamentoEfetiva);
 
-        // Salva no storage em background para acelerar downloads futuros
+        // Atualiza a cópia no Supabase Storage em background
+        const remessaPath = `${req.tenant.id}/remessas/remessa_${batch.id}.txt`;
         supabase.storage
             .from('tenant-storage')
-            .upload(remessaPath, Buffer.from(cnabText, 'utf-8'), { contentType: 'text/plain', upsert: true })
+            .upload(remessaPath, Buffer.from(cnabText, 'latin1'), { contentType: 'text/plain', upsert: true })
             .catch(e => console.warn('[Storage] Falha ao persistir remessa Itaú:', e.message));
 
-        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Type', 'text/plain; charset=ISO-8859-1');
         res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
-        return res.send(cnabText);
+        return res.send(Buffer.from(cnabText, 'latin1'));
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

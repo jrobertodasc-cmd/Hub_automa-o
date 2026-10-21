@@ -69,13 +69,12 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         }
     }
 
-    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout 080)
+    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout FEBRABAN / Itaú SISPAG 080)
     let headerArquivo = '';
     headerArquivo += padZero(341, 3);                              // 001-003: Banco Itaú
     headerArquivo += padZero(0, 4);                                // 004-007: Lote de Serviço
     headerArquivo += '0';                                          // 008-008: Tipo Registro (0=Header Arquivo)
-    headerArquivo += padSpace('', 6);                              // 009-014: Brancos
-    headerArquivo += padZero(86, 3);                               // 015-017: Versão do Layout do Arquivo (086)
+    headerArquivo += padSpace('', 9);                              // 009-017: Uso Exclusivo FEBRABAN (9 Brancos)
     headerArquivo += '2';                                          // 018-018: Tipo Inscrição (2=CNPJ)
     headerArquivo += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: Número CNPJ
     headerArquivo += padSpace('', 20);                             // 033-052: Código do Convênio no Banco (Brancos)
@@ -87,17 +86,18 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
     headerArquivo += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome da Empresa
     headerArquivo += padSpace("BANCO ITAU SA", 30);                // 103-132: Nome do Banco
     headerArquivo += padSpace('', 10);                             // 133-142: Uso FEBRABAN (Brancos)
-    headerArquivo += '1';                                          // 143-143: Código Remessa (1)
-    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Geração
-    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);           // 152-157: Hora de Geração
-    headerArquivo += padZero(0, 9);                                // 158-166: Zeros (Complemento de Registro)
+    headerArquivo += '1';                                          // 143-143: Código Remessa (1=Remessa)
+    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Geração (DDMMAAAA)
+    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);           // 152-157: Hora de Geração (HHMMSS)
+    headerArquivo += padZero(1, 6);                                // 158-163: NSA - Número Sequencial do Arquivo
+    headerArquivo += padZero(80, 3);                               // 164-166: Versão do Layout do Arquivo (080)
     headerArquivo += padZero(0, 5);                                // 167-171: Densidade Grav. (00000)
     headerArquivo += padSpace('', 20);                             // 172-191: Uso Banco (Brancos)
     headerArquivo += padSpace('', 20);                             // 192-211: Uso Empresa (Brancos)
     headerArquivo += padSpace('', 29);                             // 212-240: Uso FEBRABAN (Brancos)
     linhas.push(headerArquivo);
 
-    // 2. REGISTRO 1: HEADER DE LOTE (Layout 030 - Tributos)
+    // 2. REGISTRO 1: HEADER DE LOTE (Layout 030 - Tributos Forma 91)
     let headerLote = '';
     headerLote += padZero(341, 3);                                 // 001-003: Banco
     headerLote += padZero(1, 4);                                   // 004-007: Lote Sequencial
@@ -105,7 +105,7 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
     headerLote += 'C';                                             // 009-009: Operação (C=Crédito)
     headerLote += padZero(22, 2);                                  // 010-011: Tipo de Serviço (22=Tributos)
     headerLote += padZero(91, 2);                                  // 012-013: Forma Lançamento (91=GNRE com Cód. Barras)
-    headerLote += padZero(40, 3);                                  // 014-016: Layout do Lote (040)
+    headerLote += padZero(30, 3);                                  // 014-016: Layout do Lote (030 - Tributos com Cód. Barras)
     headerLote += padSpace('', 1);                                 // 017-017: Branco
     headerLote += '2';                                             // 018-018: Tipo Inscrição
     headerLote += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ Empresa
@@ -144,7 +144,11 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         segO += padZero(0, 3);                                     // 015-017: Tipo Movimento (000=Inclusão)
         segO += padSpace(guia.codigoBarras, 48);                   // 018-065: Código de Barras da Guia
         segO += padSpace("SEFAZ PE GNRE TRIBUTOS", 30);            // 066-095: Nome Concessionária/Órgão
-        segO += padZero(formatarDataCNAB(guia.dataVencimento), 8); // 096-103: Vencimento
+        
+        // Garante que a data de vencimento não vá com zeros para evitar rejeição
+        const dtVenc = formatarDataCNAB(guia.dataVencimento);
+        const vencimentoFinal = (dtVenc && dtVenc !== '00000000') ? dtVenc : dataPagamentoFormatada;
+        segO += padZero(vencimentoFinal, 8);                       // 096-103: Vencimento
         segO += 'REA';                                             // 104-106: Moeda (REA)
         segO += padZero(0, 15);                                    // 107-121: Qtd Moeda
         
