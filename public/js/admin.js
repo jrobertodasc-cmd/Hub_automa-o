@@ -1,5 +1,5 @@
 // public/js/admin.js
-// Lógica do Painel Administrativo Master (SuperAdmin) - expedi HUB SaaS
+// Master Executive Console (SuperAdmin) - expedi HUB SaaS v2.4.0
 
 let allTenants = [];
 let allUsers = [];
@@ -18,38 +18,73 @@ function showToast(msg, tipo = 'info') {
     const toast = document.getElementById('toast');
     if (!toast) return;
     toast.textContent = msg;
-    if (tipo === 'error') toast.style.background = '#EF4444';
-    else if (tipo === 'success') toast.style.background = '#10B981';
-    else toast.style.background = '#0F172A';
+    if (tipo === 'error') {
+        toast.style.background = '#EF4444';
+        toast.style.color = '#FFFFFF';
+    } else if (tipo === 'success') {
+        toast.style.background = '#10B981';
+        toast.style.color = '#FFFFFF';
+    } else {
+        toast.style.background = '#1E293B';
+        toast.style.color = '#F8FAFC';
+    }
 
     toast.style.display = 'block';
     setTimeout(() => {
         toast.style.display = 'none';
-    }, 3500);
+    }, 3800);
+}
+
+// ==========================================
+// BOOTSTRAP & VALIDAÇÃO DE ACESSO MASTER
+// ==========================================
+async function verificarSessaoSuperAdmin() {
+    try {
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) {
+            window.location.href = '/login.html?redirect=/admin.html';
+            return false;
+        }
+
+        const data = await res.json();
+        const role = (data.profile?.role || '').toLowerCase();
+        const isAdmin = !!data.profile?.is_admin;
+
+        if (role !== 'superadmin' && !isAdmin) {
+            alert('Acesso Restrito: Este painel exige privilégios de SuperAdmin Master. Redirecionando para o cockpit...');
+            window.location.href = '/dashboard.html';
+            return false;
+        }
+
+        return true;
+    } catch (e) {
+        window.location.href = '/login.html?redirect=/admin.html';
+        return false;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Carrega métricas SaaS globais
-    await carregarMetricas();
+    const isAuthed = await verificarSessaoSuperAdmin();
+    if (!isAuthed) return;
 
-    // 2. Carrega lista de empresas (Tenants)
-    await carregarEmpresas();
-
-    // 3. Carrega lista de usuários
-    await carregarUsuarios();
-
-    // 4. Carrega registros de auditoria
-    await carregarAuditoria();
+    await Promise.all([
+        carregarMetricas(),
+        carregarEmpresas(),
+        carregarUsuarios(),
+        carregarAuditoria()
+    ]);
 });
 
 // ==========================================
-// 1. CARREGAMENTO DE DADOS
+// 1. CARREGAMENTO DE MÉTRICAS & DADOS
 // ==========================================
-
 async function carregarMetricas() {
     try {
         const res = await fetch('/api/admin/metrics');
-        if (!res.ok) return;
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Falha ao carregar métricas.');
+        }
         const data = await res.json();
 
         const elTenants = document.getElementById('metric-tenants-total');
@@ -57,29 +92,39 @@ async function carregarMetricas() {
         const elGuias = document.getElementById('metric-guias-total');
         const elDifal = document.getElementById('metric-difal-total');
 
-        if (elTenants) elTenants.textContent = data.totalTenants;
-        if (elTenantsSub) elTenantsSub.textContent = `${data.ativos} ativas · ${data.bloqueados} bloqueadas`;
-        if (elGuias) elGuias.textContent = data.totalGuias.toLocaleString('pt-BR');
-        if (elDifal) elDifal.textContent = `R$ ${data.totalDifalLiquidado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        if (elTenants) elTenants.textContent = data.totalTenants ?? 0;
+        if (elTenantsSub) elTenantsSub.textContent = `${data.ativos ?? 0} ativas · ${data.bloqueados ?? 0} suspensas`;
+        if (elGuias) elGuias.textContent = (data.totalGuias ?? 0).toLocaleString('pt-BR');
+        if (elDifal) elDifal.textContent = `R$ ${(data.totalDifalLiquidado ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
     } catch (e) {
-        console.warn("Erro ao carregar métricas SaaS:", e);
+        console.warn("[Admin Console] Métricas:", e.message);
     }
 }
 
 async function carregarEmpresas() {
+    const tbody = document.getElementById('tenants-table-body');
     try {
         const res = await fetch('/api/admin/tenants');
-        if (!res.ok) throw new Error("Erro ao carregar lista de empresas.");
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Erro ao carregar lista de empresas.');
+        }
         const data = await res.json();
         allTenants = data || [];
 
-        // Atualiza tabela
-        const tbody = document.getElementById('tenants-table-body');
         if (!tbody) return;
 
         if (allTenants.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma empresa cadastrada.</td></tr>`;
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 50px;">
+                        <div style="font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px;">Nenhuma empresa cliente cadastrada ainda.</div>
+                        <p style="font-size: 13px; margin-bottom: 16px;">Cadastre seu primeiro assinante para gerar credenciais e licença.</p>
+                        <button class="btn-primary-glow" onclick="abrirModalCriarEmpresa()">+ Cadastrar Primeira Empresa</button>
+                    </td>
+                </tr>
+            `;
             return;
         }
 
@@ -87,43 +132,55 @@ async function carregarEmpresas() {
             const status = (t.status || t.subscription_status || 'ativo').toLowerCase();
             const isAtivo = status === 'ativo';
             const statusBadge = isAtivo 
-                ? `<span class="badge-status status-active">🟢 Ativa</span>`
-                : `<span class="badge-status status-blocked">🔴 Bloqueada</span>`;
+                ? `<span class="badge badge-active"><span class="pulse-dot"></span> ATIVA</span>`
+                : `<span class="badge badge-blocked">SUSPENSA</span>`;
 
             const plano = (t.plano || 'pro').toLowerCase();
-            const planoBadge = `<span class="badge-plan plan-${plano}">${plano.toUpperCase()}</span>`;
+            const planoBadge = `<span class="badge badge-plan-${plano}">${plano.toUpperCase()}</span>`;
 
             const limite = t.limite_guias_mes || t.plan_limit_guides || 1000;
             const usadas = t.guias_usadas_mes || 0;
             const pct = limite > 0 ? Math.min(100, Math.round((usadas / limite) * 100)) : 0;
+            const barColor = pct > 90 ? '#EF4444' : pct > 70 ? '#F59E0B' : '#3B82F6';
 
-            const toggleActionText = isAtivo ? 'Bloquear' : 'Desbloquear';
-            const toggleActionClass = isAtivo ? 'btn-sm-danger' : 'btn-sm-success';
+            const toggleActionText = isAtivo ? 'Bloquear' : 'Reativar';
+            const toggleActionClass = isAtivo ? 'btn-table-danger' : 'btn-table';
             const novoStatus = isAtivo ? 'bloqueado' : 'ativo';
 
             return `
                 <tr>
                     <td>
-                        <div class="cell-company">${escapeHtml(t.razao_social || 'Sem Razão Social')}</div>
-                        <div class="cell-sub">CNPJ: ${escapeHtml(t.cnpj || '-')} ${t.nome_fantasia ? '· ' + escapeHtml(t.nome_fantasia) : ''}</div>
+                        <div style="font-weight: 700; color: #fff; font-size: 14px;">${escapeHtml(t.razao_social || 'Sem Razão Social')}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                            ${t.nome_fantasia ? escapeHtml(t.nome_fantasia) + ' · ' : ''}
+                            ${t.email_admin ? escapeHtml(t.email_admin) : 'Sem e-mail cadastrado'}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="mono" style="color: #94A3B8;">${escapeHtml(formatarCnpj(t.cnpj))}</span>
                     </td>
                     <td>${planoBadge}</td>
                     <td>
-                        <div style="font-size: 12.5px; font-weight: 700; color: var(--navy-dark);">${usadas} / ${limite} guias</div>
-                        <div style="width: 120px; height: 5px; background: #E2E8F0; border-radius: 3px; margin-top: 4px; overflow: hidden;">
-                            <div style="width: ${pct}%; height: 100%; background: ${pct > 90 ? '#EF4444' : '#2563EB'};"></div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; color: #E2E8F0; margin-bottom: 5px;">
+                            <span>${usadas} / ${limite} NFs</span>
+                            <span style="color: var(--text-muted);">${pct}%</span>
+                        </div>
+                        <div style="width: 140px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+                            <div style="width: ${pct}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
                         </div>
                     </td>
                     <td>${statusBadge}</td>
-                    <td style="text-align: right;">
-                        <button class="btn-sm" onclick="abrirModalAlterarPlano('${escapeHtml(t.id)}', '${escapeHtml(t.razao_social)}', '${plano}', ${limite})">⚡ Plano</button>
-                        <button class="btn-sm ${toggleActionClass}" onclick="alternarStatusEmpresa('${escapeHtml(t.id)}', '${novoStatus}')">${toggleActionText}</button>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn-table" onclick="abrirModalAlterarPlano('${escapeHtml(t.id)}', '${escapeHtml(t.razao_social)}', '${plano}', ${limite})">Editar Plano</button>
+                            <button class="btn-table ${toggleActionClass}" onclick="alternarStatusEmpresa('${escapeHtml(t.id)}', '${novoStatus}')">${toggleActionText}</button>
+                        </div>
                     </td>
                 </tr>
             `;
         }).join('');
 
-        // Popula select de empresas no modal de criar usuário
+        // Atualiza seletor de empresas no modal de usuários
         const selectTenant = document.getElementById('user-tenant');
         if (selectTenant) {
             selectTenant.innerHTML = allTenants.map(t => `
@@ -132,94 +189,125 @@ async function carregarEmpresas() {
         }
 
     } catch (e) {
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #EF4444; padding: 30px;">${escapeHtml(e.message)}</td></tr>`;
+        }
         showToast(e.message, 'error');
     }
 }
 
 async function carregarUsuarios() {
+    const tbody = document.getElementById('users-table-body');
     try {
         const res = await fetch('/api/admin/users');
-        if (!res.ok) throw new Error("Erro ao carregar usuários.");
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Erro ao carregar usuários.');
+        }
         const data = await res.json();
         allUsers = data || [];
 
-        const tbody = document.getElementById('users-table-body');
         if (!tbody) return;
 
         if (allUsers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum usuário cadastrado.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhum usuário cadastrado.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = allUsers.map(u => {
             const role = (u.role || (u.is_admin ? 'admin' : 'operador')).toLowerCase();
             let roleBadge = '';
-            if (role === 'superadmin') roleBadge = '<span class="badge-role role-superadmin">👑 SuperAdmin Master</span>';
-            else if (role === 'admin') roleBadge = '<span class="badge-role role-admin">🛡️ Admin Loja</span>';
-            else if (role === 'diretoria' || role === 'financeiro') roleBadge = '<span class="badge-role role-diretoria">💼 Diretoria / Fin.</span>';
-            else roleBadge = '<span class="badge-role role-operador">📦 Operador Doca</span>';
+            if (role === 'superadmin') roleBadge = '<span class="badge badge-plan-enterprise">SuperAdmin Master</span>';
+            else if (role === 'admin') roleBadge = '<span class="badge badge-plan-starter">Admin da Loja</span>';
+            else if (role === 'diretoria' || role === 'financeiro') roleBadge = '<span class="badge badge-plan-pro">Diretoria / Fin.</span>';
+            else roleBadge = '<span class="badge badge-plan-trial">Operador de Doca</span>';
 
-            const empresaNome = u.tenants ? u.tenants.razao_social : 'Global / Sem Vínculo';
+            const empresaNome = u.tenants ? u.tenants.razao_social : 'Acesso Global';
 
             return `
                 <tr>
-                    <td style="font-weight: 700; color: var(--navy-dark);">${escapeHtml(u.name || '-')}</td>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted);">${escapeHtml(u.email)}</td>
-                    <td>${escapeHtml(empresaNome)}</td>
+                    <td>
+                        <div style="font-weight: 700; color: #fff;">${escapeHtml(u.name || 'Sem Nome')}</div>
+                    </td>
+                    <td>
+                        <span class="mono" style="color: #94A3B8;">${escapeHtml(u.email)}</span>
+                    </td>
+                    <td>
+                        <span style="color: #E2E8F0; font-weight: 500;">${escapeHtml(empresaNome)}</span>
+                    </td>
                     <td>${roleBadge}</td>
-                    <td style="text-align: right;">
-                        <button class="btn-sm" onclick="abrirModalResetSenha('${escapeHtml(u.id)}', '${escapeHtml(u.email)}')">🔑 Nova Senha</button>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn-table" onclick="abrirModalResetSenha('${escapeHtml(u.id)}', '${escapeHtml(u.email)}')">Redefinir Senha</button>
+                        </div>
                     </td>
                 </tr>
             `;
         }).join('');
 
     } catch (e) {
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #EF4444; padding: 30px;">${escapeHtml(e.message)}</td></tr>`;
+        }
         showToast(e.message, 'error');
     }
 }
 
 async function carregarAuditoria() {
+    const tbody = document.getElementById('audit-table-body');
     try {
         const res = await fetch('/api/admin/audit-logs?limit=40');
         if (!res.ok) return;
         const logs = await res.json();
 
-        const tbody = document.getElementById('audit-table-body');
         if (!tbody) return;
 
         if (!logs || logs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum registro de auditoria encontrado.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhum registro de auditoria gravado.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = logs.map(l => {
             const dataFmt = new Date(l.created_at).toLocaleString('pt-BR');
-            const empresaNome = l.tenants?.razao_social || 'Sistema Geral';
+            const empresaNome = l.tenants?.razao_social || 'Cluster Global';
 
             return `
                 <tr>
-                    <td style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">${dataFmt}</td>
-                    <td><span class="badge-plan plan-starter" style="font-size: 10px;">${escapeHtml(l.acao)}</span></td>
-                    <td style="font-size: 12px; font-weight: 600;">${escapeHtml(empresaNome)}</td>
-                    <td style="font-size: 12px; color: #475569; max-width: 400px; word-break: break-word;">${escapeHtml(l.detalhe || '-')}</td>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted);">${escapeHtml(l.ip_address || '127.0.0.1')}</td>
+                    <td class="mono" style="color: var(--text-muted); font-size: 12px; white-space: nowrap;">${dataFmt}</td>
+                    <td>
+                        <span class="badge badge-plan-pro">${escapeHtml(l.acao || 'OPERACAO')}</span>
+                    </td>
+                    <td style="color: #fff; font-weight: 500;">${escapeHtml(empresaNome)}</td>
+                    <td style="color: var(--text-secondary); max-width: 450px;">${escapeHtml(l.detalhe || '-')}</td>
+                    <td class="mono" style="color: var(--text-muted); font-size: 11.5px;">${escapeHtml(l.ip_address || '127.0.0.1')}</td>
                 </tr>
             `;
         }).join('');
 
     } catch (e) {
-        console.warn("Erro ao carregar auditoria:", e);
+        console.warn("[Admin Console] Auditoria:", e.message);
     }
+}
+
+// Formatação auxiliar de CNPJ
+function formatarCnpj(cnpj) {
+    if (!cnpj) return '-';
+    const c = String(cnpj).replace(/\D/g, '');
+    if (c.length === 14) {
+        return c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    }
+    return cnpj;
 }
 
 // ==========================================
 // 2. AÇÕES DE GESTÃO (TENANTS & USERS)
 // ==========================================
-
 async function alternarStatusEmpresa(tenantId, novoStatus) {
-    const acaoTxt = novoStatus === 'ativo' ? 'DESBLOQUEAR' : 'BLOQUEAR';
-    if (!confirm(`Deseja realmente ${acaoTxt} a licença desta empresa?`)) return;
+    const confirmMsg = novoStatus === 'bloqueado'
+        ? "Tem certeza que deseja SUSPENDER esta empresa? Os operadores não conseguirão faturar até a reativação."
+        : "Reativar a licença operacional desta empresa?";
+
+    if (!confirm(confirmMsg)) return;
 
     try {
         const res = await fetch('/api/admin/tenants/status', {
@@ -227,13 +315,13 @@ async function alternarStatusEmpresa(tenantId, novoStatus) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tenantId, status: novoStatus })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
 
-        showToast(data.message, 'success');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao atualizar status da empresa.");
+
+        showToast(data.message || "Status da empresa atualizado!", 'success');
         await carregarEmpresas();
         await carregarMetricas();
-        await carregarAuditoria();
     } catch (e) {
         showToast(e.message, 'error');
     }
@@ -244,53 +332,54 @@ function abrirModalAlterarPlano(tenantId, razaoSocial, planoAtual, limiteAtual) 
     document.getElementById('edit-plano-nome').textContent = razaoSocial;
     document.getElementById('edit-plano-tipo').value = planoAtual;
     document.getElementById('edit-plano-limite').value = limiteAtual;
-    document.getElementById('modal-alterar-plano').style.display = 'flex';
+    document.getElementById('modal-alterar-plano').classList.add('active');
 }
 
 function fecharModalAlterarPlano() {
-    document.getElementById('modal-alterar-plano').style.display = 'none';
+    document.getElementById('modal-alterar-plano').classList.remove('active');
 }
 
 function ajustarLimiteEditPlano() {
-    const plano = document.getElementById('edit-plano-tipo').value;
+    const tipo = document.getElementById('edit-plano-tipo').value;
     const inputLimite = document.getElementById('edit-plano-limite');
-    if (plano === 'trial') inputLimite.value = 50;
-    else if (plano === 'starter') inputLimite.value = 300;
-    else if (plano === 'pro') inputLimite.value = 1500;
-    else if (plano === 'enterprise') inputLimite.value = 10000;
+    if (tipo === 'trial') inputLimite.value = 50;
+    else if (tipo === 'starter') inputLimite.value = 300;
+    else if (tipo === 'pro') inputLimite.value = 1500;
+    else if (tipo === 'enterprise') inputLimite.value = 10000;
 }
 
-async function salvarAlteracaoPlano(event) {
-    event.preventDefault();
+async function salvarAlteracaoPlano(e) {
+    e.preventDefault();
     const tenantId = document.getElementById('edit-plano-tenant-id').value;
     const plano = document.getElementById('edit-plano-tipo').value;
-    const limite_guias_mes = document.getElementById('edit-plano-limite').value;
+    const limite = document.getElementById('edit-plano-limite').value;
 
     try {
         const res = await fetch('/api/admin/tenants/plan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tenantId, plano, limite_guias_mes })
+            body: JSON.stringify({ tenantId, plano, limite_guias_mes: limite })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
 
-        showToast(data.message, 'success');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao atualizar plano.");
+
+        showToast("Assinatura atualizada com sucesso!", 'success');
         fecharModalAlterarPlano();
         await carregarEmpresas();
-        await carregarAuditoria();
-    } catch (e) {
-        showToast(e.message, 'error');
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }
 
 function abrirModalCriarEmpresa() {
-    document.getElementById('modal-criar-empresa').style.display = 'flex';
+    document.getElementById('form-criar-empresa').reset();
+    ajustarLimitePadraoPlano();
+    document.getElementById('modal-criar-empresa').classList.add('active');
 }
 
 function fecharModalCriarEmpresa() {
-    document.getElementById('modal-criar-empresa').style.display = 'none';
-    document.getElementById('form-criar-empresa').reset();
+    document.getElementById('modal-criar-empresa').classList.remove('active');
 }
 
 function ajustarLimitePadraoPlano() {
@@ -302,8 +391,8 @@ function ajustarLimitePadraoPlano() {
     else if (plano === 'enterprise') inputLimite.value = 10000;
 }
 
-async function salvarNovaEmpresa(event) {
-    event.preventDefault();
+async function salvarNovaEmpresa(e) {
+    e.preventDefault();
     const cnpj = document.getElementById('empresa-cnpj').value;
     const razao_social = document.getElementById('empresa-razao').value;
     const nome_fantasia = document.getElementById('empresa-fantasia').value;
@@ -317,128 +406,105 @@ async function salvarNovaEmpresa(event) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cnpj, razao_social, nome_fantasia, email_admin, plano, limite_guias_mes })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
 
-        showToast("Empresa cadastrada e ativada com sucesso!", 'success');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao cadastrar empresa.");
+
+        showToast("Empresa cadastrada com sucesso!", 'success');
         fecharModalCriarEmpresa();
         await carregarEmpresas();
         await carregarMetricas();
-        await carregarAuditoria();
-    } catch (e) {
-        showToast(e.message, 'error');
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }
 
 function abrirModalCriarUsuario() {
-    document.getElementById('modal-criar-usuario').style.display = 'flex';
+    document.getElementById('form-criar-usuario').reset();
+    document.getElementById('modal-criar-usuario').classList.add('active');
 }
 
 function fecharModalCriarUsuario() {
-    document.getElementById('modal-criar-usuario').style.display = 'none';
-    document.getElementById('form-criar-usuario').reset();
+    document.getElementById('modal-criar-usuario').classList.remove('active');
 }
 
-async function salvarNovoUsuario(event) {
-    event.preventDefault();
+async function salvarNovoUsuario(e) {
+    e.preventDefault();
     const name = document.getElementById('user-nome').value;
     const email = document.getElementById('user-email').value;
     const password = document.getElementById('user-senha').value;
-    const tenantId = document.getElementById('user-tenant').value;
+    const tenant_id = document.getElementById('user-tenant').value;
     const role = document.getElementById('user-role').value;
 
     try {
         const res = await fetch('/api/admin/users/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, tenantId, role })
+            body: JSON.stringify({ name, email, password, tenant_id, role })
         });
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        if (!res.ok) throw new Error(data.error || "Erro ao criar usuário.");
 
         showToast("Usuário cadastrado com sucesso!", 'success');
         fecharModalCriarUsuario();
         await carregarUsuarios();
-        await carregarAuditoria();
-    } catch (e) {
-        showToast(e.message, 'error');
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }
 
 function abrirModalResetSenha(userId, email) {
     document.getElementById('reset-user-id').value = userId;
     document.getElementById('reset-user-email-display').textContent = email;
-    document.getElementById('modal-reset-senha').style.display = 'flex';
+    document.getElementById('reset-nova-senha').value = '';
+    document.getElementById('modal-reset-senha').classList.add('active');
 }
 
 function fecharModalResetSenha() {
-    document.getElementById('modal-reset-senha').style.display = 'none';
-    document.getElementById('form-reset-senha').reset();
+    document.getElementById('modal-reset-senha').classList.remove('active');
 }
 
-async function salvarResetSenha(event) {
-    event.preventDefault();
+async function salvarResetSenha(e) {
+    e.preventDefault();
     const userId = document.getElementById('reset-user-id').value;
-    const password = document.getElementById('reset-nova-senha').value;
+    const newPassword = document.getElementById('reset-nova-senha').value;
 
     try {
         const res = await fetch('/api/admin/users/reset-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, password })
+            body: JSON.stringify({ userId, newPassword })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
 
-        showToast("Senha alterada com sucesso!", 'success');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao redefinir senha.");
+
+        showToast("Nova senha cadastrada com sucesso!", 'success');
         fecharModalResetSenha();
-        await carregarAuditoria();
-    } catch (e) {
-        showToast(e.message, 'error');
+    } catch (err) {
+        showToast(err.message, 'error');
     }
 }
-
-// ==========================================
-// 3. CONTROLE DE ABAS E LOGOUT
-// ==========================================
 
 function trocarAbaAdmin(aba) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
-    if (aba === 'tenants') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('tab-tenants').classList.add('active');
-    } else if (aba === 'users') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-users').classList.add('active');
-    } else if (aba === 'audit') {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('tab-audit').classList.add('active');
-        carregarAuditoria();
-    }
+    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(aba));
+    if (btn) btn.classList.add('active');
+
+    const pane = document.getElementById(`tab-${aba}`);
+    if (pane) pane.classList.add('active');
 }
 
-function logout() {
-    document.cookie = "sb_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+async function logoutAdmin() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+        // Fallback
+    }
     localStorage.removeItem('sb_access_token');
+    document.cookie = 'sb_access_token=; Max-Age=0; path=/;';
     window.location.href = '/login.html';
 }
-
-window.trocarAbaAdmin = trocarAbaAdmin;
-window.abrirModalCriarEmpresa = abrirModalCriarEmpresa;
-window.fecharModalCriarEmpresa = fecharModalCriarEmpresa;
-window.salvarNovaEmpresa = salvarNovaEmpresa;
-window.abrirModalAlterarPlano = abrirModalAlterarPlano;
-window.fecharModalAlterarPlano = fecharModalAlterarPlano;
-window.ajustarLimiteEditPlano = ajustarLimiteEditPlano;
-window.salvarAlteracaoPlano = salvarAlteracaoPlano;
-window.abrirModalCriarUsuario = abrirModalCriarUsuario;
-window.fecharModalCriarUsuario = fecharModalCriarUsuario;
-window.salvarNovoUsuario = salvarNovoUsuario;
-window.abrirModalResetSenha = abrirModalResetSenha;
-window.fecharModalResetSenha = fecharModalResetSenha;
-window.salvarResetSenha = salvarResetSenha;
-window.alternarStatusEmpresa = alternarStatusEmpresa;
-window.carregarAuditoria = carregarAuditoria;
-window.logout = logout;

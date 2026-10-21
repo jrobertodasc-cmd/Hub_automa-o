@@ -4,36 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>expedi HUB — Painel Administrativo Master (SaaS)</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <title>expedi HUB — Master Executive Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-blue: #2563EB;
-            --primary-dark: #1D4ED8;
-            --navy-dark: #0F172A;
-            --navy-surface: #1E293B;
-            --border-ui: #E2E8F0;
-            --bg-light: #F8FAFC;
-            --text-main: #0F172A;
+            --bg-base: #0B0F19;
+            --bg-surface: #111827;
+            --bg-card: #141E33;
+            --bg-card-hover: #192540;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-focus: #3B82F6;
+            
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
             --text-muted: #64748B;
-            --ok-green: #10B981;
-            --err-red: #EF4444;
-            --warn-amber: #F59E0B;
+            
+            --brand-blue: #2563EB;
+            --brand-indigo: #4F46E5;
+            --brand-cyan: #06B6D4;
+            --accent-green: #10B981;
+            --accent-green-glow: rgba(16, 185, 129, 0.15);
+            --accent-amber: #F59E0B;
+            --accent-amber-glow: rgba(245, 158, 11, 0.15);
+            --accent-red: #EF4444;
+            --accent-red-glow: rgba(239, 68, 68, 0.15);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 25px -5px rgba(37, 99, 235, 0.25);
         }
 
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        .admin-header {
-            background: #ffffff;
-            border-bottom: 1px solid var(--border-ui);
-            padding: 16px 32px;
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* TOP NAVIGATION EXECUTIVE */
+        .top-nav {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            height: 64px;
+            padding: 0 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -42,392 +67,491 @@
             z-index: 100;
         }
 
-        .admin-brand {
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #2563EB, #4F46E5);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 17px;
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+        }
+
+        .brand-meta h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-tag {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: #000;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .brand-meta p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .nav-actions {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .admin-brand-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #1E293B, #0F172A);
-            color: #ffffff;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 16px;
-            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
-        }
-
-        .admin-brand-text h1 {
-            font-size: 16px;
-            font-weight: 800;
-            margin: 0;
-            color: var(--navy-dark);
-            letter-spacing: -0.3px;
-        }
-
-        .admin-brand-text span {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .admin-nav {
+        .pulse-live {
             display: flex;
             align-items: center;
             gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-green);
         }
 
-        .admin-nav a, .admin-nav button {
-            text-decoration: none;
-            color: var(--text-muted);
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulseAnim 2s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.8; }
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
             font-size: 13px;
             font-weight: 600;
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
             transition: all 0.15s ease;
-            background: transparent;
-            border: none;
             cursor: pointer;
         }
 
-        .admin-nav a:hover, .admin-nav button:hover {
-            color: var(--primary-blue);
-            background: #EFF6FF;
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .admin-nav a.active {
-            color: var(--primary-blue);
-            background: #DBEAFE;
-            font-weight: 700;
+        .btn-primary-glow {
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-indigo));
+            border: none;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+            transition: all 0.15s ease;
         }
 
-        .main-container {
-            max-width: 1400px;
-            margin: 28px auto;
-            padding: 0 24px;
+        .btn-primary-glow:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.5);
         }
 
-        /* METRIC CARDS */
+        /* CONTAINER */
+        .container {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 28px 24px 80px;
+        }
+
+        /* METRICS GRID */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 16px;
             margin-bottom: 28px;
         }
 
         .metric-card {
-            background: #ffffff;
-            border: 1px solid var(--border-ui);
-            border-radius: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
             padding: 20px 22px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: border-color 0.2s, transform 0.2s;
         }
 
-        .metric-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .metric-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
         }
 
-        .metric-card-title {
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+        }
+
+        .metric-label {
             font-size: 12px;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .metric-card-icon {
+        .metric-icon-wrap {
             width: 32px;
             height: 32px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
         }
 
-        .metric-val {
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 28px;
-            font-weight: 800;
-            color: var(--navy-dark);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 12px 0 6px;
             letter-spacing: -0.5px;
         }
 
         .metric-sub {
-            font-size: 12px;
-            color: var(--text-muted);
+            font-size: 12.5px;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
-        /* TABS */
-        .tab-bar {
+        /* SEGMENTED TAB CONTROLLER */
+        .tab-controller {
             display: flex;
             align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid var(--border-ui);
+            gap: 6px;
+            background: rgba(17, 24, 39, 0.7);
+            border: 1px solid var(--border-subtle);
+            padding: 5px;
+            border-radius: var(--radius-md);
             margin-bottom: 24px;
+            width: fit-content;
         }
 
         .tab-btn {
-            background: none;
+            background: transparent;
             border: none;
-            border-bottom: 2.5px solid transparent;
-            padding: 12px 18px;
-            font-size: 14px;
+            color: var(--text-secondary);
+            font-size: 13.5px;
             font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn svg {
+            stroke: var(--text-muted);
+            transition: stroke 0.15s ease;
         }
 
         .tab-btn:hover {
-            color: var(--navy-dark);
+            color: var(--text-primary);
         }
 
         .tab-btn.active {
-            color: var(--primary-blue);
-            border-bottom-color: var(--primary-blue);
-            font-weight: 700;
+            background: #1E293B;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
+        .tab-btn.active svg {
+            stroke: var(--brand-cyan);
+        }
+
+        /* CONTENT SECTIONS */
         .tab-pane {
             display: none;
         }
 
         .tab-pane.active {
             display: block;
+            animation: fadeIn 0.25s ease-out;
         }
 
-        /* CARDS & TABLES */
-        .section-card {
-            background: #ffffff;
-            border: 1px solid var(--border-ui);
-            border-radius: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            box-shadow: var(--shadow-card);
         }
 
-        .section-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border-ui);
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: rgba(20, 30, 51, 0.3);
         }
 
-        .section-title {
+        .panel-title h2 {
             font-size: 16px;
             font-weight: 700;
-            color: var(--navy-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            letter-spacing: -0.2px;
         }
 
-        .btn-action-primary {
-            background: var(--primary-blue);
-            color: #ffffff;
-            border: none;
-            padding: 8px 16px;
+        .panel-title p {
             font-size: 13px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.15s ease;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        .btn-action-primary:hover {
-            background: var(--primary-dark);
+        /* TABLES */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
         }
 
-        .data-table {
+        table.admin-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-        }
-
-        .data-table th {
-            background: #F8FAFC;
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border-ui);
-        }
-
-        .data-table td {
-            padding: 14px 20px;
             font-size: 13px;
-            border-bottom: 1px solid #F1F5F9;
-            color: #334155;
+        }
+
+        table.admin-table th {
+            padding: 13px 22px;
+            background: #0E1626;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.6px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        table.admin-table td {
+            padding: 15px 22px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
             vertical-align: middle;
         }
 
-        .data-table tr:hover td {
-            background: #F8FAFC;
+        table.admin-table tbody tr {
+            transition: background 0.15s ease;
         }
 
-        .cell-company {
-            font-weight: 700;
-            color: var(--navy-dark);
+        table.admin-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.025);
         }
 
-        .cell-sub {
-            font-size: 11.5px;
-            color: var(--text-muted);
-            margin-top: 2px;
+        .mono {
             font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
         }
 
         /* BADGES */
-        .badge-plan {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .plan-trial { background: #F1F5F9; color: #475569; }
-        .plan-starter { background: #EFF6FF; color: #2563EB; }
-        .plan-pro { background: #F0FDF4; color: #16A34A; }
-        .plan-enterprise { background: #FAF5FF; color: #9333EA; border: 1px solid #E9D5FF; }
-
-        .badge-status {
+        .badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
         }
 
-        .status-active { background: #ECFDF5; color: #059669; }
-        .status-blocked { background: #FEF2F2; color: #DC2626; }
+        .badge-active {
+            background: var(--accent-green-glow);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
 
-        .badge-role {
-            display: inline-flex;
+        .badge-blocked {
+            background: var(--accent-red-glow);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-plan-trial {
+            background: rgba(148, 163, 184, 0.15);
+            color: #CBD5E1;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .badge-plan-starter {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-plan-pro {
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .badge-plan-enterprise {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        /* ACTION BUTTONS IN TABLE */
+        .action-group {
+            display: flex;
             align-items: center;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
-            background: #F1F5F9;
-            color: #334155;
+            justify-content: flex-end;
+            gap: 8px;
         }
 
-        .role-operador { background: #F3F4F6; color: #4B5563; }
-        .role-diretoria { background: #FEF3C7; color: #B45309; font-weight: 700; }
-        .role-admin { background: #DBEAFE; color: #1D4ED8; font-weight: 700; }
-        .role-superadmin { background: #FDF4FF; color: #C026D3; font-weight: 800; }
-
-        /* BUTTONS */
-        .btn-sm {
-            padding: 5px 10px;
+        .btn-table {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
             font-size: 12px;
             font-weight: 600;
-            border-radius: 6px;
-            border: 1px solid var(--border-ui);
-            background: #ffffff;
+            padding: 5px 11px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.15s ease;
         }
 
-        .btn-sm:hover {
-            border-color: #CBD5E1;
-            background: #F8FAFC;
+        .btn-table:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
         }
 
-        .btn-sm-danger {
-            color: #DC2626;
-            border-color: #FECACA;
-            background: #FEF2F2;
-        }
-        .btn-sm-danger:hover {
-            background: #FEE2E2;
+        .btn-table-danger {
+            color: #F87171;
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.08);
         }
 
-        .btn-sm-success {
-            color: #16A34A;
-            border-color: #BBF7D0;
-            background: #F0FDF4;
-        }
-        .btn-sm-success:hover {
-            background: #DCFCE7;
+        .btn-table-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--accent-red);
+            color: #fff;
         }
 
-        /* MODAL */
+        /* MODALS */
         .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(4px);
             display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            padding: 20px;
         }
 
-        .modal-content {
-            background: #ffffff;
-            width: 100%;
-            max-width: 480px;
-            border-radius: 14px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
+        .modal.active {
+            display: flex;
             animation: modalFadeIn 0.2s ease-out;
         }
 
         @keyframes modalFadeIn {
-            from { transform: scale(0.96); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
         }
 
         .modal-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border-ui);
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: rgba(20, 30, 51, 0.4);
         }
 
         .modal-title {
             font-size: 15px;
             font-weight: 700;
-            color: var(--navy-dark);
+            color: var(--text-primary);
         }
 
-        .modal-close {
-            background: none;
+        .modal-close-btn {
+            background: transparent;
             border: none;
-            font-size: 18px;
             color: var(--text-muted);
             cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .modal-body {
@@ -435,233 +559,305 @@
         }
 
         .form-group {
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
+            display: block;
             font-size: 12.5px;
             font-weight: 600;
-            color: #334155;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
         }
 
         .form-control {
             width: 100%;
-            box-sizing: border-box;
-            padding: 10px 12px;
-            border: 1px solid var(--border-ui);
-            border-radius: 8px;
+            background: #0B0F19;
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: #fff;
             font-size: 13.5px;
             font-family: inherit;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
 
         .form-control:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
 
         .toast-msg {
+            display: none;
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: var(--navy-dark);
-            color: #ffffff;
+            background: #1E293B;
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            font-size: 13.5px;
+            font-weight: 500;
             padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            display: none;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             z-index: 2000;
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-nav {
+                padding: 0 16px;
+            }
+            .container {
+                padding: 16px 12px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER SUPERADMIN -->
-    <header class="admin-header">
-        <div class="admin-brand">
-            <div class="admin-brand-icon">⚡</div>
-            <div class="admin-brand-text">
-                <h1>expedi HUB · Painel Master SaaS</h1>
-                <span>Gestão Comercial, Licenciamento & Auditoria LGPD</span>
+    <!-- TOP HEADER -->
+    <header class="top-nav">
+        <div class="brand-section">
+            <div class="brand-badge">E</div>
+            <div class="brand-meta">
+                <h1>expedi HUB <span class="role-tag">SuperAdmin Master</span></h1>
+                <p>Governança Multi-Tenant & Licenciamento Fiscal</p>
             </div>
         </div>
-        <nav class="admin-nav">
-            <a href="/dashboard.html">Ir para Doca</a>
-            <a href="/admin.html" class="active">Painel Master</a>
-            <button onclick="logout()">Sair</button>
-        </nav>
+
+        <div class="nav-actions">
+            <div class="pulse-live">
+                <div class="pulse-dot"></div>
+                <span>Cluster Operacional v2.4.0</span>
+            </div>
+
+            <a href="/dashboard.html" class="btn-ghost" title="Acessar Cockpit de Expedição">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>Ir para Doca</span>
+            </a>
+
+            <button onclick="logoutAdmin()" class="btn-ghost" style="color: #F87171; border-color: rgba(239, 68, 68, 0.25);" title="Encerrar Sessão">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Sair</span>
+            </button>
+        </div>
     </header>
 
-    <main class="main-container">
+    <div class="container">
 
-        <!-- METRIC CARDS GLOBAIS -->
-        <div class="metrics-grid">
+        <!-- METRICS EXECUTIVE BAR -->
+        <section class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <span class="metric-card-title">Empresas (Tenants)</span>
-                    <span class="metric-card-icon" style="background: #EFF6FF; color: #2563EB;">🏢</span>
+                <div class="metric-label">
+                    <span>Empresas Clientes</span>
+                    <div class="metric-icon-wrap" style="background: rgba(37, 99, 235, 0.15); color: #60A5FA;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="22.01"></line><line x1="15" y1="22" x2="15.01"></line><line x1="8" y1="6" x2="8.01" y2="6"></line><line x1="16" y1="6" x2="16.01" y2="6"></line><line x1="8" y1="10" x2="8.01" y2="10"></line><line x1="16" y1="10" x2="16.01" y2="10"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="16" y1="14" x2="16.01" y2="14"></line><line x1="8" y1="18" x2="8.01" y2="18"></line><line x1="16" y1="18" x2="16.01" y2="18"></line></svg>
+                    </div>
                 </div>
-                <div class="metric-val" id="metric-tenants-total">-</div>
+                <div class="metric-value" id="metric-tenants-total">-</div>
                 <div class="metric-sub" id="metric-tenants-sub">Carregando status...</div>
             </div>
 
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <span class="metric-card-title">NFs Processadas (Mês)</span>
-                    <span class="metric-card-icon" style="background: #F0FDF4; color: #16A34A;">📦</span>
+                <div class="metric-label">
+                    <span>Notas Fiscais Processadas</span>
+                    <div class="metric-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #34D399;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                    </div>
                 </div>
-                <div class="metric-val" id="metric-guias-total">-</div>
-                <div class="metric-sub">Todas as empresas assinantes</div>
+                <div class="metric-value" id="metric-guias-total">-</div>
+                <div class="metric-sub">Consumo consolidado de todas as empresas</div>
             </div>
 
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <span class="metric-card-title">DIFAL Movimentado</span>
-                    <span class="metric-card-icon" style="background: #FEF3C7; color: #D97706;">💰</span>
+                <div class="metric-label">
+                    <span>DIFAL Total Liquidado</span>
+                    <div class="metric-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    </div>
                 </div>
-                <div class="metric-val" id="metric-difal-total">R$ 0,00</div>
-                <div class="metric-sub">Liquidado via SISBACEN / Asaas</div>
+                <div class="metric-value" id="metric-difal-total">R$ 0,00</div>
+                <div class="metric-sub">Automação bancária SISBACEN / Asaas</div>
             </div>
 
             <div class="metric-card">
-                <div class="metric-card-header">
-                    <span class="metric-card-title">Conformidade LGPD</span>
-                    <span class="metric-card-icon" style="background: #FAF5FF; color: #9333EA;">🛡️</span>
+                <div class="metric-label">
+                    <span>Blindagem & LGPD</span>
+                    <div class="metric-icon-wrap" style="background: rgba(139, 92, 246, 0.15); color: #A78BFA;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
                 </div>
-                <div class="metric-val" style="font-size: 20px; color: #16A34A; margin-top: 6px;">Ativa (100%)</div>
-                <div class="metric-sub">Auditoria & Mascaramento</div>
+                <div class="metric-value" style="color: var(--accent-green); font-size: 24px;">Ativa (100%)</div>
+                <div class="metric-sub">Row Level Security & AES-256 no Supabase</div>
             </div>
-        </div>
+        </section>
 
-        <!-- ABAS DE NAVEGAÇÃO -->
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="trocarAbaAdmin('tenants')">🏢 Empresas & Planos</button>
-            <button class="tab-btn" onclick="trocarAbaAdmin('users')">👥 Usuários & Permissões (RBAC)</button>
-            <button class="tab-btn" onclick="trocarAbaAdmin('audit')">🛡️ Trilha de Auditoria (LGPD)</button>
-        </div>
+        <!-- SEGMENTED TABS -->
+        <nav class="tab-controller">
+            <button class="tab-btn active" onclick="trocarAbaAdmin('tenants')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="22.01"></line><line x1="15" y1="22" x2="15.01"></line></svg>
+                <span>Empresas & Licenciamento</span>
+            </button>
+            <button class="tab-btn" onclick="trocarAbaAdmin('users')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span>Usuários & Alçadas (RBAC)</span>
+            </button>
+            <button class="tab-btn" onclick="trocarAbaAdmin('audit')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span>Auditoria & Logs</span>
+            </button>
+        </nav>
 
         <!-- ABA 1: EMPRESAS (TENANTS) -->
-        <div id="tab-tenants" class="tab-pane active">
-            <div class="section-card">
-                <div class="section-header">
-                    <div class="section-title">
-                        <span>🏢</span> Lojistas e Empresas Assinantes
+        <section id="tab-tenants" class="tab-pane active">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <h2>Empresas Assinantes (Tenants)</h2>
+                        <p>Gestão de CNPJs, limites contratados e bloqueio de licenças</p>
                     </div>
-                    <button class="btn-action-primary" onclick="abrirModalCriarEmpresa()">
-                        <span>➕ Cadastrar Nova Empresa</span>
+                    <button class="btn-primary-glow" onclick="abrirModalCriarEmpresa()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>Nova Empresa</span>
                     </button>
                 </div>
 
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Empresa / CNPJ</th>
-                            <th>Plano Contratado</th>
-                            <th>Consumo Mensal</th>
-                            <th>Status da Licença</th>
-                            <th style="text-align: right;">Ações de Gestão</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tenants-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando empresas cadastradas...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Empresa / Razão Social</th>
+                                <th>CNPJ</th>
+                                <th>Plano de Assinatura</th>
+                                <th>Consumo Mensal</th>
+                                <th>Status da Licença</th>
+                                <th style="text-align: right;">Ações de Gestão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tenants-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                    Carregando dados dos assinantes...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <!-- ABA 2: USUÁRIOS & PERMISSÕES (RBAC) -->
-        <div id="tab-users" class="tab-pane">
-            <div class="section-card">
-                <div class="section-header">
-                    <div class="section-title">
-                        <span>👥</span> Usuários, Logins e Perfis Operacionais
+        <!-- ABA 2: USUÁRIOS & RBAC -->
+        <section id="tab-users" class="tab-pane">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <h2>Usuários & Contas de Acesso</h2>
+                        <p>Gerenciamento de credenciais, vínculos por empresa e alçadas</p>
                     </div>
-                    <button class="btn-action-primary" onclick="abrirModalCriarUsuario()">
-                        <span>➕ Criar Novo Acesso</span>
+                    <button class="btn-primary-glow" onclick="abrirModalCriarUsuario()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>Novo Usuário</span>
                     </button>
                 </div>
 
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Nome do Usuário</th>
-                            <th>E-mail de Acesso</th>
-                            <th>Empresa Vinculada</th>
-                            <th>Perfil / Permissão</th>
-                            <th style="text-align: right;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando usuários cadastrados...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nome do Operador</th>
+                                <th>E-mail de Login</th>
+                                <th>Empresa Vinculada</th>
+                                <th>Perfil / Alçada</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                    Carregando usuários cadastrados...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section>
 
         <!-- ABA 3: AUDITORIA & LGPD -->
-        <div id="tab-audit" class="tab-pane">
-            <div class="section-card">
-                <div class="section-header">
-                    <div class="section-title">
-                        <span>🛡️</span> Trilha Irrevogável de Auditoria Fiscal & LGPD
+        <section id="tab-audit" class="tab-pane">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <h2>Trilha Irrevogável de Auditoria (LGPD)</h2>
+                        <p>Registro temporal de autorizações financeiras, emissões e alterações</p>
                     </div>
-                    <button class="btn-sm" onclick="carregarAuditoria()">🔄 Atualizar Logs</button>
+                    <button class="btn-ghost" onclick="carregarAuditoria()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        <span>Atualizar Logs</span>
+                    </button>
                 </div>
 
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Data / Hora</th>
-                            <th>Ação Executada</th>
-                            <th>Empresa</th>
-                            <th>Detalhes Operacionais</th>
-                            <th>Endereço IP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="audit-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando registros de auditoria...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Data / Hora</th>
+                                <th>Ação Executada</th>
+                                <th>Empresa</th>
+                                <th>Detalhes Operacionais</th>
+                                <th>Endereço IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                    Carregando registros de auditoria...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section>
 
-    </main>
+    </div>
 
-    <!-- MODAL: CADASTRAR NOVA EMPRESA -->
+    <!-- MODAL 1: CADASTRAR NOVA EMPRESA -->
     <div id="modal-criar-empresa" class="modal">
-        <div class="modal-content">
+        <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">🏢 Cadastrar Nova Empresa (Lojista)</div>
-                <button class="modal-close" onclick="fecharModalCriarEmpresa()">✖</button>
+                <div class="modal-title">Cadastrar Nova Empresa Cliente</div>
+                <button class="modal-close-btn" onclick="fecharModalCriarEmpresa()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <form id="form-criar-empresa" onsubmit="salvarNovaEmpresa(event)">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>CNPJ da Empresa</label>
-                        <input type="text" id="empresa-cnpj" class="form-control" placeholder="00.000.000/0000-00" required>
+                        <input type="text" id="empresa-cnpj" class="form-control mono" placeholder="00.000.000/0000-00" required>
                     </div>
                     <div class="form-group">
                         <label>Razão Social</label>
-                        <input type="text" id="empresa-razao" class="form-control" placeholder="Ex: Minha Empresa Comércio Ltda" required>
+                        <input type="text" id="empresa-razao" class="form-control" placeholder="Ex: Varejo Moda Brasil Ltda" required>
                     </div>
                     <div class="form-group">
                         <label>Nome Fantasia / Marca</label>
-                        <input type="text" id="empresa-fantasia" class="form-control" placeholder="Ex: Minha Marca E-commerce">
+                        <input type="text" id="empresa-fantasia" class="form-control" placeholder="Ex: Loja Matriz">
                     </div>
                     <div class="form-group">
                         <label>E-mail do Administrador</label>
-                        <input type="email" id="empresa-email" class="form-control" placeholder="admin@empresa.com.br" required>
+                        <input type="email" id="empresa-email" class="form-control" placeholder="diretoria@empresa.com.br" required>
                     </div>
                     <div class="form-group">
                         <label>Plano de Licenciamento</label>
@@ -674,10 +870,10 @@
                     </div>
                     <div class="form-group">
                         <label>Limite Mensal de Guias / NFs</label>
-                        <input type="number" id="empresa-limite" class="form-control" value="1500" required>
+                        <input type="number" id="empresa-limite" class="form-control mono" value="1500" required>
                     </div>
 
-                    <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <button type="submit" class="btn-primary-glow" style="width: 100%; justify-content: center; margin-top: 10px;">
                         Salvar e Ativar Licença
                     </button>
                 </div>
@@ -685,19 +881,21 @@
         </div>
     </div>
 
-    <!-- MODAL: ALTERAR PLANO / LIMITE -->
+    <!-- MODAL 2: ALTERAR PLANO / LIMITE -->
     <div id="modal-alterar-plano" class="modal">
-        <div class="modal-content">
+        <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">⚡ Alterar Plano e Limites de Licença</div>
-                <button class="modal-close" onclick="fecharModalAlterarPlano()">✖</button>
+                <div class="modal-title">Alterar Plano & Limites de Licença</div>
+                <button class="modal-close-btn" onclick="fecharModalAlterarPlano()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <form id="form-alterar-plano" onsubmit="salvarAlteracaoPlano(event)">
                 <div class="modal-body">
                     <input type="hidden" id="edit-plano-tenant-id">
                     <div class="form-group">
                         <label>Empresa Selecionada</label>
-                        <strong id="edit-plano-nome" style="font-size: 14px; color: var(--navy-dark);">-</strong>
+                        <div id="edit-plano-nome" style="font-size: 14px; font-weight: 700; color: #fff; padding: 4px 0;">-</div>
                     </div>
                     <div class="form-group">
                         <label>Novo Plano de Assinatura</label>
@@ -710,10 +908,10 @@
                     </div>
                     <div class="form-group">
                         <label>Limite Mensal de Guias</label>
-                        <input type="number" id="edit-plano-limite" class="form-control" required>
+                        <input type="number" id="edit-plano-limite" class="form-control mono" required>
                     </div>
 
-                    <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <button type="submit" class="btn-primary-glow" style="width: 100%; justify-content: center; margin-top: 10px;">
                         Atualizar Assinatura
                     </button>
                 </div>
@@ -721,18 +919,20 @@
         </div>
     </div>
 
-    <!-- MODAL: CADASTRAR NOVO USUÁRIO -->
+    <!-- MODAL 3: CADASTRAR NOVO USUÁRIO -->
     <div id="modal-criar-usuario" class="modal">
-        <div class="modal-content">
+        <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">👤 Cadastrar Novo Usuário / Login</div>
-                <button class="modal-close" onclick="fecharModalCriarUsuario()">✖</button>
+                <div class="modal-title">Cadastrar Novo Usuário / Login</div>
+                <button class="modal-close-btn" onclick="fecharModalCriarUsuario()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <form id="form-criar-usuario" onsubmit="salvarNovoUsuario(event)">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Nome Completo</label>
-                        <input type="text" id="user-nome" class="form-control" placeholder="Ex: Carlos Silva (Expedição)" required>
+                        <input type="text" id="user-nome" class="form-control" placeholder="Ex: Carlos Silva" required>
                     </div>
                     <div class="form-group">
                         <label>E-mail de Login</label>
@@ -758,7 +958,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <button type="submit" class="btn-primary-glow" style="width: 100%; justify-content: center; margin-top: 10px;">
                         Criar Usuário
                     </button>
                 </div>
@@ -766,26 +966,28 @@
         </div>
     </div>
 
-    <!-- MODAL: RESET DE SENHA -->
+    <!-- MODAL 4: RESET DE SENHA -->
     <div id="modal-reset-senha" class="modal">
-        <div class="modal-content">
+        <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">🔑 Redefinir Senha de Acesso</div>
-                <button class="modal-close" onclick="fecharModalResetSenha()">✖</button>
+                <div class="modal-title">Redefinir Senha de Acesso</div>
+                <button class="modal-close-btn" onclick="fecharModalResetSenha()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <form id="form-reset-senha" onsubmit="salvarResetSenha(event)">
                 <div class="modal-body">
                     <input type="hidden" id="reset-user-id">
                     <div class="form-group">
                         <label>Usuário</label>
-                        <strong id="reset-user-email-display" style="font-size: 14px; color: var(--navy-dark);">-</strong>
+                        <div id="reset-user-email-display" style="font-size: 14px; font-weight: 700; color: #fff; padding: 4px 0;">-</div>
                     </div>
                     <div class="form-group">
-                        <label>Nova Senha</label>
+                        <label>Nova Senha Provisória</label>
                         <input type="password" id="reset-nova-senha" class="form-control" minlength="6" placeholder="Mínimo 6 caracteres" required>
                     </div>
 
-                    <button type="submit" class="btn-action-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    <button type="submit" class="btn-primary-glow" style="width: 100%; justify-content: center; margin-top: 10px;">
                         Salvar Nova Senha
                     </button>
                 </div>
@@ -795,6 +997,6 @@
 
     <div id="toast" class="toast-msg"></div>
 
-    <script src="/js/admin.js?v=20261021"></script>
+    <script src="/js/admin.js?v=20261021_v2"></script>
 </body>
 </html>
