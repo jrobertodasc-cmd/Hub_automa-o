@@ -1427,275 +1427,20 @@
                     </tr>
                 </thead>
                 <tbody id="guides-table-body">
-                    <!-- Linha 1: Rio de Janeiro (Liberada) -->
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">03001006</div>
-                            <span class="badge-vnda-order" title="Pedido Olist Vnda">#VD-89412</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Mariana Silveira Ramos</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                Rio de Janeiro <span class="badge-uf-dest">RJ</span>
+                    <!-- Estado Inicial Limpo / Sem Cargas Ativas -->
+                    <tr id="empty-dock-state">
+                        <td colspan="8" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(37, 99, 235, 0.08); color: var(--primary-blue); display: grid; place-items: center; margin: 0 auto 14px;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
                             </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 2h na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                <span>Total Express</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--ok);">R$ 420,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 1.420,00</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-liberado">🟢 Liberado</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn-table-action" title="Visualizar DANFE">DANFE</a>
-                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);" title="Comprovante bancário Asaas">Asaas ✓</a>
-                        </td>
-                    </tr>
-
-                    <!-- Linha 2: Belo Horizonte / MG (Retida SEFAZ com Urgência) -->
-                    <tr style="background: rgba(239, 68, 68, 0.02);">
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono" style="color: var(--err);">03001003</div>
-                            <span class="badge-vnda-order">#VD-89350</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Camila Fagundes Mendes</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                Belo Horizonte <span class="badge-uf-dest">MG</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: #D97706; font-size: 12.5px;">15/10 (Ontem)</div>
-                            <span class="dock-time-pill time-warn">⚠️ 26h retida</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                <span>Total Express</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--err); font-size: 14px;">R$ 1.840,50</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 4.890,00</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-bloqueado">🔴 Retido SEFAZ</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <button onclick="abrirModalBipagemExemplo('03001003')" class="btn-table-action danger" title="Ver motivo da pendência fiscal">
-                                ⚠️ Ver Pendência
+                            <div style="font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px;">Nenhuma carga ativa na Doca</div>
+                            <p style="font-size: 13px; color: var(--text-muted); max-width: 480px; margin: 0 auto 16px;">
+                                Sincronize com o Linx Microvix ou selecione os arquivos XML das notas fiscais para iniciar a conferência e emissão.
+                            </p>
+                            <button onclick="document.getElementById('input-xml-lote').click()" class="btn-action-primary" style="margin: 0 auto; display: inline-flex;">
+                                <span>Processar Lote de XMLs</span>
                             </button>
                         </td>
-                    </tr>
-
-                    <!-- Linha 3: São Paulo (Isento SP) -->
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">03001013</div>
-                            <span class="badge-vnda-order">#VD-89405</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Beatriz Alencar Costa</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                São Paulo <span class="badge-uf-dest" style="background: #F1F5F9; color: #475569;">SP</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 3h na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                <span>Total Express</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--text-muted);">R$ 0,00</div>
-                            <div style="font-size: 11px; color: var(--primary-blue); font-weight: 600;">Isento (SP)</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-isento">Isento (SP)</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn-table-action">DANFE</a>
-                        </td>
-                    </tr>
-
-                    <!-- Linha 4: Curitiba / PR (Liberada) -->
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">03001005</div>
-                            <span class="badge-vnda-order">#VD-89392</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Letícia Toledo Barros</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                Curitiba <span class="badge-uf-dest">PR</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 4h na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                <span>Total Express</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--ok);">R$ 130,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 540,00</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-liberado">🟢 Liberado</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn-table-action">DANFE</a>
-                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);">Asaas ✓</a>
-                        </td>
-                    </tr>
-
-                    <!-- Linha 5: Salvador / BA (Correios - Liberada) -->
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">03001007</div>
-                            <span class="badge-vnda-order">#VD-89311</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Juliana Rocha Paes</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                Salvador <span class="badge-uf-dest">BA</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: #D97706; font-size: 12.5px;">15/10 (Ontem)</div>
-                            <span class="dock-time-pill time-ok">🕒 18h na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                <span>Correios</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--ok);">R$ 130,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">Venda: R$ 790,00</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-liberado">🟢 Liberado</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn-table-action">DANFE</a>
-                            <a href="#" class="btn-table-action" style="color: var(--primary-blue);">Asaas ✓</a>
-                        </td>
-                    </tr>
-
-                    <!-- Linha 6: Campinas / SP (MT Log - Isento) -->
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" onchange="atualizarContagemLote()">
-                        </td>
-                        <td>
-                            <div class="cell-mono">03012004</div>
-                            <span class="badge-vnda-order">#VD-89419</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--navy);">Fernanda Vasconcelos</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                Campinas <span class="badge-uf-dest" style="background: #F1F5F9; color: #475569;">SP</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">16/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 1h na doca</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg>
-                                <span>MT Log</span>
-                            </div>
-                        </td>
-                        <td style="text-align: right;">
-                            <div class="cell-mono" style="color: var(--text-muted);">R$ 0,00</div>
-                            <div style="font-size: 11px; color: var(--primary-blue); font-weight: 600;">Isento (SP)</div>
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="tag-status tag-isento">Isento (SP)</span>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn-table-action">DANFE</a>
-                        </td>
-                    </tr>
-
-                    <!-- Histórico de Cargas Já Despachadas -->
-                    <tr class="row-despachada" style="display: none; background: #F8FAFC;">
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox" disabled>
-                        </td>
-                        <td>
-                            <div class="cell-mono" style="color: var(--text-muted);">03000980</div>
-                            <span class="badge-vnda-order">#VD-89240</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-muted);">Patrícia Bueno Lins</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">São Paulo / SP</div>
-                        </td>
-                        <td>
-                            <div style="color: var(--text-muted); font-size: 12px;">15/10 (Ontem)</div>
-                            <span class="dock-time-pill" style="background: #E2E8F0; color: #64748b;">Coletado</span>
-                        </td>
-                        <td>Total Express</td>
-                        <td style="text-align: right; color: var(--text-muted);" class="cell-mono">R$ 0,00</td>
-                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
-                        <td style="text-align: right; color: var(--text-muted); font-size: 11.5px;">Romaneio #20261015-01</td>
-                    </tr>
-                    <tr class="row-despachada" style="display: none; background: #F8FAFC;">
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox" disabled>
-                        </td>
-                        <td>
-                            <div class="cell-mono" style="color: var(--text-muted);">03000975</div>
-                            <span class="badge-vnda-order">#VD-89218</span>
-                        </td>
-                        <td>
-                            <div style="font-weight: 600; color: var(--text-muted);">Gabriela Nogueira</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">Juiz de Fora / MG</div>
-                        </td>
-                        <td>
-                            <div style="color: var(--text-muted); font-size: 12px;">15/10 (Ontem)</div>
-                            <span class="dock-time-pill" style="background: #E2E8F0; color: #64748b;">Coletado</span>
-                        </td>
-                        <td>Total Express</td>
-                        <td style="text-align: right; color: var(--text-muted);" class="cell-mono">R$ 185,40</td>
-                        <td style="text-align: center;"><span class="tag-status tag-despachado">Despachado (Em Trânsito)</span></td>
-                        <td style="text-align: right; color: var(--text-muted); font-size: 11.5px;">Romaneio #20261015-01</td>
                     </tr>
                 </tbody>
             </table>
@@ -1703,7 +1448,7 @@
             <!-- Barra de Paginação & Rodapé de Ações -->
             <div class="dock-pagination-bar">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>Mostrando <strong id="paginacao-intervalo">1 a 6</strong> de <strong>248</strong> cargas na doca</span>
+                    <span>Mostrando <strong id="paginacao-intervalo">0</strong> de <strong id="paginacao-total">0</strong> cargas na doca</span>
                     <span style="color: var(--border-line);">|</span>
                     <a id="btn-combo-expedicao" href="/api/expedicao/romaneio" target="_blank" class="btn pri sm" title="Emite o pacote documental completo de todas as cargas liberadas hoje">
                         <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
@@ -1751,10 +1496,6 @@
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
                                 <span>Exportar Lote XML SP</span>
                             </a>
-                            <button onclick="reiniciarDemonstracaoDoca();" class="dropdown-item-custom" style="border-top: 1px solid var(--border-subtle); color: var(--text-secondary);">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-                                <span>Reiniciar Demonstração do Lote</span>
-                            </button>
                         </div>
                     </div>
                 </div>

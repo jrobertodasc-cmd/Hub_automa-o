@@ -1903,14 +1903,49 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             .from('tenant-storage')
             .download(remessaPath);
 
-        if (downloadError || !data) {
-            return res.status(404).json({ error: "Arquivo de remessa não encontrado no armazenamento." });
+        if (!downloadError && data) {
+            res.setHeader('Content-Type', 'text/plain');
+            res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
+            const buffer = Buffer.from(await data.arrayBuffer());
+            return res.send(buffer);
         }
 
+        // Se ainda não gerado ou não salvo no storage, gera dinamicamente agora
+        const { data: batchGuides } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('batch_id', batch.id)
+            .eq('tenant_id', req.tenant.id);
+
+        const dadosBancarios = {
+            cnpj: req.tenant.cnpj,
+            razaoSocial: req.tenant.razao_social,
+            agencia: req.tenant.bank_agency || '0334',
+            conta: req.tenant.bank_account || '98775',
+            dac: req.tenant.bank_dac || '7',
+            convenio: req.tenant.bank_convenio || ''
+        };
+
+        const mapped = (batchGuides || []).map(g => ({
+            codigoBarras: g.barcode,
+            valor: g.value,
+            dataVencimento: g.due_date || new Date().toISOString().split('T')[0],
+            documentoOrigem: g.nf_number,
+            ufFavorecida: g.uf || 'BA'
+        }));
+
+        const hojeStr = new Date().toISOString().split('T')[0];
+        const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, hojeStr);
+
+        // Salva no storage em background para acelerar downloads futuros
+        supabase.storage
+            .from('tenant-storage')
+            .upload(remessaPath, Buffer.from(cnabText, 'utf-8'), { contentType: 'text/plain', upsert: true })
+            .catch(e => console.warn('[Storage] Falha ao persistir remessa Itaú:', e.message));
+
         res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', `attachment; filename="remessa_${batch.id}.txt"`);
-        const buffer = Buffer.from(await data.arrayBuffer());
-        return res.send(buffer);
+        res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
+        return res.send(cnabText);
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
