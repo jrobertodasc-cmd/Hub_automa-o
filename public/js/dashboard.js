@@ -1887,10 +1887,18 @@ function executarDownloadRemessaDoca(event) {
     const banco = document.getElementById('doca-select-banco')?.value || 'itau';
     const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
     if (!window.activeBatchId) {
-        event.preventDefault();
+        if (event) event.preventDefault();
         showToast("Nenhum lote ativo selecionado.", "warn");
         return;
     }
+    atualizarLinksRemessaDoca();
+    if (event && event.currentTarget) {
+        event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
+    }
+    const [ano, mes, dia] = dataPag.split('-');
+    const dataFmt = `${dia}/${mes}/${ano}`;
+    showToast(`?? Baixando Remessa ${banco.toUpperCase()} com d?bito agendado para ${dataFmt}...`, "success");
+}
     const [ano, mes, dia] = dataPag.split('-');
     const dataFmt = `${dia}/${mes}/${ano}`;
     showToast(`📥 Baixando Remessa ${banco.toUpperCase()} com débito agendado para ${dataFmt}...`, "success");
