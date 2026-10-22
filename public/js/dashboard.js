@@ -1859,11 +1859,24 @@ function atualizarBancoRemessaDoca(novoBanco) {
 
 function atualizarLinksRemessaDoca() {
     const btn = document.getElementById('btn-doca-baixar-remessa');
+    const btnSp = document.getElementById('btn-doca-baixar-xml-sp');
+    const btnDropdownSp = document.getElementById('download-sp-xml-btn');
+    const btnGuiasPdf = document.getElementById('btn-doca-baixar-guias');
     const banco = document.getElementById('doca-select-banco')?.value || 'itau';
     const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
-    
+    const batchAlvo = window.activeBatchId || 'todos';
+
     if (btn && window.activeBatchId) {
         btn.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${dataPag}`;
+    }
+    if (btnSp) {
+        btnSp.href = `/api/batch/download-xml/${batchAlvo}?paymentDate=${dataPag}`;
+    }
+    if (btnDropdownSp) {
+        btnDropdownSp.href = `/api/batch/download-xml/${batchAlvo}?paymentDate=${dataPag}`;
+    }
+    if (btnGuiasPdf && window.activeBatchId) {
+        btnGuiasPdf.href = `/api/guide/gnre-selecionadas?batchId=${window.activeBatchId}&paymentDate=${dataPag}`;
     }
 }
 
@@ -1937,6 +1950,81 @@ window.atualizarBancoRemessaDoca = atualizarBancoRemessaDoca;
 window.atualizarLinksRemessaDoca = atualizarLinksRemessaDoca;
 window.executarDownloadRemessaDoca = executarDownloadRemessaDoca;
 window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
+
+function baixarXmlLoteSpComData(event, apenasSelecionadas = false) {
+    if (event) event.preventDefault();
+    const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    const batchAlvo = window.activeBatchId || 'todos';
+    let url = `/api/batch/download-xml/${batchAlvo}?paymentDate=${encodeURIComponent(dataPag)}`;
+
+    if (apenasSelecionadas) {
+        const ids = Array.from(window.selectedGuideIds || []);
+        if (ids.length === 0) {
+            showToast("Selecione pelo menos uma nota de SP na tabela.", "warning");
+            return;
+        }
+        url += `&ids=${encodeURIComponent(ids.join(','))}`;
+    }
+
+    const [ano, mes, dia] = dataPag.split('-');
+    showToast(`📦 Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
+    window.open(url, '_blank');
+}
+
+async function reemitirGuiasSefazComData(apenasSelecionadas = false) {
+    if (!window.activeBatchId) {
+        showToast("Nenhum lote ativo selecionado na doca.", "warning");
+        return;
+    }
+    const paymentDate = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    const [ano, mes, dia] = paymentDate.split('-');
+    const dataFmt = `${dia}/${mes}/${ano}`;
+
+    let ids = null;
+    if (apenasSelecionadas) {
+        ids = Array.from(window.selectedGuideIds || []);
+        if (ids.length === 0) {
+            showToast("Selecione pelo menos uma guia na tabela.", "warning");
+            return;
+        }
+    }
+
+    const msgConfirm = ids
+        ? `Deseja emitir/atualizar na SEFAZ as ${ids.length} guia(s) selecionada(s) com a data de pagamento/vencimento ${dataFmt}?`
+        : `Deseja emitir/atualizar na SEFAZ todas as guias pendentes do lote (e atualizar o XML de SP) com a data de pagamento/vencimento ${dataFmt}?`;
+
+    if (!confirm(msgConfirm)) return;
+
+    const btn = document.getElementById('btn-doca-emitir-sefaz-data');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Transmitindo SEFAZ...</span>`;
+    }
+
+    try {
+        const res = await fetch(`/api/batch/authorize-emission/${window.activeBatchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentDate, ids })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Falha ao transmitir guias na SEFAZ.");
+
+        showToast(`🚀 Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
+        if (typeof iniciarPollingLote === 'function') {
+            iniciarPollingLote(window.activeBatchId);
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg><span>Emitir SEFAZ c/ Data</span>`;
+        }
+    }
+}
+window.baixarXmlLoteSpComData = baixarXmlLoteSpComData;
+window.reemitirGuiasSefazComData = reemitirGuiasSefazComData;
 
 function fecharModalAutorizacaoAsaas() {
     const modal = document.getElementById('modal-autorizar-asaas');
@@ -2806,7 +2894,7 @@ function imprimirGnresLoteSelecionado() {
         return;
     }
     showToast(`Gerando PDF unificado de ${ids.length} Guia(s) GNRE...`, 'success');
-    window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}`, '_blank');
+    const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0]; window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}&paymentDate=${encodeURIComponent(dataPag)}`, '_blank');
 }
 window.imprimirGnresLoteSelecionado = imprimirGnresLoteSelecionado;
 
@@ -3082,6 +3170,81 @@ window.atualizarBancoRemessaDoca = atualizarBancoRemessaDoca;
 window.atualizarLinksRemessaDoca = atualizarLinksRemessaDoca;
 window.executarDownloadRemessaDoca = executarDownloadRemessaDoca;
 window.autorizarPagamentoLoteComData = autorizarPagamentoLoteComData;
+
+function baixarXmlLoteSpComData(event, apenasSelecionadas = false) {
+    if (event) event.preventDefault();
+    const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    const batchAlvo = window.activeBatchId || 'todos';
+    let url = `/api/batch/download-xml/${batchAlvo}?paymentDate=${encodeURIComponent(dataPag)}`;
+
+    if (apenasSelecionadas) {
+        const ids = Array.from(window.selectedGuideIds || []);
+        if (ids.length === 0) {
+            showToast("Selecione pelo menos uma nota de SP na tabela.", "warning");
+            return;
+        }
+        url += `&ids=${encodeURIComponent(ids.join(','))}`;
+    }
+
+    const [ano, mes, dia] = dataPag.split('-');
+    showToast(`📦 Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
+    window.open(url, '_blank');
+}
+
+async function reemitirGuiasSefazComData(apenasSelecionadas = false) {
+    if (!window.activeBatchId) {
+        showToast("Nenhum lote ativo selecionado na doca.", "warning");
+        return;
+    }
+    const paymentDate = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
+    const [ano, mes, dia] = paymentDate.split('-');
+    const dataFmt = `${dia}/${mes}/${ano}`;
+
+    let ids = null;
+    if (apenasSelecionadas) {
+        ids = Array.from(window.selectedGuideIds || []);
+        if (ids.length === 0) {
+            showToast("Selecione pelo menos uma guia na tabela.", "warning");
+            return;
+        }
+    }
+
+    const msgConfirm = ids
+        ? `Deseja emitir/atualizar na SEFAZ as ${ids.length} guia(s) selecionada(s) com a data de pagamento/vencimento ${dataFmt}?`
+        : `Deseja emitir/atualizar na SEFAZ todas as guias pendentes do lote (e atualizar o XML de SP) com a data de pagamento/vencimento ${dataFmt}?`;
+
+    if (!confirm(msgConfirm)) return;
+
+    const btn = document.getElementById('btn-doca-emitir-sefaz-data');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Transmitindo SEFAZ...</span>`;
+    }
+
+    try {
+        const res = await fetch(`/api/batch/authorize-emission/${window.activeBatchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentDate, ids })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Falha ao transmitir guias na SEFAZ.");
+
+        showToast(`🚀 Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
+        if (typeof iniciarPollingLote === 'function') {
+            iniciarPollingLote(window.activeBatchId);
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg><span>Emitir SEFAZ c/ Data</span>`;
+        }
+    }
+}
+window.baixarXmlLoteSpComData = baixarXmlLoteSpComData;
+window.reemitirGuiasSefazComData = reemitirGuiasSefazComData;
 window.mudarPaginaDoca = mudarPaginaDoca;
 window.irParaPaginaDoca = irParaPaginaDoca;
 window.renderizarPaginaDoca = renderizarPaginaDoca;

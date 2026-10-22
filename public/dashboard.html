@@ -1382,10 +1382,10 @@
             </div>
 
             <div class="fintech-controls-grid">
-                <!-- Seletor da Data de Pagamento / Débito -->
+                <!-- Seletor da Data de Pagamento / Vencimento (SP & Demais UFs) -->
                 <div class="fintech-field-group">
-                    <label class="fintech-field-label" for="doca-input-data-pagamento">Data de Efetivação / Débito Bancário</label>
-                    <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" title="Escolha a data em que o banco deve debitar e pagar as guias">
+                    <label class="fintech-field-label" for="doca-input-data-pagamento">Data de Pagamento / Vencimento (SP & Demais UFs)</label>
+                    <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" title="Escolha a data de vencimento/pagamento para emissão SEFAZ, XML de SP e Remessa Bancária">
                 </div>
 
                 <!-- Seletor do Banco / Layout -->
@@ -1399,7 +1399,22 @@
                 </div>
 
                 <!-- Botões de Ação Imediata -->
-                <div class="fintech-actions-group">
+                <div class="fintech-actions-group" style="flex-wrap: wrap;">
+                    <button type="button" id="btn-doca-emitir-sefaz-data" class="btn-fintech-secondary" onclick="reemitirGuiasSefazComData(false)" title="Emite ou atualiza na SEFAZ todas as guias do lote com a Data de Pagamento escolhida">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        <span>Emitir SEFAZ c/ Data</span>
+                    </button>
+
+                    <a id="btn-doca-baixar-xml-sp" href="#" class="btn-fintech-outline" onclick="baixarXmlLoteSpComData(event)" title="Gera e baixa o XML em lote das notas de SP com a Data de Pagamento escolhida">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>XML Lote SP</span>
+                    </a>
+
+                    <a id="btn-doca-baixar-guias" href="#" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias GNRE do lote">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Guias GNRE (PDF)</span>
+                    </a>
+
                     <a id="btn-doca-baixar-remessa" href="#" class="btn-fintech-primary" onclick="executarDownloadRemessaDoca(event)">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                         <span id="btn-doca-baixar-remessa-text">Baixar Remessa Itaú (.TXT)</span>
@@ -1409,11 +1424,6 @@
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         <span>Confirmar Agendamento</span>
                     </button>
-
-                    <a id="btn-doca-baixar-guias" href="/api/guias/download-all" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias do lote">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>Guias GNRE (PDF)</span>
-                    </a>
                 </div>
             </div>
         </section>
@@ -1587,6 +1597,14 @@
                     <button type="button" onclick="imprimirGnresLoteSelecionado()" class="btn-bulk-action" style="background: #312E81; border-color: #4338CA;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                         <span>Imprimir Guias GNRE</span>
+                    </button>
+                    <button type="button" onclick="baixarXmlLoteSpComData(event, true)" class="btn-bulk-action" style="background: #0F766E; border-color: #14B8A6;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>XML Lote SP (c/ Data)</span>
+                    </button>
+                    <button type="button" onclick="reemitirGuiasSefazComData(true)" class="btn-bulk-action" style="background: #15803D; border-color: #22C55E;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        <span>Emitir SEFAZ (c/ Data)</span>
                     </button>
                     <button type="button" onclick="solicitarLiberacaoLoteSelecionado()" class="btn-bulk-action" style="background: #2563EB; border-color: #3B82F6;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>

@@ -738,33 +738,34 @@ app.post('/api/batch/process', requireAuth, requireActiveSubscription, upload.ar
 });
 
 /**
- * ROTA: Autorizar Emissão de Lote na SEFAZ (Operador confirma transmissão)
+ * ROTA: Autorizar Emissão ou Reemissão com Nova Data de Pagamento na SEFAZ
  */
 app.post('/api/batch/authorize-emission/:batchId', requireAuth, requireActiveSubscription, async (req, res) => {
     const { batchId } = req.params;
-    const { paymentDate } = req.body;
+    const { paymentDate, ids } = req.body;
     const tenant = req.tenant;
 
     try {
-        // Lock atômico: altera status para 'processando' somente se estiver 'aguardando_aprovacao'
+        // Permite emitir lotes novos ou reemitir guias não pagas com uma nova data de pagamento escolhida
         const { data: lockedBatch, error: lockErr } = await supabase
             .from('batches')
             .update({ status: 'processando' })
             .eq('id', batchId)
             .eq('tenant_id', tenant.id)
-            .eq('status', 'aguardando_aprovacao')
+            .neq('status', 'processando')
             .select('id');
 
         if (lockErr || !lockedBatch || lockedBatch.length === 0) {
-            return res.status(409).json({ error: "Este lote já está em processamento ou já foi emitido." });
+            return res.status(409).json({ error: "Este lote já está em transmissão na SEFAZ no momento. Aguarde a conclusão." });
         }
 
-        // Dispara a transmissão oficial para a SEFAZ
-        transmitStagedBatchToSefaz(batchId, tenant, paymentDate);
+        // Dispara a transmissão oficial para a SEFAZ (e geração do XML de SP) com a data escolhida
+        transmitStagedBatchToSefaz(batchId, tenant, paymentDate, Array.isArray(ids) ? ids : null);
 
         return res.status(200).json({
-            message: "Emissão autorizada com sucesso! Acompanhe o envio no terminal.",
-            batch_id: batchId
+            message: `Emissão na SEFAZ iniciada para a data de pagamento ${paymentDate || 'hoje'}!`,
+            batch_id: batchId,
+            paymentDate: paymentDate || new Date().toISOString().split('T')[0]
         });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -1663,54 +1664,61 @@ app.get('/api/batch/status/:batchId', requireAuth, async (req, res) => {
     }
 });
 
-// Endpoint para baixar o lote XML de São Paulo (SP) (gera sob demanda caso ainda não exista no Storage)
+// Endpoint para baixar o lote XML de São Paulo (SP) com a Data de Pagamento/Vencimento escolhida
 app.get('/api/batch/download-xml/:batchId', requireAuth, async (req, res) => {
     const { batchId } = req.params;
+    const { paymentDate, ids } = req.query;
     const tenant = req.tenant;
 
     try {
+        const hoje = new Date().toISOString().split('T')[0];
+        const dataEscolhida = (paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(paymentDate)) ? paymentDate : hoje;
         const storagePath = `${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`;
-        let { data: fileData, error: downloadError } = await supabase.storage
-            .from('tenant-storage')
-            .download(storagePath);
 
-        if (downloadError || !fileData) {
-            let query = supabase.from('guides').select('*').eq('tenant_id', tenant.id).eq('uf', 'SP');
-            if (batchId && batchId !== 'todos') {
-                query = query.eq('batch_id', batchId);
-            }
-            const { data: spGuides } = await query;
-            if (!spGuides || spGuides.length === 0) {
-                return res.status(404).json({ error: "Nenhuma nota de São Paulo localizada para gerar o XML em lote." });
-            }
+        // Se o usuário escolheu data de pagamento ou IDs específicos, gera sempre atualizado com a data escolhida
+        let query = supabase.from('guides').select('*').eq('tenant_id', tenant.id).eq('uf', 'SP').order('nf_number', { ascending: true });
+        if (ids) {
+            const idList = ids.split(',').map(s => s.trim()).filter(Boolean);
+            if (idList.length > 0) query = query.in('id', idList);
+        } else if (batchId && batchId !== 'todos') {
+            query = query.eq('batch_id', batchId);
+        }
 
-            const hoje = new Date().toISOString().split('T')[0];
+        const { data: spGuides } = await query;
+        if (spGuides && spGuides.length > 0) {
             const listaNotasSp = [];
             for (const g of spGuides) {
                 if (g.xml_storage_path) {
                     const { data: xData } = await supabase.storage.from('tenant-storage').download(g.xml_storage_path);
                     if (xData) {
                         const nota = parserService.extrairDadosNfeXML(await xData.text());
-                        nota.dataVencimento = hoje;
-                        nota.dataPagamento = hoje;
+                        nota.dataVencimento = dataEscolhida;
+                        nota.dataPagamento = dataEscolhida;
                         listaNotasSp.push(nota);
                     }
                 }
             }
 
-            if (listaNotasSp.length === 0) {
-                return res.status(404).json({ error: "XMLs das notas de SP não encontrados no Storage." });
+            if (listaNotasSp.length > 0) {
+                const xmlSp = gnreService.gerarXmlLoteRaw(listaNotasSp, tenant);
+                const xmlBuffer = Buffer.from(xmlSp, 'utf-8');
+                await supabase.storage.from('tenant-storage').upload(storagePath, xmlBuffer, {
+                    contentType: 'application/xml',
+                    upsert: true
+                });
+                res.setHeader('Content-Type', 'application/xml');
+                res.setHeader('Content-Disposition', `attachment; filename="lote_sp_gnre_${dataEscolhida}_${batchId.substring(0, 8)}.xml"`);
+                return res.send(xmlBuffer);
             }
+        }
 
-            const xmlSp = gnreService.gerarXmlLoteRaw(listaNotasSp, tenant);
-            const xmlBuffer = Buffer.from(xmlSp, 'utf-8');
-            await supabase.storage.from('tenant-storage').upload(storagePath, xmlBuffer, {
-                contentType: 'application/xml',
-                upsert: true
-            });
-            res.setHeader('Content-Type', 'application/xml');
-            res.setHeader('Content-Disposition', `attachment; filename="lote_sp_gnre_${batchId}.xml"`);
-            return res.send(xmlBuffer);
+        // Fallback: se não encontrou XMLs individuais, tenta baixar o lote SP já salvo
+        const { data: fileData, error: downloadError } = await supabase.storage
+            .from('tenant-storage')
+            .download(storagePath);
+
+        if (downloadError || !fileData) {
+            return res.status(404).json({ error: "Nenhuma nota de São Paulo localizada para gerar o XML em lote." });
         }
 
         const buffer = Buffer.from(await fileData.arrayBuffer());
@@ -3363,6 +3371,10 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Guia não encontrada." });
         }
 
+        if (req.query.paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(req.query.paymentDate)) {
+            guide.due_date = req.query.paymentDate;
+        }
+
         const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
         if (isSimulado && (!guide.barcode || guide.barcode.length < 44 || !guide.line_digitizable)) {
             const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guide, req.tenant);
@@ -3373,7 +3385,7 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
         }
 
         let buffer = null;
-        if (guide.storage_path && guide.storage_path.toLowerCase().endsWith('.pdf')) {
+        if (!req.query.paymentDate && guide.storage_path && guide.storage_path.toLowerCase().endsWith('.pdf')) {
             try {
                 const { data } = await supabase.storage
                     .from('tenant-storage')
@@ -3399,7 +3411,7 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
  */
 app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
     try {
-        const { ids, nfs, batchId } = req.query;
+        const { ids, nfs, batchId, paymentDate } = req.query;
         let query = supabase.from('guides').select('*').eq('tenant_id', req.tenant.id);
 
         if (ids) {
@@ -3429,6 +3441,9 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
         const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
         const pdfBuffers = [];
         for (const g of guiasComGnre) {
+            if (paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(paymentDate)) {
+                g.due_date = paymentDate;
+            }
             if (isSimulado && (!g.barcode || g.barcode.length < 44 || !g.line_digitizable)) {
                 const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, req.tenant);
                 if (auto.codigoBarras) {
@@ -3437,7 +3452,7 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
                 }
             }
             let buf = null;
-            if (g.storage_path && g.storage_path.toLowerCase().endsWith('.pdf')) {
+            if (!paymentDate && g.storage_path && g.storage_path.toLowerCase().endsWith('.pdf')) {
                 try {
                     const { data } = await supabase.storage.from('tenant-storage').download(g.storage_path);
                     if (data) buf = Buffer.from(await data.arrayBuffer());
@@ -4781,10 +4796,10 @@ function stageBatchForApproval(batchId, tenant, filesData, paymentDate, source =
 /**
  * 2. Transmite o lote já validado para a SEFAZ após a autorização expressa do operador
  */
-function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
+function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = null) {
     setImmediate(async () => {
         activeTasks[batchId] = {
-            logs: [`[${new Date().toLocaleTimeString('pt-BR')}] 🚀 Emissão autorizada pelo operador! Conectando com a SEFAZ...`],
+            logs: [`[${new Date().toLocaleTimeString('pt-BR')}] 🚀 Emissão autorizada pelo operador (Data Pagamento: ${paymentDate || 'hoje'})! Conectando com a SEFAZ...`],
             progress: 10,
             status: 'processando'
         };
@@ -4798,20 +4813,26 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
         try {
             await supabase.from('batches').update({ status: 'processando' }).eq('id', batchId);
 
-            // Busca as notas pré-validadas deste lote
-            const { data: stagedGuides, error: gError } = await supabase
+            // Busca as notas deste lote (ou as selecionadas)
+            let gQuery = supabase
                 .from('guides')
                 .select('*')
                 .eq('batch_id', batchId)
                 .eq('tenant_id', tenant.id);
+            if (Array.isArray(guideIds) && guideIds.length > 0) {
+                gQuery = gQuery.in('id', guideIds);
+            }
+            const { data: stagedGuides, error: gError } = await gQuery;
 
             if (gError || !stagedGuides || stagedGuides.length === 0) {
-                throw new Error("Nenhuma nota pré-validada encontrada para este lote.");
+                throw new Error("Nenhuma nota encontrada para este lote.");
             }
 
-            // Carrega os XMLs do storage
+            // Carrega os XMLs do storage (ignora guias já pagas/comprovadas)
             const notasFiscais = [];
             for (const g of stagedGuides) {
+                const st = (g.status || '').toLowerCase();
+                if (st === 'paga' || st === 'comprovada') continue;
                 let content = null;
                 if (g.xml_storage_path) {
                     try {
