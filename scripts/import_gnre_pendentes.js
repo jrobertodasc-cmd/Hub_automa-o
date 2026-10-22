@@ -134,40 +134,13 @@ async function main() {
         const nfNum = item.nf;
         const xmlInfo = xmlMap[nfNum] || null;
 
-        const ufDestino = xmlInfo ? xmlInfo.uf : 'BA';
-        const clienteNome = xmlInfo ? xmlInfo.nome : 'Cliente Boah / Lalua Moda';
-        const municipio = xmlInfo ? xmlInfo.municipio : 'Salvador';
+        const ufDestino = xmlInfo ? xmlInfo.uf : 'ND';
+        const clienteNome = xmlInfo ? xmlInfo.nome : 'XML pendente de importação';
+        const municipio = xmlInfo ? xmlInfo.municipio : '';
         const transpNome = xmlInfo ? xmlInfo.transportadora : 'Total Express';
         
-        let chaveNfe = xmlInfo ? xmlInfo.chave : '';
-        if (!chaveNfe || chaveNfe.length !== 44) {
-            // Sintetiza uma chave válida padrão 44 dígitos
-            const cUF = '29';
-            const aamm = '2609';
-            const cnpjEmit = tenant.cnpj.replace(/\D/g, '').padStart(14, '0');
-            const mod = '55';
-            const ser = '002';
-            const num = nfNum.padStart(9, '0');
-            const tipoEmis = '1';
-            const codNum = String(10000000 + idx).slice(-8);
-            const parcial = `${cUF}${aamm}${cnpjEmit}${mod}${ser}${num}${tipoEmis}${codNum}`;
-            let soma = 0;
-            let peso = 2;
-            for (let i = parcial.length - 1; i >= 0; i--) {
-                soma += parseInt(parcial[i]) * peso;
-                peso = peso === 9 ? 2 : peso + 1;
-            }
-            const resto = soma % 11;
-            const dv = (resto === 0 || resto === 1) ? 0 : 11 - resto;
-            chaveNfe = parcial + dv;
-        }
-
-        // Gera Código de Barras e Linha Digitável GNRE Febraban Segmento 8
-        const codigoObj = printService.gerarCodigoBarrasELinhaDigitavelGNRE({
-            value: item.valor,
-            uf: ufDestino,
-            nf_number: nfNum
-        }, dadosEmpresa);
+        let chaveNfe = xmlInfo && xmlInfo.chave && xmlInfo.chave.length === 44 ? xmlInfo.chave : null;
+        const isSp = ufDestino === 'SP';
 
         guiasParaInserir.push({
             id: crypto.randomUUID(),
@@ -182,9 +155,9 @@ async function main() {
             receita_code: '100102',
             value: item.valor,
             chave_nfe: chaveNfe,
-            barcode: codigoObj.codigoBarras,
-            line_digitizable: codigoObj.linhaDigitavel,
-            status: 'aguardando_aprovacao',
+            barcode: isSp ? 'IMPORTAR_NO_SEFAZ_SP' : null,
+            line_digitizable: isSp ? 'Gerar DARE-SP em lote pelo arquivo XML' : null,
+            status: isSp ? 'requer_dare_sp' : 'aguardando_aprovacao',
             xml_source: xmlInfo ? 'linx_microvix_xml' : 'linx_microvix_financeiro',
             created_at: new Date().toISOString()
         });

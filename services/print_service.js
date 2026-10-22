@@ -115,6 +115,17 @@ function formatarData(dataStr) {
     return dataStr;
 }
 
+function isCodigoBarrasSinteticoLocal(barcode) {
+    const clean = String(barcode || '').replace(/[^0-9]/g, '');
+    if (!clean) return false;
+    // Detecta padrões fabricados localmente por versões anteriores ou mocks de homologação:
+    // 1) 856 + DV + valor(11) + 00 + ufCode(2) + 1001021 + nf(9) + 000000000
+    // 2) 858...02992622... (mock gnre_service) ou 8589...2026062010436619...
+    return /^856\d{16}1001021\d{9}0{9}$/.test(clean)
+        || /^858\d{9}\d+02992622\d+$/.test(clean)
+        || /^8589\d+2026062010436619\d+$/.test(clean);
+}
+
 /**
  * Gera um PDF A4 de Espelho de Conferência da Guia GNRE (apenas com dados retornados pelo Webservice SEFAZ)
  */
@@ -143,7 +154,12 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             let codBarras = (guia.barcode || guia.codigoBarras || '').replace(/[^0-9]/g, '');
             let linhaDigitavel = guia.line_digitizable || guia.linhaDigitavel || '';
 
-            const temCodigoSefazValido = codBarras.length >= 44 && guia.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+            if (!isSimulado && isCodigoBarrasSinteticoLocal(codBarras)) {
+                codBarras = '';
+                linhaDigitavel = '';
+            }
+
+            const temCodigoSefazValido = codBarras.length >= 44 && guia.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && !isCodigoBarrasSinteticoLocal(codBarras);
             const isPreviaSemValor = isSimulado || !temCodigoSefazValido;
 
             const linhaDigitavelVisual = temCodigoSefazValido
@@ -699,5 +715,6 @@ module.exports = {
     gerarLoteIntercaladoPdf,
     gerarComboExpedicaoPdf,
     gerarCodigoBarrasELinhaDigitavelGNRE,
-    isGuiaLiberada
+    isGuiaLiberada,
+    isCodigoBarrasSinteticoLocal
 };

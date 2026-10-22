@@ -123,23 +123,31 @@ function encrypt(text, secretKey) {
 
 function decrypt(text, secretKey) {
     const str = String(text || '');
-    if (str.startsWith('gcm:')) {
-        const [, ivHex, tagHex, encryptedHex] = str.split(':');
-        const iv = Buffer.from(ivHex, 'hex');
-        const authTag = Buffer.from(tagHex, 'hex');
-        const decipher = crypto.createDecipheriv('aes-256-gcm', secretKey, iv);
-        decipher.setAuthTag(authTag);
-        let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+    const tryDecryptWithKey = (k) => {
+        if (str.startsWith('gcm:')) {
+            const [, ivHex, tagHex, encryptedHex] = str.split(':');
+            const iv = Buffer.from(ivHex, 'hex');
+            const authTag = Buffer.from(tagHex, 'hex');
+            const decipher = crypto.createDecipheriv('aes-256-gcm', k, iv);
+            decipher.setAuthTag(authTag);
+            let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+            decrypted += decipher.final('utf8');
+            return decrypted;
+        }
+        const parts = str.split(':');
+        const iv = Buffer.from(parts.shift(), 'hex');
+        const encryptedText = Buffer.from(parts.join(':'), 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cbc', k, iv);
+        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         return decrypted;
+    };
+    try {
+        return tryDecryptWithKey(secretKey);
+    } catch (primaryErr) {
+        const legacyKey = getEncryptionKey('expedi_default_secret_key_32_bytes_long!!');
+        return tryDecryptWithKey(legacyKey);
     }
-    const parts = str.split(':');
-    const iv = Buffer.from(parts.shift(), 'hex');
-    const encryptedText = Buffer.from(parts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', secretKey, iv);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
 }
 
 function escapeHtml(str) {
@@ -1084,7 +1092,8 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
         const guiasPendentes = guias.filter(g => {
             const cleanBar = String(g.barcode || '').replace(/\D/g, '');
             const cleanLine = String(g.line_digitizable || '').replace(/\D/g, '');
-            const hasOfficialCode = (cleanBar.length >= 44 || cleanLine.length >= 44) && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+            const isSynthetic = !isSimulado && printService.isCodigoBarrasSinteticoLocal(cleanBar || cleanLine);
+            const hasOfficialCode = !isSynthetic && (cleanBar.length >= 44 || cleanLine.length >= 44) && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
             const ufValida = g.uf && g.uf.toUpperCase() !== 'SP';
             const statusOk = !statusBloqueados.has((g.status || '').toLowerCase()) && !g.asaas_bill_id;
             return hasOfficialCode && ufValida && statusOk;
@@ -1262,7 +1271,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
         }
 
         const linha = String(guia.line_digitizable || guia.barcode || '').replace(/\D/g, '');
-        if (!linha || linha.length < 44 || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP') {
+        if (!linha || linha.length < 44 || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP' || (!isSimulado && printService.isCodigoBarrasSinteticoLocal(guia.barcode || linha))) {
             return res.status(400).json({ error: "Guia não possui código de barras oficial da SEFAZ (mínimo 44 dígitos) para pagamento." });
         }
 
@@ -1972,9 +1981,11 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
 
         const dataPagamentoEfetiva = paymentDateChosen || new Date().toISOString().split('T')[0];
 
+        const isSimuladoCnab = (req.tenant.environment || '').toLowerCase() === 'simulado';
         const validItauGuides = (batchGuides || []).filter(g => {
             const bar = String(g.barcode || '').replace(/\D/g, '');
-            return bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
+            const isSynthetic = !isSimuladoCnab && printService.isCodigoBarrasSinteticoLocal(bar);
+            return !isSynthetic && bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
         });
 
         const mapped = validItauGuides.map(g => ({
@@ -3387,7 +3398,7 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
                 }
             }
             let buf = null;
-            if (g.storage_path) {
+            if (g.storage_path && g.storage_path.toLowerCase().endsWith('.pdf')) {
                 try {
                     const { data } = await supabase.storage.from('tenant-storage').download(g.storage_path);
                     if (data) buf = Buffer.from(await data.arrayBuffer());

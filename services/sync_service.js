@@ -12,13 +12,32 @@ function getEncryptionKey(keyStr) {
 
 function decrypt(text, key) {
     if (!text) return null;
-    const parts = text.split(':');
-    const iv = Buffer.from(parts.shift(), 'hex');
-    const encryptedText = Buffer.from(parts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+    const str = String(text);
+    const tryDecryptWithKey = (k) => {
+        if (str.startsWith('gcm:')) {
+            const [, ivHex, tagHex, encryptedHex] = str.split(':');
+            const iv = Buffer.from(ivHex, 'hex');
+            const authTag = Buffer.from(tagHex, 'hex');
+            const decipher = crypto.createDecipheriv('aes-256-gcm', k, iv);
+            decipher.setAuthTag(authTag);
+            let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+            decrypted += decipher.final('utf8');
+            return decrypted;
+        }
+        const parts = str.split(':');
+        const iv = Buffer.from(parts.shift(), 'hex');
+        const encryptedText = Buffer.from(parts.join(':'), 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cbc', k, iv);
+        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    };
+    try {
+        return tryDecryptWithKey(key);
+    } catch (e) {
+        const legacyKey = getEncryptionKey('expedi_default_secret_key_32_bytes_long!!');
+        return tryDecryptWithKey(legacyKey);
+    }
 }
 
 // Estado em memória da sincronização para exibição no Dashboard
