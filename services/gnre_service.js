@@ -164,10 +164,12 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
             codigoCampoChave = 99;
         } else if (ufFav === 'SE') {
             codigoCampoChave = 77;
+        } else if (ufFav === 'GO') {
+            codigoCampoChave = 102;
         }
 
         // UFs que não utilizam ou rejeitam campos adicionais na receita 100102
-        if (!['PE', 'RN', 'DF'].includes(ufFav)) {
+        if (!['PE', 'RN', 'DF', 'RS'].includes(ufFav)) {
             if (guia.chaveAcessoNfe) {
                 camposExtras.push({ codigo: codigoCampoChave, valor: escapeXml(guia.chaveAcessoNfe) });
             }
