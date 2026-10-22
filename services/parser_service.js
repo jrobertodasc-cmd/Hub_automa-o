@@ -1,82 +1,153 @@
 // services/parser_service.js
-// Lógica de leitura de XMLs fiscais e respostas da SEFAZ
+// Lógica estruturada de leitura de XMLs fiscais (NF-e e Retornos SEFAZ GNRE/DUA)
+
+const UFS_VALIDAS = new Set([
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+    'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+    'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+]);
+
+function decodificarEntidadesXml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&#xE3;/gi, 'ã')
+        .replace(/&#xE7;/gi, 'ç')
+        .replace(/&#xED;/gi, 'í')
+        .replace(/&#xE1;/gi, 'á')
+        .replace(/&#xE9;/gi, 'é')
+        .replace(/&#xF3;/gi, 'ó')
+        .replace(/&#xFA;/gi, 'ú')
+        .replace(/&#xE2;/gi, 'â')
+        .replace(/&#xEA;/gi, 'ê')
+        .replace(/&#xF4;/gi, 'ô')
+        .replace(/&#xFB;/gi, 'û')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+}
 
 function extrairTag(xml, tagName) {
-    const regex = new RegExp('<(?:[a-zA-Z0-9]+:)?' + tagName + '[^>]*>([\\s\\S]*?)<\\/(?:[a-zA-Z0-9]+:)?' + tagName + '>');
-    const match = xml.match(regex);
+    if (!xml || !tagName) return null;
+    const regex = new RegExp('<(?:[a-zA-Z0-9_]+:)?' + tagName + '(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[a-zA-Z0-9_]+:)?' + tagName + '>', 'i');
+    const match = String(xml).match(regex);
     return match ? match[1].trim() : null;
 }
 
 function extrairDadosNfeXML(xml) {
     try {
-        // Extrai a Chave de Acesso (atributo Id na tag infNFe)
-        const chaveMatch = xml.match(/<infNFe\s+[^>]*Id="NFe([^"]+)"/);
-        // Extrai o Número da Nota (tag nNF)
-        const numeroMatch = xml.match(/<nNF>([^<]+)<\/nNF>/);
-        // Extrai o CNPJ do Emitente (dentro do grupo emit)
-        const emitenteMatch = xml.match(/<emit>[^]*?<CNPJ>([^<]+)<\/CNPJ>/);
-        // Extrai a UF do Destinatário (dentro de dest -> enderDest -> UF)
-        const ufDestMatch = xml.match(/<dest>[^]*?<UF>([^<]+)<\/UF>/);
-        
-        // Extrai o Valor do DIFAL Destino (tag vICMSUFDest no ICMSTot - Bloco de totais da NF-e)
-        const totalMatch = xml.match(/<ICMSTot>([\s\S]*?)<\/ICMSTot>/);
-        let valorDifalMatch = null;
-        if (totalMatch) {
-            valorDifalMatch = totalMatch[1].match(/<vICMSUFDest>([^<]+)<\/vICMSUFDest>/);
+        if (!xml || typeof xml !== 'string') {
+            throw new Error("Conteúdo XML da NF-e vazio ou inválido.");
         }
 
-        if (!chaveMatch || !numeroMatch || !emitenteMatch || !ufDestMatch || !valorDifalMatch) {
-            throw new Error("Não foi possível extrair todos os dados fiscais essenciais do XML da NF-e.");
+        // Isola o bloco <infNFe> principal para não capturar tags de protocolo ou assinatura
+        const infNfeMatch = xml.match(/<(?:[a-zA-Z0-9_]+:)?infNFe\b([^>]*)>([\s\S]*?)<\/(?:[a-zA-Z0-9_]+:)?infNFe>/i);
+        const infNfeAttrs = infNfeMatch ? infNfeMatch[1] : '';
+        const infNfeBody = infNfeMatch ? infNfeMatch[2] : xml;
+
+        // 1. Extrai e valida a Chave de Acesso de 44 dígitos
+        let chaveAcessoNfe = null;
+        const idAttrMatch = infNfeAttrs.match(/\bId\s*=\s*["'](?:NFe)?(\d{44})["']/i) || xml.match(/<infNFe\s+[^>]*Id=["']NFe(\d{44})["']/i);
+        if (idAttrMatch) {
+            chaveAcessoNfe = idAttrMatch[1];
+        } else {
+            const chNFeProtocolo = extrairTag(xml, 'chNFe');
+            if (chNFeProtocolo && /^\d{44}$/.test(chNFeProtocolo)) {
+                chaveAcessoNfe = chNFeProtocolo;
+            }
         }
 
-        // Extrai dados do destinatário isolando estritamente o bloco <dest>...</dest>
-        const destBlockMatch = xml.match(/<dest>([\s\S]*?)<\/dest>/);
-        let destCnpjCpf = null;
-        let destTipoIdentificacao = null;
-        let destNome = null;
-        let destMun = null;
+        // 2. Isola blocos estruturais da NF-e (<ide>, <emit>, <dest>, <entrega>, <total>, <transp>)
+        const ideBlock = extrairTag(infNfeBody, 'ide') || infNfeBody;
+        const emitBlock = extrairTag(infNfeBody, 'emit');
+        const destBlock = extrairTag(infNfeBody, 'dest');
+        const entregaBlock = extrairTag(infNfeBody, 'entrega');
+        const icmsTotBlock = extrairTag(infNfeBody, 'ICMSTot');
+        const transpBlock = extrairTag(infNfeBody, 'transp');
 
-        if (destBlockMatch) {
-            const destBlock = destBlockMatch[1];
-            const destCnpjMatch = destBlock.match(/<CNPJ>([^<]+)<\/CNPJ>/);
-            const destCpfMatch  = destBlock.match(/<CPF>([^<]+)<\/CPF>/);
-            destCnpjCpf = destCnpjMatch ? destCnpjMatch[1] : (destCpfMatch ? destCpfMatch[1] : null);
-            destTipoIdentificacao = destCnpjMatch ? "CNPJ" : (destCpfMatch ? "CPF" : null);
+        const numeroNota = extrairTag(ideBlock, 'nNF');
+        const idDest = extrairTag(ideBlock, 'idDest'); // 1=Interna, 2=Interestadual, 3=Exterior
 
-            const destNomeMatch = destBlock.match(/<xNome>([^<]+)<\/xNome>/);
-            destNome = destNomeMatch ? destNomeMatch[1] : null;
-
-            const destMunMatch = destBlock.match(/<cMun>([^<]+)<\/cMun>/);
-            destMun = destMunMatch ? destMunMatch[1] : null;
+        if (!emitBlock || !destBlock || !icmsTotBlock) {
+            throw new Error("Estrutura obrigatória da NF-e incompleta (blocos <emit>, <dest> ou <ICMSTot> ausentes).");
         }
 
-        // Extrai data de emissao
-        const dataEmiMatch = xml.match(/<dhEmi>([^<]+)<\/dhEmi>/);
-        const dhEmi = dataEmiMatch ? dataEmiMatch[1] : new Date().toISOString();
-        
+        // 3. Emitente: extrai CNPJ e UF estritamente de <emit>/<enderEmit>
+        const cnpjEmitente = extrairTag(emitBlock, 'CNPJ') || extrairTag(emitBlock, 'CPF');
+        const enderEmitBlock = extrairTag(emitBlock, 'enderEmit') || emitBlock;
+        const ufEmitente = (extrairTag(enderEmitBlock, 'UF') || '').toUpperCase();
+
+        // 4. Destinatário: extrai UF estritamente de <dest>/<enderDest>/<UF>
+        const enderDestBlock = extrairTag(destBlock, 'enderDest');
+        if (!enderDestBlock) {
+            throw new Error("Bloco de endereço do destinatário (<enderDest>) ausente no XML da NF-e.");
+        }
+        const ufDestinatario = (extrairTag(enderDestBlock, 'UF') || '').toUpperCase();
+        const destMun = extrairTag(enderDestBlock, 'cMun');
+
+        const destCnpj = extrairTag(destBlock, 'CNPJ');
+        const destCpf = extrairTag(destBlock, 'CPF');
+        const destCnpjCpf = destCnpj || destCpf || null;
+        const destTipoIdentificacao = destCnpj ? 'CNPJ' : (destCpf ? 'CPF' : null);
+        const destNome = decodificarEntidadesXml(extrairTag(destBlock, 'xNome'));
+        const indIEDest = extrairTag(destBlock, 'indIEDest');
+
+        // 5. Local de Entrega (<entrega>): verifica divergência entre UF do destinatário e UF de entrega física
+        let ufEntrega = null;
+        let munEntrega = null;
+        if (entregaBlock) {
+            const ufEntRaw = (extrairTag(entregaBlock, 'UF') || '').toUpperCase();
+            if (ufEntRaw && ufEntRaw !== 'EX') {
+                ufEntrega = ufEntRaw;
+                munEntrega = extrairTag(entregaBlock, 'cMun');
+            }
+        }
+
+        // 6. Valor do DIFAL Destino (<vICMSUFDest> e <vFCPUFDest> dentro de <ICMSTot>)
+        const vIcmsUfDestStr = extrairTag(icmsTotBlock, 'vICMSUFDest');
+        const vFcpUfDestStr = extrairTag(icmsTotBlock, 'vFCPUFDest');
+
+        if (!chaveAcessoNfe || !numeroNota || !cnpjEmitente || !ufDestinatario || vIcmsUfDestStr === null) {
+            throw new Error("Não foi possível extrair todos os dados fiscais essenciais (Chave 44 dígitos, nNF, Emitente, UF Destino ou vICMSUFDest) do XML da NF-e.");
+        }
+
+        if (!UFS_VALIDAS.has(ufDestinatario)) {
+            throw new Error(`UF do destinatário inválida ou exterior ('${ufDestinatario}') na NF-e ${numeroNota}.`);
+        }
+
+        // Bloqueio preventivo se houver divergência entre UF do Destinatário e UF de Entrega (<entrega>)
+        if (ufEntrega && ufEntrega !== ufDestinatario) {
+            throw new Error(
+                `BLOQUEIO FISCAL PREVENTIVO (NF-e ${numeroNota}): A UF do Destinatário (${ufDestinatario}) difere da UF do Local de Entrega (${ufEntrega}). Emissão automática suspensa para revisão fiscal humana.`
+            );
+        }
+
+        // Bloqueio se operação for interna (UF emitente == UF destinatário ou idDest == 1)
+        if ((ufEmitente && ufEmitente === ufDestinatario) || idDest === '1') {
+            throw new Error(
+                `Operação interna detectada na NF-e ${numeroNota} (Emitente: ${ufEmitente} -> Destino: ${ufDestinatario}). Não há recolhimento de GNRE DIFAL interestadual.`
+            );
+        }
+
+        // 7. Datas de emissão e apuração
+        const dhEmi = extrairTag(ideBlock, 'dhEmi') || extrairTag(ideBlock, 'dEmi') || new Date().toISOString();
         const anoApur = dhEmi.substring(0, 4);
         const mesApur = dhEmi.substring(5, 7);
-        const diaEmi = dhEmi.substring(8, 10);
-        
         const dataEmissaoFormatadaRJ = dhEmi.substring(0, 10);
         const hoje = new Date().toISOString().split('T')[0];
 
-        // Extrai dados da transportadora (<transp> -> <transporta>)
-        const transpMatch = xml.match(/<transp>[\s\S]*?<\/transp>/);
+        // 8. Transportadora (<transp>/<transporta>)
         let carrierName = 'NÃO INFORMADA / PRÓPRIA';
         let carrierCnpj = null;
-        if (transpMatch) {
-            const xNomeMatch = transpMatch[0].match(/<xNome>([^<]+)<\/xNome>/);
-            const cnpjTranspMatch = transpMatch[0].match(/<CNPJ>([^<]+)<\/CNPJ>/);
-            if (xNomeMatch) {
-                carrierName = xNomeMatch[1].trim();
-            }
-            if (cnpjTranspMatch) {
-                carrierCnpj = cnpjTranspMatch[1].trim();
-            }
+        if (transpBlock) {
+            const transportaBlock = extrairTag(transpBlock, 'transporta') || transpBlock;
+            const xNomeTransp = extrairTag(transportaBlock, 'xNome');
+            const cnpjTransp = extrairTag(transportaBlock, 'CNPJ') || extrairTag(transportaBlock, 'CPF');
+            if (xNomeTransp) carrierName = decodificarEntidadesXml(xNomeTransp);
+            if (cnpjTransp) carrierCnpj = cnpjTransp;
         }
 
-        // Normalização amigável de nomes comerciais conhecidos (Total Express, MT Log, Gollog, Correios)
         let carrierDisplay = carrierName;
         const cNomeUpper = carrierName.toUpperCase();
         if (cNomeUpper.includes('TEX COURIER') || cNomeUpper.includes('TOTAL EXPRESS') || carrierCnpj === '73939449000193') {
@@ -85,29 +156,38 @@ function extrairDadosNfeXML(xml) {
             carrierDisplay = 'MT LOG';
         } else if (cNomeUpper.includes('GOL') || cNomeUpper.includes('GOLLOG')) {
             carrierDisplay = 'GOL LOG (GOL)';
-        } else if (cNomeUpper.includes('CORREIOS')) {
+        } else if (cNomeUpper.includes('CORREIOS') || cNomeUpper.includes('EBCT')) {
             carrierDisplay = 'CORREIOS';
         }
 
+        const valorDifalNum = parseFloat(vIcmsUfDestStr) || 0;
+        const valorFcpNum = parseFloat(vFcpUfDestStr) || 0;
+
         return {
-            ufFavorecida: ufDestMatch[1],
-            cnpjEmitente: emitenteMatch[1],
+            ufFavorecida: ufDestinatario,
+            ufEmitente: ufEmitente || null,
+            ufDestinatario: ufDestinatario,
+            ufEntrega: ufEntrega || null,
+            idDest: idDest || null,
+            indIEDest: indIEDest || null,
+            cnpjEmitente: cnpjEmitente.replace(/\D/g, ''),
             codigoReceita: "100102", // DIFAL Consumidor Final
-            valor: parseFloat(valorDifalMatch[1]).toFixed(2),
+            valor: valorDifalNum.toFixed(2),
+            valorFecp: valorFcpNum > 0 ? valorFcpNum.toFixed(2) : null,
             dataVencimento: hoje,
             tipoDocumentoOrigem: "10", // NF-e
-            documentoOrigem: numeroMatch[1],
-            chaveAcessoNfe: chaveMatch[1],
-            
-            destCnpjCpf,
+            documentoOrigem: numeroNota.replace(/\D/g, '') || numeroNota,
+            chaveAcessoNfe: chaveAcessoNfe,
+
+            destCnpjCpf: destCnpjCpf ? destCnpjCpf.replace(/\D/g, '') : null,
             destTipoIdentificacao,
             destNome,
-            destMun,
+            destMun: munEntrega || destMun,
             anoApuracao: anoApur,
             mesApuracao: mesApur,
             dataEmissaoRJ: dataEmissaoFormatadaRJ,
             carrierName: carrierDisplay,
-            carrierCnpj: carrierCnpj
+            carrierCnpj: carrierCnpj ? carrierCnpj.replace(/\D/g, '') : null
         };
     } catch (err) {
         throw new Error(`Falha ao ler XML da NF-e: ${err.message}`);
@@ -119,17 +199,18 @@ function extrairDadosNfeXML(xml) {
  */
 function extrairItensNfe(xml) {
     const itens = [];
-    const regexDet = /<det\s+nItem="([0-9]+)">([\s\S]*?)<\/det>/g;
+    const regexDet = /<(?:[a-zA-Z0-9_]+:)?det\s+[^>]*nItem=["']([0-9]+)["'][^>]*>([\s\S]*?)<\/(?:[a-zA-Z0-9_]+:)?det>/gi;
     let m;
     while ((m = regexDet.exec(xml)) !== null) {
         const nItem = parseInt(m[1], 10);
         const bloco = m[2];
-        const cProd = bloco.match(/<cProd>([^<]+)<\/cProd>/)?.[1] || '';
-        const xProd = bloco.match(/<xProd>([^<]+)<\/xProd>/)?.[1] || 'PRODUTO';
-        const qCom = parseFloat(bloco.match(/<qCom>([^<]+)<\/qCom>/)?.[1] || 1);
-        const vUnCom = parseFloat(bloco.match(/<vUnCom>([^<]+)<\/vUnCom>/)?.[1] || 0);
-        const vProd = parseFloat(bloco.match(/<vProd>([^<]+)<\/vProd>/)?.[1] || 0);
-        const ncm = bloco.match(/<NCM>([^<]+)<\/NCM>/)?.[1] || '';
+        const prodBlock = extrairTag(bloco, 'prod') || bloco;
+        const cProd = extrairTag(prodBlock, 'cProd') || '';
+        const xProd = decodificarEntidadesXml(extrairTag(prodBlock, 'xProd') || 'PRODUTO');
+        const qCom = parseFloat(extrairTag(prodBlock, 'qCom') || 1);
+        const vUnCom = parseFloat(extrairTag(prodBlock, 'vUnCom') || 0);
+        const vProd = parseFloat(extrairTag(prodBlock, 'vProd') || 0);
+        const ncm = extrairTag(prodBlock, 'NCM') || '';
 
         itens.push({
             itemIndex: nItem,
@@ -148,18 +229,20 @@ function extrairItensNfe(xml) {
  * Identifica se a nota é uma devolução de cliente e extrai as referências
  */
 function extrairDadosDevolucaoXML(xml) {
-    const tpNF = xml.match(/<tpNF>([^<]+)<\/tpNF>/)?.[1]; // 0=Entrada, 1=Saída
-    const finNFe = xml.match(/<finNFe>([^<]+)<\/finNFe>/)?.[1]; // 4=Devolução
-    const natOp = (xml.match(/<natOp>([^<]+)<\/natOp>/)?.[1] || '').trim();
+    const ideBlock = extrairTag(xml, 'ide') || xml;
+    const tpNF = extrairTag(ideBlock, 'tpNF'); // 0=Entrada, 1=Saída
+    const finNFe = extrairTag(ideBlock, 'finNFe'); // 4=Devolução
+    const natOp = decodificarEntidadesXml(extrairTag(ideBlock, 'natOp') || '');
     const isDevolucao = finNFe === '4' || tpNF === '0' || natOp.toLowerCase().includes('devolu');
 
     if (!isDevolucao) return null;
 
-    const returnNfNumber = xml.match(/<nNF>([^<]+)<\/nNF>/)?.[1];
-    const returnChaveNfe = xml.match(/<infNFe\s+[^>]*Id="NFe([^"]+)"/)?.[1];
-    const refNFe = xml.match(/<refNFe>([^<]+)<\/refNFe>/)?.[1] || null;
-    const vNF = parseFloat(xml.match(/<vNF>([^<]+)<\/vNF>/)?.[1] || 0);
-    const dEmi = xml.match(/<dhEmi>([^<]+)<\/dhEmi>/)?.[1] || new Date().toISOString();
+    const returnNfNumber = extrairTag(ideBlock, 'nNF');
+    const returnChaveNfe = xml.match(/<infNFe\s+[^>]*Id=["']NFe(\d{44})["']/i)?.[1] || extrairTag(xml, 'chNFe');
+    const refNFe = extrairTag(ideBlock, 'refNFe') || null;
+    const icmsTotBlock = extrairTag(xml, 'ICMSTot') || xml;
+    const vNF = parseFloat(extrairTag(icmsTotBlock, 'vNF') || 0);
+    const dEmi = extrairTag(ideBlock, 'dhEmi') || extrairTag(ideBlock, 'dEmi') || new Date().toISOString();
 
     let originalNfNumber = null;
     if (refNFe && refNFe.length === 44) {
@@ -180,12 +263,16 @@ function extrairDadosDevolucaoXML(xml) {
 
 function normalizarDocumentoOrigem(doc) {
     if (!doc) return "SEM_NUMERO";
-    const limpo = doc.replace(/[^A-Za-z0-9]/g, '');
+    const limpo = String(doc).replace(/[^A-Za-z0-9]/g, '');
     if (limpo.length === 44 && /^\d+$/.test(limpo)) {
         const nfNum = parseInt(limpo.substring(25, 34), 10);
         if (!isNaN(nfNum)) {
             return String(nfNum);
         }
+    }
+    if (/^\d+$/.test(limpo)) {
+        const semZeros = String(parseInt(limpo, 10));
+        if (semZeros && semZeros !== 'NaN') return semZeros;
     }
     return limpo;
 }
@@ -197,21 +284,10 @@ function extrairDadosGuiaXML(xml) {
         if (sitProcess) {
             const codSit = extrairTag(sitProcess, 'codigo');
             const descSit = extrairTag(sitProcess, 'descricao');
-            
+
             // 402 = Processado com sucesso, 403 = Processado com pendências
             if (codSit && codSit !== '402' && codSit !== '403') {
-                let descSitLimpa = (descSit || "Rejeição geral do lote")
-                    .replace(/&#xE3;/g, 'ã')
-                    .replace(/&#xE7;/g, 'ç')
-                    .replace(/&#xED;/g, 'í')
-                    .replace(/&#xE1;/g, 'á')
-                    .replace(/&#xE9;/g, 'é')
-                    .replace(/&#xF3;/g, 'ó')
-                    .replace(/&#xFA;/g, 'ú')
-                    .replace(/&#xE2;/g, 'â')
-                    .replace(/&#xEA;/g, 'ê')
-                    .replace(/&#xF4;/g, 'ô')
-                    .replace(/&#xFB;/g, 'û');
+                const descSitLimpa = decodificarEntidadesXml(descSit || "Rejeição geral do lote");
                 throw new Error(`O Lote foi rejeitado pelo governo: ${descSitLimpa} (Código ${codSit})`);
             }
         }
@@ -219,131 +295,109 @@ function extrairDadosGuiaXML(xml) {
         if (!xml.includes('<guia') && !xml.includes(':guia')) {
             const motivoRejeicao = extrairTag(xml, 'motivoRejeicao') || extrairTag(xml, 'motivosRejeicao');
             const codigoRejeicao = extrairTag(xml, 'codigo') || extrairTag(xml, 'codigoRejeicao');
-            
+
             if (motivoRejeicao || (codigoRejeicao && codigoRejeicao === '102')) {
-                const descRejeicao = extrairTag(xml, 'descricao') || "Rejeição geral do lote";
+                const descRejeicao = decodificarEntidadesXml(extrairTag(xml, 'descricao') || "Rejeição geral do lote");
                 throw new Error(`O Lote foi rejeitado pelo governo: ${descRejeicao}`);
             }
         }
 
         const guias = [];
-        const regexGuia = /<(?:[a-zA-Z0-9]+:)?guia[^>]*>([\s\S]*?)<\/(?:[a-zA-Z0-9]+:)?guia>/g;
-        let matchGuia;
+        const rejeicoesDetalhadas = [];
         const rejeicoesLote = [];
+
+        const regexGuia = /<(?:[a-zA-Z0-9_]+:)?guia\b[^>]*>([\s\S]*?)<\/(?:[a-zA-Z0-9_]+:)?guia>/gi;
+        let matchGuia;
 
         while ((matchGuia = regexGuia.exec(xml)) !== null) {
             const xmlGuia = matchGuia[1];
+            const ufGuia = (extrairTag(xmlGuia, 'ufFavorecida') || extrairTag(xmlGuia, 'c01_UfFavorecida') || '').toUpperCase() || null;
+            const docOrigemBruto = extrairTag(xmlGuia, 'documentoOrigem') || extrairTag(xmlGuia, 'c04_docOrigem') || null;
+            const docOrigemNorm = normalizarDocumentoOrigem(docOrigemBruto);
 
-            // Verifica rejeição individual da guia
+            // Verifica situação individual da guia (0 = Processada com sucesso)
             const situacaoGuia = extrairTag(xmlGuia, 'situacaoGuia');
             if (situacaoGuia && situacaoGuia !== '0') {
                 const motivos = [];
-                const regexMotivo = /<(?:[a-zA-Z0-9]+:)?descricao>([^<]+)<\/(?:[a-zA-Z0-9]+:)?descricao>/g;
+                const regexMotivo = /<(?:[a-zA-Z0-9_]+:)?descricao>([^<]+)<\/(?:[a-zA-Z0-9_]+:)?descricao>/gi;
                 let matchMotivo;
                 while ((matchMotivo = regexMotivo.exec(xmlGuia)) !== null) {
-                    motivos.push(matchMotivo[1]);
+                    motivos.push(decodificarEntidadesXml(matchMotivo[1]));
                 }
-                const erroMsg = motivos.length > 0 ? motivos.join(' | ') : "Guia invalidada pela SEFAZ";
-                
-                let erroMsgLimpo = erroMsg
-                    .replace(/&#xE3;/g, 'ã')
-                    .replace(/&#xE7;/g, 'ç')
-                    .replace(/&#xED;/g, 'í')
-                    .replace(/&#xE1;/g, 'á')
-                    .replace(/&#xE9;/g, 'é')
-                    .replace(/&#xF3;/g, 'ó')
-                    .replace(/&#xFA;/g, 'ú')
-                    .replace(/&#xE2;/g, 'â')
-                    .replace(/&#xEA;/g, 'ê')
-                    .replace(/&#xF4;/g, 'ô')
-                    .replace(/&#xFB;/g, 'û');
+                const erroMsgLimpo = motivos.length > 0 ? motivos.join(' | ') : `Guia rejeitada pela SEFAZ (situação ${situacaoGuia})`;
 
-                const nfNum = extrairTag(xmlGuia, 'documentoOrigem') || 'NFe';
-                rejeicoesLote.push(`NF ${nfNum}: ${erroMsgLimpo}`);
-                console.warn(`⚠ Guia individual ignorada devido a falhas: NF ${nfNum} - ${erroMsgLimpo}`);
+                rejeicoesLote.push(`NF ${docOrigemNorm}: ${erroMsgLimpo}`);
+                rejeicoesDetalhadas.push({
+                    documentoOrigem: docOrigemNorm,
+                    ufFavorecida: ufGuia,
+                    situacaoGuia,
+                    motivo: erroMsgLimpo
+                });
+                console.warn(`⚠ Guia individual rejeitada pela SEFAZ: NF ${docOrigemNorm} (${ufGuia || 'UF'}) - ${erroMsgLimpo}`);
                 continue;
             }
 
-            const codigoBarras = extrairTag(xmlGuia, 'codigoBarras');
-            const linhaDigitavel = extrairTag(xmlGuia, 'linhaDigitavel');
-            
-            const valorStr = extrairTag(xmlGuia, 'valorGNRE') || 
-                             extrairTag(xmlGuia, 'c10_valorTotal') || 
+            const codigoBarras = extrairTag(xmlGuia, 'codigoBarras') || extrairTag(xmlGuia, 'c30_codigoBarras');
+            const linhaDigitavel = extrairTag(xmlGuia, 'linhaDigitavel') || extrairTag(xmlGuia, 'c29_linhaDigitavel');
+            const numeroControle = extrairTag(xmlGuia, 'nossoNumero') || extrairTag(xmlGuia, 'c16_numeroControle') || extrairTag(xmlGuia, 'numeroControle');
+            const codigoReceita = extrairTag(xmlGuia, 'receita') || extrairTag(xmlGuia, 'c02_receita') || '100102';
+
+            const valorStr = extrairTag(xmlGuia, 'valorGNRE') ||
+                             extrairTag(xmlGuia, 'c10_valorTotal') ||
                              extrairTag(xmlGuia, 'valor');
-            
-            const vencimentoStr = extrairTag(xmlGuia, 'dataVencimento') || 
-                                   extrairTag(xmlGuia, 'c14_dataVencimento');
 
-            const docOrigemStr = extrairTag(xmlGuia, 'documentoOrigem') ||
-                                 extrairTag(xmlGuia, 'c05_referencia');
+            const vencimentoStr = extrairTag(xmlGuia, 'dataVencimento') ||
+                                  extrairTag(xmlGuia, 'c14_dataVencimento');
 
-            if (!codigoBarras && !linhaDigitavel) {
+            const codBarrasLimpo = codigoBarras ? codigoBarras.replace(/[^0-9]/g, '') : '';
+            const linDigitavelLimpa = linhaDigitavel ? linhaDigitavel.replace(/[^0-9]/g, '') : codBarrasLimpo;
+
+            // Exige código de barras numérico real retornado pelo portal (44 ou 48 dígitos)
+            if (!codBarrasLimpo || codBarrasLimpo.length < 44) {
+                rejeicoesDetalhadas.push({
+                    documentoOrigem: docOrigemNorm,
+                    ufFavorecida: ufGuia,
+                    situacaoGuia: situacaoGuia || 'SEM_BARRAS',
+                    motivo: 'Portal SEFAZ não retornou código de barras oficial válido para esta guia.'
+                });
                 continue;
             }
 
-            const codBarrasLimpo = codigoBarras ? codigoBarras.replace(/[^0-9]/g, '') : (linhaDigitavel ? linhaDigitavel.replace(/[^0-9]/g, '') : '');
-            const linDigitavelLimpa = linhaDigitavel ? linhaDigitavel.replace(/[^0-9]/g, '') : codBarrasLimpo;
-            const docOrigemLimpo = normalizarDocumentoOrigem(docOrigemStr);
-
-            const ufFavorecida = extrairTag(xmlGuia, 'ufFavorecida');
-            const chaveMatch = xmlGuia.match(/\d{44}/);
+            const chaveMatch = xmlGuia.match(/\b\d{44}\b/);
             const chaveAcessoNfe = chaveMatch ? chaveMatch[0] : null;
 
             guias.push({
+                situacaoGuia: situacaoGuia || '0',
+                numeroControle: numeroControle || null,
+                codigoReceita,
                 codigoBarras: codBarrasLimpo,
                 linhaDigitavel: linDigitavelLimpa,
                 valor: parseFloat(valorStr ? valorStr : 0),
-                dataVencimento: vencimentoStr ? vencimentoStr : "2026-07-15",
-                documentoOrigem: docOrigemLimpo,
-                ufFavorecida: ufFavorecida || null,
+                dataVencimento: vencimentoStr || null,
+                documentoOrigem: docOrigemNorm,
+                ufFavorecida: ufGuia,
                 chaveAcessoNfe: chaveAcessoNfe || null
             });
         }
 
-        // Se não encontrou guias em lotes, tenta como guia única
-        if (guias.length === 0) {
-            const codigoBarras = extrairTag(xml, 'codigoBarras');
-            const linhaDigitavel = extrairTag(xml, 'linhaDigitavel');
-            
-            const valorStr = extrairTag(xml, 'valorGNRE') || 
-                             extrairTag(xml, 'c10_valorTotal') || 
-                             extrairTag(xml, 'valor');
-            
-            const vencimentoStr = extrairTag(xml, 'dataVencimento') || 
-                                   extrairTag(xml, 'c14_dataVencimento');
-
-            const docOrigemStr = extrairTag(xml, 'documentoOrigem');
-
-            if (codigoBarras || linhaDigitavel) {
-                const codBarrasLimpo = codigoBarras ? codigoBarras.replace(/[^0-9]/g, '') : (linhaDigitavel ? linhaDigitavel.replace(/[^0-9]/g, '') : '');
-                const linDigitavelLimpa = linhaDigitavel ? linhaDigitavel.replace(/[^0-9]/g, '') : codBarrasLimpo;
-                const docOrigemLimpo = normalizarDocumentoOrigem(docOrigemStr);
-                
-                const ufFavorecida = extrairTag(xml, 'ufFavorecida');
-                const chaveMatch = xml.match(/\d{44}/);
-                const chaveAcessoNfe = chaveMatch ? chaveMatch[0] : null;
-
-                guias.push({
-                    codigoBarras: codBarrasLimpo,
-                    linhaDigitavel: linDigitavelLimpa,
-                    valor: parseFloat(valorStr ? valorStr : 0),
-                    dataVencimento: vencimentoStr ? vencimentoStr : "2026-07-15",
-                    documentoOrigem: docOrigemLimpo,
-                    ufFavorecida: ufFavorecida || null,
-                    chaveAcessoNfe: chaveAcessoNfe || null
-                });
-            }
-        }
+        // Anexa rejeições individuais ao array retornado para conciliação no banco
+        Object.defineProperty(guias, 'rejeicoesDetalhadas', {
+            value: rejeicoesDetalhadas,
+            enumerable: false
+        });
 
         if (guias.length === 0) {
             if (rejeicoesLote.length > 0) {
-                throw new Error(`Todas as guias do lote foram rejeitadas pelo governo: ${rejeicoesLote.join('; ')}`);
+                const err = new Error(`Todas as guias do lote foram rejeitadas pelo governo: ${rejeicoesLote.join('; ')}`);
+                err.rejeicoesDetalhadas = rejeicoesDetalhadas;
+                throw err;
             }
-            throw new Error("Nenhuma guia processada com sucesso foi localizada no XML de resposta.");
+            throw new Error("Nenhuma guia processada com sucesso (com código de barras oficial) foi localizada no XML de resposta.");
         }
 
         return guias;
     } catch (err) {
+        if (err.rejeicoesDetalhadas) throw err;
         throw new Error(`Falha no processador do XML Fiscal: ${err.message}`);
     }
 }
@@ -353,5 +407,6 @@ module.exports = {
     extrairDadosNfeXML,
     extrairDadosGuiaXML,
     extrairItensNfe,
-    extrairDadosDevolucaoXML
+    extrairDadosDevolucaoXML,
+    normalizarDocumentoOrigem
 };

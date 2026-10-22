@@ -65,16 +65,24 @@ function requestAsaas(endpoint, method, apiKey, body = null, env = 'sandbox') {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
                         resolve(data);
                     } else {
-                        reject(new Error(`Erro HTTP ${res.statusCode} na API Asaas: ${data.substring(0, 200)}`));
+                        const err = new Error(`Erro HTTP ${res.statusCode} na API Asaas: ${data.substring(0, 200)}`);
+                        err.statusCode = res.statusCode;
+                        reject(err);
                     }
                 }
             });
         });
 
-        req.on('error', (err) => reject(new Error('Falha de conexão com Asaas: ' + err.message)));
+        req.on('error', (err) => {
+            const wrapped = new Error('Falha de conexão com Asaas: ' + err.message);
+            wrapped.isNetworkOrTimeout = true;
+            reject(wrapped);
+        });
         req.setTimeout(25000, () => {
             req.destroy();
-            reject(new Error('Timeout de comunicação com API Asaas (25s)'));
+            const timeoutErr = new Error('Timeout de comunicação com API Asaas (25s)');
+            timeoutErr.isNetworkOrTimeout = true;
+            reject(timeoutErr);
         });
 
         if (postData) req.write(postData);
@@ -86,12 +94,16 @@ function requestAsaas(endpoint, method, apiKey, body = null, env = 'sandbox') {
  * 1. Consulta o Saldo da Conta Asaas
  */
 async function obterSaldo(apiKey, env = 'sandbox') {
-    if (!apiKey || env === 'simulado') {
+    if (env === 'simulado') {
         return {
             balance: 10000.00,
             simulado: true,
-            mensagem: 'Modo Simulado: Saldo virtual disponível para homologação.'
+            mensagem: 'Modo Simulado: Saldo virtual disponível apenas para homologação.'
         };
+    }
+
+    if (!apiKey) {
+        throw new Error('Chave de API do Asaas não configurada.');
     }
 
     try {
@@ -111,11 +123,11 @@ async function obterSaldo(apiKey, env = 'sandbox') {
  */
 async function simularPagamento(identificationField, apiKey, env = 'sandbox') {
     const cleanLine = String(identificationField || '').replace(/[^0-9]/g, '');
-    if (!cleanLine || cleanLine.length < 40) {
+    if (!cleanLine || cleanLine.length < 44) {
         throw new Error('Linha digitável ou código de barras da guia inválido para pagamento.');
     }
 
-    if (!apiKey || env === 'simulado') {
+    if (env === 'simulado') {
         return {
             canBePaid: true,
             value: 0,
@@ -123,6 +135,10 @@ async function simularPagamento(identificationField, apiKey, env = 'sandbox') {
             description: 'Simulação de GNRE / DUA-e aprovada no ambiente simulado.',
             simulated: true
         };
+    }
+
+    if (!apiKey) {
+        throw new Error('Chave de API do Asaas ausente para validação bancária.');
     }
 
     return await requestAsaas('/bill/simulate', 'POST', apiKey, { identificationField: cleanLine }, env);
@@ -133,23 +149,26 @@ async function simularPagamento(identificationField, apiKey, env = 'sandbox') {
  */
 async function pagarGuia({ identificationField, value, description, externalReference, dueDate }, apiKey, env = 'sandbox') {
     const cleanLine = String(identificationField || '').replace(/[^0-9]/g, '');
-    if (!cleanLine || cleanLine.length < 40) {
-        throw new Error('Código de barras/linha digitável inválido para envio ao Asaas.');
+    if (!cleanLine || cleanLine.length < 44) {
+        throw new Error('Código de barras/linha digitável inválido (mínimo 44 dígitos numéricos oficiais) para envio ao Asaas.');
     }
 
-    // Modo Simulado quando não há chave configurada
-    if (!apiKey || env === 'simulado') {
+    if (env === 'simulado') {
         const simulatedBillId = 'bill_sim_' + Math.floor(10000000 + Math.random() * 90000000);
         return {
             id: simulatedBillId,
             status: 'PENDING',
             value: parseFloat(value || 0),
             identificationField: cleanLine,
-            description: description || 'Pagamento DIFAL GNRE',
+            description: description || 'Pagamento DIFAL GNRE (Simulado)',
             externalReference: externalReference,
             simulated: true,
             scheduledDate: new Date().toISOString().split('T')[0]
         };
+    }
+
+    if (!apiKey) {
+        throw new Error('Chave de API do Asaas obrigatória para pagamento real.');
     }
 
     const payload = {
@@ -169,7 +188,7 @@ async function pagarGuia({ identificationField, value, description, externalRefe
 async function consultarPagamento(billId, apiKey, env = 'sandbox') {
     if (!billId) throw new Error('ID do pagamento Asaas não informado.');
 
-    if (!apiKey || env === 'simulado' || String(billId).startsWith('bill_sim_')) {
+    if (env === 'simulado' || String(billId).startsWith('bill_sim_')) {
         return {
             id: billId,
             status: 'PAID',
@@ -179,104 +198,167 @@ async function consultarPagamento(billId, apiKey, env = 'sandbox') {
         };
     }
 
+    if (!apiKey) {
+        throw new Error('Chave de API do Asaas ausente para consulta de pagamento.');
+    }
+
     return await requestAsaas(`/bill/${encodeURIComponent(billId)}`, 'GET', apiKey, null, env);
 }
 
 /**
- * 5. Baixa o Comprovante Oficial em PDF da URL informada pelo Asaas
+ * Valida se uma URL externa de comprovante pertence a domínios confiáveis (prevenção de SSRF)
  */
-function downloadExternalPdf(url) {
+function isTrustedReceiptUrl(urlStr) {
+    try {
+        const parsed = new URL(urlStr);
+        if (parsed.protocol !== 'https:') return false;
+        const host = parsed.hostname.toLowerCase();
+        if (
+            host === 'asaas.com' ||
+            host.endsWith('.asaas.com') ||
+            host.endsWith('.amazonaws.com') ||
+            host.endsWith('.supabase.co')
+        ) {
+            return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * 5. Baixa o Comprovante Oficial em PDF da URL informada pelo Asaas (com proteção SSRF e limite de redirects)
+ */
+function downloadExternalPdf(url, redirectsLeft = 3) {
     return new Promise((resolve, reject) => {
-        const parsed = new URL(url);
-        const lib = parsed.protocol === 'https:' ? https : http;
-        lib.get(url, (res) => {
+        if (!isTrustedReceiptUrl(url)) {
+            return reject(new Error('URL de comprovante rejeitada por política de segurança (domínio não confiável).'));
+        }
+        if (redirectsLeft < 0) {
+            return reject(new Error('Limite máximo de redirecionamentos excedido ao baixar comprovante.'));
+        }
+
+        const req = https.get(url, { timeout: 20000 }, (res) => {
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                return downloadExternalPdf(res.headers.location).then(resolve).catch(reject);
+                const nextUrl = new URL(res.headers.location, url).toString();
+                return downloadExternalPdf(nextUrl, redirectsLeft - 1).then(resolve).catch(reject);
             }
             if (res.statusCode !== 200) {
-                return reject(new Error(`Falha ao baixar comprovante (HTTP ${res.statusCode})`));
+                return reject(new Error(`Falha ao baixar comprovante oficial (HTTP ${res.statusCode})`));
             }
             const chunks = [];
-            res.on('data', c => chunks.push(c));
+            let totalBytes = 0;
+            const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+            res.on('data', c => {
+                totalBytes += c.length;
+                if (totalBytes > MAX_BYTES) {
+                    req.destroy();
+                    return reject(new Error('Arquivo de comprovante excede o tamanho máximo permitido (10MB).'));
+                }
+                chunks.push(c);
+            });
             res.on('end', () => resolve(Buffer.concat(chunks)));
-        }).on('error', reject);
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Timeout ao baixar PDF de comprovante externo.'));
+        });
+        req.on('error', reject);
     });
 }
 
 /**
- * 6. Gera Comprovante Bancário de Homologação em PDF (usado em modo simulado ou fallback)
+ * 6. Gera Comprovante de Homologação em PDF (USO EXCLUSIVO EM AMBIENTE SIMULADO/SANDBOX)
+ * Nunca deve ser chamado em Produção nem apresentar aparência de recibo SISBACEN real.
  */
-async function gerarComprovanteSimuladoPdf({ nfNumber, uf, valor, billId, dataPagamento, autenticacaoBancaria, razaoSocial }) {
+async function gerarComprovanteSimuladoPdf(params = {}, maybeGuide = null) {
+    // Suporte defensivo caso chamado com (tenant, guide)
+    let nfNumber, uf, valor, billId, dataPagamento, razaoSocial, environment;
+    if (maybeGuide) {
+        environment = params?.environment;
+        razaoSocial = params?.razao_social || params?.razaoSocial;
+        nfNumber = maybeGuide.nf_number || maybeGuide.documentoOrigem;
+        uf = maybeGuide.uf || maybeGuide.ufFavorecida;
+        valor = maybeGuide.value || maybeGuide.valor;
+        billId = maybeGuide.asaas_bill_id;
+        dataPagamento = maybeGuide.paid_at;
+    } else {
+        ({ nfNumber, uf, valor, billId, dataPagamento, razaoSocial, environment } = params);
+    }
+
+    if (environment === 'producao' || environment === 'production') {
+        throw new Error('PROIBIDO: Geração de comprovante simulado bloqueada em ambiente de Produção.');
+    }
+
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]); // A4
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    const azulEscuro = rgb(0.05, 0.15, 0.35);
+    const vermelhoAlerta = rgb(0.75, 0.1, 0.1);
     const cinzaTexto = rgb(0.2, 0.25, 0.3);
-    const verdeSucesso = rgb(0.08, 0.55, 0.25);
 
-    // Cabeçalho
+    // Faixa superior de aviso de simulação
     page.drawRectangle({
         x: 40,
-        y: 740,
+        y: 735,
         width: 515,
-        height: 60,
-        color: rgb(0.96, 0.98, 1.0)
+        height: 65,
+        color: rgb(1.0, 0.94, 0.94)
     });
 
-    page.drawText('COMPROVANTE DE PAGAMENTO DE TRIBUTO ESTADUAL (DIFAL/GNRE)', {
+    page.drawText('DEMONSTRAÇÃO DE HOMOLOGAÇÃO — SEM VALOR FISCAL OU BANCÁRIO', {
         x: 55,
-        y: 770,
-        size: 13,
+        y: 772,
+        size: 11.5,
         font: fontBold,
-        color: azulEscuro
+        color: vermelhoAlerta
     });
 
-    page.drawText('Conta Digital de Liquidação Tributária — Asaas Pagamentos', {
+    page.drawText('Ambiente Simulado de Testes — NÃO UTILIZAR PARA LIBERAÇÃO DE CARGA REAL', {
         x: 55,
         y: 752,
-        size: 10,
-        font: fontRegular,
-        color: cinzaTexto
+        size: 9.5,
+        font: fontBold,
+        color: vermelhoAlerta
     });
 
-    // Tag de Status
+    // Tag de Status Simulado
     page.drawRectangle({
         x: 40,
-        y: 690,
+        y: 685,
         width: 515,
         height: 35,
-        color: rgb(0.93, 0.98, 0.94)
+        color: rgb(0.98, 0.95, 0.88)
     });
 
-    page.drawText('[OK] PAGAMENTO CONFIRMADO E LIQUIDADO COM SUCESSO', {
+    page.drawText('[SIMULAÇÃO] PAGAMENTO FICTÍCIO DE TESTE (AMBIENTE NÃO PRODUTIVO)', {
         x: 55,
-        y: 703,
-        size: 11,
+        y: 698,
+        size: 10.5,
         font: fontBold,
-        color: verdeSucesso
+        color: vermelhoAlerta
     });
 
-    // Tabela de Dados do Pagamento
     const campos = [
-        ['Empresa Pagadora:', razaoSocial || 'EMPRESA CONTRIBUINTE'],
-        ['Documento Fiscal Vinculado:', `NF-e Nº ${nfNumber} (UF Destino: ${uf})`],
-        ['Tipo de Arrecadação:', '100102 — ICMS Consumidor Final Não Contribuinte (DIFAL)'],
-        ['Valor Liquidado:', `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`],
-        ['Data do Débito / Pagamento:', dataPagamento || new Date().toLocaleString('pt-BR')],
-        ['ID da Transação Asaas:', billId || ('bill_' + Date.now())],
-        ['Autenticação Bancária (SISBACEN):', autenticacaoBancaria || `ASAAS.${Date.now()}.${Math.random().toString(36).substring(2, 10).toUpperCase()}`]
+        ['Empresa (Teste):', razaoSocial || 'EMPRESA EM HOMOLOGAÇÃO'],
+        ['Documento Vinculado:', `NF-e Nº ${nfNumber || 'N/A'} (UF: ${uf || 'N/A'})`],
+        ['Valor Simulado:', `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`],
+        ['Data da Simulação:', dataPagamento || new Date().toLocaleString('pt-BR')],
+        ['ID Simulado:', billId || 'bill_sim_teste'],
+        ['Autenticação Bancária:', 'SIMULACAO-SEM-AUTENTICACAO-BANCARIA']
     ];
 
-    let yPos = 650;
+    let yPos = 645;
     for (const [rotulo, valorCampo] of campos) {
         page.drawText(rotulo, {
             x: 55,
             y: yPos,
             size: 10,
             font: fontBold,
-            color: azulEscuro
+            color: cinzaTexto
         });
 
         page.drawText(String(valorCampo), {
@@ -287,7 +369,6 @@ async function gerarComprovanteSimuladoPdf({ nfNumber, uf, valor, billId, dataPa
             color: cinzaTexto
         });
 
-        // Linha divisória suave
         page.drawLine({
             start: { x: 55, y: yPos - 8 },
             end: { x: 540, y: yPos - 8 },
@@ -297,38 +378,6 @@ async function gerarComprovanteSimuladoPdf({ nfNumber, uf, valor, billId, dataPa
 
         yPos -= 32;
     }
-
-    // Rodapé de segurança fiscal para postos de fronteira
-    page.drawRectangle({
-        x: 40,
-        y: 350,
-        width: 515,
-        height: 65,
-        color: rgb(0.97, 0.97, 0.98)
-    });
-
-    page.drawText('AVISO FISCAL — FISCALIZAÇÃO INTERESTADUAL / POSTO FISCAL:', {
-        x: 55,
-        y: 395,
-        size: 9,
-        font: fontBold,
-        color: azulEscuro
-    });
-
-    page.drawText('Este documento comprova a quitação irrevogável da guia de recolhimento antes da saída da carga.', {
-        x: 55,
-        y: 380,
-        size: 8.5,
-        font: fontRegular,
-        color: cinzaTexto
-    });
-    page.drawText('O número de autenticação acima pode ser validado no sistema de liquidação bancária do convênio GNRE.', {
-        x: 55,
-        y: 367,
-        size: 8.5,
-        font: fontRegular,
-        color: cinzaTexto
-    });
 
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);

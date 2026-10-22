@@ -4,7 +4,6 @@
 const https = require('https');
 const fs = require('fs').promises;
 const path = require('path');
-const parserService = require('./parser_service');
 
 // URLs SEFAZ PE (Ambientes homologação e produção)
 const URLS_SEFAZ = {
@@ -18,6 +17,26 @@ const URLS_SEFAZ = {
     }
 };
 
+function escapeXml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 /**
  * Cria o agente HTTPS com certificado digital para autenticação mTLS
  */
@@ -26,11 +45,24 @@ function createHttpsAgent({ pfxBuffer, passphrase }) {
         throw new Error("Certificado PFX ausente para inicialização do agente mTLS.");
     }
 
+    // Validação TLS habilitada por padrão; permite override explícito apenas se SEFAZ_INSECURE_TLS=true
+    const rejectUnauthorized = process.env.SEFAZ_INSECURE_TLS === 'true' ? false : true;
+    const tlsOptions = {
+        pfx: pfxBuffer,
+        passphrase: passphrase,
+        keepAlive: true,
+        rejectUnauthorized
+    };
+
+    if (process.env.SEFAZ_CA_PEM) {
+        tlsOptions.ca = process.env.SEFAZ_CA_PEM;
+    }
+
     if (process.env.PROXY_HOST) {
         const proxyPort = process.env.PROXY_PORT || '8080';
         const proxyUser = process.env.PROXY_USER || '';
         const proxyPass = process.env.PROXY_PASSWORD || '';
-        
+
         let proxyUrl = '';
         if (proxyUser && proxyPass) {
             proxyUrl = `http://${proxyUser}:${proxyPass}@${process.env.PROXY_HOST}:${proxyPort}`;
@@ -40,23 +72,13 @@ function createHttpsAgent({ pfxBuffer, passphrase }) {
 
         try {
             const { HttpsProxyAgent } = require('https-proxy-agent');
-            return new HttpsProxyAgent(proxyUrl, {
-                pfx: pfxBuffer,
-                passphrase: passphrase,
-                keepAlive: true,
-                rejectUnauthorized: false
-            });
+            return new HttpsProxyAgent(proxyUrl, tlsOptions);
         } catch (err) {
             console.error("⚠️ Falha ao inicializar HttpsProxyAgent (certifique-se de rodar npm install):", err.message);
         }
     }
 
-    return new https.Agent({
-        pfx: pfxBuffer,
-        passphrase: passphrase,
-        keepAlive: true,
-        rejectUnauthorized: false
-    });
+    return new https.Agent(tlsOptions);
 }
 
 function sendSoapRequest(urlStr, soapAction, xmlPayload, agent) {
@@ -68,7 +90,7 @@ function sendSoapRequest(urlStr, soapAction, xmlPayload, agent) {
             path: url.pathname + url.search,
             port: url.port || 443,
             agent: agent,
-            timeout: 60000, // Timeout de 15 segundos
+            timeout: 60000,
             headers: {
                 'Content-Type': 'application/soap+xml; charset=utf-8;',
                 'SOAPAction': soapAction,
@@ -108,43 +130,48 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
 
     const emitente = {
         cnpj: dadosEmpresa.cnpj ? dadosEmpresa.cnpj.replace(/[^0-9]/g, '') : "",
-        razaoSocial: dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || "Empresa Emitente",
-        endereco: dadosEmpresa.endereco || "",
-        municipio: dadosEmpresa.municipio || "",
-        uf: dadosEmpresa.uf || "",
+        razaoSocial: escapeXml(limparTexto(dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || "Empresa Emitente").substring(0, 60)),
+        endereco: escapeXml(limparTexto(dadosEmpresa.endereco || "").substring(0, 60)),
+        municipio: escapeXml(dadosEmpresa.municipio || ""),
+        uf: escapeXml((dadosEmpresa.uf || "").toUpperCase()),
         cep: dadosEmpresa.cep ? dadosEmpresa.cep.replace(/[^0-9]/g, '') : ""
     };
-    
+
     for (const guia of listaGuias) {
+        const ufFav = (guia.ufFavorecida || '').toUpperCase().trim();
+        if (!ufFav || ufFav.length !== 2) {
+            throw new Error(`UF Favorecida ausente ou inválida para a NF ${guia.documentoOrigem || 'N/A'}.`);
+        }
+
         let xmlCamposExtras = '';
         let camposExtras = [];
 
         // Código do campo extra para a Chave de Acesso NFe conforme a UF
-        let codigoCampoChave = 55; // Padrão recomendado pela maioria das UFs
-        if (guia.ufFavorecida === 'MA') {
+        let codigoCampoChave = 55;
+        if (ufFav === 'MA') {
             codigoCampoChave = 94;
-        } else if (guia.ufFavorecida === 'MS') {
+        } else if (ufFav === 'MS') {
             codigoCampoChave = 88;
-        } else if (guia.ufFavorecida === 'PR') {
+        } else if (ufFav === 'PR') {
             codigoCampoChave = 107;
-        } else if (guia.ufFavorecida === 'SC') {
+        } else if (ufFav === 'SC') {
             codigoCampoChave = 84;
-        } else if (guia.ufFavorecida === 'PB') {
-            codigoCampoChave = 99; // Paraíba exige código 99 para chave da NFe
-        } else if (guia.ufFavorecida === 'SE') {
-            codigoCampoChave = 77; // Sergipe exige código 77 para chave da NFe
+        } else if (ufFav === 'PB') {
+            codigoCampoChave = 99;
+        } else if (ufFav === 'SE') {
+            codigoCampoChave = 77;
         }
 
         // UFs que não utilizam ou rejeitam campos adicionais na receita 100102
-        if (!['PE', 'RN', 'DF'].includes(guia.ufFavorecida)) {
+        if (!['PE', 'RN', 'DF'].includes(ufFav)) {
             if (guia.chaveAcessoNfe) {
-                camposExtras.push({ codigo: codigoCampoChave, valor: guia.chaveAcessoNfe });
+                camposExtras.push({ codigo: codigoCampoChave, valor: escapeXml(guia.chaveAcessoNfe) });
             }
         }
 
         // Caso especial do Rio de Janeiro com a data de emissão
-        if (guia.ufFavorecida === 'RJ' && guia.dataEmissaoRJ) {
-            camposExtras.push({ codigo: 117, valor: guia.dataEmissaoRJ });
+        if (ufFav === 'RJ' && guia.dataEmissaoRJ) {
+            camposExtras.push({ codigo: 117, valor: escapeXml(guia.dataEmissaoRJ) });
         }
 
         if (camposExtras.length > 0) {
@@ -159,39 +186,32 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
             xmlCamposExtras += '\n                </camposExtras>';
         }
 
-        // Determina o tipo de documento de origem e o valor
         let tipoDoc = guia.tipoDocumentoOrigem || '10';
         let numDoc = guia.documentoOrigem;
 
-        // Estados que exigem CHAVE DO DFe no documentoOrigem:
-        // RJ, SC, PE exigem tipo 24. AL, RN e DF exigem tipo 22!
-        if (['RJ', 'SC', 'PE'].includes(guia.ufFavorecida)) {
+        if (['RJ', 'SC', 'PE'].includes(ufFav)) {
             tipoDoc = '24';
             numDoc = guia.chaveAcessoNfe;
-        } else if (['AL', 'RN', 'DF'].includes(guia.ufFavorecida)) {
+        } else if (['AL', 'RN', 'DF'].includes(ufFav)) {
             tipoDoc = '22';
             numDoc = guia.chaveAcessoNfe;
         }
 
         let xmlDocOrigem = '';
-        // Apenas RS rejeita documentoOrigem na receita 100102 (usa apenas campo extra)
         const ufsRejeitamDocOrigem = ['RS'];
-        if (!ufsRejeitamDocOrigem.includes(guia.ufFavorecida) && numDoc) {
-            xmlDocOrigem = `\n                <documentoOrigem tipo="${tipoDoc}">${numDoc}</documentoOrigem>`;
+        if (!ufsRejeitamDocOrigem.includes(ufFav) && numDoc) {
+            xmlDocOrigem = `\n                <documentoOrigem tipo="${escapeXml(tipoDoc)}">${escapeXml(numDoc)}</documentoOrigem>`;
         }
 
-        // Convênio (exigido por AL na receita 100102)
         let xmlConvenio = '';
-        if (guia.ufFavorecida === 'AL') {
+        if (ufFav === 'AL') {
             xmlConvenio = '\n                <convenio>093/15</convenio>';
         }
 
-        // Bloco de referência de apuração (obrigatório em DF, MA, MS, SE e recomendado nas demais)
         let xmlReferencia = '';
         let mesAp = guia.mesApuracao;
         let anoAp = guia.anoApuracao;
-        if (guia.ufFavorecida === 'SE') {
-            // Sergipe em contingência exige mês e ano correntes
+        if (ufFav === 'SE') {
             const dObj = new Date();
             mesAp = String(dObj.getMonth() + 1).padStart(2, '0');
             anoAp = String(dObj.getFullYear());
@@ -200,35 +220,33 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
             xmlReferencia = `
                 <referencia>
                   <periodo>0</periodo>
-                  <mes>${mesAp}</mes>
-                  <ano>${anoAp}</ano>
+                  <mes>${escapeXml(mesAp)}</mes>
+                  <ano>${escapeXml(anoAp)}</ano>
                 </referencia>`;
         }
 
-        // Bloco de destinatário (obrigatório em RJ, MA, MS)
         let xmlDestinatario = '';
-        if (guia.destCnpjCpf) {
-            const nomeLimpo = limparTexto(guia.destNome).substring(0, 60);
-            const mun5Digitos = guia.destMun ? String(guia.destMun).slice(-5) : '';
+        if (guia.destCnpjCpf && (guia.destTipoIdentificacao === 'CNPJ' || guia.destTipoIdentificacao === 'CPF')) {
+            const nomeLimpo = escapeXml(limparTexto(guia.destNome).substring(0, 60));
+            const mun5Digitos = guia.destMun ? escapeXml(String(guia.destMun).slice(-5)) : '';
             xmlDestinatario = `
                 <contribuinteDestinatario>
                   <identificacao>
-                    <${guia.destTipoIdentificacao}>${guia.destCnpjCpf}</${guia.destTipoIdentificacao}>
+                    <${guia.destTipoIdentificacao}>${escapeXml(guia.destCnpjCpf)}</${guia.destTipoIdentificacao}>
                   </identificacao>
                   <razaoSocial>${nomeLimpo}</razaoSocial>
                   <municipio>${mun5Digitos}</municipio>
                 </contribuinteDestinatario>`;
         }
 
-        // SE exige valor tipo 12 (FECP) na receita 100102 se aplicável
         let xmlValorFecp = '';
-        if (guia.ufFavorecida === 'SE' && guia.valorFecp) {
-            xmlValorFecp = `\n                <valor tipo="12">${guia.valorFecp}</valor>`;
+        if (ufFav === 'SE' && guia.valorFecp) {
+            xmlValorFecp = `\n                <valor tipo="12">${escapeXml(guia.valorFecp)}</valor>`;
         }
 
         xmlGuias += `
           <TDadosGNRE versao="2.00">
-            <ufFavorecida>${guia.ufFavorecida}</ufFavorecida>
+            <ufFavorecida>${escapeXml(ufFav)}</ufFavorecida>
             <tipoGnre>0</tipoGnre>
             <contribuinteEmitente>
               <identificacao>
@@ -242,14 +260,14 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
             </contribuinteEmitente>
             <itensGNRE>
               <item>
-                <receita>${guia.codigoReceita}</receita>${xmlDocOrigem}${xmlReferencia}
-                <dataVencimento>${guia.dataVencimento || hoje}</dataVencimento>
-                <valor tipo="11">${guia.valor}</valor>${xmlValorFecp}
-                <valor tipo="21">${guia.valor}</valor>${xmlConvenio}${xmlDestinatario}${xmlCamposExtras}
+                <receita>${escapeXml(guia.codigoReceita || '100102')}</receita>${xmlDocOrigem}${xmlReferencia}
+                <dataVencimento>${escapeXml(guia.dataVencimento || hoje)}</dataVencimento>
+                <valor tipo="11">${escapeXml(guia.valor)}</valor>${xmlValorFecp}
+                <valor tipo="21">${escapeXml(guia.valor)}</valor>${xmlConvenio}${xmlDestinatario}${xmlCamposExtras}
               </item>
             </itensGNRE>
-            <valorGNRE>${guia.valor}</valorGNRE>
-            <dataPagamento>${guia.dataPagamento || hoje}</dataPagamento>
+            <valorGNRE>${escapeXml(guia.valor)}</valorGNRE>
+            <dataPagamento>${escapeXml(guia.dataPagamento || hoje)}</dataPagamento>
           </TDadosGNRE>`;
     }
     return xmlGuias;
@@ -279,7 +297,7 @@ function montarXmlLote(listaGuias, dadosEmpresa) {
 }
 
 /**
- * Gera o XML de lote GNRE puro (sem envelope SOAP, para importação em portais como SEFAZ-SP)
+ * Gera o XML de lote GNRE puro (sem envelope SOAP)
  */
 function gerarXmlLoteRaw(listaGuias, dadosEmpresa) {
     const xmlGuias = construirXmlGuias(listaGuias, dadosEmpresa);
@@ -296,11 +314,12 @@ function gerarXmlLoteRaw(listaGuias, dadosEmpresa) {
 async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logsDir) {
     const isProducao = environment === 'producao';
     const urls = isProducao ? URLS_SEFAZ.producao : URLS_SEFAZ.simulado;
-    
+
     const soapXml = montarXmlLote(listaGuias, dadosEmpresa);
     const timestamp = Date.now();
-    
-    if (logsDir) {
+
+    // Só grava XML em disco local se explicitamente habilitado para debug seguro
+    if (logsDir && process.env.SAVE_DEBUG_XML_LOGS === 'true') {
         await fs.mkdir(logsDir, { recursive: true });
         await fs.writeFile(path.join(logsDir, `envio_lote_${timestamp}_${uf || 'geral'}.xml`), soapXml, 'utf-8');
     }
@@ -314,15 +333,15 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
         }
         break;
     }
-    
-    if (logsDir) {
+
+    if (logsDir && process.env.SAVE_DEBUG_XML_LOGS === 'true') {
         await fs.writeFile(path.join(logsDir, `resposta_lote_${timestamp}_${uf || 'geral'}.xml`), response.body, 'utf-8');
     }
 
     const codigoMatch = response.body.match(/<(?:[a-zA-Z0-9]+:)?codigo>([^<]+)<\/(?:[a-zA-Z0-9]+:)?codigo>/);
     const descricaoMatch = response.body.match(/<(?:[a-zA-Z0-9]+:)?descricao>([^<]+)<\/(?:[a-zA-Z0-9]+:)?descricao>/);
     const reciboMatch = response.body.match(/<(?:[a-zA-Z0-9]+:)?numero>([^<]+)<\/(?:[a-zA-Z0-9]+:)?numero>/);
-    
+
     if (!reciboMatch) {
         if (descricaoMatch && descricaoMatch[1]) {
             let desc = descricaoMatch[1]
@@ -363,19 +382,19 @@ async function consultarLote(numeroRecibo, agent, uf, environment, logsDir) {
     <gnreDadosMsg xmlns="http://www.gnre.pe.gov.br/webservice/GnreResultadoLote">
       <TConsLote_GNRE xmlns="http://www.gnre.pe.gov.br">
         <ambiente>${isProducao ? '1' : '2'}</ambiente>
-        <numeroRecibo>${numeroRecibo}</numeroRecibo>
+        <numeroRecibo>${escapeXml(numeroRecibo)}</numeroRecibo>
       </TConsLote_GNRE>
     </gnreDadosMsg>
   </soap12:Body>
 </soap12:Envelope>`.trim();
 
     const response = await sendSoapRequest(urls.consulta, 'consultar', soapXml, agent);
-    
-    if (logsDir) {
+
+    if (logsDir && process.env.SAVE_DEBUG_XML_LOGS === 'true') {
         await fs.mkdir(logsDir, { recursive: true });
         await fs.writeFile(path.join(logsDir, `resultado_consulta_${numeroRecibo}.xml`), response.body, 'utf-8');
     }
-    
+
     return response.body;
 }
 
@@ -387,25 +406,25 @@ function gerarSvgI25(codigo) {
     };
 
     let bars = '1010'; // Start
-    
-    const codLimpo = String(codigo).replace(/[^0-9]/g, '');
-    if (codLimpo.length % 2 !== 0) return '';
-    
+
+    const codLimpo = String(codigo || '').replace(/[^0-9]/g, '');
+    if (!codLimpo || codLimpo.length % 2 !== 0) return '';
+
     for (let i = 0; i < codLimpo.length; i += 2) {
         const digito1 = codLimpo.charAt(i);
         const digito2 = codLimpo.charAt(i + 1);
         const p1 = padroes[digito1];
         const p2 = padroes[digito2];
-        
+
         for (let j = 0; j < 5; j++) {
             const bWidth = p1.charAt(j) === 'W' ? '111' : '1';
             const sWidth = p2.charAt(j) === 'W' ? '000' : '0';
             bars += bWidth + sWidth;
         }
     }
-    
+
     bars += '11101'; // Stop
-    
+
     let svgContent = '';
     let x = 0;
     const altura = 60;
@@ -417,14 +436,14 @@ function gerarSvgI25(codigo) {
             count++;
             index++;
         }
-        
+
         const largura = count * 1.25;
         if (char === '1') {
             svgContent += `<rect x="${x}" y="0" width="${largura}" height="${altura}" fill="#000000" />`;
         }
         x += largura;
     }
-    
+
     return `<svg width="${x}" height="${altura}" viewBox="0 0 ${x} ${altura}" xmlns="http://www.w3.org/2000/svg" style="display: block; margin: 0 auto;">${svgContent}</svg>`;
 }
 
@@ -460,17 +479,34 @@ function formatarMoedaVisual(val) {
 }
 
 /**
- * Renderiza a guia em formato HTML imprimível
+ * Renderiza o espelho de conferência da guia GNRE em formato HTML
+ * Prioriza estritamente os dados retornados pelo portal SEFAZ (`dadosGuia`) e bloqueia divergências de UF.
  */
 function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
-    const ufFavorecida = dadosNfeExtraidos ? dadosNfeExtraidos.ufFavorecida : (dadosGuia.ufFavorecida || "PE");
-    const codigoReceita = dadosNfeExtraidos ? dadosNfeExtraidos.codigoReceita : "100102";
-    const numeroNota = dadosNfeExtraidos ? dadosNfeExtraidos.documentoOrigem : (dadosGuia.documentoOrigem || "SEM_NUMERO");
-    const chaveAcessoNfe = dadosNfeExtraidos ? dadosNfeExtraidos.chaveAcessoNfe : (dadosGuia.chaveAcessoNfe || "NÃO INFORMADA");
-    
-    const dataVencimentoFormatada = formatarDataVisual(dadosGuia.dataVencimento);
+    const ufRetornada = (dadosGuia?.ufFavorecida || '').toUpperCase().trim();
+    const ufNfe = (dadosNfeExtraidos?.ufFavorecida || '').toUpperCase().trim();
+
+    if (ufRetornada && ufNfe && ufRetornada !== ufNfe) {
+        throw new Error(
+            `Divergência crítica de UF na NF ${dadosGuia?.documentoOrigem || dadosNfeExtraidos?.documentoOrigem}: NF-e indica ${ufNfe}, mas retorno SEFAZ indica ${ufRetornada}.`
+        );
+    }
+
+    const ufFavorecida = ufRetornada || ufNfe;
+    if (!ufFavorecida || ufFavorecida.length !== 2) {
+        throw new Error("UF Favorecida ausente para geração do espelho da guia.");
+    }
+
+    const codigoReceita = escapeHtml(dadosGuia?.codigoReceita || dadosNfeExtraidos?.codigoReceita || "100102");
+    const numeroNota = escapeHtml(dadosGuia?.documentoOrigem || dadosNfeExtraidos?.documentoOrigem || "SEM_NUMERO");
+    const chaveAcessoNfe = escapeHtml(dadosNfeExtraidos?.chaveAcessoNfe || dadosGuia?.chaveAcessoNfe || "NÃO INFORMADA");
+    const numeroControle = escapeHtml(dadosGuia?.numeroControle || "CONSULTE PELO RECIBO/CÓDIGO DE BARRAS NO PORTAL GNRE");
+    const reciboLote = escapeHtml(dadosGuia?.recibo || "-");
+    const isSimulado = !!dadosGuia?.simulado;
+
+    const dataVencimentoFormatada = escapeHtml(formatarDataVisual(dadosGuia.dataVencimento || dadosNfeExtraidos?.dataVencimento));
     const valorTotal = formatarMoedaVisual(dadosGuia.valor);
-    const linhaDigitavelFormatada = formatarLinhaDigitavelVisual(dadosGuia.linhaDigitavel);
+    const linhaDigitavelFormatada = escapeHtml(formatarLinhaDigitavelVisual(dadosGuia.linhaDigitavel));
     const svgBarcode = gerarSvgI25(dadosGuia.codigoBarras);
 
     let valorPrincipal = formatarMoedaVisual(dadosGuia.valor);
@@ -483,21 +519,28 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
         instrucoesAdicionais = `<br><br><b>Detalhamento dos Valores:</b><br>DIFAL Principal: R$ ${valorPrincipal}<br>Fundo de Combate à Pobreza (FCP): R$ ${formatarMoedaVisual(fcp)}`;
     }
 
-    // Ajusta o CNPJ da empresa para formatação visual
     const cnpjEmitente = (dadosEmpresa.cnpj || '').replace(/[^0-9]/g, '');
-    const cnpjFormatado = cnpjEmitente.length === 14 
+    const cnpjFormatado = cnpjEmitente.length === 14
         ? cnpjEmitente.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
         : cnpjEmitente;
+
+    const bannerSimulado = isSimulado
+        ? `<div style="background:#fee2e2;color:#991b1b;border:2px solid #dc2626;padding:8px;text-align:center;font-weight:bold;font-size:12px;margin-bottom:10px;">
+            AMBIENTE SIMULADO / HOMOLOGAÇÃO — PRÉVIA SEM VALOR FISCAL — NÃO PAGAR
+           </div>`
+        : `<div style="background:#fef3c7;color:#92400e;border:1px solid #f59e0b;padding:6px;text-align:center;font-weight:bold;font-size:10px;margin-bottom:8px;">
+            ESPELHO DE CONFERÊNCIA INTERNA (WEBSERVICE SEFAZ) — CONFIRA NO PORTAL GNRE OFICIAL ANTES DE PAGAR
+           </div>`;
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Guia GNRE - Nota Fiscal ${numeroNota}</title>
+    <title>Espelho GNRE - Nota Fiscal ${numeroNota}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 11px; color: #000; margin: 20px; }
         .guia-container { width: 680px; border: 2px solid #000; padding: 10px; margin-bottom: 20px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .titulo-guia { font-size: 14px; font-weight: bold; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .titulo-guia { font-size: 13px; font-weight: bold; text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; }
         .table-guia { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
         .table-guia td { border: 1px solid #000; padding: 4px 6px; vertical-align: top; }
         .label { font-size: 8px; text-transform: uppercase; font-weight: bold; color: #444; display: block; margin-bottom: 2px; }
@@ -516,20 +559,21 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
 <body>
 
     <div class="guia-container">
-        <div class="via-titulo">Via Contribuinte</div>
-        <div class="titulo-guia">GUIA NACIONAL DE RECOLHIMENTO DE TRIBUTOS ESTADUAIS - GNRE</div>
+        ${bannerSimulado}
+        <div class="via-titulo">Espelho de Conferência — Via Contribuinte</div>
+        <div class="titulo-guia">ESPELHO DE DADOS GNRE (WEBSERVICE SEFAZ v2.00)</div>
         
         <table class="table-guia">
             <tr>
                 <td colspan="3" width="60%">
                     <span class="label">Contribuinte Emitente</span>
-                    <span class="valor">${dadosEmpresa.razaoSocial || dadosEmpresa.razao_social}</span><br>
+                    <span class="valor">${escapeHtml(dadosEmpresa.razaoSocial || dadosEmpresa.razao_social)}</span><br>
                     <span class="label" style="margin-top:4px;">CNPJ</span>
-                    <span>${cnpjFormatado}</span>
+                    <span>${escapeHtml(cnpjFormatado)}</span>
                 </td>
                 <td width="20%" class="destaque">
                     <span class="label">UF Favorecida</span>
-                    <span class="valor" style="font-size: 14px;">${ufFavorecida}</span>
+                    <span class="valor" style="font-size: 14px;">${escapeHtml(ufFavorecida)}</span>
                 </td>
                 <td width="20%" class="destaque">
                     <span class="label">Código da Receita</span>
@@ -546,8 +590,8 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
                     <span class="valor">${dataVencimentoFormatada}</span>
                 </td>
                 <td>
-                    <span class="label">Data Limite de Pagto</span>
-                    <span class="valor">${dataVencimentoFormatada}</span>
+                    <span class="label">Recibo Lote SEFAZ</span>
+                    <span class="valor">${reciboLote}</span>
                 </td>
             </tr>
             <tr>
@@ -555,8 +599,11 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
                     <span class="label">Chave de Acesso da NF-e</span>
                     <span class="valor" style="font-family: monospace; font-size: 10px;">${chaveAcessoNfe}</span>
                     <br><br>
+                    <span class="label">Número de Controle SEFAZ</span>
+                    <span class="valor" style="font-family: monospace; font-size: 10px;">${numeroControle}</span>
+                    <br><br>
                     <span class="label">Instruções</span>
-                    <span style="font-size: 9px; color: #555;">Guia emitida via integração Webservice GNRE v2.00.<br>Destinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.${instrucoesAdicionais}</span>
+                    <span style="font-size: 9px; color: #555;">Espelho gerado a partir do retorno do Webservice GNRE v2.00.<br>Destinado ao recolhimento de DIFAL - Consumidor Final não contribuinte.${instrucoesAdicionais}</span>
                 </td>
                 <td class="destaque">
                     <span class="label">Valor Principal</span>
@@ -583,8 +630,8 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
                     <span class="valor" style="font-size: 12px;">R$ ${valorTotal}</span>
                 </td>
                 <td class="destaque" style="border-top: 2px solid #000;">
-                    <span class="label">Código de Autenticação</span>
-                    <span class="valor">-</span>
+                    <span class="label">Ambiente</span>
+                    <span class="valor">${isSimulado ? 'SIMULADO' : 'PRODUÇÃO'}</span>
                 </td>
             </tr>
         </table>
@@ -595,7 +642,7 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
             ${svgBarcode}
         </div>
         
-        <div class="autenticacao">Autenticação Mecânica no Verso / Controle Fiscal SEFAZ-${ufFavorecida}</div>
+        <div class="autenticacao">Espelho Interno expedi HUB — Recibo SEFAZ: ${reciboLote} — UF: ${escapeHtml(ufFavorecida)}</div>
     </div>
 
 </body>

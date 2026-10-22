@@ -113,15 +113,27 @@ function getEncryptionKey(keyStr) {
 }
 
 function encrypt(text, secretKey) {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', secretKey, iv);
-    let encrypted = cipher.update(text, 'utf8', 'hex');
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', secretKey, iv);
+    let encrypted = cipher.update(String(text), 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return iv.toString('hex') + ':' + encrypted;
+    const authTag = cipher.getAuthTag().toString('hex');
+    return `gcm:${iv.toString('hex')}:${authTag}:${encrypted}`;
 }
 
 function decrypt(text, secretKey) {
-    const parts = text.split(':');
+    const str = String(text || '');
+    if (str.startsWith('gcm:')) {
+        const [, ivHex, tagHex, encryptedHex] = str.split(':');
+        const iv = Buffer.from(ivHex, 'hex');
+        const authTag = Buffer.from(tagHex, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-gcm', secretKey, iv);
+        decipher.setAuthTag(authTag);
+        let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    }
+    const parts = str.split(':');
     const iv = Buffer.from(parts.shift(), 'hex');
     const encryptedText = Buffer.from(parts.join(':'), 'hex');
     const decipher = crypto.createDecipheriv('aes-256-cbc', secretKey, iv);
@@ -1041,37 +1053,50 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
             return res.status(400).json({ error: "Nenhuma guia encontrada para este lote." });
         }
 
-        // Garante que guias de DIFAL tenham código de barras e linha digitável Febraban calculados
-        for (const g of guias) {
-            const uf = (g.uf || '').toUpperCase();
-            if (uf !== 'SP' && parseFloat(g.value || 0) > 0) {
-                if (!g.barcode || g.barcode.length < 44 || !g.line_digitizable) {
-                    const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, tenant);
-                    g.barcode = auto.codigoBarras;
-                    g.line_digitizable = auto.linhaDigitavel;
-                    await supabase.from('guides').update({
-                        barcode: auto.codigoBarras,
-                        line_digitizable: auto.linhaDigitavel
-                    }).eq('id', g.id);
+        const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
+
+        // Somente em modo SIMULADO permite gerar código de barras de teste para demonstração
+        if (isSimulado) {
+            for (const g of guias) {
+                const uf = (g.uf || '').toUpperCase();
+                if (uf !== 'SP' && parseFloat(g.value || 0) > 0) {
+                    if (!g.barcode || g.barcode.length < 44 || !g.line_digitizable) {
+                        const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, tenant);
+                        if (auto.codigoBarras) {
+                            g.barcode = auto.codigoBarras;
+                            g.line_digitizable = auto.linhaDigitavel;
+                            await supabase.from('guides').update({
+                                barcode: auto.codigoBarras,
+                                line_digitizable: auto.linhaDigitavel
+                            }).eq('id', g.id);
+                        }
+                    }
                 }
             }
         }
 
-        // Filtra guias elegíveis para pagamento (com linha digitável e AINDA NÃO PAGAS / IDEMPOTÊNCIA)
+        // Filtra guias elegíveis para pagamento: exige código de barras numérico oficial (>= 44 dígitos),
+        // UF válida diferente de SP, e status apto (nunca permite pagar guia aguardando_aprovacao, rejeitada ou com divergência)
+        const statusBloqueados = new Set([
+            'aguardando_aprovacao', 'rejeitada_sefaz', 'divergencia_uf_portal',
+            'requer_dare_sp', 'pagamento_incerto', 'paga', 'comprovada', 'cancelada'
+        ]);
         const guiasPendentes = guias.filter(g => {
-            const hasLine = (g.line_digitizable && g.line_digitizable.length > 30) || (g.barcode && g.barcode.length > 30);
-            const naoPaga = g.status !== 'paga' && g.status !== 'comprovada' && !g.asaas_bill_id;
-            return hasLine && naoPaga;
+            const cleanBar = String(g.barcode || '').replace(/\D/g, '');
+            const cleanLine = String(g.line_digitizable || '').replace(/\D/g, '');
+            const hasOfficialCode = (cleanBar.length >= 44 || cleanLine.length >= 44) && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+            const ufValida = g.uf && g.uf.toUpperCase() !== 'SP';
+            const statusOk = !statusBloqueados.has((g.status || '').toLowerCase()) && !g.asaas_bill_id;
+            return hasOfficialCode && ufValida && statusOk;
         });
 
         if (guiasPendentes.length === 0) {
             return res.status(400).json({
-                error: "Todas as guias deste lote já foram autorizadas, pagas ou não possuem código de arrecadação válido."
+                error: "Nenhuma guia apta para pagamento bancário neste lote (verifique se o lote já foi transmitido e aceito pela SEFAZ com código de barras oficial)."
             });
         }
 
         const apiKey = getAsaasApiKey(tenant);
-        const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
         if (!isSimulado && !apiKey) {
             return res.status(400).json({ error: "Chave de API do Asaas não configurada ou inválida para ambiente de Produção. Configure em Empresa > Integrações." });
         }
@@ -1087,7 +1112,6 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
             const extRef = `guia_${g.id}`;
 
             // Claim atômico: trava a guia com status 'pagamento_em_processamento'
-            // Somente a requisição que conseguir alterar status executa o pagamento no Asaas
             const { data: claimed, error: claimErr } = await supabase
                 .from('guides')
                 .update({
@@ -1100,6 +1124,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                 .is('asaas_bill_id', null)
                 .neq('status', 'pagamento_em_processamento')
                 .neq('status', 'pagamento_enviado')
+                .neq('status', 'pagamento_incerto')
                 .neq('status', 'comprovada')
                 .neq('status', 'paga')
                 .select('id');
@@ -1126,17 +1151,18 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                     status: 'pagamento_enviado'
                 };
 
-                // Se for simulado, gera o comprovante oficial simulado imediatamente
+                // Somente em modo simulado gera comprovante de demonstração (marcado como SEM VALOR FISCAL)
                 if (isSimulado) {
                     const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
                         nfNumber: g.nf_number,
                         uf: g.uf,
                         valor: g.value,
                         billId: billRes.id,
-                        razaoSocial: tenant.razao_social
+                        razaoSocial: tenant.razao_social,
+                        environment: 'simulado'
                     });
 
-                    const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_NF_${g.nf_number}.pdf`;
+                    const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_simulado_NF_${g.nf_number}.pdf`;
                     await supabase.storage
                         .from('tenant-storage')
                         .upload(remoteReceiptPath, compPdfBuffer, {
@@ -1147,7 +1173,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                     updatesGuia.status = 'comprovada';
                     updatesGuia.paid_at = agora;
                     updatesGuia.receipt_storage_path = remoteReceiptPath;
-                    updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${g.id.substring(0, 8).toUpperCase()}`;
+                    updatesGuia.bank_authentication = `SIMULADO-${g.id.substring(0, 8).toUpperCase()}`;
                 }
 
                 await supabase.from('guides').update(updatesGuia).eq('id', g.id).eq('tenant_id', tenant.id);
@@ -1155,13 +1181,16 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
 
             } catch (pErr) {
                 console.error(`[Asaas] Erro ao pagar guia NF ${g.nf_number}:`, pErr.message);
-                // Libera o claim caso o Asaas retorne erro
+                // Se foi timeout ou erro de rede/5xx, mantém bloqueada em 'pagamento_incerto' para evitar pagamento duplicado
+                const isIncerto = pErr.isNetworkOrTimeout || (pErr.statusCode && pErr.statusCode >= 500);
                 await supabase.from('guides').update({
-                    status: 'pendente',
-                    rejection_reason: pErr.message
+                    status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento',
+                    rejection_reason: isIncerto
+                        ? `Resultado indeterminado (${pErr.message}). Concilie no painel Asaas antes de reenviar.`
+                        : pErr.message
                 }).eq('id', g.id).eq('tenant_id', tenant.id);
 
-                resultados.push({ id: g.id, nf: g.nf_number, erro: pErr.message, sucesso: false });
+                resultados.push({ id: g.id, nf: g.nf_number, erro: pErr.message, sucesso: false, incerto: isIncerto });
             }
         }
 
@@ -1209,26 +1238,34 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
 
         if (gErr || !guia) return res.status(404).json({ error: "Guia não encontrada." });
 
-        if (guia.status === 'paga' || guia.status === 'comprovada' || guia.asaas_bill_id) {
-            return res.status(400).json({ error: "Esta guia já foi autorizada ou paga anteriormente." });
-        }
-
-        if (!guia.barcode || guia.barcode.length < 44 || !guia.line_digitizable) {
-            const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guia, tenant);
-            guia.barcode = auto.codigoBarras;
-            guia.line_digitizable = auto.linhaDigitavel;
-            await supabase.from('guides').update({
-                barcode: auto.codigoBarras,
-                line_digitizable: auto.linhaDigitavel
-            }).eq('id', guia.id);
-        }
-
-        const linha = guia.line_digitizable || guia.barcode;
-        if (!linha || linha.length < 30) {
-            return res.status(400).json({ error: "Guia não possui linha digitável ou código de barras de arrecadação emitido." });
+        const statusBloqueados = new Set([
+            'aguardando_aprovacao', 'rejeitada_sefaz', 'divergencia_uf_portal',
+            'requer_dare_sp', 'pagamento_incerto', 'paga', 'comprovada', 'cancelada'
+        ]);
+        if (statusBloqueados.has((guia.status || '').toLowerCase()) || guia.asaas_bill_id) {
+            return res.status(400).json({
+                error: `Esta guia não está apta para pagamento (status atual: '${guia.status}'). Verifique se ela já foi emitida e validada na SEFAZ.`
+            });
         }
 
         const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
+        if (isSimulado && (!guia.barcode || guia.barcode.length < 44 || !guia.line_digitizable)) {
+            const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guia, tenant);
+            if (auto.codigoBarras) {
+                guia.barcode = auto.codigoBarras;
+                guia.line_digitizable = auto.linhaDigitavel;
+                await supabase.from('guides').update({
+                    barcode: auto.codigoBarras,
+                    line_digitizable: auto.linhaDigitavel
+                }).eq('id', guia.id);
+            }
+        }
+
+        const linha = String(guia.line_digitizable || guia.barcode || '').replace(/\D/g, '');
+        if (!linha || linha.length < 44 || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP') {
+            return res.status(400).json({ error: "Guia não possui código de barras oficial da SEFAZ (mínimo 44 dígitos) para pagamento." });
+        }
+
         const apiKey = getAsaasApiKey(tenant);
         if (!isSimulado && !apiKey) {
             return res.status(400).json({ error: "Chave de API do Asaas não configurada ou inválida para ambiente de Produção. Configure em Empresa > Integrações." });
@@ -1249,6 +1286,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
             .is('asaas_bill_id', null)
             .neq('status', 'pagamento_em_processamento')
             .neq('status', 'pagamento_enviado')
+            .neq('status', 'pagamento_incerto')
             .neq('status', 'comprovada')
             .neq('status', 'paga')
             .select('id');
@@ -1278,10 +1316,11 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
                 uf: guia.uf,
                 valor: guia.value,
                 billId: billRes.id,
-                razaoSocial: tenant.razao_social
+                razaoSocial: tenant.razao_social,
+                environment: 'simulado'
             });
 
-            const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
+            const remoteReceiptPath = `${tenant.id}/comprovantes/comprovante_simulado_NF_${guia.nf_number}.pdf`;
             await supabase.storage
                 .from('tenant-storage')
                 .upload(remoteReceiptPath, compPdfBuffer, {
@@ -1292,7 +1331,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
             updatesGuia.status = 'comprovada';
             updatesGuia.paid_at = agora;
             updatesGuia.receipt_storage_path = remoteReceiptPath;
-            updatesGuia.bank_authentication = `ASAAS.${Date.now()}.${guia.id.substring(0, 8).toUpperCase()}`;
+            updatesGuia.bank_authentication = `SIMULADO-${guia.id.substring(0, 8).toUpperCase()}`;
         }
 
         await supabase.from('guides').update(updatesGuia).eq('id', guia.id).eq('tenant_id', tenant.id);
@@ -1306,9 +1345,12 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
     } catch (err) {
         console.error("[Asaas] Erro na autorização da guia:", err);
         if (typeof guia !== 'undefined' && guia && guia.id) {
+            const isIncerto = err.isNetworkOrTimeout || (err.statusCode && err.statusCode >= 500);
             await supabase.from('guides').update({
-                status: 'pendente',
-                rejection_reason: err.message
+                status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento',
+                rejection_reason: isIncerto
+                    ? `Resultado indeterminado (${err.message}). Concilie no painel Asaas antes de reenviar.`
+                    : err.message
             }).eq('id', guia.id).eq('tenant_id', tenant.id);
         }
         return res.status(500).json({ error: err.message });
@@ -1332,22 +1374,25 @@ app.get('/api/guide/comprovante/:guideId', requireAuth, async (req, res) => {
 
         if (gErr || !guia) return res.status(404).json({ error: "Guia não encontrada." });
 
+        const isSimulado = (tenant.environment || '').toLowerCase() === 'simulado';
+
         if (!guia.receipt_storage_path) {
-            // Se ainda não tiver comprovante gravado no storage, tenta gerar sob demanda se já foi paga
-            if (guia.asaas_bill_id || guia.status === 'paga' || guia.status === 'comprovada') {
+            // Somente em modo simulado permite gerar comprovante de demonstração sob demanda
+            if (isSimulado && (guia.status === 'paga' || guia.status === 'comprovada')) {
                 const compPdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
                     nfNumber: guia.nf_number,
                     uf: guia.uf,
                     valor: guia.value,
-                    billId: guia.asaas_bill_id || ('bill_' + guia.id.substring(0, 8)),
-                    razaoSocial: tenant.razao_social
+                    billId: guia.asaas_bill_id || ('bill_sim_' + guia.id.substring(0, 8)),
+                    razaoSocial: tenant.razao_social,
+                    environment: 'simulado'
                 });
 
                 res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', `inline; filename="comprovante_NF_${guia.nf_number}.pdf"`);
+                res.setHeader('Content-Disposition', `inline; filename="comprovante_simulado_NF_${guia.nf_number}.pdf"`);
                 return res.send(compPdfBuffer);
             }
-            return res.status(404).json({ error: "Esta guia ainda não possui comprovante de pagamento liquidado." });
+            return res.status(404).json({ error: "Esta guia ainda não possui comprovante bancário oficial liquidado." });
         }
 
         const { data: fileData, error: dlErr } = await supabase.storage
@@ -1423,22 +1468,23 @@ app.post('/api/webhooks/asaas', async (req, res) => {
 
             if (guia) {
                 const agora = new Date().toISOString();
-                const authCode = bill.bankAuthentication || bill.authenticationCode || guia.bank_authentication || `AS-${(billId || guia.id).substring(0, 8).toUpperCase()}-BR`;
-                const storagePath = `${guia.tenant_id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
-
+                const isTenantSimulado = (guia.tenants?.environment || '').toLowerCase() === 'simulado';
+                const authCode = bill.bankAuthentication || bill.authenticationCode || guia.bank_authentication || null;
+                let storagePath = null;
                 let pdfBuffer = null;
 
-                // 1. Tenta baixar o comprovante oficial da URL do Asaas se existir
+                // 1. Baixa exclusivamente o comprovante oficial da URL do Asaas se existir
                 if (receiptUrl) {
                     try {
                         pdfBuffer = await asaasService.downloadExternalPdf(receiptUrl);
+                        storagePath = `${guia.tenant_id}/comprovantes/comprovante_NF_${guia.nf_number}.pdf`;
                     } catch (eDl) {
-                        console.warn("[Webhook Asaas] Falha ao baixar PDF do Asaas:", eDl.message);
+                        console.warn("[Webhook Asaas] Falha ao baixar PDF oficial do Asaas:", eDl.message);
                     }
                 }
 
-                // 2. Se não houver URL ou o download falhar, gera o comprovante oficial SISBACEN
-                if (!pdfBuffer) {
+                // 2. NUNCA gera comprovante simulado em Produção; apenas se o tenant estiver em modo simulado
+                if (!pdfBuffer && isTenantSimulado) {
                     try {
                         pdfBuffer = await asaasService.gerarComprovanteSimuladoPdf({
                             nfNumber: guia.nf_number,
@@ -1446,15 +1492,16 @@ app.post('/api/webhooks/asaas', async (req, res) => {
                             valor: guia.value || bill.value,
                             billId: billId,
                             razaoSocial: guia.tenants?.razao_social || 'Empresa Emitente',
-                            autenticacaoBancaria: authCode
+                            environment: 'simulado'
                         });
+                        storagePath = `${guia.tenant_id}/comprovantes/comprovante_simulado_NF_${guia.nf_number}.pdf`;
                     } catch (eGen) {
-                        console.error("[Webhook Asaas] Erro ao gerar comprovante em fallback:", eGen.message);
+                        console.error("[Webhook Asaas] Erro ao gerar comprovante simulado:", eGen.message);
                     }
                 }
 
-                // 3. Faz upload para o Supabase Storage
-                if (pdfBuffer) {
+                // 3. Faz upload para o Supabase Storage se obteve o arquivo
+                if (pdfBuffer && storagePath) {
                     try {
                         await supabase.storage
                             .from('tenant-storage')
@@ -1464,6 +1511,7 @@ app.post('/api/webhooks/asaas', async (req, res) => {
                             });
                     } catch (eUp) {
                         console.warn("[Webhook Asaas] Erro ao salvar comprovante no Supabase Storage:", eUp.message);
+                        storagePath = null;
                     }
                 }
 
@@ -1472,7 +1520,7 @@ app.post('/api/webhooks/asaas', async (req, res) => {
                     status: 'comprovada',
                     paid_at: bill.paymentDate || agora,
                     receipt_url: receiptUrl || null,
-                    receipt_storage_path: storagePath,
+                    receipt_storage_path: storagePath || guia.receipt_storage_path || null,
                     bank_authentication: authCode,
                     asaas_bill_id: billId || guia.asaas_bill_id
                 };
@@ -1880,12 +1928,17 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 convenio: req.tenant.bank_convenio || ''
             };
 
-            const mapped = (batchGuides || []).map(g => ({
+            const validGuides = (batchGuides || []).filter(g => {
+                const bar = String(g.barcode || '').replace(/\D/g, '');
+                return bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
+            });
+
+            const mapped = validGuides.map(g => ({
                 codigoBarras: g.barcode,
                 valor: g.value,
                 dataVencimento: paymentDateChosen || g.due_date || new Date().toISOString().split('T')[0],
                 documentoOrigem: g.nf_number,
-                ufFavorecida: g.uf || 'BA'
+                ufFavorecida: g.uf
             }));
 
             let cnabText = '';
@@ -1919,12 +1972,17 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
 
         const dataPagamentoEfetiva = paymentDateChosen || new Date().toISOString().split('T')[0];
 
-        const mapped = (batchGuides || []).map(g => ({
+        const validItauGuides = (batchGuides || []).filter(g => {
+            const bar = String(g.barcode || '').replace(/\D/g, '');
+            return bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
+        });
+
+        const mapped = validItauGuides.map(g => ({
             codigoBarras: g.barcode,
             valor: g.value,
             dataVencimento: g.due_date || dataPagamentoEfetiva,
             documentoOrigem: g.nf_number,
-            ufFavorecida: g.uf || 'BA'
+            ufFavorecida: g.uf
         }));
 
         const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, dataPagamentoEfetiva);
@@ -3257,18 +3315,17 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Guia não encontrada." });
         }
 
-        if (!guide.barcode || guide.barcode.length < 44 || !guide.line_digitizable) {
+        const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
+        if (isSimulado && (!guide.barcode || guide.barcode.length < 44 || !guide.line_digitizable)) {
             const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guide, req.tenant);
-            guide.barcode = auto.codigoBarras;
-            guide.line_digitizable = auto.linhaDigitavel;
-            supabase.from('guides').update({
-                barcode: auto.codigoBarras,
-                line_digitizable: auto.linhaDigitavel
-            }).eq('id', guide.id).then(() => {}).catch(() => {});
+            if (auto.codigoBarras) {
+                guide.barcode = auto.codigoBarras;
+                guide.line_digitizable = auto.linhaDigitavel;
+            }
         }
 
         let buffer = null;
-        if (guide.storage_path) {
+        if (guide.storage_path && guide.storage_path.toLowerCase().endsWith('.pdf')) {
             try {
                 const { data } = await supabase.storage
                     .from('tenant-storage')
@@ -3282,7 +3339,7 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
         }
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="guia_GNRE_NF_${guide.nf_number}.pdf"`);
+        res.setHeader('Content-Disposition', `inline; filename="espelho_GNRE_NF_${guide.nf_number}.pdf"`);
         return res.send(buffer);
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -3316,19 +3373,18 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
 
         const guiasComGnre = guias.filter(g => g.uf !== 'SP' && parseFloat(g.value || 0) > 0);
         if (guiasComGnre.length === 0) {
-            return res.status(400).json({ error: "As notas selecionadas são para SP (Isentas de Guia GNRE avulsa por Convênio ICMS)." });
+            return res.status(400).json({ error: "As notas selecionadas são para SP (Recolhimento via DARE-SP, sem GNRE)." });
         }
 
+        const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
         const pdfBuffers = [];
         for (const g of guiasComGnre) {
-            if (!g.barcode || g.barcode.length < 44 || !g.line_digitizable) {
+            if (isSimulado && (!g.barcode || g.barcode.length < 44 || !g.line_digitizable)) {
                 const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(g, req.tenant);
-                g.barcode = auto.codigoBarras;
-                g.line_digitizable = auto.linhaDigitavel;
-                supabase.from('guides').update({
-                    barcode: auto.codigoBarras,
-                    line_digitizable: auto.linhaDigitavel
-                }).eq('id', g.id).then(() => {}).catch(() => {});
+                if (auto.codigoBarras) {
+                    g.barcode = auto.codigoBarras;
+                    g.line_digitizable = auto.linhaDigitavel;
+                }
             }
             let buf = null;
             if (g.storage_path) {
@@ -4801,31 +4857,30 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                                 valor: nota.valor,
                                 linhaDigitavel: codBarras,
                                 codigoBarras: codBarras,
-                                situacaoGuia: '0'
+                                situacaoGuia: '0',
+                                simulado: true,
+                                recibo: `SIMULADO_${uf}`
                             };
                         });
-                        resultadoUf = { guias: xmlSimulado, recibo: `999123456789${uf}` };
-                        log(`[${uf}] 🧪 Simulação concluída com sucesso!`);
+                        resultadoUf = { guias: xmlSimulado, recibo: `SIMULADO_${uf}` };
+                        log(`[${uf}] 🧪 Simulação concluída (ambiente não produtivo).`);
                     } else if (uf === 'SP') {
-                        const spXml = gnreService.gerarXmlLoteRaw(notasPorUf[uf], tenant);
-                        const spXmlPath = `${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`;
-                        await supabase.storage
-                            .from('tenant-storage')
-                            .upload(spXmlPath, Buffer.from(spXml, 'utf-8'), {
-                                contentType: 'application/xml',
-                                upsert: true
-                            });
-
-                        const xmlGuiasSp = notasPorUf[uf].map(n => ({
-                            ufFavorecida: 'SP',
-                            documentoOrigem: n.documentoOrigem,
-                            valor: n.valor,
-                            linhaDigitavel: 'Importar lote XML na SEFAZ-SP',
-                            codigoBarras: 'IMPORTAR_NO_SEFAZ_SP',
-                            situacaoGuia: '0'
-                        }));
-                        resultadoUf = { guias: xmlGuiasSp, recibo: `XML_SP_${batchId}` };
-                        log(`[${uf}] ✔ Lote XML para SP gerado.`);
+                        // SEFAZ-SP descontinuou GNRE-ICMS em 01/11/2022 (exige DARE-SP).
+                        for (const n of notasPorUf[uf]) {
+                            await supabase
+                                .from('guides')
+                                .update({
+                                    barcode: null,
+                                    line_digitizable: null,
+                                    status: 'requer_dare_sp',
+                                    rejection_reason: 'SEFAZ-SP não emite GNRE para ICMS desde 01/11/2022. Recolhimento deve ser efetuado via DARE-SP.'
+                                })
+                                .eq('batch_id', batchId)
+                                .eq('tenant_id', tenant.id)
+                                .eq('nf_number', n.documentoOrigem);
+                        }
+                        resultadoUf = { guias: [], recibo: null, isSpDare: true };
+                        log(`[${uf}] ⚠ Notas de SP marcadas como 'requer_dare_sp' (GNRE-ICMS descontinuada pela SEFAZ-SP; recolher via DARE-SP).`);
                     } else if (uf === 'ES') {
                         let xmlGuiasEs = [];
                         for (const nota of notasPorUf[uf]) {
@@ -4845,6 +4900,8 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                                 valor: nota.valor,
                                 linhaDigitavel: nBar,
                                 codigoBarras: nBar,
+                                numeroControle: nDua,
+                                recibo: `DUA_${nDua}`,
                                 situacaoGuia: '0',
                                 storage_path: remotePath,
                                 isPdf: true
@@ -4853,7 +4910,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                         resultadoUf = { guias: xmlGuiasEs, recibo: `DUA_ES_${batchId}` };
                     } else {
                         const recibo = await gnreService.enviarLote(notasPorUf[uf], agent, uf, tenant.environment, tenant, logsDir);
-                        log(`[${uf}] Lote recebido! Recibo ${recibo}. Consultando retorno da SEFAZ...`);
+                        log(`[${uf}] Lote recebido! Recibo ${recibo}. Consultando retorno individual da SEFAZ...`);
 
                         let dadosGuias = null;
                         let tentativas = 0;
@@ -4874,27 +4931,74 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                         }
 
                         if (!dadosGuias) throw new Error("Tempo esgotado aguardando retorno da SEFAZ.");
+
+                        // Persiste rejeições individuais do lote no banco para não deixar guias órfãs
+                        if (Array.isArray(dadosGuias.rejeicoesDetalhadas) && dadosGuias.rejeicoesDetalhadas.length > 0) {
+                            for (const rej of dadosGuias.rejeicoesDetalhadas) {
+                                log(`[${uf}] ⚠ NF ${rej.documentoOrigem} rejeitada pela SEFAZ: ${rej.motivo}`);
+                                await supabase
+                                    .from('guides')
+                                    .update({
+                                        status: 'rejeitada_sefaz',
+                                        rejection_reason: `[Recibo ${recibo}] ${rej.motivo}`
+                                    })
+                                    .eq('batch_id', batchId)
+                                    .eq('tenant_id', tenant.id)
+                                    .eq('nf_number', rej.documentoOrigem);
+                            }
+                        }
+
+                        for (const g of dadosGuias) {
+                            g.recibo = recibo;
+                        }
                         resultadoUf = { guias: dadosGuias, recibo };
                     }
 
                     todasGuias.push(...resultadoUf.guias);
                     if (resultadoUf.recibo) recibosEfetuados.push(`${uf}:${resultadoUf.recibo}`);
-                    log(`[${uf}] ✔ ${resultadoUf.guias.length} guia(s) emitida(s) com sucesso!`);
+                    if (!resultadoUf.isSpDare) {
+                        log(`[${uf}] ✔ ${resultadoUf.guias.length} guia(s) processada(s) com sucesso!`);
+                    }
 
                 } catch (err) {
                     log(`[${uf}] ❌ Erro: ${err.message}`);
                     errosUf[uf] = err.message;
+                    // Marca todas as guias desta UF no lote com o erro/rejeição correspondente
+                    if (Array.isArray(err.rejeicoesDetalhadas) && err.rejeicoesDetalhadas.length > 0) {
+                        for (const rej of err.rejeicoesDetalhadas) {
+                            await supabase
+                                .from('guides')
+                                .update({
+                                    status: 'rejeitada_sefaz',
+                                    rejection_reason: rej.motivo
+                                })
+                                .eq('batch_id', batchId)
+                                .eq('tenant_id', tenant.id)
+                                .eq('nf_number', rej.documentoOrigem);
+                        }
+                    } else {
+                        const nfsUf = notasPorUf[uf].map(n => n.documentoOrigem);
+                        await supabase
+                            .from('guides')
+                            .update({
+                                status: 'rejeitada_sefaz',
+                                rejection_reason: err.message
+                            })
+                            .eq('batch_id', batchId)
+                            .eq('tenant_id', tenant.id)
+                            .in('nf_number', nfsUf);
+                    }
                 }
 
                 task.progress = Math.round(25 + (55 * ((i + 1) / ufs.length)));
             }
 
-            if (todasGuias.length === 0) {
+            if (todasGuias.length === 0 && Object.keys(errosUf).length > 0) {
                 throw new Error("Nenhuma guia pôde ser emitida na SEFAZ. Detalhes: " + JSON.stringify(errosUf));
             }
 
-            // Renderiza e envia visual das guias para o Storage
-            log("Gerando e enviando arquivos visuais das guias...");
+            // Renderiza e envia espelho visual das guias validadas para o Storage
+            log("Validando retorno individual e gerando espelhos de conferência...");
             const dadosBancarios = {
                 cnpj: tenant.cnpj,
                 razaoSocial: tenant.razao_social,
@@ -4904,12 +5008,33 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
             };
 
             for (const guia of todasGuias) {
-                const nota = notasFiscais.find(n => n.documentoOrigem === guia.documentoOrigem);
+                const docNorm = parserService.normalizarDocumentoOrigem(guia.documentoOrigem);
+                const nota = notasFiscais.find(n => parserService.normalizarDocumentoOrigem(n.documentoOrigem) === docNorm);
+                const nfAlvo = nota ? nota.documentoOrigem : guia.documentoOrigem;
+
+                // Validação estrita de UF: UF retornada pela SEFAZ deve coincidir com a UF da NF-e
+                const ufRetornada = (guia.ufFavorecida || '').toUpperCase().trim();
+                const ufEsperada = (nota?.ufFavorecida || '').toUpperCase().trim();
+                if (ufRetornada && ufEsperada && ufRetornada !== ufEsperada) {
+                    const msgDiv = `BLOQUEIO DE SEGURANÇA: UF retornada pelo portal (${ufRetornada}) diverge da UF da NF-e (${ufEsperada}). Não pagar sem conciliação no Portal GNRE.`;
+                    log(`❌ NF ${nfAlvo}: ${msgDiv}`);
+                    await supabase
+                        .from('guides')
+                        .update({
+                            status: 'divergencia_uf_portal',
+                            rejection_reason: msgDiv
+                        })
+                        .eq('batch_id', batchId)
+                        .eq('tenant_id', tenant.id)
+                        .eq('nf_number', nfAlvo);
+                    continue;
+                }
+
                 let remotePath = guia.storage_path;
 
                 if (!guia.isPdf && guia.codigoBarras !== 'IMPORTAR_NO_SEFAZ_SP') {
                     const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guia, nota);
-                    const nomeLocal = `guia_NF_${guia.documentoOrigem}.html`;
+                    const nomeLocal = `guia_NF_${nfAlvo}.html`;
                     remotePath = `${tenant.id}/guias/${nomeLocal}`;
                     await supabase.storage
                         .from('tenant-storage')
@@ -4919,17 +5044,22 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                         });
                 }
 
-                // Atualiza a guia no BD para 'aguardando_pagamento'
+                // Atualiza a guia no BD para 'aguardando_pagamento' somente após validação completa
                 await supabase
                     .from('guides')
                     .update({
+                        uf: ufRetornada || ufEsperada,
                         barcode: guia.codigoBarras,
                         line_digitizable: guia.linhaDigitavel,
                         storage_path: remotePath,
-                        status: 'aguardando_pagamento'
+                        status: 'aguardando_pagamento',
+                        rejection_reason: guia.numeroControle
+                            ? `Controle SEFAZ: ${guia.numeroControle} | Recibo: ${guia.recibo || '-'}`
+                            : (guia.recibo ? `Recibo SEFAZ: ${guia.recibo}` : null)
                     })
                     .eq('batch_id', batchId)
-                    .eq('nf_number', guia.documentoOrigem);
+                    .eq('tenant_id', tenant.id)
+                    .eq('nf_number', nfAlvo);
             }
 
             // Atualiza status do lote para 'sucesso'
