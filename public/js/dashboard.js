@@ -969,11 +969,14 @@ function renderizarLinhasTabela(guias) {
             situacaoTagHtml = `<span class="tag-status tag-bloqueado">Bloqueado</span>`;
         }
 
-        let actionHtml = '';
-        if (!isSp && !liberada && difalVal > 0) {
-            actionHtml = `<button onclick="autorizarPagamentoGuiaAvulsa('${g.id}', '${g.nf_number}')" class="btn-row-liquidar">Liquidar</button>`;
-        } else {
-            actionHtml = `<a href="/api/guide/danfe/${g.id}" target="_blank" class="action-link-subtle">DANFE</a>`;
+        let actionHtml = `<a href="/api/guide/danfe/${g.id}" target="_blank" class="action-link-subtle">DANFE</a> `;
+        if (isSp && difalVal > 0) {
+            actionHtml += `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="action-link-subtle" style="color: #0F766E; font-weight: 600;">XML SP</a>`;
+        } else if (!isSp && g.uf !== 'ND' && difalVal > 0) {
+            actionHtml += `<a href="/api/guide/download/${g.id}" target="_blank" class="action-link-subtle" style="color: #4338CA; font-weight: 600;">GNRE</a> `;
+            if (!liberada) {
+                actionHtml += `<button onclick="autorizarPagamentoGuiaAvulsa('${g.id}', '${g.nf_number}')" class="btn-row-liquidar">Liquidar</button>`;
+            }
         }
 
         const nfFmt = String(g.nf_number || '').padStart(8, '0');
@@ -2639,7 +2642,7 @@ function renderizarPaginaDoca(pagina = 1) {
                         </td>
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
-                            ${g.uf !== 'SP' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : ''}
+                            ${g.uf !== 'SP' && g.uf !== 'ND' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : (g.uf === 'SP' && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : '')}
                             ${(() => {
                                 if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
                                 const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();

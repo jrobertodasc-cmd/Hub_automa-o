@@ -95,14 +95,14 @@ async function obterOuGerarDanfePdfGuia(supabaseClient, tenantId, guide) {
                 const xmlStr = await xData.text();
                 const pdfBuffer = await gerarDanfePdf(xmlStr);
 
-                // Salva no storage em background para acelerar próximas consultas
-                supabaseClient.storage.from('tenant-storage').upload(danfePath, pdfBuffer, {
+                // Salva no storage e atualiza o caminho no banco
+                await supabaseClient.storage.from('tenant-storage').upload(danfePath, pdfBuffer, {
                     contentType: 'application/pdf',
                     upsert: true
-                }).catch(() => {});
+                });
 
                 if (!guide.danfe_storage_path) {
-                    supabaseClient.from('guides').update({ danfe_storage_path: danfePath }).eq('id', guide.id).catch(() => {});
+                    await supabaseClient.from('guides').update({ danfe_storage_path: danfePath }).eq('id', guide.id);
                 }
 
                 return pdfBuffer;

@@ -3520,15 +3520,21 @@ app.get('/api/guide/danfe-selecionadas', requireAuth, async (req, res) => {
             return res.status(400).json({ error: "Nenhum ID ou número de NF informado." });
         }
 
-        const { data: guias, error } = await query;
+        const { data: guias, error } = await query.order('nf_number', { ascending: true });
         if (error || !guias || guias.length === 0) {
             return res.status(404).json({ error: "Nenhuma guia encontrada para os filtros fornecidos." });
         }
 
         const pdfBuffers = [];
-        for (const g of guias) {
-            const buf = await danfeService.obterOuGerarDanfePdfGuia(supabase, req.tenant.id, g);
-            if (buf) pdfBuffers.push(buf);
+        const chunkSize = 15;
+        for (let i = 0; i < guias.length; i += chunkSize) {
+            const chunk = guias.slice(i, i + chunkSize);
+            const results = await Promise.all(
+                chunk.map(g => danfeService.obterOuGerarDanfePdfGuia(supabase, req.tenant.id, g))
+            );
+            for (const buf of results) {
+                if (buf) pdfBuffers.push(buf);
+            }
         }
 
         if (pdfBuffers.length === 0) {
@@ -3537,7 +3543,7 @@ app.get('/api/guide/danfe-selecionadas', requireAuth, async (req, res) => {
 
         const mergedBuffer = await danfeService.mesclarDanfesPdf(pdfBuffers);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="DANFES_SELECIONADAS_${guias.length}_NOTAS.pdf"`);
+        res.setHeader('Content-Disposition', `inline; filename="DANFES_SELECIONADAS_${pdfBuffers.length}_NOTAS.pdf"`);
         return res.send(mergedBuffer);
     } catch (err) {
         console.error("Erro ao gerar DANFEs selecionadas:", err);
