@@ -1951,14 +1951,27 @@ app.get('/api/batch/history', requireAuth, async (req, res) => {
 // ==========================================
 app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
     try {
-        const { data: batch, error } = await supabase
-            .from('batches')
-            .select('*')
-            .eq('id', req.params.batchId)
-            .eq('tenant_id', req.tenant.id)
-            .single();
+        let batch = null;
+        if (req.params.batchId === 'todos') {
+            const { data: batches } = await supabase
+                .from('batches')
+                .select('*')
+                .eq('tenant_id', req.tenant.id)
+                .neq('status', 'cancelado')
+                .order('created_at', { ascending: false })
+                .limit(1);
+            batch = batches && batches.length > 0 ? batches[0] : null;
+        } else {
+            const { data: b } = await supabase
+                .from('batches')
+                .select('*')
+                .eq('id', req.params.batchId)
+                .eq('tenant_id', req.tenant.id)
+                .single();
+            batch = b;
+        }
 
-        if (error || !batch) {
+        if (!batch) {
             return res.status(404).json({ error: "Lote não localizado." });
         }
 
@@ -2009,11 +2022,19 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
 
         // Caso padrão (Itaú SISPAG)
         // Busca guias do lote no banco de dados e gera o CNAB 240 sempre atualizado
-        const { data: batchGuides } = await supabase
+        let queryItau = supabase
             .from('guides')
             .select('*')
             .eq('batch_id', batch.id)
-            .eq('tenant_id', req.tenant.id);
+            .eq('tenant_id', req.tenant.id)
+            .order('nf_number', { ascending: true });
+
+        if (req.query.ids) {
+            const idList = String(req.query.ids).split(',').map(s => s.trim()).filter(Boolean);
+            if (idList.length > 0) queryItau = queryItau.in('id', idList);
+        }
+
+        const { data: batchGuides } = await queryItau;
 
         const dadosBancarios = {
             cnpj: req.tenant.cnpj,

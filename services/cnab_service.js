@@ -69,32 +69,30 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         }
     }
 
-    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout FEBRABAN / Itaú SISPAG 080)
+    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout Oficial Ita? SISPAG CNAB 240 - Vers?o 080/085, P?g. 12)
     let headerArquivo = '';
-    headerArquivo += padZero(341, 3);                              // 001-003: Banco Itaú
-    headerArquivo += padZero(0, 4);                                // 004-007: Lote de Serviço
-    headerArquivo += '0';                                          // 008-008: Tipo Registro (0=Header Arquivo)
-    headerArquivo += padSpace('', 9);                              // 009-017: Uso Exclusivo FEBRABAN (9 Brancos)
-    headerArquivo += '2';                                          // 018-018: Tipo Inscrição (2=CNPJ)
-    headerArquivo += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: Número CNPJ
-    headerArquivo += padSpace('', 20);                             // 033-052: Código do Convênio no Banco (Brancos)
-    headerArquivo += padZero(dadosEmpresa.agencia, 5);             // 053-057: Agência Débito
-    headerArquivo += padSpace('', 1);                              // 058-058: Branco
-    headerArquivo += padZero(dadosEmpresa.conta, 12);              // 059-070: Conta Corrente
-    headerArquivo += padSpace('', 1);                              // 071-071: Branco
-    headerArquivo += padZero(dadosEmpresa.dac, 1);                 // 072-072: Dígito Verificador DAC
-    headerArquivo += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome da Empresa
-    headerArquivo += padSpace("BANCO ITAU SA", 30);                // 103-132: Nome do Banco
-    headerArquivo += padSpace('', 10);                             // 133-142: Uso FEBRABAN (Brancos)
-    headerArquivo += '1';                                          // 143-143: Código Remessa (1=Remessa)
-    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Geração (DDMMAAAA)
-    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);           // 152-157: Hora de Geração (HHMMSS)
-    headerArquivo += padZero(1, 6);                                // 158-163: NSA - Número Sequencial do Arquivo
-    headerArquivo += padZero(80, 3);                               // 164-166: Versão do Layout do Arquivo (080)
-    headerArquivo += padZero(0, 5);                                // 167-171: Densidade Grav. (00000)
-    headerArquivo += padSpace('', 20);                             // 172-191: Uso Banco (Brancos)
-    headerArquivo += padSpace('', 20);                             // 192-211: Uso Empresa (Brancos)
-    headerArquivo += padSpace('', 29);                             // 212-240: Uso FEBRABAN (Brancos)
+    headerArquivo += padZero(341, 3);                              // 001-003: C?digo do Banco (341)
+    headerArquivo += padZero(0, 4);                                // 004-007: C?digo do Lote (0000)
+    headerArquivo += '0';                                          // 008-008: Tipo de Registro (0=Header Arquivo)
+    headerArquivo += padSpace('', 6);                              // 009-014: Brancos Complemento X(06)
+    headerArquivo += padZero(80, 3);                               // 015-017: N? da Vers?o do Layout do Arquivo (080)
+    headerArquivo += '2';                                          // 018-018: Tipo Inscri??o da Empresa (2=CNPJ)
+    headerArquivo += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ Empresa Debitada
+    headerArquivo += padSpace('', 20);                             // 033-052: Brancos Complemento X(20)
+    headerArquivo += padZero(dadosEmpresa.agencia, 5);             // 053-057: Ag?ncia Debitada 9(05)
+    headerArquivo += padSpace('', 1);                              // 058-058: Branco X(01)
+    headerArquivo += padZero(dadosEmpresa.conta, 12);              // 059-070: Conta Corrente Debitada 9(12)
+    headerArquivo += padSpace('', 1);                              // 071-071: Branco X(01)
+    headerArquivo += padZero(dadosEmpresa.dac, 1);                 // 072-072: DAC da Ag?ncia/Conta 9(01)
+    headerArquivo += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome da Empresa X(30)
+    headerArquivo += padSpace("BANCO ITAU SA", 30);                // 103-132: Nome do Banco X(30)
+    headerArquivo += padSpace('', 10);                             // 133-142: Brancos Complemento X(10)
+    headerArquivo += '1';                                          // 143-143: C?digo Remessa (1=Remessa)
+    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Gera??o (DDMMAAAA)
+    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);          // 152-157: Hora de Gera??o (HHMMSS)
+    headerArquivo += padZero(0, 9);                                // 158-166: Zeros Complemento de Registro 9(09)
+    headerArquivo += padZero(0, 5);                                // 167-171: Unidade de Densidade 9(05) (00000)
+    headerArquivo += padSpace('', 69);                             // 172-240: Brancos Complemento de Registro X(69)
     linhas.push(headerArquivo);
 
     // 2. REGISTRO 1: HEADER DE LOTE (Layout 030 - Tributos Forma 91)
@@ -158,7 +156,7 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         segO += padZero(dataPagamentoFormatada, 8);                      // 137-144: Data de Pagamento (Agendado)
         segO += padZero(0, 15);                                    // 145-159: Valor Pago (Preenche com zeros na remessa)
         segO += padSpace('', 3);                                   // 160-162: Brancos
-        segO += padSpace('', 9);                                   // 163-171: Complemento de Registro (Devem ser Brancos)
+        segO += padZero(0, 9);                                     // 163-171: Nota Fiscal 9(09) (Nota 33 Ita? SISPAG: zeros para demais tributos)
         segO += padSpace('', 3);                                   // 172-174: Brancos
         
         // Referência do documento de origem (ex: número da nota)
