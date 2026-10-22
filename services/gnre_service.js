@@ -115,10 +115,12 @@ function sendSoapRequest(urlStr, soapAction, xmlPayload, agent) {
     });
 }
 
-// Remove acentos e caracteres especiais para evitar rejeição no banco/SEFAZ
+// Remove acentos, caracteres especiais e espaços nas bordas (exigência XSD SEFAZ)
 const limparTexto = (txt) => String(txt || '')
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^A-Z0-9 ]/gi, "")
+    .replace(/[^A-Z0-9 ]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
     .toUpperCase();
 
 /**
@@ -128,13 +130,15 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
     let xmlGuias = '';
     const hoje = new Date().toISOString().split('T')[0];
 
+    const primeiraGuia = listaGuias[0] || {};
+    const rawMunEmit = String(dadosEmpresa.municipio || primeiraGuia.emitMunicipio || "").replace(/[^0-9]/g, '');
     const emitente = {
-        cnpj: dadosEmpresa.cnpj ? dadosEmpresa.cnpj.replace(/[^0-9]/g, '') : "",
-        razaoSocial: escapeXml(limparTexto(dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || "Empresa Emitente").substring(0, 60)),
-        endereco: escapeXml(limparTexto(dadosEmpresa.endereco || "").substring(0, 60)),
-        municipio: escapeXml(dadosEmpresa.municipio || ""),
-        uf: escapeXml((dadosEmpresa.uf || "").toUpperCase()),
-        cep: dadosEmpresa.cep ? dadosEmpresa.cep.replace(/[^0-9]/g, '') : ""
+        cnpj: String(dadosEmpresa.cnpj || primeiraGuia.cnpjEmitente || "").replace(/[^0-9]/g, ''),
+        razaoSocial: escapeXml(limparTexto(dadosEmpresa.razaoSocial || dadosEmpresa.razao_social || primeiraGuia.emitRazaoSocial || "Empresa Emitente").substring(0, 60).trim()),
+        endereco: escapeXml(limparTexto(dadosEmpresa.endereco || primeiraGuia.emitEndereco || "").substring(0, 60).trim()),
+        municipio: escapeXml(rawMunEmit.slice(-5)),
+        uf: escapeXml((dadosEmpresa.uf || primeiraGuia.ufEmitente || "").toUpperCase().trim()),
+        cep: String(dadosEmpresa.cep || primeiraGuia.emitCep || "").replace(/[^0-9]/g, '')
     };
 
     for (const guia of listaGuias) {
@@ -227,8 +231,8 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
 
         let xmlDestinatario = '';
         if (guia.destCnpjCpf && (guia.destTipoIdentificacao === 'CNPJ' || guia.destTipoIdentificacao === 'CPF')) {
-            const nomeLimpo = escapeXml(limparTexto(guia.destNome).substring(0, 60));
-            const mun5Digitos = guia.destMun ? escapeXml(String(guia.destMun).slice(-5)) : '';
+            const nomeLimpo = escapeXml(limparTexto(guia.destNome).substring(0, 60).trim());
+            const mun5Digitos = guia.destMun ? escapeXml(String(guia.destMun).replace(/[^0-9]/g, '').slice(-5)) : '';
             xmlDestinatario = `
                 <contribuinteDestinatario>
                   <identificacao>

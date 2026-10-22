@@ -187,24 +187,24 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             // Borda do container principal
             doc.rect(x0, y0, wTotal, 410).lineWidth(2).stroke('#000000');
 
-            // Aviso superior obrigatório de Espelho / Prévia
+            // Aviso superior de status fiscal
             if (isPreviaSemValor) {
                 doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#fee2e2', '#dc2626');
                 doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#991b1b').text(
-                    'PRÉVIA INTERNA / AMBIENTE SIMULADO — DOCUMENTO SEM VALOR FISCAL — NÃO PAGAR',
+                    'PRÉVIA INTERNA / PENDENTE DE RETORNO SEFAZ — DOCUMENTO SEM VALOR FISCAL — NÃO PAGAR',
                     x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
                 );
             } else {
-                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#fef3c7', '#d97706');
-                doc.font('Helvetica-Bold').fontSize(8).fillColor('#92400e').text(
-                    'ESPELHO DE CONFERÊNCIA INTERNA (WEBSERVICE SEFAZ) — VALIDE NO PORTAL GNRE OFICIAL ANTES DE PAGAR',
+                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#dcfce7', '#16a34a');
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#166534').text(
+                    'GUIA EMITIDA E AUTORIZADA VIA WEBSERVICE SEFAZ GNRE v2.00 — APTA PARA PAGAMENTO',
                     x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
                 );
             }
 
-            // Título do Espelho
+            // Título da Guia
             doc.font('Helvetica-Bold').fontSize(11).fillColor('#000000').text(
-                'ESPELHO DE DADOS GNRE — WEBSERVICE SEFAZ v2.00',
+                'GUIA NACIONAL DE RECOLHIMENTO DE TRIBUTOS ESTADUAIS — GNRE',
                 x0 + 10, y0 + 30, { align: 'center', width: wTotal - 20 }
             );
             doc.moveTo(x0 + 10, y0 + 46).lineTo(x0 + wTotal - 10, y0 + 46).lineWidth(1.5).stroke('#000000');

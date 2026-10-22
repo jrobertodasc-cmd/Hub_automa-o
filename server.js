@@ -3383,7 +3383,9 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Nenhuma guia encontrada para os filtros fornecidos." });
         }
 
-        const guiasComGnre = guias.filter(g => g.uf !== 'SP' && parseFloat(g.value || 0) > 0);
+        const guiasComGnre = guias
+            .filter(g => g.uf && g.uf !== 'SP' && g.uf !== 'ND' && parseFloat(g.value || 0) > 0)
+            .sort((a, b) => Number(a.nf_number || 0) - Number(b.nf_number || 0));
         if (guiasComGnre.length === 0) {
             return res.status(400).json({ error: "As notas selecionadas são para SP (Recolhimento via DARE-SP, sem GNRE)." });
         }

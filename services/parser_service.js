@@ -73,10 +73,16 @@ function extrairDadosNfeXML(xml) {
             throw new Error("Estrutura obrigatória da NF-e incompleta (blocos <emit>, <dest> ou <ICMSTot> ausentes).");
         }
 
-        // 3. Emitente: extrai CNPJ e UF estritamente de <emit>/<enderEmit>
+        // 3. Emitente: extrai CNPJ, endereço e UF estritamente de <emit>/<enderEmit>
         const cnpjEmitente = extrairTag(emitBlock, 'CNPJ') || extrairTag(emitBlock, 'CPF');
+        const emitRazaoSocial = decodificarEntidadesXml(extrairTag(emitBlock, 'xNome'));
         const enderEmitBlock = extrairTag(emitBlock, 'enderEmit') || emitBlock;
         const ufEmitente = (extrairTag(enderEmitBlock, 'UF') || '').toUpperCase();
+        const emitLgr = decodificarEntidadesXml(extrairTag(enderEmitBlock, 'xLgr') || '');
+        const emitNro = decodificarEntidadesXml(extrairTag(enderEmitBlock, 'nro') || '');
+        const emitEndereco = [emitLgr, emitNro].filter(Boolean).join(' ').trim();
+        const emitMunicipio = extrairTag(enderEmitBlock, 'cMun') || '';
+        const emitCep = (extrairTag(enderEmitBlock, 'CEP') || '').replace(/\D/g, '');
 
         // 4. Destinatário: extrai UF estritamente de <dest>/<enderDest>/<UF>
         const enderDestBlock = extrairTag(destBlock, 'enderDest');
@@ -166,6 +172,10 @@ function extrairDadosNfeXML(xml) {
         return {
             ufFavorecida: ufDestinatario,
             ufEmitente: ufEmitente || null,
+            emitRazaoSocial: emitRazaoSocial || null,
+            emitEndereco: emitEndereco || null,
+            emitMunicipio: emitMunicipio || null,
+            emitCep: emitCep || null,
             ufDestinatario: ufDestinatario,
             ufEntrega: ufEntrega || null,
             idDest: idDest || null,
