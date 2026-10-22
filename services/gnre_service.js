@@ -196,14 +196,13 @@ function construirXmlGuias(listaGuias, dadosEmpresa) {
         if (['RJ', 'SC', 'PE'].includes(ufFav)) {
             tipoDoc = '24';
             numDoc = guia.chaveAcessoNfe;
-        } else if (['AL', 'RN', 'DF'].includes(ufFav)) {
+        } else if (['AL', 'RN', 'DF', 'RS'].includes(ufFav)) {
             tipoDoc = '22';
             numDoc = guia.chaveAcessoNfe;
         }
 
         let xmlDocOrigem = '';
-        const ufsRejeitamDocOrigem = ['RS'];
-        if (!ufsRejeitamDocOrigem.includes(ufFav) && numDoc) {
+        if (numDoc) {
             xmlDocOrigem = `\n                <documentoOrigem tipo="${escapeXml(tipoDoc)}">${escapeXml(numDoc)}</documentoOrigem>`;
         }
 
