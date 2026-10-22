@@ -1663,18 +1663,54 @@ app.get('/api/batch/status/:batchId', requireAuth, async (req, res) => {
     }
 });
 
-// Endpoint para baixar o lote XML de São Paulo (SP)
+// Endpoint para baixar o lote XML de São Paulo (SP) (gera sob demanda caso ainda não exista no Storage)
 app.get('/api/batch/download-xml/:batchId', requireAuth, async (req, res) => {
     const { batchId } = req.params;
     const tenant = req.tenant;
 
     try {
-        const { data: fileData, error: downloadError } = await supabase.storage
+        const storagePath = `${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`;
+        let { data: fileData, error: downloadError } = await supabase.storage
             .from('tenant-storage')
-            .download(`${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`);
+            .download(storagePath);
 
         if (downloadError || !fileData) {
-            return res.status(404).json({ error: "Arquivo XML de lote para São Paulo não localizado ou não disponível." });
+            let query = supabase.from('guides').select('*').eq('tenant_id', tenant.id).eq('uf', 'SP');
+            if (batchId && batchId !== 'todos') {
+                query = query.eq('batch_id', batchId);
+            }
+            const { data: spGuides } = await query;
+            if (!spGuides || spGuides.length === 0) {
+                return res.status(404).json({ error: "Nenhuma nota de São Paulo localizada para gerar o XML em lote." });
+            }
+
+            const hoje = new Date().toISOString().split('T')[0];
+            const listaNotasSp = [];
+            for (const g of spGuides) {
+                if (g.xml_storage_path) {
+                    const { data: xData } = await supabase.storage.from('tenant-storage').download(g.xml_storage_path);
+                    if (xData) {
+                        const nota = parserService.extrairDadosNfeXML(await xData.text());
+                        nota.dataVencimento = hoje;
+                        nota.dataPagamento = hoje;
+                        listaNotasSp.push(nota);
+                    }
+                }
+            }
+
+            if (listaNotasSp.length === 0) {
+                return res.status(404).json({ error: "XMLs das notas de SP não encontrados no Storage." });
+            }
+
+            const xmlSp = gnreService.gerarXmlLoteRaw(listaNotasSp, tenant);
+            const xmlBuffer = Buffer.from(xmlSp, 'utf-8');
+            await supabase.storage.from('tenant-storage').upload(storagePath, xmlBuffer, {
+                contentType: 'application/xml',
+                upsert: true
+            });
+            res.setHeader('Content-Type', 'application/xml');
+            res.setHeader('Content-Disposition', `attachment; filename="lote_sp_gnre_${batchId}.xml"`);
+            return res.send(xmlBuffer);
         }
 
         const buffer = Buffer.from(await fileData.arrayBuffer());
@@ -4879,22 +4915,31 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate) {
                         resultadoUf = { guias: xmlSimulado, recibo: `SIMULADO_${uf}` };
                         log(`[${uf}] 🧪 Simulação concluída (ambiente não produtivo).`);
                     } else if (uf === 'SP') {
-                        // SEFAZ-SP descontinuou GNRE-ICMS em 01/11/2022 (exige DARE-SP).
+                        // Gera e persiste o XML em lote de SP para importação manual no portal
+                        const xmlSp = gnreService.gerarXmlLoteRaw(notasPorUf[uf], tenant);
+                        const remotePathSp = `${tenant.id}/lotes_sp/lote_sp_${batchId}.xml`;
+                        await supabase.storage
+                            .from('tenant-storage')
+                            .upload(remotePathSp, Buffer.from(xmlSp, 'utf-8'), {
+                                contentType: 'application/xml',
+                                upsert: true
+                            });
+
                         for (const n of notasPorUf[uf]) {
                             await supabase
                                 .from('guides')
                                 .update({
-                                    barcode: null,
-                                    line_digitizable: null,
+                                    barcode: 'IMPORTAR_NO_SEFAZ_SP',
+                                    line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
                                     status: 'requer_dare_sp',
-                                    rejection_reason: 'SEFAZ-SP não emite GNRE para ICMS desde 01/11/2022. Recolhimento deve ser efetuado via DARE-SP.'
+                                    rejection_reason: 'Lote XML de SP gerado para emissão manual no portal.'
                                 })
                                 .eq('batch_id', batchId)
                                 .eq('tenant_id', tenant.id)
                                 .eq('nf_number', n.documentoOrigem);
                         }
-                        resultadoUf = { guias: [], recibo: null, isSpDare: true };
-                        log(`[${uf}] ⚠ Notas de SP marcadas como 'requer_dare_sp' (GNRE-ICMS descontinuada pela SEFAZ-SP; recolher via DARE-SP).`);
+                        resultadoUf = { guias: [], recibo: `XML_LOTE_SP`, isSpDare: true };
+                        log(`[${uf}] 📦 Lote XML de SP (${notasPorUf[uf].length} notas) gerado e disponível para download e emissão manual no portal.`);
                     } else if (uf === 'ES') {
                         let xmlGuiasEs = [];
                         for (const nota of notasPorUf[uf]) {
