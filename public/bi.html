@@ -666,18 +666,26 @@
                         const prodData = await prodRes.json();
                         const pBody = document.getElementById('produtos-ranking-body');
                         if (prodData.ranking && prodData.ranking.length > 0) {
-                            pBody.innerHTML = prodData.ranking.slice(0, 6).map(p => `
+                            pBody.innerHTML = prodData.ranking.slice(0, 6).map(p => {
+                                const imgHtml = p.image_url 
+                                    ? `<img src="${p.image_url}" alt="${p.descricao}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #E2E8F0; flex-shrink: 0;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" /><div style="display: none; width: 40px; height: 40px; border-radius: 6px; background: #F1F5F9; border: 1px solid #E2E8F0; align-items: center; justify-content: center; font-size: 16px; color: #94A3B8; flex-shrink: 0;">👗</div>`
+                                    : `<div style="width: 40px; height: 40px; border-radius: 6px; background: #F1F5F9; border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #94A3B8; flex-shrink: 0;">👗</div>`;
+                                return `
                                 <tr>
-                                    <td>
-                                        <div style="font-weight: 700; color: #111F33; font-size: 12px;">${p.descricao}</div>
-                                        <div style="font-size: 10.5px; color: var(--text-muted);">SKU: ${p.sku}</div>
+                                    <td style="display: flex; align-items: center; gap: 12px;">
+                                        ${imgHtml}
+                                        <div style="min-width: 0;">
+                                            <div style="font-weight: 700; color: #111F33; font-size: 12px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px;" title="${p.descricao}">${p.descricao}</div>
+                                            <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">SKU: <span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #475569;">${p.sku}</span></div>
+                                        </div>
                                     </td>
                                     <td style="text-align: center; font-weight: 700; color: #2563EB;">${p.quantidade}</td>
                                     <td style="text-align: right; font-weight: 700; color: #047857; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">
                                         R$ ${p.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </td>
                                 </tr>
-                            `).join('');
+                                `;
+                            }).join('');
                         } else {
                             pBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 14px;">Nenhuma peça registrada no período.</td></tr>`;
                         }
