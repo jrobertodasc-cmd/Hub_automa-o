@@ -2051,7 +2051,8 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         const validItauGuides = (batchGuides || []).filter(g => {
             const bar = String(g.barcode || '').replace(/\D/g, '');
             const isSynthetic = !isSimuladoCnab && printService.isCodigoBarrasSinteticoLocal(bar);
-            return !isSynthetic && bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
+            // Permite guias válidas com código de barras >= 44 dígitos (inclusive guias reais de SP)
+            return !isSynthetic && bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
         });
 
         const mapped = validItauGuides.map(g => ({
