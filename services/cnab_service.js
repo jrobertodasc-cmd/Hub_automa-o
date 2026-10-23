@@ -141,7 +141,9 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         segO += 'O';                                               // 014-014: Segmento (O)
         segO += padZero(0, 3);                                     // 015-017: Tipo Movimento (000=Inclusão)
         segO += padSpace(guia.codigoBarras, 48);                   // 018-065: Código de Barras da Guia
-        segO += padSpace("SEFAZ PE GNRE TRIBUTOS", 30);            // 066-095: Nome Concessionária/Órgão
+        const ufFav = (guia.uf || guia.ufFavorecida || '').toUpperCase();
+        const nomeConcessionaria = ufFav === 'SP' ? "SEFAZ SP DARE ICMS" : (ufFav ? `SEFAZ ${ufFav} GNRE TRIBUTOS` : "SEFAZ GNRE TRIBUTOS");
+        segO += padSpace(nomeConcessionaria, 30);            // 066-095: Nome Concessionária/Órgão
         
         // Garante que a data de vencimento não vá com zeros para evitar rejeição
         const dtVenc = formatarDataCNAB(guia.dataVencimento);
