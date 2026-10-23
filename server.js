@@ -2167,6 +2167,21 @@ app.post('/api/cnab/upload-retorno', requireAuth, requireRole(['diretoria', 'fin
 /**
  * 4.0 Consulta de Cargas Ativas da Doca (Tempo Real para Cockpit e Mobile)
  */
+/**
+ * Classifica a situação de pagamento/conciliação de uma guia:
+ * paga | agendada | a_pagar | rejeitada | sp_manual
+ */
+function situacaoPagamentoGuia(g) {
+    const st = String(g.status || '').toLowerCase();
+    const bar = String(g.barcode || '');
+    if (['paga', 'comprovada', 'liquidada', 'baixada', 'pago'].includes(st) || g.receipt_storage_path || g.bank_authentication) return 'paga';
+    if (String(g.uf || '').toUpperCase() === 'SP' || bar === 'IMPORTAR_NO_SEFAZ_SP') return 'sp_manual';
+    if (['agendada', 'pagamento_autorizado', 'pagamento_enviado', 'pagamento_em_processamento'].includes(st)) return 'agendada';
+    if (['rejeitada', 'rejeitada_sefaz', 'erro_pagamento', 'divergencia_uf_portal', 'cancelada'].includes(st)) return 'rejeitada';
+    if (bar.replace(/\D/g, '').length < 40) return 'sem_guia';
+    return 'a_pagar';
+}
+
 app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
     try {
         const tenant = req.tenant;
@@ -2246,11 +2261,53 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                 carrier_name: g.carrier_name || 'Transportadora Padrão',
                 status: g.status,
                 is_liberada: printService.isGuiaLiberada(g),
-                created_at: g.created_at
+                created_at: g.created_at,
+                barcode: g.barcode || null,
+                line_digitizable: g.line_digitizable || null,
+                paid_at: g.paid_at || null,
+                bank_authentication: g.bank_authentication || null,
+                situacao_pagamento: situacaoPagamentoGuia(g)
             }))
         });
     } catch (err) {
         console.error("Erro ao buscar cargas ativas:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * Conciliação manual: marca guias como pagas (ou desfaz) a partir do painel.
+ * Body: { ids: [uuid], paga: true|false, paidAt?: 'YYYY-MM-DD' }
+ */
+app.post('/api/guide/marcar-paga', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { ids, paga, paidAt } = req.body || {};
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: "Nenhuma guia informada." });
+        }
+        const marcar = paga !== false;
+        const dataPg = (paidAt && /^\d{4}-\d{2}-\d{2}$/.test(paidAt)) ? paidAt : new Date().toISOString().split('T')[0];
+
+        const update = marcar
+            ? { status: 'paga', paid_at: dataPg }
+            : { status: 'aguardando_pagamento', paid_at: null, bank_authentication: null };
+
+        const { data, error } = await supabase
+            .from('guides')
+            .update(update)
+            .in('id', ids)
+            .eq('tenant_id', req.tenant.id)
+            .select('id, nf_number');
+        if (error) throw error;
+
+        return res.json({
+            success: true,
+            atualizadas: (data || []).length,
+            message: marcar
+                ? `${(data || []).length} guia(s) conciliada(s) como PAGA(S).`
+                : `${(data || []).length} guia(s) revertida(s) para aguardando pagamento.`
+        });
+    } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 });

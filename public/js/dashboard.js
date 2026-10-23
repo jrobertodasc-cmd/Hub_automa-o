@@ -629,8 +629,12 @@ async function carregarDetalhesLote(batchId) {
             receiptsContainer.textContent = batch.receipt ? `Recibos SEFAZ: ${batch.receipt}` : '';
         }
 
-        // Aplica os filtros iniciais e renderiza a tabela
-        aplicarFiltrosTabela();
+        // Renderiza a tabela única da doca (mesma fonte de /api/expedicao/cargas-ativas)
+        if (typeof carregarCargasDocaReais === 'function') {
+            await carregarCargasDocaReais();
+        } else {
+            aplicarFiltrosTabela();
+        }
 
     } catch (e) {
         showToast("Erro ao abrir detalhes do lote.", 'error');
@@ -1709,15 +1713,20 @@ window.reiniciarDemonstracaoDoca = reiniciarDemonstracaoDoca;
 
 async function carregarCargasDocaReais() {
     try {
+        localStorage.removeItem('doca_liberada');
         const res = await fetch('/api/expedicao/cargas-ativas');
-        if (!res.ok) return;
+        if (!res.ok) {
+            const tb = document.getElementById('guides-table-body');
+            if (tb) tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:#B42318; font-weight:600;">Falha ao carregar as guias (HTTP ${res.status}). Atualize a página ou faça login novamente.</td></tr>`;
+            return;
+        }
         const data = await res.json();
         if (!data || !data.cargas || data.cargas.length === 0) {
             console.log("Nenhuma carga ativa encontrada na Doca.");
             return;
         }
 
-        const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+        const isDocaLiberada = false; // flag de demonstração desativada: status vem sempre do banco/banco real
         const { resumo, porTransportadora, cargas } = data;
         window.currentBatchGuides = cargas;
         if (data.batch) window.activeBatchId = data.batch.id;
@@ -1829,11 +1838,249 @@ async function carregarCargasDocaReais() {
         // Inicializa controles de data do painel fintech
         inicializarPainelFintechDoca();
 
+        // Atualiza modal de conciliação se estiver aberto
+        if (typeof renderizarConciliacao === 'function') renderizarConciliacao();
+
     } catch (e) {
         console.error("Erro ao carregar cargas reais da doca:", e);
+        const tb = document.getElementById('guides-table-body');
+        if (tb) tb.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:#B42318; font-weight:600;">Erro ao exibir as guias: ${escapeHtml(e.message || String(e))}</td></tr>`;
     }
 }
 window.carregarCargasDocaReais = carregarCargasDocaReais;
+
+// ==========================================
+// CONCILIAÇÃO DE GUIAS (PAGAS × AGENDADAS × A PAGAR)
+// ==========================================
+function formatarDataCurta(iso) {
+    if (!iso) return '';
+    const p = String(iso).split('T')[0].split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(iso);
+}
+
+function formatarBRL(n) {
+    return `R$ ${(parseFloat(n) || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+}
+
+function copiarCodigoBarras(cod) {
+    const done = () => showToast('📋 Código de barras copiado!', 'success');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cod).then(done).catch(() => showToast(cod, 'info'));
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = cod;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { showToast(cod, 'info'); }
+        document.body.removeChild(ta);
+    }
+}
+window.copiarCodigoBarras = copiarCodigoBarras;
+
+window.conciliacaoFiltro = 'TODAS';
+window.conciliacaoSelecionadas = new Set();
+
+function abrirModalConciliacao() {
+    const modal = document.getElementById('modal-conciliacao-guias');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    window.conciliacaoSelecionadas.clear();
+    renderizarConciliacao();
+}
+window.abrirModalConciliacao = abrirModalConciliacao;
+
+function fecharModalConciliacao() {
+    const modal = document.getElementById('modal-conciliacao-guias');
+    if (modal) modal.style.display = 'none';
+}
+window.fecharModalConciliacao = fecharModalConciliacao;
+
+function filtrarConciliacao(f) {
+    window.conciliacaoFiltro = f;
+    window.conciliacaoSelecionadas.clear();
+    renderizarConciliacao();
+}
+window.filtrarConciliacao = filtrarConciliacao;
+
+function renderizarConciliacao() {
+    const modal = document.getElementById('modal-conciliacao-guias');
+    if (!modal || modal.style.display !== 'flex') return;
+
+    const todas = window.todasCargasDoca || [];
+    const grupos = { paga: [], agendada: [], a_pagar: [], rejeitada: [], sp_manual: [], sem_guia: [] };
+    todas.forEach(g => (grupos[g.situacao_pagamento] || grupos.a_pagar).push(g));
+    const pendencias = grupos.rejeitada.concat(grupos.sem_guia);
+    const soma = arr => arr.reduce((a, g) => a + (parseFloat(g.value) || 0), 0);
+
+    const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setTxt('conc-qtd-paga', grupos.paga.length);
+    setTxt('conc-val-paga', formatarBRL(soma(grupos.paga)));
+    setTxt('conc-qtd-agendada', grupos.agendada.length);
+    setTxt('conc-val-agendada', formatarBRL(soma(grupos.agendada)));
+    setTxt('conc-qtd-apagar', grupos.a_pagar.length);
+    setTxt('conc-val-apagar', formatarBRL(soma(grupos.a_pagar)));
+    setTxt('conc-qtd-sp', grupos.sp_manual.length);
+    setTxt('conc-val-sp', formatarBRL(soma(grupos.sp_manual)));
+    const pendEl = document.getElementById('conc-pendencias');
+    if (pendEl) {
+        pendEl.style.display = pendencias.length ? 'block' : 'none';
+        pendEl.textContent = `⚠ ${pendencias.length} nota(s) com pendência (sem guia emitida ou rejeitada): ${formatarBRL(soma(pendencias))} — veja o filtro "Pendências".`;
+    }
+
+    const f = window.conciliacaoFiltro;
+    let lista = todas;
+    if (f === 'PAGA') lista = grupos.paga;
+    else if (f === 'AGENDADA') lista = grupos.agendada;
+    else if (f === 'A_PAGAR') lista = grupos.a_pagar;
+    else if (f === 'PENDENCIA') lista = pendencias;
+    else if (f === 'SP') lista = grupos.sp_manual;
+
+    document.querySelectorAll('.conc-chip').forEach(c => c.classList.toggle('active', c.getAttribute('data-f') === f));
+
+    const busca = (document.getElementById('conc-busca')?.value || '').toLowerCase().trim();
+    if (busca) {
+        lista = lista.filter(g =>
+            String(g.nf_number).toLowerCase().includes(busca) ||
+            String(g.customer_name || '').toLowerCase().includes(busca) ||
+            String(g.uf || '').toLowerCase().includes(busca));
+    }
+
+    const rotulo = {
+        paga: '<span style="color:#157347; font-weight:700;">🟢 Paga</span>',
+        agendada: '<span style="color:#1D4ED8; font-weight:700;">🔵 Agendada</span>',
+        a_pagar: '<span style="color:#DC2626; font-weight:700;">🔴 A pagar</span>',
+        rejeitada: '<span style="color:#C2410C; font-weight:700;">⚠ Rejeitada</span>',
+        sem_guia: '<span style="color:#92400E; font-weight:700;">⚠ Sem guia emitida</span>',
+        sp_manual: '<span style="color:#0F766E; font-weight:700;">📦 SP manual</span>'
+    };
+
+    const body = document.getElementById('conc-tabela-body');
+    if (body) {
+        body.innerHTML = lista.length === 0
+            ? '<tr><td colspan="7" style="text-align:center; padding:28px; color:#8393A7;">Nenhuma guia neste filtro.</td></tr>'
+            : lista.map(g => {
+                const checked = window.conciliacaoSelecionadas.has(g.id) ? 'checked' : '';
+                const bar = String(g.barcode || '').replace(/\D/g, '');
+                return `<tr style="border-bottom:1px solid #EEF2F7;">
+                    <td style="padding:6px 8px; text-align:center;"><input type="checkbox" ${checked} onchange="toggleConciliacaoSel('${escapeHtml(g.id)}', this.checked)"></td>
+                    <td style="padding:6px 8px; font-family:'JetBrains Mono',monospace; font-weight:700;">${escapeHtml(g.nf_number)}</td>
+                    <td style="padding:6px 8px; font-weight:700;">${escapeHtml(g.uf)}</td>
+                    <td style="padding:6px 8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(g.customer_name)}</td>
+                    <td style="padding:6px 8px; text-align:right; font-family:'JetBrains Mono',monospace;">${formatarBRL(g.value)}</td>
+                    <td style="padding:6px 8px;">${rotulo[g.situacao_pagamento] || rotulo.a_pagar}${g.paid_at ? `<div style="font-size:10.5px; color:#5B6B7F;">${formatarDataCurta(g.paid_at)}</div>` : ''}</td>
+                    <td style="padding:6px 8px; text-align:right;">${bar.length >= 44 ? `<button type="button" onclick="copiarCodigoBarras('${bar}')" style="border:none; background:none; cursor:pointer; color:#475569; font-size:11px;">📋 copiar</button>` : '—'}</td>
+                </tr>`;
+            }).join('');
+    }
+    atualizarContadorConciliacaoSel();
+}
+window.renderizarConciliacao = renderizarConciliacao;
+
+function toggleConciliacaoSel(id, checked) {
+    if (checked) window.conciliacaoSelecionadas.add(id);
+    else window.conciliacaoSelecionadas.delete(id);
+    atualizarContadorConciliacaoSel();
+}
+window.toggleConciliacaoSel = toggleConciliacaoSel;
+
+function conciliacaoSelecionarTodas(checked) {
+    document.querySelectorAll('#conc-tabela-body input[type=checkbox]').forEach(cb => {
+        cb.checked = checked;
+        const m = (cb.getAttribute('onchange') || '').match(/'([^']+)'/);
+        if (m) {
+            if (checked) window.conciliacaoSelecionadas.add(m[1]);
+            else window.conciliacaoSelecionadas.delete(m[1]);
+        }
+    });
+    atualizarContadorConciliacaoSel();
+}
+window.conciliacaoSelecionarTodas = conciliacaoSelecionarTodas;
+
+function atualizarContadorConciliacaoSel() {
+    const el = document.getElementById('conc-sel-count');
+    if (el) el.textContent = window.conciliacaoSelecionadas.size;
+}
+
+async function marcarGuiasPagas(ids, paga = true) {
+    if (!ids || ids.length === 0) {
+        showToast('Selecione pelo menos uma guia.', 'warning');
+        return;
+    }
+    const dataInput = document.getElementById('conc-data-pagamento')?.value;
+    const msg = paga
+        ? `Confirma marcar ${ids.length} guia(s) como PAGA(S) (conciliação manual)?`
+        : `Reverter ${ids.length} guia(s) para "aguardando pagamento"?`;
+    if (!confirm(msg)) return;
+    try {
+        const res = await fetch('/api/guide/marcar-paga', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids, paga, paidAt: dataInput || undefined })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Falha ao conciliar.');
+        showToast(`✔ ${data.message}`, 'success');
+        window.conciliacaoSelecionadas.clear();
+        await carregarCargasDocaReais();
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+window.marcarGuiasPagas = marcarGuiasPagas;
+
+function marcarSelecionadasConciliacao(paga) {
+    marcarGuiasPagas(Array.from(window.conciliacaoSelecionadas), paga);
+}
+window.marcarSelecionadasConciliacao = marcarSelecionadasConciliacao;
+
+async function enviarRetornoBancario(inputEl) {
+    const file = inputEl?.files?.[0];
+    if (!file) return;
+    const out = document.getElementById('conc-retorno-resultado');
+    if (out) out.textContent = '⏳ Processando retorno bancário...';
+    try {
+        const fd = new FormData();
+        fd.append('retornoFile', file);
+        const res = await fetch('/api/cnab/upload-retorno', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Falha ao processar retorno.');
+        const r = data.resumo || {};
+        if (out) {
+            out.innerHTML = `<strong style="color:#157347;">✔ ${escapeHtml(data.message)}</strong><br>` +
+                `No arquivo: ${r.totalNoArquivo ?? 0} · Pagas: ${r.baixadas ?? 0} · Agendadas: ${r.agendadas ?? 0} · Rejeitadas: ${r.rejeitadas ?? 0} · Não localizadas: ${r.naoLocalizadasNoBanco ?? 0}`;
+        }
+        showToast(data.message, 'success');
+        await carregarCargasDocaReais();
+    } catch (err) {
+        if (out) out.innerHTML = `<span style="color:#B42318; font-weight:600;">❌ ${escapeHtml(err.message)}</span>`;
+        showToast(err.message, 'error');
+    } finally {
+        inputEl.value = '';
+    }
+}
+window.enviarRetornoBancario = enviarRetornoBancario;
+
+function exportarConciliacaoCsv() {
+    const todas = window.todasCargasDoca || [];
+    if (todas.length === 0) {
+        showToast('Nenhuma guia para exportar.', 'warning');
+        return;
+    }
+    const nomes = { paga: 'PAGA', agendada: 'AGENDADA', a_pagar: 'A PAGAR', rejeitada: 'REJEITADA', sp_manual: 'SP MANUAL' };
+    const linhas = [['NF', 'UF', 'Cliente', 'Valor', 'Situacao', 'Data Pagamento', 'Autenticacao', 'Codigo de Barras']];
+    todas.forEach(g => linhas.push([
+        g.nf_number, g.uf, g.customer_name, (parseFloat(g.value) || 0).toFixed(2).replace('.', ','),
+        nomes[g.situacao_pagamento] || 'A PAGAR', formatarDataCurta(g.paid_at), g.bank_authentication || '', String(g.barcode || '')
+    ]));
+    const csv = '\ufeff' + linhas.map(l => l.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `conciliacao_guias_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+window.exportarConciliacaoCsv = exportarConciliacaoCsv;
 
 // ==========================================
 // CONTROLADORES DO PAINEL DE LIQUIDAÇÃO FINANCEIRA & DATA PERSONALIZADA
@@ -1895,10 +2142,6 @@ function executarDownloadRemessaDoca(event) {
     if (event && event.currentTarget) {
         event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
     }
-    const [ano, mes, dia] = dataPag.split('-');
-    const dataFmt = `${dia}/${mes}/${ano}`;
-    showToast(`?? Baixando Remessa ${banco.toUpperCase()} com d?bito agendado para ${dataFmt}...`, "success");
-}
     const [ano, mes, dia] = dataPag.split('-');
     const dataFmt = `${dia}/${mes}/${ano}`;
     showToast(`📥 Baixando Remessa ${banco.toUpperCase()} com débito agendado para ${dataFmt}...`, "success");
@@ -2598,23 +2841,28 @@ function renderizarPaginaDoca(pagina = 1) {
                 </tr>
             `;
         } else {
-            const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+            const isDocaLiberada = false; // flag de demonstração desativada: status vem sempre do banco/banco real
             tbody.innerHTML = cargasPagina.map((g, idx) => {
                 const isLib = isDocaLiberada || g.is_liberada;
                 const isSp = (g.uf === 'SP');
                 const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
                 const isChecked = (window.selectedGuideIds && window.selectedGuideIds.has(g.id)) ? 'checked' : '';
 
-                let statusBadge = '';
-                if (isLib) {
-                    if (isSp) {
-                        statusBadge = '<span class="tag-status tag-isento">Isento (SP)</span>';
-                    } else {
-                        statusBadge = '<span class="tag-status tag-liberado">🟢 Liberado</span>';
-                    }
-                } else {
-                    statusBadge = '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 Retido SEFAZ</span>';
-                }
+                const sit = g.situacao_pagamento || (isLib ? 'paga' : 'a_pagar');
+                const dtPg = g.paid_at ? ` · ${formatarDataCurta(g.paid_at)}` : '';
+                const badgesSituacao = {
+                    paga: `<span class="tag-status tag-liberado">🟢 Paga${dtPg}</span>`,
+                    agendada: '<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">🔵 Agendada no banco</span>',
+                    a_pagar: '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 A pagar</span>',
+                    rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA;">⚠ Rejeitada / Divergência</span>',
+                    sem_guia: '<span class="tag-status" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A;">⚠ Sem guia emitida</span>',
+                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4;">📦 SP · emissão manual</span>'
+                };
+                const statusBadge = badgesSituacao[sit] || badgesSituacao.a_pagar;
+                const barNum = String(g.barcode || '').replace(/\D/g, '');
+                const btnCopiar = barNum.length >= 44
+                    ? `<button type="button" class="btn-table-action" style="color:#475569; background:none; border:none; cursor:pointer;" title="Copiar código de barras" onclick="copiarCodigoBarras('${barNum}')">📋 Cód. barras</button>`
+                    : '';
 
                 return `
                     <tr>
@@ -2643,7 +2891,7 @@ function renderizarPaginaDoca(pagina = 1) {
                         </td>
                         <td style="text-align: right;">
                             <div class="cell-mono" style="${isLib ? 'color: var(--ok);' : 'color: var(--err); font-weight: 700;'}">${valFmt}</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'Isenção Confaz' : 'DIFAL Destino'}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'DIFAL · XML lote SP' : 'DIFAL Destino'}</div>
                         </td>
                         <td style="text-align: center;">
                             ${statusBadge}
@@ -2651,12 +2899,13 @@ function renderizarPaginaDoca(pagina = 1) {
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
                             ${g.uf !== 'SP' && g.uf !== 'ND' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : (g.uf === 'SP' && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : '')}
+                            ${btnCopiar}
                             ${(() => {
                                 if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
                                 const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
                                 const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
                                 if (canAuth) {
-                                    return `<button type="button" onclick="autorizarPagamentoGuiaAvulsa('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}')" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;">Liquidar</button>`;
+                                    return `<button type="button" onclick="marcarGuiasPagas(['${escapeHtml(g.id)}'], true)" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;" title="Conciliar manualmente: marcar esta guia como paga">✔ Marcar paga</button>`;
                                 } else {
                                     return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
                                 }
@@ -2738,7 +2987,7 @@ window.renderizarPaginaDoca = renderizarPaginaDoca;
 
 function aplicarFiltrosRapidos() {
     const todas = window.todasCargasDoca || [];
-    const isDocaLiberada = localStorage.getItem('doca_liberada') === 'true';
+    const isDocaLiberada = false; // flag de demonstração desativada: status vem sempre do banco/banco real
 
     window.cargasFiltradasDoca = todas.filter(g => {
         const isLib = isDocaLiberada || g.is_liberada;

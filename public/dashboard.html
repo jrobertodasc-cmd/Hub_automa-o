@@ -1543,11 +1543,11 @@
                 <div class="dock-nav-tabs">
                     <button type="button" class="dock-tab-btn active" onclick="filtrarPorSituacaoTab('TODAS', this)">
                         <span>Todos no Lote</span>
-                        <span class="tab-counter-badge" id="tab-cnt-todas">91</span>
+                        <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Bloqueado', this)">
                         <span>🔴 Retidas SEFAZ</span>
-                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">91</span>
+                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">0</span>
                     </button>
                     <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Liberado', this)">
                         <span>🟢 Liberadas</span>
@@ -1675,6 +1675,10 @@
                         <svg class="ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                         <span>Documentos de Embarque Geral</span>
                     </a>
+                    <button type="button" onclick="abrirModalConciliacao()" class="btn pri sm" style="font-weight: 700;" title="Conferir quais guias já foram pagas, agendadas ou estão a pagar">
+                        <svg class="ico" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        <span>Conciliar Guias</span>
+                    </button>
                     <button type="button" onclick="abrirModalFechamentoContabil()" class="btn sm" style="font-weight: 700; color: #111F33; border-color: #CBD5E1; background: #ffffff;" title="Fechamento contábil e pacote de auditoria ZIP">
                         <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                         <span>Fechamento Diário (.ZIP)</span>
@@ -1966,7 +1970,88 @@
 
     <div id="toast-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px;"></div>
 
-    <script src="/js/auth.js?v=6"></script>
-    <script src="/js/dashboard.js?v=12"></script>
+        <!-- MODAL DE CONCILIAÇÃO DE GUIAS (PAGAS × AGENDADAS × A PAGAR) -->
+    <style>
+        .conc-chip { border: 1px solid #CBD5E1; background: #fff; color: #334155; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+        .conc-chip.active { background: #111F33; color: #fff; border-color: #111F33; }
+        .conc-card { border: 1px solid #E3E8EF; border-radius: 12px; padding: 12px 14px; background: #FAFCFE; }
+        .conc-card .n { font-size: 24px; font-weight: 800; line-height: 1.1; }
+        .conc-card .v { font-size: 12px; color: #5B6B7F; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+        .conc-card .l { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #5B6B7F; }
+    </style>
+    <div id="modal-conciliacao-guias" style="display: none; position: fixed; inset: 0; background: rgba(17, 31, 51, 0.7); backdrop-filter: blur(6px); z-index: 10003; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border: 1px solid #E3E8EF; border-radius: 16px; width: 100%; max-width: 980px; padding: 24px 26px; box-shadow: var(--shadow-lg); max-height: 92vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 19px; font-weight: 800; color: #111F33;">Conciliação de Guias GNRE</h2>
+                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #5B6B7F;">Veja quais guias já estão pagas, agendadas no banco ou ainda a pagar. Importe o retorno do Itaú (.RET) para baixar automaticamente.</p>
+                </div>
+                <button type="button" onclick="fecharModalConciliacao()" style="border: none; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: #5B6B7F;">×</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
+                <div class="conc-card"><div class="l">🟢 Pagas</div><div class="n" id="conc-qtd-paga" style="color:#157347;">0</div><div class="v" id="conc-val-paga">R$ 0,00</div></div>
+                <div class="conc-card"><div class="l">🔵 Agendadas</div><div class="n" id="conc-qtd-agendada" style="color:#1D4ED8;">0</div><div class="v" id="conc-val-agendada">R$ 0,00</div></div>
+                <div class="conc-card"><div class="l">🔴 A pagar</div><div class="n" id="conc-qtd-apagar" style="color:#DC2626;">0</div><div class="v" id="conc-val-apagar">R$ 0,00</div></div>
+                <div class="conc-card"><div class="l">📦 SP (manual)</div><div class="n" id="conc-qtd-sp" style="color:#0F766E;">0</div><div class="v" id="conc-val-sp">R$ 0,00</div></div>
+            </div>
+            <div id="conc-pendencias" style="display:none; margin: -4px 0 12px; font-size: 12.5px; font-weight: 600; color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 7px 10px;"></div>
+
+            <div style="border: 1px dashed #CBD5E1; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; background: #F8FAFC;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <strong style="font-size: 13px; color: #111F33;">🏦 Retorno bancário Itaú (.RET)</strong>
+                    <input type="file" id="conc-input-ret" accept=".ret,.RET,.txt,.TXT" style="display:none;" onchange="enviarRetornoBancario(this)">
+                    <button type="button" class="btn pri sm" onclick="document.getElementById('conc-input-ret').click()">Importar arquivo de retorno</button>
+                    <span style="font-size: 12px; color: #5B6B7F;">Concilia por código de barras: ocorrência de pagamento marca <b>Paga</b>; agendamento marca <b>Agendada</b>.</span>
+                </div>
+                <div id="conc-retorno-resultado" style="font-size: 12.5px; margin-top: 8px; color: #334155;"></div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" class="conc-chip active" data-f="TODAS" onclick="filtrarConciliacao('TODAS')">Todas</button>
+                    <button type="button" class="conc-chip" data-f="A_PAGAR" onclick="filtrarConciliacao('A_PAGAR')">A pagar</button>
+                    <button type="button" class="conc-chip" data-f="AGENDADA" onclick="filtrarConciliacao('AGENDADA')">Agendadas</button>
+                    <button type="button" class="conc-chip" data-f="PAGA" onclick="filtrarConciliacao('PAGA')">Pagas</button>
+                    <button type="button" class="conc-chip" data-f="SP" onclick="filtrarConciliacao('SP')">SP</button>
+                    <button type="button" class="conc-chip" data-f="PENDENCIA" onclick="filtrarConciliacao('PENDENCIA')">Pendências</button>
+                </div>
+                <input type="text" id="conc-busca" oninput="renderizarConciliacao()" placeholder="Buscar NF, cliente ou UF..." style="height: 32px; border: 1px solid #CBD5E1; border-radius: 8px; padding: 0 10px; font-size: 12.5px; min-width: 220px;">
+            </div>
+
+            <div style="border: 1px solid #E3E8EF; border-radius: 10px; max-height: 330px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+                    <thead style="position: sticky; top: 0; background: #111F33; color: #fff;">
+                        <tr>
+                            <th style="padding: 7px 8px; width: 34px;"><input type="checkbox" onchange="conciliacaoSelecionarTodas(this.checked)" title="Selecionar todas as exibidas"></th>
+                            <th style="padding: 7px 8px; text-align: left;">NF</th>
+                            <th style="padding: 7px 8px; text-align: left;">UF</th>
+                            <th style="padding: 7px 8px; text-align: left;">Cliente</th>
+                            <th style="padding: 7px 8px; text-align: right;">DIFAL</th>
+                            <th style="padding: 7px 8px; text-align: left;">Situação</th>
+                            <th style="padding: 7px 8px; text-align: right;">Cód. barras</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conc-tabela-body"></tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: #334155;">
+                    <span><b id="conc-sel-count">0</b> selecionada(s)</span>
+                    <label>Data do pagamento <input type="date" id="conc-data-pagamento" style="height: 30px; border: 1px solid #CBD5E1; border-radius: 6px; padding: 0 6px;"></label>
+                    <button type="button" class="btn pri sm" onclick="marcarSelecionadasConciliacao(true)">✔ Marcar como paga</button>
+                    <button type="button" class="btn sm" onclick="marcarSelecionadasConciliacao(false)">↩ Reverter</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn sm" onclick="exportarConciliacaoCsv()">⬇ Exportar CSV</button>
+                    <button type="button" class="btn sm" onclick="fecharModalConciliacao()">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="/js/auth.js?v=6"></script>
+    <script src="/js/dashboard.js?v=13"></script>
 </body>
 </html>
