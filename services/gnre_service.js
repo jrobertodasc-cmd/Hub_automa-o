@@ -50,7 +50,7 @@ function createHttpsAgent({ pfxBuffer, passphrase }) {
     const tlsOptions = {
         pfx: pfxBuffer,
         passphrase: passphrase,
-        keepAlive: true,
+        keepAlive: false,
         rejectUnauthorized
     };
 
@@ -90,7 +90,7 @@ function sendSoapRequest(urlStr, soapAction, xmlPayload, agent) {
             path: url.pathname + url.search,
             port: url.port || 443,
             agent: agent,
-            timeout: 60000,
+            timeout: 22000,
             headers: {
                 'Content-Type': 'application/soap+xml; charset=utf-8;',
                 'SOAPAction': soapAction,
@@ -330,17 +330,33 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
     }
 
     let response;
-    for (let tentativa = 1; tentativa <= 3; tentativa++) {
-        response = await sendSoapRequest(urls.recepcao, 'processar', soapXml, agent);
-        if (response.statusCode === 429 || (response.body && response.body.includes('429 Too Many Requests'))) {
-            await new Promise(r => setTimeout(r, 5000));
-            continue;
+    let lastErr;
+    for (let tentativa = 1; tentativa <= 8; tentativa++) {
+        try {
+            response = await sendSoapRequest(urls.recepcao, 'processar', soapXml, agent);
+            const isTransientHttp = [429, 502, 503, 504].includes(response.statusCode) ||
+                (response.body && /(429 Too Many Requests|502 Bad Gateway|503 Service Temporarily Unavailable|504 Gateway Time-out)/i.test(response.body));
+            if (isTransientHttp && tentativa < 8) {
+                await new Promise(r => setTimeout(r, 2500));
+                continue;
+            }
+            break;
+        } catch (err) {
+            lastErr = err;
+            if (tentativa < 8) {
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
+            }
+            throw err;
         }
-        break;
     }
 
     if (logsDir && process.env.SAVE_DEBUG_XML_LOGS === 'true') {
         await fs.writeFile(path.join(logsDir, `resposta_lote_${timestamp}_${uf || 'geral'}.xml`), response.body, 'utf-8');
+    }
+
+    if ([502, 503, 504].includes(response.statusCode) || (response.body && /(502 Bad Gateway|503 Service|504 Gateway)/i.test(response.body))) {
+        throw new Error(`Portal Nacional GNRE (www.gnre.pe.gov.br) instável ou fora do ar no momento (HTTP ${response.statusCode || 502} Bad Gateway).`);
     }
 
     const codigoMatch = response.body.match(/<(?:[a-zA-Z0-9]+:)?codigo>([^<]+)<\/(?:[a-zA-Z0-9]+:)?codigo>/);
@@ -393,7 +409,25 @@ async function consultarLote(numeroRecibo, agent, uf, environment, logsDir) {
   </soap12:Body>
 </soap12:Envelope>`.trim();
 
-    const response = await sendSoapRequest(urls.consulta, 'consultar', soapXml, agent);
+    let response;
+    for (let tentativa = 1; tentativa <= 8; tentativa++) {
+        try {
+            response = await sendSoapRequest(urls.consulta, 'consultar', soapXml, agent);
+            const isTransientHttp = [429, 502, 503, 504].includes(response.statusCode) ||
+                (response.body && /(429 Too Many Requests|502 Bad Gateway|503 Service Temporarily Unavailable|504 Gateway Time-out)/i.test(response.body));
+            if (isTransientHttp && tentativa < 8) {
+                await new Promise(r => setTimeout(r, 2500));
+                continue;
+            }
+            break;
+        } catch (err) {
+            if (tentativa < 8) {
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
+            }
+            throw err;
+        }
+    }
 
     if (logsDir && process.env.SAVE_DEBUG_XML_LOGS === 'true') {
         await fs.mkdir(logsDir, { recursive: true });

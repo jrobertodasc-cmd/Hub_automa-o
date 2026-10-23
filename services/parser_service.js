@@ -375,6 +375,9 @@ function extrairDadosGuiaXML(xml) {
 
             const chaveMatch = xmlGuia.match(/\b\d{44}\b/);
             const chaveAcessoNfe = chaveMatch ? chaveMatch[0] : null;
+            const docFinalNorm = (docOrigemNorm === 'SEM_NUMERO' && chaveAcessoNfe)
+                ? normalizarDocumentoOrigem(chaveAcessoNfe)
+                : docOrigemNorm;
 
             guias.push({
                 situacaoGuia: situacaoGuia || '0',
@@ -384,7 +387,7 @@ function extrairDadosGuiaXML(xml) {
                 linhaDigitavel: linDigitavelLimpa,
                 valor: parseFloat(valorStr ? valorStr : 0),
                 dataVencimento: vencimentoStr || null,
-                documentoOrigem: docOrigemNorm,
+                documentoOrigem: docFinalNorm,
                 ufFavorecida: ufGuia,
                 chaveAcessoNfe: chaveAcessoNfe || null
             });

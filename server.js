@@ -4979,8 +4979,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                                 .update({
                                     barcode: 'IMPORTAR_NO_SEFAZ_SP',
                                     line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
-                                    status: 'requer_dare_sp',
-                                    rejection_reason: 'Lote XML de SP gerado para emissão manual no portal.'
+                                    status: 'requer_dare_sp'
                                 })
                                 .eq('batch_id', batchId)
                                 .eq('tenant_id', tenant.id)
@@ -5046,8 +5045,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                                 await supabase
                                     .from('guides')
                                     .update({
-                                        status: 'rejeitada_sefaz',
-                                        rejection_reason: `[Recibo ${recibo}] ${rej.motivo}`
+                                        status: 'rejeitada_sefaz'
                                     })
                                     .eq('batch_id', batchId)
                                     .eq('tenant_id', tenant.id)
@@ -5076,8 +5074,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                             await supabase
                                 .from('guides')
                                 .update({
-                                    status: 'rejeitada_sefaz',
-                                    rejection_reason: rej.motivo
+                                    status: 'rejeitada_sefaz'
                                 })
                                 .eq('batch_id', batchId)
                                 .eq('tenant_id', tenant.id)
@@ -5088,8 +5085,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                         await supabase
                             .from('guides')
                             .update({
-                                status: 'rejeitada_sefaz',
-                                rejection_reason: err.message
+                                status: 'rejeitada_sefaz'
                             })
                             .eq('batch_id', batchId)
                             .eq('tenant_id', tenant.id)
@@ -5128,8 +5124,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                     await supabase
                         .from('guides')
                         .update({
-                            status: 'divergencia_uf_portal',
-                            rejection_reason: msgDiv
+                            status: 'divergencia_uf_portal'
                         })
                         .eq('batch_id', batchId)
                         .eq('tenant_id', tenant.id)
@@ -5159,10 +5154,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                         barcode: guia.codigoBarras,
                         line_digitizable: guia.linhaDigitavel,
                         storage_path: remotePath,
-                        status: 'aguardando_pagamento',
-                        rejection_reason: guia.numeroControle
-                            ? `Controle SEFAZ: ${guia.numeroControle} | Recibo: ${guia.recibo || '-'}`
-                            : (guia.recibo ? `Recibo SEFAZ: ${guia.recibo}` : null)
+                        status: 'aguardando_pagamento'
                     })
                     .eq('batch_id', batchId)
                     .eq('tenant_id', tenant.id)
