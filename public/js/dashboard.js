@@ -1805,7 +1805,7 @@ async function carregarCargasDocaReais() {
         const ribbonEl = document.getElementById('scanned-ribbon-items');
         if (ribbonEl && cargas.length > 0) {
             ribbonEl.innerHTML = cargas.slice(0, 3).map(g => {
-                const isLib = isDocaLiberada || g.is_liberada;
+                const isLib = g.is_liberada;
                 const isSp = (g.uf === 'SP');
                 const chipClass = isLib ? 'chip-green' : 'chip-red';
                 const icon = isLib 
@@ -2887,7 +2887,7 @@ function renderizarPaginaDoca(pagina = 1) {
         } else {
             const isDocaLiberada = false; // flag de demonstração desativada: status vem sempre do banco/banco real
             tbody.innerHTML = cargasPagina.map((g, idx) => {
-                const isLib = isDocaLiberada || g.is_liberada;
+                const isLib = g.is_liberada;
                 const isSp = (g.uf === 'SP');
                 const valFmt = g.value > 0 ? `R$ ${g.value.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
                 const isChecked = (window.selectedGuideIds && window.selectedGuideIds.has(g.id)) ? 'checked' : '';
@@ -3034,7 +3034,7 @@ function aplicarFiltrosRapidos() {
     const isDocaLiberada = false; // flag de demonstração desativada: status vem sempre do banco/banco real
 
     window.cargasFiltradasDoca = todas.filter(g => {
-        const isLib = isDocaLiberada || g.is_liberada;
+        const isLib = g.is_liberada;
         const isSp = (g.uf === 'SP');
         const transp = (g.carrier_name || 'Total Express').trim();
 

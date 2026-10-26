@@ -2245,3 +2245,236 @@ h1, h2, h3, h4,
     border-color: rgba(56, 189, 248, 0.3) !important;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3) !important;
 }
+
+
+/* =========================================================
+   DARK EXECUTIVE SUITE: EXPEDIÇÃO OPERACIONAL (CARGAS & DOCA)
+   ========================================================= */
+.laser-station-card {
+    background: #111B2E !important;
+    border: 1px solid rgba(59, 130, 246, 0.25) !important;
+    border-radius: 14px !important;
+    padding: 18px 22px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.laser-station-title {
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+}
+
+.laser-live-tag {
+    background: rgba(59, 130, 246, 0.15) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    color: #60A5FA !important;
+    border-radius: 999px !important;
+    padding: 3px 10px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.laser-barcode-input {
+    background: #090D1A !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
+    border-radius: 10px !important;
+    padding: 14px 18px 14px 44px !important;
+    font-size: 14px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+.laser-barcode-input:focus {
+    border-color: #38BDF8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25) !important;
+}
+
+.laser-input-hint-badge {
+    background: #111B2E !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #94A3B8 !important;
+}
+
+.scanned-ribbon-wrap {
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    margin-top: 14px !important;
+    padding-top: 12px !important;
+    color: #94A3B8 !important;
+}
+
+.scanned-chip {
+    background: #0E1626 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #E2E8F0 !important;
+    border-radius: 6px !important;
+}
+
+.scanned-chip.chip-green {
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    color: #34D399 !important;
+}
+
+.scanned-chip.chip-red {
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #F87171 !important;
+}
+
+/* Container da Tabela Doca */
+.dock-table-container {
+    background: #111B2E !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+    overflow: hidden !important;
+}
+
+.dock-tabs-header {
+    background: #090D1A !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+
+.dock-tab-btn {
+    color: #94A3B8 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+.dock-tab-btn:hover {
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dock-tab-btn.active {
+    color: #FFFFFF !important;
+    background: rgba(59, 130, 246, 0.15) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.dock-select-input {
+    background: #0E1626 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 7px 12px !important;
+    font-size: 12.5px !important;
+    outline: none !important;
+}
+
+.dock-inline-search {
+    background: #0E1626 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+    padding: 7px 12px 7px 32px !important;
+    font-size: 12.5px !important;
+    outline: none !important;
+}
+
+.dock-inline-search:focus {
+    border-color: #38BDF8 !important;
+}
+
+/* Tabela em Dark Luxury */
+.cockpit-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.cockpit-table thead th {
+    background: #090D1A !important;
+    color: #64748B !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.cockpit-table tbody td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #E2E8F0 !important;
+    font-size: 13px !important;
+}
+
+.cockpit-table tbody tr {
+    background: transparent !important;
+    transition: background 0.15s ease !important;
+}
+
+.cockpit-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Badges de Status na Tabela */
+.tag-liberado {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    font-weight: 700 !important;
+}
+
+.tag-bloqueado {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #F87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    font-weight: 700 !important;
+}
+
+.tag-isento {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #60A5FA !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    font-weight: 700 !important;
+}
+
+/* Rodapé de Paginação em Dark Mode */
+.dock-pagination-bar {
+    background: #0E1626 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 14px 20px !important;
+    color: #94A3B8 !important;
+    font-size: 13px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+
+.dock-pagination-bar strong {
+    color: #FFFFFF !important;
+}
+
+.btn-page-num {
+    background: #111B2E !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #CBD5E1 !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+.btn-page-num.active {
+    background: #2563EB !important;
+    border-color: #3B82F6 !important;
+    color: #FFFFFF !important;
+}
