@@ -6,7 +6,7 @@
     <title>expedi HUB — Cockpit do Portão Fiscal & Expedição</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css">
     <link rel="stylesheet" href="css/expedi-theme-clean.css">
     <style>
@@ -1328,23 +1328,41 @@
                 <div class="hub-menu-card accent-pink" onclick="navegarAbaPrincipal('ecommerce')">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap pink">👗</div>
+                            <div class="menu-card-icon-wrap pink">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DB2777" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                                    <path d="M3 6h18"></path>
+                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                </svg>
+                            </div>
                             <span class="menu-card-badge pink">VNDA LIVE</span>
                         </div>
                         <div class="menu-card-title">E-commerce 360°</div>
-                        <div class="menu-card-desc">Visão unificada das vendas com fotos reais do catálogo www.boah.com.br, multi-peças por pedido, clientes e status individual de DIFAL.</div>
+                        <div class="menu-card-desc">Vendas sincronizadas com fotos reais em alta definição do catálogo www.boah.com.br, multi-peças por pedido e DIFAL.</div>
                         
-                        <!-- Mini Galeria de Fotos Boah -->
-                        <div style="display: flex; gap: 6px; margin-bottom: 16px;">
-                            <img src="https://cdn.vnda.com.br/x120/boah/2024/09/10/11_9_7_781_19367macacaopantacourtantoniamarrom1.jpg" style="width: 44px; height: 56px; border-radius: 6px; object-fit: cover; border: 1px solid #E2E8F0;" alt="Macacão">
-                            <img src="https://cdn.vnda.com.br/x120/boah/2024/09/10/11_9_7_781_18340calcalongachaypreta1.jpg" style="width: 44px; height: 56px; border-radius: 6px; object-fit: cover; border: 1px solid #E2E8F0;" alt="Calça">
-                            <img src="https://cdn.vnda.com.br/x120/boah/2024/09/10/11_9_7_781_16263bagbahiapalha1.jpg" style="width: 44px; height: 56px; border-radius: 6px; object-fit: cover; border: 1px solid #E2E8F0;" alt="Bag">
-                            <img src="https://cdn.vnda.com.br/x120/boah/2024/09/10/11_9_7_781_18976blusamartalinhooffwhite1.jpg" style="width: 44px; height: 56px; border-radius: 6px; object-fit: cover; border: 1px solid #E2E8F0;" alt="Blusa">
+                        <!-- Lookbook Showcase com Fotos Reais da Boah em Alta Resolução -->
+                        <div class="menu-lookbook-showcase">
+                            <div class="lookbook-item" title="Macacão Pantacourt Antonia">
+                                <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
+                                <span class="lookbook-tag">Macacão</span>
+                            </div>
+                            <div class="lookbook-item" title="Calça Longa Chay">
+                                <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
+                                <span class="lookbook-tag">Calça Chay</span>
+                            </div>
+                            <div class="lookbook-item" title="Bag Bahia Palha">
+                                <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
+                                <span class="lookbook-tag">Bag Bahia</span>
+                            </div>
+                            <div class="lookbook-item" title="Blusa Marta Linho">
+                                <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Linho">
+                                <span class="lookbook-tag">Blusa Linho</span>
+                            </div>
                         </div>
 
                         <div class="menu-card-meta-pill">
                             <span>87 Pedidos · 142 Peças</span>
-                            <strong style="color: #059669;">R$ 51.480,00</strong>
+                            <strong style="color: #059669; font-family: var(--font-mono);">R$ 51.480,00</strong>
                         </div>
                     </div>
                     <div class="menu-card-footer">
@@ -1357,7 +1375,14 @@
                 <div class="hub-menu-card accent-blue" onclick="navegarAbaPrincipal('dashboard')">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap blue">📊</div>
+                            <div class="menu-card-icon-wrap blue">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="7" height="9" x="3" y="3" rx="1.5"></rect>
+                                    <rect width="7" height="5" x="14" y="3" rx="1.5"></rect>
+                                    <rect width="7" height="9" x="14" y="12" rx="1.5"></rect>
+                                    <rect width="7" height="5" x="3" y="16" rx="1.5"></rect>
+                                </svg>
+                            </div>
                             <span class="menu-card-badge blue">TEMPO REAL</span>
                         </div>
                         <div class="menu-card-title">Dashboard & Métricas</div>
@@ -1365,7 +1390,7 @@
                         
                         <div class="menu-card-meta-pill">
                             <span>DIFAL Itaú Agendado</span>
-                            <strong style="color: #2563EB; font-family: monospace;">R$ 3.846,22</strong>
+                            <strong style="color: #2563EB; font-family: var(--font-mono);">R$ 3.846,22</strong>
                         </div>
                         <div class="menu-card-meta-pill" style="margin-top: -10px;">
                             <span>Cargas Liberadas</span>
@@ -1382,7 +1407,15 @@
                 <div class="hub-menu-card accent-emerald" onclick="navegarAbaPrincipal('relatorios')">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap emerald">📑</div>
+                            <div class="menu-card-icon-wrap emerald">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                    <path d="M10 9H8"></path>
+                                    <path d="M16 13H8"></path>
+                                    <path d="M16 17H8"></path>
+                                </svg>
+                            </div>
                             <span class="menu-card-badge emerald">4 RELATÓRIOS</span>
                         </div>
                         <div class="menu-card-title">Central de Relatórios</div>
@@ -1407,8 +1440,17 @@
                 <div class="hub-menu-card accent-slate" onclick="navegarAbaPrincipal('cargas')">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap slate">📦</div>
-                            <span class="menu-card-badge">ESTEIRA ATIVA</span>
+                            <div class="menu-card-icon-wrap slate">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                                    <line x1="7" x2="17" y1="12" y2="12"></line>
+                                    <path d="m13 8 4 4-4 4"></path>
+                                </svg>
+                            </div>
+                            <span class="menu-card-badge blue">ESTEIRA ATIVA</span>
                         </div>
                         <div class="menu-card-title">Doca & Expedição Operacional</div>
                         <div class="menu-card-desc">Bancada de conferência óptica contínua com leitor de código de barras para esteira, validação de Danfe e tabela fiscal de cargas.</div>
@@ -1432,7 +1474,16 @@
                 <div class="hub-menu-card accent-purple" onclick="navegarAbaPrincipal('dashboard'); const fp = document.getElementById('fintech-payment-panel'); if(fp) fp.scrollIntoView({behavior: 'smooth'});">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap purple">🏛️</div>
+                            <div class="menu-card-icon-wrap purple">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="3" x2="21" y1="22" y2="22"></line>
+                                    <line x1="6" x2="6" y1="18" y2="11"></line>
+                                    <line x1="10" x2="10" y1="18" y2="11"></line>
+                                    <line x1="14" x2="14" y1="18" y2="11"></line>
+                                    <line x1="18" x2="18" y1="18" y2="11"></line>
+                                    <polygon points="12 2 20 7 4 7"></polygon>
+                                </svg>
+                            </div>
                             <span class="menu-card-badge purple">CNAB 240</span>
                         </div>
                         <div class="menu-card-title">Tesouraria & Itaú SISPAG</div>
@@ -1440,7 +1491,7 @@
                         
                         <div class="menu-card-meta-pill">
                             <span>Remessa Itaú</span>
-                            <strong style="font-family: monospace;">REM2610.txt (Confirmada)</strong>
+                            <strong style="font-family: var(--font-mono);">REM2610.txt (Confirmada)</strong>
                         </div>
                         <div class="menu-card-meta-pill" style="margin-top: -10px;">
                             <span>Conta de Débito</span>
@@ -1457,7 +1508,14 @@
                 <div class="hub-menu-card accent-amber" onclick="navegarAbaPrincipal('devolucoes')">
                     <div>
                         <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap amber">🔄</div>
+                            <div class="menu-card-icon-wrap amber">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                    <path d="M21 3v5h-5"></path>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                    <path d="M8 16H3v5"></path>
+                                </svg>
+                            </div>
                             <span class="menu-card-badge amber">CRÉDITO FISCAL</span>
                         </div>
                         <div class="menu-card-title">Radar de Devoluções</div>
@@ -1480,6 +1538,7 @@
 
             </div>
         </div>
+
 
         <!-- NAVEGAÇÃO EXECUTIVA POR ABAS (DASHBOARD, E-COMMERCE, RELATÓRIOS, DOCA) -->
         <div class="hub-main-tabs-bar">

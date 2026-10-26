@@ -1121,3 +1121,186 @@ body {
     border-color: #CBD5E1;
     transform: translateX(-2px);
 }
+
+
+/* ==========================================================================
+   TIPOGRAFIA PREMIUM, FOTOS DE ALTA RESOLUÇÃO E ÍCONES VETORIAIS
+   ========================================================================== */
+
+:root {
+    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    --font-mono: 'JetBrains Mono', monospace !important;
+}
+
+body {
+    font-family: var(--font-body) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, 
+.hub-portal-title, 
+.menu-card-title, 
+.report-card-title, 
+.carrier-name-badge, 
+.laser-station-title, 
+.fintech-title,
+.cockpit-360-header {
+    font-family: var(--font-heading) !important;
+    letter-spacing: -0.025em !important;
+    font-weight: 800 !important;
+}
+
+.mono, 
+.hud-value, 
+.menu-card-meta-pill strong, 
+.uf-card-val, 
+.badge-mono, 
+.metric-val-venda, 
+.metric-val-difal {
+    font-family: var(--font-mono) !important;
+}
+
+/* Vitrine Lookbook de Alta Resolução no Card de E-commerce */
+.menu-lookbook-showcase {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    margin: 14px 0 16px !important;
+}
+
+.lookbook-item {
+    position: relative !important;
+    aspect-ratio: 3/4 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #0F172A !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+    cursor: pointer !important;
+}
+
+.lookbook-item:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 10px 20px -3px rgba(236, 72, 153, 0.25) !important;
+    border-color: #F472B6 !important;
+    z-index: 2 !important;
+}
+
+.lookbook-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    transition: transform 0.35s ease !important;
+}
+
+.lookbook-item:hover img {
+    transform: scale(1.08) !important;
+}
+
+.lookbook-tag {
+    position: absolute !important;
+    bottom: 4px !important;
+    left: 4px !important;
+    right: 4px !important;
+    background: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(4px) !important;
+    color: #FFFFFF !important;
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: var(--font-heading) !important;
+}
+
+/* Ícones dos Cards-Menu com Efeito Glow e Gradiente */
+.menu-card-icon-wrap {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.hub-menu-card:hover .menu-card-icon-wrap {
+    transform: scale(1.08) !important;
+}
+
+.menu-card-icon-wrap.pink {
+    background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%) !important;
+    border: 1px solid #FBCFE8 !important;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.pink {
+    box-shadow: 0 8px 20px rgba(236, 72, 153, 0.25) !important;
+}
+
+.menu-card-icon-wrap.blue {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%) !important;
+    border: 1px solid #BFDBFE !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.blue {
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25) !important;
+}
+
+.menu-card-icon-wrap.emerald {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%) !important;
+    border: 1px solid #A7F3D0 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.emerald {
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25) !important;
+}
+
+.menu-card-icon-wrap.purple {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%) !important;
+    border: 1px solid #DDD6FE !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.purple {
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25) !important;
+}
+
+.menu-card-icon-wrap.amber {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%) !important;
+    border: 1px solid #FDE68A !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.amber {
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25) !important;
+}
+
+.menu-card-icon-wrap.slate {
+    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%) !important;
+    border: 1px solid #BAE6FD !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.12) !important;
+}
+.hub-menu-card:hover .menu-card-icon-wrap.slate {
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.25) !important;
+}
+
+/* Fotos da Segunda Tela (Cockpit 360) em Proporção Lookbook */
+.gallery-thumb-item {
+    width: 76px !important;
+    height: 100px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+.gallery-thumb-img {
+    transition: transform 0.3s ease !important;
+}
+
+.gallery-thumb-item:hover .gallery-thumb-img {
+    transform: scale(1.1) !important;
+}

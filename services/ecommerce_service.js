@@ -152,6 +152,9 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
             if (pictureUrl && pictureUrl.startsWith('//')) {
                 pictureUrl = 'https:' + pictureUrl;
             }
+            if (pictureUrl && pictureUrl.includes('/x120/')) {
+                pictureUrl = pictureUrl.replace('/x120/', '/x300/');
+            }
 
             const info = {
                 name: res.name || res.title,

@@ -3686,10 +3686,10 @@ function abrirModalPagamento360(guideId) {
 
     const elStatusBadge = document.getElementById('modal-pag-status-badge');
     const statusBadges = {
-        paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
-        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
-        aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
-        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
+        paga: `<span class="tag-status tag-liberado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paga no Itaú</span>`,
+        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Itaú</span>`,
+        aguardando_pagamento: `<span class="tag-status tag-bloqueado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> A Pagar</span>`,
+        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D; display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Emitida SEFAZ</span>`
     };
     if (elStatusBadge) elStatusBadge.innerHTML = statusBadges[g.status_bancario] || statusBadges.agendada;
 
@@ -3926,11 +3926,15 @@ function renderizarCards360(data) {
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div>
-                                <div style="font-size: 15px; font-weight: 800; color: #0F172A;">
-                                    👤 ${escapeHtml(c.cliente_nome)}
+                                <div style="font-size: 15.5px; font-weight: 800; color: #0F172A; font-family: var(--font-heading); display: flex; align-items: center; gap: 6px;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span>${escapeHtml(c.cliente_nome)}</span>
                                 </div>
-                                <div class="sale-dest-pill" style="margin-top: 2px;">
-                                    <span>📍 ${escapeHtml(c.cidade)}</span>
+                                <div class="sale-dest-pill" style="margin-top: 3px;">
+                                    <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        ${escapeHtml(c.cidade)}
+                                    </span>
                                     <span class="badge-uf-dest">${escapeHtml(c.uf)}</span>
                                 </div>
                             </div>
@@ -3944,7 +3948,7 @@ function renderizarCards360(data) {
                             ${pecas.map(it => `
                                 <div class="gallery-thumb-item" title="${escapeHtml(it.descricao)} (SKU: ${escapeHtml(it.sku)}) • Qtd: ${it.quantidade} • ${formatarBRL(it.preco_total)}">
                                     ${it.foto_url 
-                                        ? `<img src="${escapeHtml(it.foto_url)}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
+                                        ? `<img src="${escapeHtml((it.foto_url || "").replace("/x120/", "/x300/"))}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
                                         : `<div class="gallery-thumb-empty"><span>${obterIconePeca(it.descricao)}</span></div>`
                                     }
                                     ${it.quantidade > 1 ? `<span class="gallery-qty-badge">x${it.quantidade}</span>` : ''}
@@ -4053,7 +4057,7 @@ function renderizarCards360(data) {
                         ${itens.map((it, idx) => `
                             <div class="gallery-thumb-item" title="${escapeHtml(it.descricao)} (SKU: ${escapeHtml(it.sku)}) • Qtd: ${it.quantidade} • ${formatarBRL(it.preco_total)}" onclick="toggleListaPecas('${g.id}')">
                                 ${it.foto_url 
-                                    ? `<img src="${escapeHtml(it.foto_url)}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
+                                    ? `<img src="${escapeHtml((it.foto_url || "").replace("/x120/", "/x300/"))}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
                                     : `<div class="gallery-thumb-empty"><span>${obterIconePeca(it.descricao)}</span></div>`
                                 }
                                 ${it.quantidade > 1 ? `<span class="gallery-qty-badge">x${it.quantidade}</span>` : ''}
