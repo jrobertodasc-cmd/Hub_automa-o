@@ -324,7 +324,7 @@ function isGuiaLiberada(guide) {
     if (!guide) return false;
     if (parseFloat(guide.value || guide.valor || 0) <= 0) return true;
     const st = (guide.status || '').toUpperCase().trim();
-    if (st === 'PAGA' || st === 'COMPROVADA') return true;
+    if (st === 'PAGA' || st === 'COMPROVADA' || st === 'AGENDADA') return true;
     return false;
 }
 

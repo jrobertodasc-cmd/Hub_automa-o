@@ -654,3 +654,265 @@ body {
     display: flex;
     justify-content: space-between;
 }
+
+
+/* ==========================================================================
+   NOVA NAVEGAÇÃO POR ABAS EXECUTIVAS (DASHBOARD, E-COMMERCE, RELATÓRIOS, CARGAS)
+   ========================================================================== */
+
+.hub-main-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-line);
+    border-radius: 12px;
+    padding: 6px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+
+.hub-main-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+}
+
+.hub-main-tab:hover {
+    color: var(--text-dark);
+    background: #F1F5F9;
+}
+
+.hub-main-tab.active {
+    background: #0F172A;
+    color: #FFFFFF;
+    border-color: #0F172A;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+
+.hub-main-tab.active svg {
+    stroke: #38BDF8;
+}
+
+.tab-pill-accent {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(236, 72, 153, 0.15);
+    color: #DB2777;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.hub-main-tab.active .tab-pill-accent {
+    background: rgba(236, 72, 153, 0.3);
+    color: #F472B6;
+    border-color: rgba(244, 114, 182, 0.4);
+}
+
+.tab-pill-neutral {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.hub-main-tab.active .tab-pill-neutral {
+    background: rgba(255, 255, 255, 0.2);
+    color: #E2E8F0;
+}
+
+/* Central de Relatórios em Cards */
+.reports-section-header {
+    background: #FFFFFF;
+    border: 1px solid var(--border-line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.report-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-line);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    border-color: #CBD5E1;
+}
+
+.report-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.report-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+}
+
+.report-card-icon.blue { background: #EDF3FF; color: #2563EB; }
+.report-card-icon.emerald { background: #ECFDF5; color: #059669; }
+.report-card-icon.purple { background: #F5F3FF; color: #7C3AED; }
+.report-card-icon.amber { background: #FFFBEB; color: #D97706; }
+
+.report-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.report-card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.report-card-stats {
+    background: #F8FAFC;
+    border: 1px solid #EEF2F6;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 14px 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.report-card-stats strong {
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.report-card-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Grid de Cards de UFs */
+.uf-distribution-section {
+    background: #FFFFFF;
+    border: 1px solid var(--border-line);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.uf-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.uf-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.uf-card-pill {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: all 0.15s ease-in-out;
+}
+
+.uf-card-pill:hover {
+    border-color: #2563EB;
+    background: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.08);
+}
+
+.uf-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.uf-badge {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0F172A;
+}
+
+.uf-tag-status {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.uf-card-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1E293B;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.uf-card-count {
+    font-size: 11px;
+    color: #64748B;
+    margin-top: 2px;
+}
