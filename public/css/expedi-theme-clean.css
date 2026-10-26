@@ -2203,3 +2203,45 @@ h1, h2, h3, h4,
     border-color: #38BDF8 !important;
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
 }
+
+
+/* =========================================================
+   REVOLUÇÃO FINTECH & LIQUIDAÇÃO CNAB 240 DASHBOARD
+   ========================================================= */
+.fintech-hero-card {
+    background: linear-gradient(180deg, #10192A 0%, #0D1524 100%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 1px rgba(59, 130, 246, 0.4) inset !important;
+    border-radius: 18px !important;
+}
+
+.fintech-main-grid {
+    display: grid !important;
+    grid-template-columns: 280px 340px 1fr !important;
+    gap: 20px !important;
+    align-items: end !important;
+}
+
+@media (max-width: 1100px) {
+    .fintech-main-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .fintech-main-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.btn-fintech-tool:hover {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px);
+}
+
+.kpi-exec-card:hover {
+    border-color: rgba(56, 189, 248, 0.3) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+}

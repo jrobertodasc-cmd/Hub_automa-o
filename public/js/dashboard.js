@@ -1835,12 +1835,12 @@ async function carregarCargasDocaReais() {
 
             const summaryEl = document.getElementById('fintech-batch-summary');
             if (summaryEl) {
-                summaryEl.textContent = `Lote Fiscal #${cleanReceipt} · ${resumo.total} guias auditadas · Total DIFAL: R$ ${resumo.valorTotal.toFixed(2).replace('.', ',')} · Status: 🟢 Agendamento Itaú Confirmado`;
+                summaryEl.textContent = `Lote Fiscal #${cleanReceipt} · ${resumo.total} guias auditadas · Total DIFAL: R$ ${resumo.valorTotal.toFixed(2).replace('.', ',')} · Status: 🟢 Agendamento Bancário Confirmado`;
             }
 
             const metaTag = document.getElementById('meta-batch-tag');
             if (metaTag) {
-                metaTag.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Lote Ativo #${cleanReceipt} · ${resumo.total} Guias (Itaú SISPAG)`;
+                metaTag.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Lote Ativo #${cleanReceipt} · ${resumo.total} Guias (Remessa CNAB 240)`;
             }
         }
 
@@ -2145,7 +2145,7 @@ function atualizarBancoRemessaDoca(novoBanco) {
     const btnText = document.getElementById('btn-doca-baixar-remessa-text');
     if (btnText) {
         const bancoLabel = novoBanco === 'bradesco' ? 'Bradesco' : (novoBanco === 'bb' ? 'Banco do Brasil' : 'Itaú');
-        btnText.textContent = `Baixar Remessa ${bancoLabel} (.TXT)`;
+        btnText.textContent = 'Baixar Arquivo de Remessa (.TXT)';
     }
     atualizarLinksRemessaDoca();
 }
@@ -2188,7 +2188,7 @@ function executarDownloadRemessaDoca(event) {
         event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
         event.currentTarget.download = `REM${dia}${mes}.txt`; // Itaú SISPAG exige máx 7 chars (ex: REM2610.txt)
     }
-    showToast(`📥 Baixando Remessa ${banco.toUpperCase()} com débito agendado para ${dataFmt}...`, "success");
+    showToast(`📥 Baixando Arquivo de Remessa com débito agendado para ${dataFmt}...`, "success");
 }
 
 async function autorizarPagamentoLoteComData() {
@@ -2201,7 +2201,7 @@ async function autorizarPagamentoLoteComData() {
     const [ano, mes, dia] = paymentDate.split('-');
     const dataFmt = `${dia}/${mes}/${ano}`;
 
-    if (!confirm(`Confirma a autorização e agendamento bancário do lote para o dia ${dataFmt} via ${banco.toUpperCase()}?`)) {
+    if (!confirm(`Confirma a autorização e agendamento bancário do lote para o dia ${dataFmt}?`)) {
         return;
     }
 
@@ -3686,8 +3686,8 @@ function abrirModalPagamento360(guideId) {
 
     const elStatusBadge = document.getElementById('modal-pag-status-badge');
     const statusBadges = {
-        paga: `<span class="tag-status tag-liberado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paga no Itaú</span>`,
-        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Itaú</span>`,
+        paga: `<span class="tag-status tag-liberado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paga (Liquidada)</span>`,
+        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Banco</span>`,
         aguardando_pagamento: `<span class="tag-status tag-bloqueado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> A Pagar</span>`,
         emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Emitida SEFAZ</span>`
     };
@@ -3699,17 +3699,17 @@ function abrirModalPagamento360(guideId) {
         if (g.status_bancario === 'paga') {
             statusDetalhe = `
                 <div style="color: #15803D; font-weight: 700; margin-bottom: 4px;">✓ Pagamento Confirmado & Liquidado</div>
-                <div>Guia tributária paga com sucesso na conta corrente Itaú da Lalua Modas. Carga livre de barreiras fiscais.</div>
+                <div>Guia tributária paga com sucesso na conta corrente da Lalua Modas. Carga livre de barreiras fiscais.</div>
             `;
         } else if (g.status_bancario === 'agendada') {
             statusDetalhe = `
-                <div style="color: #1D4ED8; font-weight: 700; margin-bottom: 4px;">✓ Agendamento SISPAG Confirmado pelo Itaú</div>
-                <div>Lote transmitido no arquivo de remessa <code>REM2610.txt</code> e acatado pelo Itaú com ocorrência <strong>BD ("Pagamento Agendado")</strong>. Débito programado para 26/10/2026.</div>
+                <div style="color: #1D4ED8; font-weight: 700; margin-bottom: 4px;">✓ Agendamento CNAB 240 Confirmado</div>
+                <div>Lote transmitido no arquivo de remessa <code>REM2610.txt</code> e acatado pelo Banco com ocorrência <strong>BD ("Pagamento Agendado")</strong>. Débito programado para 26/10/2026.</div>
             `;
         } else {
             statusDetalhe = `
                 <div style="color: #DC2626; font-weight: 700; margin-bottom: 4px;">⚠ Aguardando Autorização Bancária</div>
-                <div>Guia emitida na SEFAZ e pronta para transmissão bancária na remessa do Itaú.</div>
+                <div>Guia emitida na SEFAZ e pronta para transmissão bancária na remessa CNAB 240.</div>
             `;
         }
 
@@ -3892,8 +3892,8 @@ function renderizarCards360(data) {
     }
 
     const statusBadges = {
-        paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
-        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">💳 Agendada no Itaú</span>`,
+        paga: `<span class="tag-status tag-liberado">🟢 Paga (Liquidada)</span>`,
+        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">💳 Agendada no Banco</span>`,
         aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
         emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3);">📄 Emitida SEFAZ</span>`
     };
@@ -4298,7 +4298,7 @@ function exportarRelatorioConciliacaoCsv() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Conciliacao_Itau_REM2610_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `Conciliacao_Bancaria_REM2610_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

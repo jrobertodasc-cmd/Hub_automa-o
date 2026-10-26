@@ -1443,219 +1443,233 @@
             </div>
         </div>
         <div id="secao-view-dashboard" class="main-view-section" style="display: none;">
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span>← Voltar ao Menu Principal</span>
-            </button>
+            <!-- BARRA SUPERIOR EXECUTIVA (VOLTAR + METADADOS) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 14px;">
+                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>← Voltar ao Menu Principal</span>
+                </button>
 
-            <!-- FAIXA DE METADADOS DA REMESSA & ALÇADA CORPORATIVA -->
-        <div class="dock-meta-strip">
-            <div class="meta-batch-info">
-                <span>Remessa Ativa em Expedição:</span>
-                <span class="meta-batch-tag" id="meta-batch-tag">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Lote Ativo Linx Microvix · 91 Guias Pendentes
-                </span>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="meta-batch-tag" id="meta-batch-tag" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 999px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
+                        <span class="tenant-dot"></span>
+                        <span>Remessa Ativa: Lote Linx Microvix · 91 Guias Pendentes</span>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>Alçada Financeira Segregada: Diretoria & Tesouraria</span>
+                    </div>
+                </div>
             </div>
-            <div class="meta-security-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <span>Alçada Financeira Segregada: Diretoria Executiva & Tesouraria Corporativa</span>
+
+            <!-- TÍTULO DA PÁGINA -->
+            <div style="margin-bottom: 22px;">
+                <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0 0 4px 0; letter-spacing: -0.02em;">Painel de Liquidação Financeira & Expedição</h1>
+                <p style="font-size: 13.5px; color: #94A3B8; margin: 0;">Gestão de remessas bancárias CNAB 240, conciliação tributária e liberação operacional de cargas</p>
             </div>
-        </div>
 
             <!-- HUD DE INDICADORES OPERACIONAIS (4 CARDS) -->
-        <div class="hud-kpi-grid">
-            <!-- 1. Cargas no Lote -->
-            <div class="hud-card">
-                <div class="hud-card-top">
-                    <span>Volumes sob Custódia</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B6B7F" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                </div>
-                <div class="hud-value" id="kpi-volumes">91</div>
-                <div class="hud-subtext">Total de volumes no lote faturado</div>
-            </div>
-
-            <!-- 2. Cargas Liberadas -->
-            <div class="hud-card">
-                <div class="hud-card-top">
-                    <span>Cargas Liberadas</span>
-                    <span class="hud-badge hud-badge-green" id="kpi-ready-badge">0% Pronto</span>
-                </div>
-                <div class="hud-value" style="color: var(--ok);" id="kpi-ready-val">0</div>
-                <div class="hud-subtext">Prontas para expedição e transporte</div>
-            </div>
-
-            <!-- 3. Cargas Bloqueadas -->
-            <div class="hud-card">
-                <div class="hud-card-top">
-                    <span>Pendências Tributárias</span>
-                    <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">91 Pendentes</span>
-                </div>
-                <div class="hud-value" style="color: var(--err);" id="kpi-status">91</div>
-                <div class="hud-subtext">Aguardando recolhimento SEFAZ</div>
-            </div>
-
-            <!-- 4. DIFAL a Liquidar -->
-            <div class="hud-card">
-                <div class="hud-card-top">
-                    <span>DIFAL a Recolher</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                </div>
-                <div class="hud-value mono" id="kpi-difal" style="color: var(--primary-blue);">R$ 4.019,14</div>
-                <div class="hud-subtext">Débito Itaú SISPAG / Alçada Diretoria</div>
-            </div>
-        </div>
-
-            <!-- MÓDULO CORPORATIVO DE LIQUIDAÇÃO BANCÁRIA & DATA DE PAGAMENTO PERSONALIZADA -->
-        <section class="fintech-payment-panel" id="fintech-payment-panel">
-            <div class="fintech-panel-header">
-                <div class="fintech-title-wrap">
-                    <div class="fintech-icon-badge">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            <div class="hud-kpi-grid">
+                <!-- 1. Volumes sob Custódia -->
+                <div class="hud-card">
+                    <div class="hud-card-top">
+                        <span>Volumes sob Custódia</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                     </div>
+                    <div class="hud-value font-mono" id="kpi-volumes">91</div>
+                    <div class="hud-subtext">Total de volumes no lote faturado</div>
+                </div>
+
+                <!-- 2. Cargas Liberadas -->
+                <div class="hud-card">
+                    <div class="hud-card-top">
+                        <span>Cargas Liberadas</span>
+                        <span class="hud-badge hud-badge-green" id="kpi-ready-badge">0% Pronto</span>
+                    </div>
+                    <div class="hud-value font-mono" style="color: #10B981;" id="kpi-ready-val">0</div>
+                    <div class="hud-subtext">Prontas para expedição e transporte</div>
+                </div>
+
+                <!-- 3. Pendências Tributárias -->
+                <div class="hud-card">
+                    <div class="hud-card-top">
+                        <span>Pendências Tributárias</span>
+                        <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">91 Pendentes</span>
+                    </div>
+                    <div class="hud-value font-mono" style="color: #F87171;" id="kpi-status">91</div>
+                    <div class="hud-subtext">Aguardando recolhimento SEFAZ</div>
+                </div>
+
+                <!-- 4. DIFAL a Liquidar -->
+                <div class="hud-card">
+                    <div class="hud-card-top">
+                        <span>DIFAL a Recolher</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    </div>
+                    <div class="hud-value font-mono" id="kpi-difal" style="color: #38BDF8;">R$ 4.019,14</div>
+                    <div class="hud-subtext">Débito em Conta / Alçada Diretoria</div>
+                </div>
+            </div>
+
+            <!-- PAINEL REVOLUCIONÁRIO DE LIQUIDAÇÃO FINANCEIRA (CNAB 240) -->
+            <section class="fintech-payment-panel" id="fintech-payment-panel" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <!-- Header do Painel -->
+                <div class="fintech-panel-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+                    <div class="fintech-title-wrap" style="display: flex; gap: 14px; align-items: center;">
+                        <div class="fintech-icon-badge" style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #38BDF8;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        </div>
+                        <div>
+                            <div class="fintech-title" style="font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">Liquidação Financeira do Lote · Remessa CNAB 240</div>
+                            <div class="fintech-subtitle" id="fintech-batch-summary" style="font-size: 13px; color: #94A3B8; margin-top: 3px;">Lote Ativo: 91 guias · Total a Recolher: R$ 4.019,14 · Status: Aguardando Autorização</div>
+                        </div>
+                    </div>
+
+                    <div class="fintech-bank-pill" id="fintech-bank-info" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.08); padding: 8px 14px; border-radius: 10px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
+                        <span>Conta Corrente Autorizada · Agência 0334 · C/C 98775-7 (LALUA)</span>
+                    </div>
+                </div>
+
+                <!-- Zona 1: Parâmetros & Ações Principais -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 16px; margin-bottom: 20px; align-items: flex-end;" class="fintech-main-grid">
+                    <!-- Data de Vencimento -->
                     <div>
-                        <div class="fintech-title">Liquidação Bancária do Lote · Remessa Itaú SISPAG (CNAB 240)</div>
-                        <div class="fintech-subtitle" id="fintech-batch-summary">Lote Ativo: 91 guias · Total a Recolher: R$ 4.019,14 · Status: Aguardando Autorização</div>
+                        <label style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;" for="doca-input-data-pagamento">Data de Pagamento / Vencimento</label>
+                        <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: #FFFFFF; font-size: 13px; outline: none;">
                     </div>
-                </div>
-                <div class="fintech-bank-pill" id="fintech-bank-info">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
-                    <span>Itaú (341) · Agência 0334 · Conta 98775-7 (LALUA)</span>
-                </div>
-            </div>
 
-            <div class="fintech-controls-grid">
-                <!-- Seletor da Data de Pagamento / Vencimento (SP & Demais UFs) -->
-                <div class="fintech-field-group">
-                    <label class="fintech-field-label" for="doca-input-data-pagamento">Data de Pagamento / Vencimento (SP & Demais UFs)</label>
-                    <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" title="Escolha a data de vencimento/pagamento para emissão SEFAZ, XML de SP e Remessa Bancária">
-                </div>
-
-                <!-- Seletor do Banco / Layout -->
-                <div class="fintech-field-group">
-                    <label class="fintech-field-label" for="doca-select-banco">Layout Bancário (CNAB 240)</label>
-                    <select id="doca-select-banco" class="fintech-select" onchange="atualizarBancoRemessaDoca(this.value)">
-                        <option value="itau" selected>Itaú SISPAG (CNAB 240 - Segmento O)</option>
-                        <option value="bradesco">Bradesco Multipag (CNAB 240)</option>
-                        <option value="bb">Banco do Brasil (CNAB 240)</option>
-                    </select>
-                </div>
-
-                <!-- Botões de Ação Imediata -->
-                <div class="fintech-actions-group" style="flex-wrap: wrap;">
-                    <button type="button" id="btn-doca-emitir-sefaz-data" class="btn-fintech-secondary" onclick="reemitirGuiasSefazComData(false)" title="Emite ou atualiza na SEFAZ todas as guias do lote com a Data de Pagamento escolhida">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        <span>Emitir SEFAZ c/ Data</span>
-                    </button>
-
-                    <a id="btn-doca-baixar-xml-sp" href="#" class="btn-fintech-outline" onclick="baixarXmlLoteSpComData(event)" title="Gera e baixa o XML em lote das notas de SP com a Data de Pagamento escolhida">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>XML Lote SP</span>
-                    </a>
-
-                    <a id="btn-doca-baixar-guias" href="#" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias GNRE do lote">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>Guias GNRE (PDF)</span>
-                    </a>
-
-                    <button type="button" class="btn-fintech-outline" style="background: #FDF2F8; color: #DB2777; border-color: #F472B6; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;" onclick="alternarModoVisualizacao('ecommerce'); const el = document.getElementById('container-view-ecommerce') || document.getElementById('dock-table-container'); if(el) el.scrollIntoView({behavior: 'smooth'});" title="Ver as vendas com fotos de peças e dados da Vnda">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        <span>👗 Cockpit E-commerce 360°</span>
-                    </button>
-                    <a id="btn-doca-baixar-remessa" href="#" class="btn-fintech-primary" onclick="executarDownloadRemessaDoca(event)">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        <span id="btn-doca-baixar-remessa-text">Baixar Remessa Itaú (.TXT)</span>
-                    </a>
-
-                    <button type="button" id="btn-doca-autorizar-lote" class="btn-fintech-secondary" onclick="autorizarPagamentoLoteComData()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Confirmar Agendamento</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-            <!-- GRID DE DISTRIBUIÇÃO FISCAL POR UF -->
-            <section class="uf-distribution-section">
-                <div class="uf-section-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
-                    <span>Distribuição Tributária por Estado de Destino (DIFAL / DARE)</span>
-                </div>
-                <div id="uf-distribution-grid" class="uf-cards-grid">
-                    <div style="font-size: 13px; color: #64748B; padding: 12px;">Carregando mapa fiscal de UFs...</div>
-                </div>
-            </section>
-
-            <!-- ZONA 4: MANIFESTOS DE EMBARQUE POR OPERADOR LOGÍSTICO -->
-        <section class="carrier-coleta-section">
-            <div class="carrier-section-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                <span>Manifestos de Embarque por Operador Logístico</span>
-            </div>
-
-            <div class="carrier-cards-grid">
-                <!-- Card 1: TOTAL EXPRESS -->
-                <div class="carrier-coleta-card">
+                    <!-- Layout Bancário CNAB 240 -->
                     <div>
-                        <div class="carrier-card-top">
-                            <div class="carrier-name-badge">
-                                <div class="carrier-icon-pill">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                </div>
-                                <span>Total Express</span>
-                            </div>
-                            <span class="hud-badge hud-badge-red" id="carrier-total-badge">91 Retidas</span>
-                        </div>
-                        <div class="carrier-progress-bar-bg">
-                            <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 0%;"></div>
-                        </div>
-                        <div class="carrier-meta-stats">
-                            <span>Liberadas: <strong id="carrier-total-liberadas">0</strong></span>
-                            <span>Pendentes: <strong style="color: var(--err);" id="carrier-total-retidas">91</strong></span>
-                            <span>Status: <strong>Aguardando Quitação</strong></span>
-                        </div>
+                        <label style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;" for="doca-select-banco">Layout Bancário (CNAB 240)</label>
+                        <select id="doca-select-banco" class="fintech-select" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: #FFFFFF; font-size: 13px; outline: none; cursor: pointer;">
+                            <option value="itau" selected>Layout CNAB 240 - Segmento O (Tributos & DIFAL)</option>
+                            <option value="bradesco">Layout CNAB 240 - Tributos (Bradesco)</option>
+                            <option value="bb">Layout CNAB 240 - Tributos (Banco do Brasil)</option>
+                        </select>
                     </div>
-                    <div class="carrier-card-buttons">
-                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-carrier-combo" title="Gera Romaneio Oficial + DANFEs + Comprovantes bancários da Total Express">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                            <span>Romaneio Oficial</span>
+
+                    <!-- Ações Principais (Botões em Destaque) -->
+                    <div style="display: flex; gap: 10px;">
+                        <a id="btn-doca-baixar-remessa" href="#" class="btn-fintech-primary" onclick="executarDownloadRemessaDoca(event)" style="flex: 1; background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); cursor: pointer;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span id="btn-doca-baixar-remessa-text">Baixar Arquivo de Remessa (.TXT)</span>
                         </a>
-                        <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" class="btn-carrier-coletar" title="Registra a saída das caixas liberadas">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Liberar Embarque</span>
+
+                        <button type="button" id="btn-doca-autorizar-lote" class="btn-fintech-secondary" onclick="autorizarPagamentoLoteComData()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Confirmar Agendamento</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Card 2: CORREIOS -->
-                <div class="carrier-coleta-card">
-                    <div>
-                        <div class="carrier-card-top">
-                            <div class="carrier-name-badge">
-                                <div class="carrier-icon-pill" style="background: #FEF3C7; color: #D97706;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                </div>
-                                <span>Correios</span>
-                            </div>
-                            <span class="hud-badge" id="carrier-correios-badge" style="background: #F1F5F9; color: var(--text-secondary);">Pronto para Coleta</span>
-                        </div>
-                        <div class="carrier-progress-bar-bg">
-                            <div class="carrier-progress-bar-fill" style="width: 100%;"></div>
-                        </div>
-                        <div class="carrier-meta-stats">
-                            <span>Expedição: <strong>Nacional</strong></span>
-                            <span>Modalidade: <strong>Sedex / PAC</strong></span>
-                        </div>
-                    </div>
-                    <div class="carrier-card-buttons">
-                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn-carrier-combo">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                            <span>Romaneio Correios</span>
+                <!-- Zona 2: Toolbar de Documentos & Integrações -->
+                <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="btn-doca-emitir-sefaz-data" class="btn-fintech-secondary" onclick="reemitirGuiasSefazComData(false)" title="Emite ou atualiza na SEFAZ com a data escolhida" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                            <span>Emitir SEFAZ c/ Data</span>
+                        </button>
+
+                        <a id="btn-doca-baixar-xml-sp" href="#" class="btn-fintech-outline" onclick="baixarXmlLoteSpComData(event)" title="Gera e baixa o XML em lote das notas de SP" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>XML Lote SP</span>
+                        </a>
+
+                        <a id="btn-doca-baixar-guias" href="#" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias GNRE do lote" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>Guias GNRE (PDF)</span>
                         </a>
                     </div>
+
+                    <button type="button" onclick="navegarAbaPrincipal('ecommerce')" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); color: #FB7185; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Ir para o E-commerce 360°">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg>
+                        <span>Ver no E-commerce 360°</span>
+                    </button>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <!-- GRID DE DISTRIBUIÇÃO FISCAL POR UF -->
+            <section class="uf-distribution-section" style="margin-bottom: 24px;">
+                <div class="uf-section-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                    <span>Distribuição Tributária por Estado de Destino (DIFAL / DARE)</span>
+                </div>
+                <div id="uf-distribution-grid" class="uf-cards-grid">
+                    <div style="color: #94A3B8; font-size: 13px;">Carregando mapa fiscal de UFs...</div>
+                </div>
+            </section>
+
+            <!-- MANIFESTOS DE EMBARQUE POR OPERADOR LOGÍSTICO -->
+            <section class="carrier-coleta-section" style="margin-bottom: 24px;">
+                <div class="carrier-section-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    <span>Manifestos de Embarque por Operador Logístico</span>
+                </div>
+
+                <div class="carrier-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                    <!-- Card 1: TOTAL EXPRESS -->
+                    <div class="carrier-coleta-card" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="carrier-card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div class="carrier-name-badge" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #FFFFFF;">
+                                    <div class="carrier-icon-pill" style="width: 28px; height: 28px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
+                                    </div>
+                                    <span>Total Express</span>
+                                </div>
+                                <span class="hud-badge hud-badge-red" id="carrier-total-badge">91 Retidas</span>
+                            </div>
+                            <div class="carrier-progress-bar-bg" style="background: #0E1626; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 12px;">
+                                <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 0%; height: 100%; background: #10B981; border-radius: 6px;"></div>
+                            </div>
+                            <div class="carrier-meta-stats" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8;">
+                                <span>Liberadas: <strong id="carrier-total-liberadas" style="color: #10B981;">0</strong></span>
+                                <span>Pendentes: <strong style="color: #F87171;" id="carrier-total-retidas">91</strong></span>
+                                <span>Status: <strong>Aguardando Quitação</strong></span>
+                            </div>
+                        </div>
+                        <div class="carrier-card-buttons" style="display: flex; gap: 8px; margin-top: 14px;">
+                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-carrier-combo" style="flex: 1; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                                <span>Romaneio Oficial</span>
+                            </a>
+                            <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" class="btn-carrier-coletar" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Liberar Embarque</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: CORREIOS -->
+                    <div class="carrier-coleta-card" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="carrier-card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div class="carrier-name-badge" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #FFFFFF;">
+                                    <div class="carrier-icon-pill" style="width: 28px; height: 28px; border-radius: 6px; background: rgba(245, 158, 11, 0.15); color: #FBBF24; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    </div>
+                                    <span>Correios</span>
+                                </div>
+                                <span class="hud-badge" id="carrier-correios-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3);">Pronto para Coleta</span>
+                            </div>
+                            <div class="carrier-progress-bar-bg" style="background: #0E1626; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 12px;">
+                                <div class="carrier-progress-bar-fill" style="width: 100%; height: 100%; background: #10B981; border-radius: 6px;"></div>
+                            </div>
+                            <div class="carrier-meta-stats" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8;">
+                                <span>Expedição: <strong>Nacional</strong></span>
+                                <span>Modalidade: <strong>Sedex / PAC</strong></span>
+                            </div>
+                        </div>
+                        <div class="carrier-card-buttons" style="margin-top: 14px;">
+                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn-carrier-combo" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                                <span>Romaneio Correios</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- ========================================== -->
