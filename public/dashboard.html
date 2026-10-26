@@ -11,33 +11,27 @@
     <link rel="stylesheet" href="css/expedi-theme-clean.css">
     <style>
         :root {
-            --bg-page: #F5F7FA;
-            --surface: #FFFFFF;
-            --surface-hover: #F8FAFC;
-            --navy: #111F33;
-            --navy-light: #1B2D47;
-            --primary-blue: #2563EB;
-            --primary-blue-hover: #1D4ED8;
-            --border-line: #E3E8EF;
-            --border-subtle: #EDF2F7;
-            --text-dark: #182536;
-            --text-secondary: #5B6B7F;
-            --text-muted: #8393A7;
-            --ok: #157347;
-            --ok-bg: #EAF7F0;
-            --ok-border: #A6E2C3;
-            --err: #B42318;
-            --err-bg: #FDEEEE;
-            --err-border: #F7B5B5;
-            --warn: #8A5A00;
-            --warn-bg: #FFF6E0;
-            --info: #1D4ED8;
-            --info-bg: #EDF3FF;
-            --info-border: #C8DBFC;
-            --r: 12px;
-            --shadow-sm: 0 1px 3px rgba(17, 31, 51, 0.05);
-            --shadow-card: 0 2px 8px rgba(17, 31, 51, 0.04), 0 1px 2px rgba(17, 31, 51, 0.02);
-            --shadow-lg: 0 16px 36px rgba(17, 31, 51, 0.12);
+            --bg-page: #090D1A;
+            --surface: #0E1626;
+            --surface-hover: #16243D;
+            --navy: #FFFFFF;
+            --navy-light: #1E293B;
+            --primary-blue: #3B82F6;
+            --primary-blue-hover: #2563EB;
+            --border-line: rgba(255, 255, 255, 0.08);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+            --text-dark: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --ok: #10B981;
+            --ok-bg: rgba(16, 185, 129, 0.12);
+            --ok-border: rgba(16, 185, 129, 0.3);
+            --err: #EF4444;
+            --err-bg: rgba(239, 68, 68, 0.12);
+            --err-border: rgba(239, 68, 68, 0.3);
+            --r: 16px;
+            --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         body {
@@ -1251,43 +1245,57 @@
 
     <!-- NAVBAR CORPORATIVA EXPEDI HUB ENTERPRISE -->
     <nav class="hub-navbar">
-        <a href="/dashboard.html" class="hub-brand">
-            <div class="hub-logo-badge">E</div>
-            <div class="hub-title-wrap">
-                <h1>expedi HUB Enterprise <span class="hub-tag-pill">GESTÃO FISCAL & EXPEDIÇÃO</span></h1>
-                <div class="hub-subtitle" id="tenant-subtitle">Centro Integrado de Expedição Fiscal & Doca</div>
-            </div>
-        </a>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')" class="hub-brand" title="Ir para o Portal de Módulos">
+                <div class="hub-logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#cyan-grad)" stroke="#38BDF8" stroke-width="1.5"/>
+                        <path d="M2 17L12 22L22 17" stroke="#818CF8" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="cyan-grad" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#38BDF8"/>
+                                <stop offset="1" stop-color="#818CF8"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="hub-title-wrap">
+                    <h1>expedi HUB</h1>
+                    <span class="hub-subtitle">Enterprise</span>
+                </div>
+            </a>
 
-        <div class="hub-nav-links">
-            <!-- Indicador de Conexão Ativa -->
-            <div class="live-sse-indicator" title="Monitoramento fiscal contínuo ativo" style="margin-right: 4px;">
+            <!-- Tenant Selector Dropdown (Image 1 & 2) -->
+            <div class="hub-tenant-pill" onclick="navegarAbaPrincipal('hub')">
+                <span class="tenant-dot"></span>
+                <span class="tenant-label">LALUA COMERCIO DE MODAS EIRELI</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+
+            <!-- Conexão Fiscal Online -->
+            <div class="live-sse-indicator">
                 <div class="pulse-dot"></div>
-                <span style="font-size: 11.5px;">Conexão Fiscal Online</span>
+                <span>Conexão Fiscal Online</span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <!-- Global Search Bar (Image 1 & 2) -->
+            <div class="hub-search-bar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Buscar..." id="global-search-input">
             </div>
 
-            <!-- Botão Home Hub (Menu Principal de Cards) -->
-            <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')" id="nav-item-hub" class="hub-nav-item active" style="background: rgba(37, 99, 235, 0.2); color: #93C5FD; border: 1px solid rgba(147, 197, 253, 0.3); font-weight: 700;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span>🏠 Menu de Módulos (Cards)</span>
-            </a>
-
-            <a href="/bi.html" class="hub-nav-item">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                <span>Inteligência BI</span>
-            </a>
-            <a href="/profile.html" class="hub-nav-item">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>Configurações</span>
-            </a>
-            <a href="/aprovar.html" class="hub-nav-item">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>Diretoria</span>
-            </a>
-            <button onclick="logout();" class="hub-nav-item" style="background: none; border: none; cursor: pointer; color: #F87171;" title="Encerrar sessão">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                <span>Sair</span>
+            <!-- Central de Notificações -->
+            <button type="button" class="hub-icon-btn" title="Central de Notificações" onclick="abrirModalDevolucoes()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </button>
+
+            <!-- Avatar -->
+            <a href="/profile.html" class="hub-user-avatar" title="Configurações e Perfil">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt="Usuário">
+            </a>
         </div>
     </nav>
 
@@ -1308,263 +1316,181 @@
         <!-- PRIMEIRA TELA: PORTAL DE CARDS-MENU (HUB PRINCIPAL DE ENTRADA) -->
         <!-- ============================================================== -->
         <div id="secao-view-hub" class="main-view-section">
-            <!-- Header do Portal Hub -->
+            <!-- Header do Portal Hub (Image 1) -->
             <div class="hub-portal-header">
-                <div>
-                    <div class="hub-portal-title">Centro Integrado de Gestão Fiscal & Expedição</div>
-                    <div class="hub-portal-subtitle">LALUA COMERCIO DE MODAS EIRELI · Selecione um módulo operacional em cards para acessar</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span class="hud-badge hud-badge-green" style="font-size: 12px; padding: 6px 14px;">
-                        🟢 Lote #REM2610 · 87 Guias Agendadas no Itaú
-                    </span>
-                </div>
+                <h1 class="hub-portal-title">Centro Integrado de Gestão Fiscal & Expedição</h1>
+                <p class="hub-portal-subtitle">Selecione um módulo operacional para acessar</p>
             </div>
 
-            <!-- Grid de 6 Cards que são Menus Principais -->
+            <!-- Grid de 6 Cards Principais (Image 1) -->
             <div class="hub-menu-cards-grid">
-
-                <!-- Card Menu 1: E-commerce 360° -->
+                <!-- Card 1: E-commerce 360° -->
                 <div class="hub-menu-card accent-pink" onclick="navegarAbaPrincipal('ecommerce')">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap pink">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DB2777" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-                                    <path d="M3 6h18"></path>
-                                    <path d="M16 10a4 4 0 0 1-8 0"></path>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge pink">VNDA LIVE</span>
-                        </div>
-                        <div class="menu-card-title">E-commerce 360°</div>
-                        <div class="menu-card-desc">Vendas sincronizadas com fotos reais em alta definição do catálogo www.boah.com.br, multi-peças por pedido e DIFAL.</div>
-                        
-                        <!-- Lookbook Showcase com Fotos Reais da Boah em Alta Resolução -->
-                        <div class="menu-lookbook-showcase">
-                            <div class="lookbook-item" title="Macacão Pantacourt Antonia">
-                                <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
-                                <span class="lookbook-tag">Macacão</span>
-                            </div>
-                            <div class="lookbook-item" title="Calça Longa Chay">
-                                <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
-                                <span class="lookbook-tag">Calça Chay</span>
-                            </div>
-                            <div class="lookbook-item" title="Bag Bahia Palha">
-                                <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
-                                <span class="lookbook-tag">Bag Bahia</span>
-                            </div>
-                            <div class="lookbook-item" title="Blusa Marta Linho">
-                                <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Linho">
-                                <span class="lookbook-tag">Blusa Linho</span>
-                            </div>
-                        </div>
-
-                        <div class="menu-card-meta-pill">
-                            <span>87 Pedidos · 142 Peças</span>
-                            <strong style="color: #059669; font-family: var(--font-mono);">R$ 51.480,00</strong>
-                        </div>
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">E-commerce 360°</span>
+                        <span class="menu-card-pill">87 Pedidos · R$ 51.480</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Acessar E-commerce 360°</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="menu-lookbook-row">
+                        <div class="mini-lookbook-thumb" title="Macacão Pantacourt Antonia">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
+                        </div>
+                        <div class="mini-lookbook-thumb" title="Calça Longa Chay">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
+                        </div>
+                        <div class="mini-lookbook-thumb" title="Bag Bahia Palha">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
+                        </div>
+                        <div class="mini-lookbook-thumb" title="Blusa Marta Linho Offwhite">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Linho">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Card Menu 2: Dashboard & Métricas -->
-                <div class="hub-menu-card accent-blue" onclick="navegarAbaPrincipal('dashboard')">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap blue">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect width="7" height="9" x="3" y="3" rx="1.5"></rect>
-                                    <rect width="7" height="5" x="14" y="3" rx="1.5"></rect>
-                                    <rect width="7" height="9" x="14" y="12" rx="1.5"></rect>
-                                    <rect width="7" height="5" x="3" y="16" rx="1.5"></rect>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge blue">TEMPO REAL</span>
-                        </div>
-                        <div class="menu-card-title">Dashboard & Métricas</div>
-                        <div class="menu-card-desc">Indicadores tributários em tempo real, valor total de DIFAL a recolher, taxa de liberação de cargas e mapa fiscal por estado (UF).</div>
-                        
-                        <div class="menu-card-meta-pill">
-                            <span>DIFAL Itaú Agendado</span>
-                            <strong style="color: #2563EB; font-family: var(--font-mono);">R$ 3.846,22</strong>
-                        </div>
-                        <div class="menu-card-meta-pill" style="margin-top: -10px;">
-                            <span>Cargas Liberadas</span>
-                            <strong style="color: #10B981;">87 de 87 (100% Pronto)</strong>
-                        </div>
+                <!-- Card 2: Dashboard & Métricas -->
+                <div class="hub-menu-card accent-cyan" onclick="navegarAbaPrincipal('dashboard')">
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">Dashboard & Métricas</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Acessar Dashboard</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="metric-card-split">
+                        <div class="metric-col">
+                            <div class="metric-big-val font-mono">R$ 3.846,22</div>
+                            <div class="metric-sublabel">DIFAL Itaú</div>
+                            <div class="metric-big-val font-mono" style="margin-top: 10px;">87</div>
+                            <div class="metric-sublabel">Cargas Liberadas</div>
+                        </div>
+                        <div class="sparkline-col">
+                            <svg width="130" height="50" viewBox="0 0 130 50" fill="none">
+                                <path d="M0 38C20 35 30 42 50 28C70 14 85 36 105 10C115 5 122 18 130 12" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M0 38C20 35 30 42 50 28C70 14 85 36 105 10C115 5 122 18 130 12V50H0V38Z" fill="url(#spark-grad)" opacity="0.3"/>
+                                <defs>
+                                    <linearGradient id="spark-grad" x1="65" y1="0" x2="65" y2="50" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#38BDF8"/>
+                                        <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Card Menu 3: Central de Relatórios -->
+                <!-- Card 3: Central de Relatórios -->
                 <div class="hub-menu-card accent-emerald" onclick="navegarAbaPrincipal('relatorios')">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap emerald">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-                                    <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-                                    <path d="M10 9H8"></path>
-                                    <path d="M16 13H8"></path>
-                                    <path d="M16 17H8"></path>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge emerald">4 RELATÓRIOS</span>
-                        </div>
-                        <div class="menu-card-title">Central de Relatórios</div>
-                        <div class="menu-card-desc">Romaneios e manifestos oficiais em A4 para motoristas, fechamento diário fiscal em ZIP e conciliação bancária Itaú (REM2610.txt).</div>
-                        
-                        <div class="menu-card-meta-pill">
-                            <span>Romaneio Oficial A4</span>
-                            <strong>Total Express & Correios</strong>
-                        </div>
-                        <div class="menu-card-meta-pill" style="margin-top: -10px;">
-                            <span>Pacote Fechamento</span>
-                            <strong>87 NF-e + 87 Guias</strong>
-                        </div>
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">Central de Relatórios</span>
+                        <span class="menu-card-pill">4 Relatórios Oficiais</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Acessar Relatórios</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="card-bg-icon-wrap">
+                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                     </div>
                 </div>
 
-                <!-- Card Menu 4: Doca & Expedição Operacional -->
-                <div class="hub-menu-card accent-slate" onclick="navegarAbaPrincipal('cargas')">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap slate">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-                                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-                                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-                                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-                                    <line x1="7" x2="17" y1="12" y2="12"></line>
-                                    <path d="m13 8 4 4-4 4"></path>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge blue">ESTEIRA ATIVA</span>
-                        </div>
-                        <div class="menu-card-title">Doca & Expedição Operacional</div>
-                        <div class="menu-card-desc">Bancada de conferência óptica contínua com leitor de código de barras para esteira, validação de Danfe e tabela fiscal de cargas.</div>
-                        
-                        <div class="menu-card-meta-pill">
-                            <span>Leitor Óptico</span>
-                            <strong style="color: #2563EB;">Bipagem Contínua</strong>
-                        </div>
-                        <div class="menu-card-meta-pill" style="margin-top: -10px;">
-                            <span>Volumes sob Custódia</span>
-                            <strong>87 Volumes Prontos</strong>
-                        </div>
+                <!-- Card 4: Doca & Expedição Operacional -->
+                <div class="hub-menu-card accent-blue" onclick="navegarAbaPrincipal('cargas')">
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">Doca & Expedição Operacional</span>
+                        <span class="menu-card-pill status-green">Esteira Ativa</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Ir para Doca Operacional</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="card-bg-icon-wrap">
+                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35"><path d="M3 5v14M21 5v14M7 5v14M11 5v14M15 5v14M18 5v14"></path></svg>
                     </div>
                 </div>
 
-                <!-- Card Menu 5: Tesouraria & Itaú SISPAG -->
-                <div class="hub-menu-card accent-purple" onclick="navegarAbaPrincipal('dashboard'); const fp = document.getElementById('fintech-payment-panel'); if(fp) fp.scrollIntoView({behavior: 'smooth'});">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap purple">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="3" x2="21" y1="22" y2="22"></line>
-                                    <line x1="6" x2="6" y1="18" y2="11"></line>
-                                    <line x1="10" x2="10" y1="18" y2="11"></line>
-                                    <line x1="14" x2="14" y1="18" y2="11"></line>
-                                    <line x1="18" x2="18" y1="18" y2="11"></line>
-                                    <polygon points="12 2 20 7 4 7"></polygon>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge purple">CNAB 240</span>
-                        </div>
-                        <div class="menu-card-title">Tesouraria & Itaú SISPAG</div>
-                        <div class="menu-card-desc">Controle de liquidação tributária via arquivo de remessa bancária Itaú Segmento O, alçadas executivas e conta corrente 98775-7.</div>
-                        
-                        <div class="menu-card-meta-pill">
-                            <span>Remessa Itaú</span>
-                            <strong style="font-family: var(--font-mono);">REM2610.txt (Confirmada)</strong>
-                        </div>
-                        <div class="menu-card-meta-pill" style="margin-top: -10px;">
-                            <span>Conta de Débito</span>
-                            <strong>Itaú Ag. 0334 C/C 98775-7</strong>
-                        </div>
+                <!-- Card 5: Tesouraria & Itaú SISPAG -->
+                <div class="hub-menu-card accent-purple" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">Tesouraria & Itaú SISPAG</span>
+                        <span class="menu-card-pill status-green">REM2610 Confirmada</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Abrir Painel Tesouraria</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="card-bg-icon-wrap">
+                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line></svg>
                     </div>
                 </div>
 
-                <!-- Card Menu 6: Radar de Devoluções & Crédito DIFAL -->
-                <div class="hub-menu-card accent-amber" onclick="navegarAbaPrincipal('devolucoes')">
-                    <div>
-                        <div class="menu-card-header">
-                            <div class="menu-card-icon-wrap amber">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                                    <path d="M21 3v5h-5"></path>
-                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                                    <path d="M8 16H3v5"></path>
-                                </svg>
-                            </div>
-                            <span class="menu-card-badge amber">CRÉDITO FISCAL</span>
-                        </div>
-                        <div class="menu-card-title">Radar de Devoluções</div>
-                        <div class="menu-card-desc">Auditoria contínua de devoluções no e-commerce cruzadas com notas fiscais de venda para estorno de imposto e restituição de DIFAL.</div>
-                        
-                        <div class="menu-card-meta-pill">
-                            <span>Devoluções no Lote</span>
-                            <strong style="color: #10B981;">0 Pendências</strong>
-                        </div>
-                        <div class="menu-card-meta-pill" style="margin-top: -10px;">
-                            <span>Proteção de Caixa</span>
-                            <strong>Zero Bitributação</strong>
-                        </div>
+                <!-- Card 6: Radar de Devoluções -->
+                <div class="hub-menu-card accent-amber" onclick="navegarAbaPrincipal('ecommerce')">
+                    <div class="menu-card-top-row">
+                        <span class="menu-card-title">Radar de Devoluções</span>
+                        <span class="menu-card-pill status-red">0 Pendências</span>
                     </div>
-                    <div class="menu-card-footer">
-                        <span>Abrir Radar de Devoluções</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <div class="card-bg-icon-wrap">
+                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.35"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
                     </div>
                 </div>
-
             </div>
         </div>
+        <!-- ============================================================== -->
+        <!-- SEGUNDA TELA: WORKSPACE COM SIDEBAR GLOWING & TOP KPIS (IMAGE 2) -->
+        <!-- ============================================================== -->
+        <div id="secao-view-screen2" class="screen2-two-column-layout" style="display: none;">
+            <!-- SIDEBAR VERTICAL (IMAGE 2) -->
+            <aside class="screen2-sidebar">
+                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>← Menu de Módulos</span>
+                </button>
 
+                <div class="sidebar-menu-list">
+                    <button type="button" id="side-btn-dashboard" class="sidebar-nav-btn glow-cyan" onclick="navegarAbaPrincipal('dashboard')">
+                        <div class="sidebar-icon-wrap cyan">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        </div>
+                        <span>Dashboard & Métricas</span>
+                    </button>
 
-        <!-- NAVEGAÇÃO EXECUTIVA POR ABAS (DASHBOARD, E-COMMERCE, RELATÓRIOS, DOCA) -->
-        <div class="hub-main-tabs-bar">
-            <button type="button" id="tab-btn-dashboard" class="hub-main-tab active" onclick="navegarAbaPrincipal('dashboard')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span>Dashboard Executivo</span>
-            </button>
-            <button type="button" id="tab-btn-ecommerce" class="hub-main-tab" onclick="navegarAbaPrincipal('ecommerce')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                <span>👗 E-commerce 360°</span>
-                <span class="tab-pill-accent">BOAH LIVE</span>
-            </button>
-            <button type="button" id="tab-btn-relatorios" class="hub-main-tab" onclick="navegarAbaPrincipal('relatorios')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                <span>📑 Central de Relatórios</span>
-                <span class="tab-pill-neutral">4 RELATÓRIOS</span>
-            </button>
-            <button type="button" id="tab-btn-cargas" class="hub-main-tab" onclick="navegarAbaPrincipal('cargas')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                <span>📦 Doca & Cargas</span>
-            </button>
-        </div>
+                    <button type="button" id="side-btn-ecommerce" class="sidebar-nav-btn glow-rose" onclick="navegarAbaPrincipal('ecommerce')">
+                        <div class="sidebar-icon-wrap rose">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </div>
+                        <span>E-commerce 360°</span>
+                    </button>
 
-        <!-- ========================================== -->
-        <!-- ABA 1: DASHBOARD EXECUTIVO -->
-        <!-- ========================================== -->
+                    <button type="button" id="side-btn-relatorios" class="sidebar-nav-btn glow-emerald" onclick="navegarAbaPrincipal('relatorios')">
+                        <div class="sidebar-icon-wrap emerald">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        </div>
+                        <span>Relatórios</span>
+                    </button>
+
+                    <button type="button" id="side-btn-cargas" class="sidebar-nav-btn glow-blue" onclick="navegarAbaPrincipal('cargas')">
+                        <div class="sidebar-icon-wrap blue">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M21 5v14M7 5v14M11 5v14M15 5v14M18 5v14"></path></svg>
+                        </div>
+                        <span>Doca Operacional</span>
+                    </button>
+
+                    <button type="button" id="side-btn-tesouraria" class="sidebar-nav-btn glow-purple" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
+                        <div class="sidebar-icon-wrap purple">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>
+                        </div>
+                        <span>Tesouraria & Itaú</span>
+                    </button>
+
+                    <button type="button" id="side-btn-devolucoes" class="sidebar-nav-btn glow-amber" onclick="navegarAbaPrincipal('ecommerce')">
+                        <div class="sidebar-icon-wrap amber">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        </div>
+                        <span>Radar Devoluções</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- WORKSPACE PRINCIPAL (IMAGE 2) -->
+            <section class="screen2-workspace">
+                <!-- TOP 3 KPI CARDS (IMAGE 2) -->
+                <div class="screen2-top-kpis">
+                    <div class="screen2-kpi-card">
+                        <span class="screen2-kpi-label">KPI</span>
+                        <span class="screen2-kpi-val font-mono" id="top-kpi-val1">R$ 51.480,00</span>
+                    </div>
+                    <div class="screen2-kpi-card">
+                        <span class="screen2-kpi-label">KPI</span>
+                        <span class="screen2-kpi-val font-mono" id="top-kpi-val2">R$ 3.846,22</span>
+                    </div>
+                    <div class="screen2-kpi-card">
+                        <span class="screen2-kpi-label">NF-e</span>
+                        <span class="screen2-kpi-val font-mono" id="top-kpi-val3">NF-e #4920</span>
+                    </div>
+                </div>
         <div id="secao-view-dashboard" class="main-view-section" style="display: none;">
             <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -1793,6 +1719,70 @@
             <!-- CONTAINER 2: MODO COCKPIT E-COMMERCE 360° -->
             <div id="container-view-ecommerce" style="display: block; padding: 20px;">
                 <!-- Barra de Resumo e KPIs da Moda E-commerce -->
+                
+                <!-- LOOKBOOK SHOWCASE COM 4 FOTOS VERTICAIS (IMAGE 2) -->
+                <div class="ecommerce-360-header">
+                    <h2>E-commerce 360°</h2>
+                    <p>Lookbook catalog with high-res fashion apparel</p>
+                </div>
+
+                <div class="screen2-lookbook-catalog">
+                    <div class="lookbook-catalog-card">
+                        <div class="lookbook-img-frame">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
+                            <span class="badge-ratio">3 : 4</span>
+                        </div>
+                        <div class="lookbook-info">
+                            <div class="lookbook-name">Macacão Pantacourt Antonia</div>
+                            <div class="lookbook-tags">
+                                <span class="tag-pill gray">Clean</span>
+                                <span class="tag-pill green">Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lookbook-catalog-card">
+                        <div class="lookbook-img-frame">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
+                            <span class="badge-ratio">3 : 4</span>
+                        </div>
+                        <div class="lookbook-info">
+                            <div class="lookbook-name">Calça Longa Chay</div>
+                            <div class="lookbook-tags">
+                                <span class="tag-pill gray">Clean</span>
+                                <span class="tag-pill green">Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lookbook-catalog-card">
+                        <div class="lookbook-img-frame">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
+                            <span class="badge-ratio">3 : 4</span>
+                        </div>
+                        <div class="lookbook-info">
+                            <div class="lookbook-name">Bag Bahia Palha</div>
+                            <div class="lookbook-tags">
+                                <span class="tag-pill gray">Clean</span>
+                                <span class="tag-pill green">Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lookbook-catalog-card">
+                        <div class="lookbook-img-frame">
+                            <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Marta Linho Offwhite">
+                            <span class="badge-ratio">3 : 4</span>
+                        </div>
+                        <div class="lookbook-info">
+                            <div class="lookbook-name">Blusa Marta Linho Offwhite</div>
+                            <div class="lookbook-tags">
+                                <span class="tag-pill gray">Clean</span>
+                                <span class="tag-pill green">Status</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="cockpit-360-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px 20px;">
                     <div>
                         <div style="font-size: 17px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
@@ -2280,7 +2270,10 @@
         </div>
         </div>
 
-    </main>
+    
+            </section>
+        </div>
+        </main>
 
     <!-- MODAL DOSSIÊ DE PAGAMENTO & DIFAL 360° -->
     <div id="modal-pagamento-360" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">

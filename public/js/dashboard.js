@@ -4232,29 +4232,55 @@ window.carregarRadarDevolucoes = carregarRadarDevolucoes;
 // NAVEGAÇÃO ENTRE ABAS PRINCIPAIS DO HUB
 // (Dashboard, E-commerce 360°, Relatórios, Doca & Cargas)
 // ==========================================
-function navegarAbaPrincipal(aba) {
-    const abas = ['hub', 'dashboard', 'ecommerce', 'relatorios', 'cargas'];
-    const tabsBar = document.querySelector('.hub-main-tabs-bar');
+function atualizarTopKpisScreen2() {
+    const el1 = document.getElementById('top-kpi-val1');
+    const el2 = document.getElementById('top-kpi-val2');
+    const el3 = document.getElementById('top-kpi-val3');
     
-    // Se for o hub (Primeira Tela de Cards-Menu), esconde a barra de abas secundária
-    if (tabsBar) {
-        tabsBar.style.display = (aba === 'hub') ? 'none' : 'flex';
+    if (window.cockpit360Cache && window.cockpit360Cache.resumo) {
+        const r = window.cockpit360Cache.resumo;
+        if (el1) el1.textContent = formatarBRL(r.totalVendas || 51480);
+        if (el2) el2.textContent = formatarBRL(r.totalDifal || 3846.22);
+        if (el3) el3.textContent = `NF-e #${r.ultimaNFe || '4920'}`;
+    }
+}
+
+function navegarAbaPrincipal(aba) {
+    const hubSecao = document.getElementById('secao-view-hub');
+    const screen2Secao = document.getElementById('secao-view-screen2');
+    const abas = ['dashboard', 'ecommerce', 'relatorios', 'cargas'];
+
+    if (aba === 'hub') {
+        if (hubSecao) hubSecao.style.display = 'block';
+        if (screen2Secao) screen2Secao.style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
     }
 
+    // Se for devoluções, direciona para o ecommerce com filtro de devoluções
+    if (aba === 'devolucoes') {
+        navegarAbaPrincipal('ecommerce');
+        setTimeout(() => {
+            const btnDev = document.getElementById('btn-filtro-devolucoes');
+            if (btnDev) btnDev.click();
+        }, 150);
+        return;
+    }
+
+    // Ativa Segunda Tela (Screen 2)
+    if (hubSecao) hubSecao.style.display = 'none';
+    if (screen2Secao) screen2Secao.style.display = 'flex';
+
+    // Ativa sub-view e botão da sidebar
     abas.forEach(a => {
         const secao = document.getElementById(`secao-view-${a}`);
-        const tabBtn = document.getElementById(`tab-btn-${a}`);
-        const navItem = document.getElementById(`nav-item-${a}`);
+        const sideBtn = document.getElementById(`side-btn-${a}`);
         if (secao) {
             secao.style.display = (a === aba) ? 'block' : 'none';
         }
-        if (tabBtn) {
-            if (a === aba) tabBtn.classList.add('active');
-            else tabBtn.classList.remove('active');
-        }
-        if (navItem) {
-            if (a === aba) navItem.classList.add('active');
-            else navItem.classList.remove('active');
+        if (sideBtn) {
+            if (a === aba) sideBtn.classList.add('active');
+            else sideBtn.classList.remove('active');
         }
     });
 
@@ -4267,20 +4293,13 @@ function navegarAbaPrincipal(aba) {
     } else if (aba === 'cargas') {
         const viewFiscal = document.getElementById('container-view-fiscal');
         if (viewFiscal) viewFiscal.style.display = 'block';
-    } else if (aba === 'devolucoes') {
-        navegarAbaPrincipal('relatorios');
-        const devView = document.getElementById('container-view-devolucoes');
-        if (devView) {
-            devView.style.display = 'block';
-            devView.scrollIntoView({ behavior: 'smooth' });
-        }
-        if (typeof carregarRadarDevolucoes === 'function') carregarRadarDevolucoes();
-        return;
     }
 
+    atualizarTopKpisScreen2();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.navegarAbaPrincipal = navegarAbaPrincipal;
+window.atualizarTopKpisScreen2 = atualizarTopKpisScreen2;
 
 function exportarRelatorioConciliacaoCsv() {
     const cargas = window.todasCargasDoca || [];
