@@ -2896,7 +2896,7 @@ function renderizarPaginaDoca(pagina = 1) {
                 const dtPg = g.paid_at ? ` · ${formatarDataCurta(g.paid_at)}` : '';
                 const badgesSituacao = {
                     paga: `<span class="tag-status tag-liberado">🟢 Paga${dtPg}</span>`,
-                    agendada: '<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">🔵 Agendada no banco</span>',
+                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">🔵 Agendada no banco</span>',
                     a_pagar: '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 A pagar</span>',
                     rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA;">⚠ Rejeitada / Divergência</span>',
                     sem_guia: '<span class="tag-status" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A;">⚠ Sem guia emitida</span>',
@@ -3663,7 +3663,7 @@ function abrirModalPagamento360(guideId) {
                     ${parcelas.map((p, idx) => `
                         <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #FFFFFF; border-radius: 4px; border: 1px solid #E2E8F0;">
                             <span><strong>${idx + 1}ª Parcela</strong> ${p.vencimento ? `(Venc: ${formatarDataBR(p.vencimento)})` : ''}</span>
-                            <strong style="font-family: 'JetBrains Mono', monospace; color: #0F172A;">${formatarBRL(p.valor)}</strong>
+                            <strong style="font-family: 'JetBrains Mono', monospace; color: #FFFFFF;">${formatarBRL(p.valor)}</strong>
                         </div>
                     `).join('')}
                 </div>
@@ -3672,7 +3672,7 @@ function abrirModalPagamento360(guideId) {
             parcelasCont.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
                     <span style="color: #475569;">Condição: <strong>1x à vista</strong> (${escapeHtml(g.forma_pagamento)})</span>
-                    <strong style="color: #0F172A; font-family: 'JetBrains Mono', monospace;">${formatarBRL(g.valor_venda)}</strong>
+                    <strong style="color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${formatarBRL(g.valor_venda)}</strong>
                 </div>
             `;
         }
@@ -3687,9 +3687,9 @@ function abrirModalPagamento360(guideId) {
     const elStatusBadge = document.getElementById('modal-pag-status-badge');
     const statusBadges = {
         paga: `<span class="tag-status tag-liberado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paga no Itaú</span>`,
-        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Itaú</span>`,
+        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Itaú</span>`,
         aguardando_pagamento: `<span class="tag-status tag-bloqueado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> A Pagar</span>`,
-        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D; display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Emitida SEFAZ</span>`
+        emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Emitida SEFAZ</span>`
     };
     if (elStatusBadge) elStatusBadge.innerHTML = statusBadges[g.status_bancario] || statusBadges.agendada;
 
@@ -3742,7 +3742,7 @@ function abrirModalPagamento360(guideId) {
                     : `<div style="width: 36px; height: 46px; border-radius: 4px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px;">👗</div>`
                 }
                 <div style="flex: 1; min-width: 0;">
-                    <div style="font-size: 12px; font-weight: 700; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         ${escapeHtml(it.descricao || 'Peça Boah')}
                     </div>
                     <div style="font-size: 11px; color: #64748B;">
@@ -3830,7 +3830,7 @@ async function carregarCockpit360(force = false) {
     grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748B;">
             <div style="display: inline-block; animation: spin 1s linear infinite; margin-bottom: 12px;">⏳</div>
-            <div style="font-size: 15px; font-weight: 700; color: #0F172A;">Sincronizando Catálogo Olist Vnda & Faturamento Linx...</div>
+            <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Sincronizando Catálogo Olist Vnda & Faturamento Linx...</div>
             <p style="font-size: 12.5px; margin-top: 4px;">Recuperando fotos oficiais em alta resolução, dados de clientes e DIFAL.</p>
         </div>
     `;
@@ -3893,9 +3893,9 @@ function renderizarCards360(data) {
 
     const statusBadges = {
         paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
-        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
+        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">💳 Agendada no Itaú</span>`,
         aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
-        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
+        emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3);">📄 Emitida SEFAZ</span>`
     };
 
     // ==========================================
@@ -3926,7 +3926,7 @@ function renderizarCards360(data) {
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div>
-                                <div style="font-size: 15.5px; font-weight: 800; color: #0F172A; font-family: var(--font-heading); display: flex; align-items: center; gap: 6px;">
+                                <div style="font-size: 15.5px; font-weight: 800; color: #FFFFFF; font-family: var(--font-heading); display: flex; align-items: center; gap: 6px;">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     <span>${escapeHtml(c.cliente_nome)}</span>
                                 </div>
@@ -4041,7 +4041,7 @@ function renderizarCards360(data) {
         const statusGuiaBadge = statusBadges[g.status_bancario] || statusBadges.aguardando_pagamento;
 
         const alertaDevolucaoHtml = hasDevolucao
-            ? `<div style="background:#FEF2F2; color:#B91C1C; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            ? `<div style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
                  <span>${escapeHtml(g.alerta_mensagem || 'Devolução Registrada - Não pagar')}</span>
                </div>`
@@ -4129,7 +4129,7 @@ function renderizarCards360(data) {
                                 <span>📍 ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
                                 <span style="margin: 0 3px; color: #CBD5E1;">•</span>
-                                <span style="font-size: 11px; color: #0F172A; font-weight: 600;">📅 ${formatarDataBR(g.data_venda)}</span>
+                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;">📅 ${formatarDataBR(g.data_venda)}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -4200,7 +4200,7 @@ async function carregarRadarDevolucoes() {
                 <tr>
                     <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748B;">
                         <div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>
-                        <div style="font-size: 15px; font-weight: 700; color: #0F172A;">Nenhuma devolução pendente no momento</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Nenhuma devolução pendente no momento</div>
                         <p style="font-size: 12.5px; color: #64748B; margin-top: 4px;">Todas as DIFALs do lote correspondem a vendas ativas sem cancelamento.</p>
                     </td>
                 </tr>
