@@ -1,6 +1,6 @@
 // services/ecommerce_service.js
 // Orquestrador de Alta Performance do Cockpit E-commerce & Vendas 360° (Vnda + Linx + DIFAL + Devoluções)
-// Suporta pedidos multi-peças, agrupamento por pedido e agrupamento por cliente
+// Suporta pedidos multi-peças, dados de pagamento, parcelas, agrupamento por pedido e cliente
 
 const https = require('https');
 const crypto = require('crypto');
@@ -170,7 +170,7 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
 }
 
 /**
- * Extrai dados do cliente e TODOS os itens/peças a partir do XML da NF-e no Storage
+ * Extrai dados do cliente, data, pedido, pagamento/parcelas e TODOS os itens a partir do XML da NF-e
  */
 async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
     if (!xmlStoragePath) return null;
@@ -187,6 +187,52 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
         const xNome = xml.match(/<dest>[\s\S]*?<xNome>(.*?)<\/xNome>/)?.[1] || '';
         const xMun = xml.match(/<dest>[\s\S]*?<xMun>(.*?)<\/xMun>/)?.[1] || '';
         const uf = xml.match(/<dest>[\s\S]*?<UF>(.*?)<\/UF>/)?.[1] || '';
+
+        // Data de emissão da NF-e
+        const dhEmi = xml.match(/<dhEmi>(.*?)<\/dhEmi>/)?.[1] || xml.match(/<dEmi>(.*?)<\/dEmi>/)?.[1] || '';
+
+        // Número do pedido da loja virtual (xPed ou extraído do infCpl da Linx)
+        let xPed = xml.match(/<xPed>(.*?)<\/xPed>/)?.[1] || '';
+        if (!xPed) {
+            const infCplMatch = xml.match(/COMPRA:\s*([A-Za-z0-9_-]+)/i) || xml.match(/PEDIDO:\s*([A-Za-z0-9_-]+)/i);
+            if (infCplMatch) xPed = infCplMatch[1];
+        }
+
+        // Forma de pagamento
+        const tPagCode = xml.match(/<tPag>(.*?)<\/tPag>/)?.[1] || '03';
+        const formasPagamentoMap = {
+            '01': 'Dinheiro',
+            '02': 'Cheque',
+            '03': 'Cartão de Crédito',
+            '04': 'Cartão de Débito',
+            '15': 'Boleto Bancário',
+            '17': 'PIX',
+            '99': 'Outros'
+        };
+        const formaPagamento = formasPagamentoMap[tPagCode] || 'Cartão de Crédito';
+
+        // Duplicatas / Parcelas
+        const dupRegex = /<dup>([\s\S]*?)<\/dup>/g;
+        let dupMatch;
+        const parcelas = [];
+        while ((dupMatch = dupRegex.exec(xml)) !== null) {
+            const dupXml = dupMatch[1];
+            const nDup = dupXml.match(/<nDup>(.*?)<\/nDup>/)?.[1] || '';
+            const dVenc = dupXml.match(/<dVenc>(.*?)<\/dVenc>/)?.[1] || '';
+            const vDup = parseFloat(dupXml.match(/<vDup>(.*?)<\/vDup>/)?.[1] || '0');
+            parcelas.push({
+                numero: nDup,
+                vencimento: dVenc,
+                valor: vDup
+            });
+        }
+        if (parcelas.length === 0 && vNF > 0) {
+            parcelas.push({
+                numero: '1/1',
+                vencimento: dhEmi ? dhEmi.substring(0, 10) : '',
+                valor: vNF
+            });
+        }
 
         // Extrai todas as tags <det nItem="..."> da NF-e
         const detRegex = /<det\s+nItem="(\d+)">([\s\S]*?)<\/det>/g;
@@ -235,6 +281,10 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
             cidade: xMun,
             uf,
             vNF,
+            dhEmi,
+            xPed,
+            forma_pagamento: formaPagamento,
+            parcelas,
             itens
         };
         xmlParsedCache.set(xmlStoragePath, parsed);
@@ -298,7 +348,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
     });
 
     // 4. Download concorrente dos XMLs faltantes (Pool de 12 downloads simultâneos)
-    const guiasPrecisandoXml = guides.filter(g => (!itemsPorNf.has(g.nf_number) || itemsPorNf.get(g.nf_number).length === 0) && g.xml_storage_path);
+    const guiasPrecisandoXml = guides.filter(g => g.xml_storage_path);
     const xmlResultsMap = new Map();
 
     await mapConcurrent(guiasPrecisandoXml, 12, async (g) => {
@@ -339,18 +389,16 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         const valorDifal = parseFloat(g.value || 0);
         totalDifal += valorDifal;
 
+        const xmlData = xmlResultsMap.get(g.nf_number);
         let clienteNome = g.customer_name;
         let cidadeDestino = g.customer_city || g.uf;
         let valorVendaNf = 0;
 
-        if (itens.length === 0) {
-            const xmlData = xmlResultsMap.get(g.nf_number);
-            if (xmlData) {
-                if (!clienteNome || clienteNome.includes('Cliente Boah')) clienteNome = xmlData.customer_name;
-                if (!cidadeDestino || cidadeDestino === g.uf) cidadeDestino = xmlData.cidade;
-                valorVendaNf = xmlData.vNF || 0;
-                itens = xmlData.itens || [];
-            }
+        if (xmlData) {
+            if (!clienteNome || clienteNome.includes('Cliente Boah')) clienteNome = xmlData.customer_name;
+            if (!cidadeDestino || cidadeDestino === g.uf) cidadeDestino = xmlData.cidade;
+            valorVendaNf = xmlData.vNF || 0;
+            if (itens.length === 0) itens = xmlData.itens || [];
         }
 
         // Calcula total de venda caso não tenha vNF
@@ -388,6 +436,15 @@ async function gerarCockpit360(supabase, tenant, batchId) {
 
         const pecaPrincipal = itens.length > 0 ? itens[0] : null;
 
+        // Data da venda / emissão
+        const dataVenda = xmlData?.dhEmi || g.created_at || '';
+        // Número oficial do pedido da loja virtual
+        const numeroPedido = xmlData?.xPed || g.order_number || `VD-${g.nf_number}`;
+        const formaPagamento = xmlData?.forma_pagamento || 'Cartão de Crédito';
+        const parcelas = (xmlData?.parcelas && xmlData.parcelas.length > 0)
+            ? xmlData.parcelas
+            : [{ numero: '1/1', vencimento: dataVenda.substring(0, 10), valor: valorVendaNf }];
+
         guias360.push({
             id: g.id,
             nf_number: g.nf_number,
@@ -395,7 +452,11 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             customer_name: clienteNome || 'Cliente E-commerce',
             uf: g.uf,
             cidade: cidadeDestino,
-            order_number: g.order_number || `VD-${g.nf_number}`,
+            order_number: numeroPedido,
+            data_venda: dataVenda,
+            forma_pagamento: formaPagamento,
+            parcelas: parcelas,
+            total_parcelas: parcelas.length,
             carrier_name: g.carrier_name || 'Total Express',
             valor_venda: valorVendaNf,
             valor_difal: valorDifal,

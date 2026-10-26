@@ -3553,6 +3553,19 @@ function filtrarCockpit360(termo) {
 }
 window.filtrarCockpit360 = filtrarCockpit360;
 
+function formatarDataBR(isoStr) {
+    if (!isoStr) return 'N/D';
+    try {
+        const parts = isoStr.split('T')[0].split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        const d = new Date(isoStr);
+        return d.toLocaleDateString('pt-BR');
+    } catch {
+        return isoStr;
+    }
+}
+window.formatarDataBR = formatarDataBR;
+
 function toggleListaPecas(id) {
     const el = document.getElementById(`pedido-pecas-${id}`);
     const btn = document.getElementById(`btn-toggle-pecas-${id}`);
@@ -3565,6 +3578,161 @@ function toggleListaPecas(id) {
     }
 }
 window.toggleListaPecas = toggleListaPecas;
+
+function abrirModalPagamento360(guideId) {
+    const data = window.cockpit360Cache;
+    if (!data || !data.guias360) return;
+    const g = data.guias360.find(item => String(item.id) === String(guideId));
+    if (!g) return;
+
+    const modal = document.getElementById('modal-pagamento-360');
+    if (!modal) return;
+
+    // Subtítulo
+    const elSub = document.getElementById('modal-pag-subtitulo');
+    if (elSub) elSub.textContent = `Pedido #${g.order_number || g.nf_number} • NF-e ${g.nf_number}`;
+
+    // Dados do Cliente
+    const elCli = document.getElementById('modal-pag-cliente');
+    if (elCli) elCli.textContent = g.customer_name || 'Cliente Boah';
+    const elDest = document.getElementById('modal-pag-destino');
+    if (elDest) elDest.textContent = `${g.cidade} / ${g.uf}`;
+    const elData = document.getElementById('modal-pag-data');
+    if (elData) elData.textContent = formatarDataBR(g.data_venda);
+    const elTransp = document.getElementById('modal-pag-transp');
+    if (elTransp) elTransp.textContent = g.carrier_name || 'Total Express';
+
+    // Forma de Pagamento e Total
+    const elForma = document.getElementById('modal-pag-forma-tag');
+    if (elForma) elForma.textContent = g.forma_pagamento || 'Cartão de Crédito';
+    const elTot = document.getElementById('modal-pag-valor-total');
+    if (elTot) elTot.textContent = formatarBRL(g.valor_venda);
+
+    // Parcelas
+    const parcelasCont = document.getElementById('modal-pag-parcelas-container');
+    if (parcelasCont) {
+        const parcelas = g.parcelas || [];
+        if (parcelas.length > 1) {
+            parcelasCont.innerHTML = `
+                <div style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                    Plano de Pagamento: ${parcelas.length} parcelas no ${escapeHtml(g.forma_pagamento)}
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    ${parcelas.map((p, idx) => `
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #FFFFFF; border-radius: 4px; border: 1px solid #E2E8F0;">
+                            <span><strong>${idx + 1}ª Parcela</strong> ${p.vencimento ? `(Venc: ${formatarDataBR(p.vencimento)})` : ''}</span>
+                            <strong style="font-family: 'JetBrains Mono', monospace; color: #0F172A;">${formatarBRL(p.valor)}</strong>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            parcelasCont.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                    <span style="color: #475569;">Condição: <strong>1x à vista</strong> (${escapeHtml(g.forma_pagamento)})</span>
+                    <strong style="color: #0F172A; font-family: 'JetBrains Mono', monospace;">${formatarBRL(g.valor_venda)}</strong>
+                </div>
+            `;
+        }
+    }
+
+    // DIFAL e Status Itaú
+    const elTipoDifal = document.getElementById('modal-pag-difal-tipo');
+    if (elTipoDifal) elTipoDifal.textContent = g.is_sp ? '🏛️ Guia DIFAL SP (DARE - Código 246)' : `🏛️ Guia DIFAL (GNRE Partilha ${g.uf})`;
+    const elValDifal = document.getElementById('modal-pag-difal-valor');
+    if (elValDifal) elValDifal.textContent = formatarBRL(g.valor_difal);
+
+    const elStatusBadge = document.getElementById('modal-pag-status-badge');
+    const statusBadges = {
+        paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
+        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
+        aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
+        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
+    };
+    if (elStatusBadge) elStatusBadge.innerHTML = statusBadges[g.status_bancario] || statusBadges.agendada;
+
+    const elDifalBox = document.getElementById('modal-pag-difal-detalhe-box');
+    if (elDifalBox) {
+        let statusDetalhe = '';
+        if (g.status_bancario === 'paga') {
+            statusDetalhe = `
+                <div style="color: #15803D; font-weight: 700; margin-bottom: 4px;">✓ Pagamento Confirmado & Liquidado</div>
+                <div>Guia tributária paga com sucesso na conta corrente Itaú da Lalua Modas. Carga livre de barreiras fiscais.</div>
+            `;
+        } else if (g.status_bancario === 'agendada') {
+            statusDetalhe = `
+                <div style="color: #1D4ED8; font-weight: 700; margin-bottom: 4px;">✓ Agendamento SISPAG Confirmado pelo Itaú</div>
+                <div>Lote transmitido no arquivo de remessa <code>REM2610.txt</code> e acatado pelo Itaú com ocorrência <strong>BD ("Pagamento Agendado")</strong>. Débito programado para 26/10/2026.</div>
+            `;
+        } else {
+            statusDetalhe = `
+                <div style="color: #DC2626; font-weight: 700; margin-bottom: 4px;">⚠ Aguardando Autorização Bancária</div>
+                <div>Guia emitida na SEFAZ e pronta para transmissão bancária na remessa do Itaú.</div>
+            `;
+        }
+
+        if (g.barcode) {
+            statusDetalhe += `
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #CBD5E1; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; color: #475569;">
+                        ${escapeHtml(g.barcode)}
+                    </div>
+                    <button type="button" class="btn sm" onclick="navigator.clipboard.writeText('${escapeHtml(g.barcode)}'); showToast('Código de barras copiado!', 'success');" style="flex-shrink: 0;">
+                        📋 Copiar
+                    </button>
+                </div>
+            `;
+        }
+        elDifalBox.innerHTML = statusDetalhe;
+    }
+
+    // Peças
+    const itens = g.itens || (g.peca_principal ? [g.peca_principal] : []);
+    const elQtdPecas = document.getElementById('modal-pag-qtd-pecas');
+    if (elQtdPecas) elQtdPecas.textContent = `${g.total_pecas || itens.length} ${itens.length === 1 ? 'item' : 'itens'}`;
+
+    const pecasLista = document.getElementById('modal-pag-pecas-lista');
+    if (pecasLista) {
+        pecasLista.innerHTML = itens.map(it => `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">
+                ${it.foto_url 
+                    ? `<img src="${escapeHtml(it.foto_url)}" style="width: 36px; height: 46px; border-radius: 4px; object-fit: cover;">`
+                    : `<div style="width: 36px; height: 46px; border-radius: 4px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px;">👗</div>`
+                }
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 12px; font-weight: 700; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${escapeHtml(it.descricao || 'Peça Boah')}
+                    </div>
+                    <div style="font-size: 11px; color: #64748B;">
+                        SKU: ${escapeHtml(it.sku)} • Qtd: ${it.quantidade} • <strong>${formatarBRL(it.preco_total)}</strong>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Botões
+    const btnDanfe = document.getElementById('modal-pag-btn-danfe');
+    if (btnDanfe) btnDanfe.href = g.danfe_url;
+    const btnGuia = document.getElementById('modal-pag-btn-guia');
+    if (btnGuia) {
+        if (g.gnre_url) {
+            btnGuia.href = g.gnre_url;
+            btnGuia.style.display = 'inline-flex';
+        } else {
+            btnGuia.style.display = 'none';
+        }
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalPagamento360 = abrirModalPagamento360;
+
+function fecharModalPagamento360() {
+    const modal = document.getElementById('modal-pagamento-360');
+    if (modal) modal.style.display = 'none';
+}
+window.fecharModalPagamento360 = fecharModalPagamento360;
 
 function alternarModoVisualizacao(modo) {
     const btnFiscal = document.getElementById('btn-toggle-fiscal');
@@ -3901,7 +4069,7 @@ function renderizarCards360(data) {
         }
 
         return `
-            <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}">
+            <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}" onclick="abrirModalPagamento360('${g.id}')" style="cursor: pointer;" title="Clique para ver detalhes do pagamento, parcelas e DIFAL">
                 <div>
                     ${alertaDevolucaoHtml}
                     
@@ -3914,13 +4082,18 @@ function renderizarCards360(data) {
                             <div class="sale-dest-pill">
                                 <span>📍 ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
+                                <span style="margin: 0 3px; color: #CBD5E1;">•</span>
+                                <span style="font-size: 11px; color: #0F172A; font-weight: 600;">📅 ${formatarDataBR(g.data_venda)}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
                             <span class="badge-pieces-count">
                                 🛍️ ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças'}
                             </span>
-                            <div style="font-size: 11px; color: #64748B; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            <div style="font-size: 11px; font-weight: 700; color: #2563EB; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                                Pedido #${escapeHtml(g.order_number)}
+                            </div>
+                            <div style="font-size: 10.5px; color: #64748B; font-family: 'JetBrains Mono', monospace;">
                                 NF ${escapeHtml(g.nf_number)}
                             </div>
                         </div>
@@ -3948,10 +4121,13 @@ function renderizarCards360(data) {
                         ${statusGuiaBadge}
                     </div>
                     <div class="card-actions-group">
-                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" title="Visualizar DANFE Oficial">
+                        <button type="button" class="btn-card-action" style="background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; font-weight:700;" onclick="event.stopPropagation(); abrirModalPagamento360('${g.id}')" title="Ver parcelas e informações de pagamento">
+                            💳 Pagamento & DIFAL
+                        </button>
+                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" onclick="event.stopPropagation();" title="Visualizar DANFE Oficial">
                             📄 DANFE
                         </a>
-                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" title="Visualizar Guia GNRE">🏛️ Guia</a>` : ''}
+                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" onclick="event.stopPropagation();" title="Visualizar Guia GNRE">🏛️ Guia</a>` : ''}
                     </div>
                 </div>
             </div>
