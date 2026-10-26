@@ -3636,9 +3636,20 @@ function renderizarCards360(data) {
         return;
     }
 
+    function obterIconePeca(desc) {
+        const d = String(desc || '').toUpperCase();
+        if (d.includes('BAG') || d.includes('BOLSA')) return '👜';
+        if (d.includes('CALCA') || d.includes('SHORTS') || d.includes('BERMUDA')) return '👖';
+        if (d.includes('MACACAO') || d.includes('VESTIDO')) return '👗';
+        if (d.includes('BLUSA') || d.includes('REGATA') || d.includes('COLETE') || d.includes('T-SHIRT') || d.includes('CAMISA')) return '👚';
+        if (d.includes('SAIA')) return '🥻';
+        return '👗';
+    }
+
     grid.innerHTML = guias.map(g => {
         const peca = g.peca_principal || {};
-        const fotoUrl = peca.foto_url || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60';
+        const fotoUrl = peca.foto_url || null;
+        const iconePadrao = obterIconePeca(peca.descricao);
         const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
 
         const statusBadges = {
@@ -3656,13 +3667,18 @@ function renderizarCards360(data) {
                </div>`
             : '';
 
+        const thumbHtml = fotoUrl
+            ? `<img src="${escapeHtml(fotoUrl)}" alt="${escapeHtml(peca.descricao || 'Peça')}" class="piece-thumb-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" title="Foto oficial www.boah.com.br">
+               <div class="piece-thumb-empty" style="display:none;"><span>${iconePadrao}</span></div>`
+            : `<div class="piece-thumb-empty" title="Foto não vinculada na Vnda"><span>${iconePadrao}</span></div>`;
+
         return `
             <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}">
                 <div>
                     ${alertaDevolucaoHtml}
                     <div class="card-360-top">
-                        <div class="piece-thumb-wrap" title="Clique para ampliar a foto da peça">
-                            <img src="${escapeHtml(fotoUrl)}" alt="Foto da peça" class="piece-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60'">
+                        <div class="piece-thumb-wrap" title="Peça: ${escapeHtml(peca.descricao || 'Boah')}">
+                            ${thumbHtml}
                         </div>
                         <div class="sale-info-main">
                             <span class="sale-sku-tag">SKU: ${escapeHtml(peca.sku || 'N/D')}</span>

@@ -66,7 +66,7 @@ const vndaProductCache = new Map();
 const xmlParsedCache = new Map();
 
 /**
- * Consulta catálogo da Vnda para obter foto e dados do produto por SKU ou referência
+ * Consulta catálogo da Vnda para obter foto e dados reais do produto por SKU de variante
  */
 async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
     if (!skuOuRef) return null;
@@ -76,7 +76,9 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
     }
 
     try {
-        const path = `/api/v2/products?query=${encodeURIComponent(cleanKey)}&per_page=1`;
+        // Na Vnda / Olist, cada SKU faturado pela Linx Microvix corresponde diretamente ao SKU da variante (cor/tamanho)
+        // Endpoint oficial: GET /api/v2/variants/:sku
+        const path = `/api/v2/variants/${encodeURIComponent(cleanKey)}`;
         const res = await new Promise((resolve) => {
             const req = https.request({
                 hostname: 'api.vnda.com.br',
@@ -94,8 +96,8 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
                 response.on('end', () => {
                     if (response.statusCode === 200) {
                         try {
-                            const products = JSON.parse(data);
-                            resolve(Array.isArray(products) && products.length > 0 ? products[0] : null);
+                            const variant = JSON.parse(data);
+                            resolve(variant);
                         } catch {
                             resolve(null);
                         }
@@ -113,8 +115,37 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
             let pictureUrl = res.image_url || null;
             if (!pictureUrl && res.images && res.images.length > 0) {
                 pictureUrl = res.images[0].url || res.images[0].small_url;
-            } else if (!pictureUrl && res.picture_url) {
-                pictureUrl = res.picture_url;
+            }
+
+            // Fallback caso a variante herde foto do produto pai
+            if (!pictureUrl && res.product_id) {
+                const prodData = await new Promise((resolve) => {
+                    const req = https.request({
+                        hostname: 'api.vnda.com.br',
+                        path: `/api/v2/products/${res.product_id}`,
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'X-Shop-Host': shopHost || 'www.boah.com.br',
+                            'User-Agent': 'BoahFiscal/1.0',
+                            'Accept': 'application/json'
+                        }
+                    }, (response) => {
+                        let data = '';
+                        response.on('data', chunk => data += chunk);
+                        response.on('end', () => {
+                            if (response.statusCode === 200) {
+                                try { resolve(JSON.parse(data)); } catch { resolve(null); }
+                            } else { resolve(null); }
+                        });
+                    });
+                    req.on('error', () => resolve(null));
+                    req.setTimeout(2000, () => { req.destroy(); resolve(null); });
+                    req.end();
+                });
+                if (prodData && prodData.images && prodData.images.length > 0) {
+                    pictureUrl = prodData.images[0].url;
+                }
             }
 
             if (pictureUrl && pictureUrl.startsWith('//')) {
@@ -126,7 +157,7 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
                 sku: cleanKey,
                 picture_url: pictureUrl,
                 price: res.price || res.sale_price,
-                url: res.url ? (res.url.startsWith('http') ? res.url : `https://${shopHost || 'www.boah.com.br'}${res.url}`) : null
+                url: res.slug ? `https://${shopHost || 'www.boah.com.br'}/produto/${res.slug}` : null
             };
             vndaProductCache.set(cleanKey, info);
             return info;
@@ -245,7 +276,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         }
     });
 
-    // Pré-carrega fotos do catálogo Vnda concorrentemente (Pool de 8 consultas paralelas)
+    // Pré-carrega fotos do catálogo Vnda concorrentemente (Pool de 8 consultas paralelas às variantes)
     if (vndaToken && skusUnicos.size > 0) {
         const listaSkus = Array.from(skusUnicos);
         await mapConcurrent(listaSkus, 8, async (sku) => {
@@ -301,18 +332,16 @@ async function gerarCockpit360(supabase, tenant, batchId) {
 
         totalVenda += valorVendaNf;
 
-        // Foto da Vnda recuperada instantaneamente do cache em memória
+        // Foto real oficial da peça no catálogo da Vnda recuperada instantaneamente do cache em memória
         if (pecaPrincipal && pecaPrincipal.sku) {
             const cleanKey = String(pecaPrincipal.sku).trim().toUpperCase();
             const infoVnda = vndaProductCache.get(cleanKey);
             if (infoVnda && infoVnda.picture_url) {
                 pecaPrincipal.foto_url = infoVnda.picture_url;
+                if (infoVnda.name && !pecaPrincipal.descricao) {
+                    pecaPrincipal.descricao = infoVnda.name;
+                }
             }
-        }
-
-        // Placeholder elegante caso não haja foto no catálogo
-        if (pecaPrincipal && !pecaPrincipal.foto_url) {
-            pecaPrincipal.foto_url = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60';
         }
 
         // Status de alerta fiscal / e-commerce

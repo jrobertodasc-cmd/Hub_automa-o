@@ -405,6 +405,17 @@ body {
 .piece-thumb-wrap:hover .piece-thumb-img {
     transform: scale(1.08);
 }
+.piece-thumb-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    background: #F1F5F9;
+    color: #94A3B8;
+    user-select: none;
+}
 .sale-info-main {
     flex: 1;
     min-width: 0;
