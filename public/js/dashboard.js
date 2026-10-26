@@ -3530,6 +3530,41 @@ if (window.location.search.includes('modal=fechamento')) {
 // MÓDULO COCKPIT E-COMMERCE & VENDAS 360° (VNDA + LINX + DIFAL)
 // ==========================================
 window.cockpit360Cache = null;
+window.cockpit360Agrupamento = 'pedidos'; // 'pedidos' | 'clientes'
+window.cockpit360TermoBusca = '';
+
+function alternarAgrupamento360(modo) {
+    window.cockpit360Agrupamento = modo;
+    const btnOrders = document.getElementById('btn-view-by-orders');
+    const btnClients = document.getElementById('btn-view-by-clients');
+    if (btnOrders) btnOrders.classList.toggle('active', modo === 'pedidos');
+    if (btnClients) btnClients.classList.toggle('active', modo === 'clientes');
+    if (window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+    }
+}
+window.alternarAgrupamento360 = alternarAgrupamento360;
+
+function filtrarCockpit360(termo) {
+    window.cockpit360TermoBusca = (termo || '').toLowerCase().trim();
+    if (window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+    }
+}
+window.filtrarCockpit360 = filtrarCockpit360;
+
+function toggleListaPecas(id) {
+    const el = document.getElementById(`pedido-pecas-${id}`);
+    const btn = document.getElementById(`btn-toggle-pecas-${id}`);
+    if (!el) return;
+    const isHidden = el.style.display === 'none' || !el.style.display;
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (btn) {
+        const svg = btn.querySelector('svg');
+        if (svg) svg.style.transform = isHidden ? 'rotate(180deg)' : 'none';
+    }
+}
+window.toggleListaPecas = toggleListaPecas;
 
 function alternarModoVisualizacao(modo) {
     const btnFiscal = document.getElementById('btn-toggle-fiscal');
@@ -3617,24 +3652,24 @@ function renderizarCards360(data) {
 
     const resumo = data.resumo || {};
     const guias = data.guias360 || [];
+    const clientes = data.clientes360 || [];
+    const modoAgrupamento = window.cockpit360Agrupamento || 'pedidos';
+    const termo = window.cockpit360TermoBusca || '';
 
     // Atualiza KPIs do topo
     const elVendas = document.getElementById('kpi-360-vendas');
+    const elPecas = document.getElementById('kpi-360-pecas');
     const elFat = document.getElementById('kpi-360-faturamento');
     const elDifal = document.getElementById('kpi-360-difal');
     const elDev = document.getElementById('kpi-360-devolucoes');
     const badgeDev = document.getElementById('badge-radar-devolucoes');
 
-    if (elVendas) elVendas.textContent = resumo.totalGuias || guias.length;
+    if (elVendas) elVendas.textContent = resumo.totalPedidos || guias.length;
+    if (elPecas) elPecas.textContent = resumo.totalPecas || guias.length;
     if (elFat) elFat.textContent = formatarBRL(resumo.totalVendas || 0);
     if (elDifal) elDifal.textContent = formatarBRL(resumo.totalDifal || 0);
     if (elDev) elDev.textContent = resumo.totalDevolucoes || 0;
     if (badgeDev) badgeDev.textContent = resumo.totalDevolucoes || 0;
-
-    if (guias.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhuma venda encontrada para o lote atual.</div>`;
-        return;
-    }
 
     function obterIconePeca(desc) {
         const d = String(desc || '').toUpperCase();
@@ -3646,18 +3681,149 @@ function renderizarCards360(data) {
         return '👗';
     }
 
-    grid.innerHTML = guias.map(g => {
-        const peca = g.peca_principal || {};
-        const fotoUrl = peca.foto_url || null;
-        const iconePadrao = obterIconePeca(peca.descricao);
-        const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
+    const statusBadges = {
+        paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
+        agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
+        aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
+        emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
+    };
 
-        const statusBadges = {
-            paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
-            agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
-            aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
-            emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
-        };
+    // ==========================================
+    // MODO 1: AGRUPADO POR CLIENTE
+    // ==========================================
+    if (modoAgrupamento === 'clientes') {
+        let clientesFiltrados = clientes;
+        if (termo) {
+            clientesFiltrados = clientes.filter(c => {
+                const matchNome = (c.cliente_nome || '').toLowerCase().includes(termo);
+                const matchCid = (c.cidade || '').toLowerCase().includes(termo);
+                const matchPeca = (c.todas_pecas || []).some(it => (it.descricao || '').toLowerCase().includes(termo) || (it.sku || '').toLowerCase().includes(termo));
+                return matchNome || matchCid || matchPeca;
+            });
+        }
+
+        if (clientesFiltrados.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhum cliente encontrado com os filtros atuais.</div>`;
+            return;
+        }
+
+        grid.innerHTML = clientesFiltrados.map((c, cIdx) => {
+            const statusBadge = statusBadges[c.status_bancario_geral] || statusBadges.agendada;
+            const pecas = c.todas_pecas || [];
+
+            return `
+                <div class="card-sale-360 ${c.has_devolucao ? 'has-devolucao' : ''}">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: #0F172A;">
+                                    👤 ${escapeHtml(c.cliente_nome)}
+                                </div>
+                                <div class="sale-dest-pill" style="margin-top: 2px;">
+                                    <span>📍 ${escapeHtml(c.cidade)}</span>
+                                    <span class="badge-uf-dest">${escapeHtml(c.uf)}</span>
+                                </div>
+                            </div>
+                            <span class="badge-pieces-count">
+                                🛍️ ${c.total_pecas} ${c.total_pecas === 1 ? 'peça' : 'peças'} (${c.pedidos.length} ${c.pedidos.length === 1 ? 'pedido' : 'pedidos'})
+                            </span>
+                        </div>
+
+                        <!-- Mini-galeria de todas as peças compradas pela cliente -->
+                        <div class="order-pieces-gallery" style="margin-top: 6px;">
+                            ${pecas.map(it => `
+                                <div class="gallery-thumb-item" title="${escapeHtml(it.descricao)} (SKU: ${escapeHtml(it.sku)}) • Qtd: ${it.quantidade} • ${formatarBRL(it.preco_total)}">
+                                    ${it.foto_url 
+                                        ? `<img src="${escapeHtml(it.foto_url)}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
+                                        : `<div class="gallery-thumb-empty"><span>${obterIconePeca(it.descricao)}</span></div>`
+                                    }
+                                    ${it.quantidade > 1 ? `<span class="gallery-qty-badge">x${it.quantidade}</span>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Dropdown de Peças da Cliente -->
+                        <button type="button" class="btn-toggle-pieces-list" onclick="toggleListaPecas('cliente-${cIdx}')" id="btn-toggle-pecas-cliente-${cIdx}">
+                            <span>Ver relação de peças e pedidos</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <div id="pedido-pecas-cliente-${cIdx}" class="order-pieces-dropdown" style="display: none;">
+                            ${pecas.map(it => `
+                                <div class="order-piece-row">
+                                    ${it.foto_url
+                                        ? `<img src="${escapeHtml(it.foto_url)}" class="order-piece-row-thumb">`
+                                        : `<div class="order-piece-row-thumb" style="display:flex;align-items:center;justify-content:center;font-size:18px;">${obterIconePeca(it.descricao)}</div>`
+                                    }
+                                    <div class="order-piece-row-info">
+                                        <div class="order-piece-row-title" title="${escapeHtml(it.descricao)}">${escapeHtml(it.descricao || 'Peça Boah')}</div>
+                                        <div class="order-piece-row-sub">
+                                            <span>SKU: ${escapeHtml(it.sku)} • Qtd: ${it.quantidade}</span>
+                                            <strong>${formatarBRL(it.preco_total)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="sale-metrics-box">
+                            <div class="metric-col-venda">
+                                <div>Total Comprado</div>
+                                <div class="metric-val-venda">${formatarBRL(c.total_venda)}</div>
+                            </div>
+                            <div class="metric-col-difal">
+                                <div>Total DIFAL</div>
+                                <div class="metric-val-difal" style="color: #2563EB;">
+                                    ${formatarBRL(c.total_difal)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-360-footer">
+                        <div>
+                            ${statusBadge}
+                        </div>
+                        <div class="card-actions-group">
+                            ${c.pedidos.map(p => `
+                                <a href="${escapeHtml(p.danfe_url)}" target="_blank" class="btn-card-action" title="DANFE NF-e ${p.nf_number}">
+                                    📄 NF ${p.nf_number}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        return;
+    }
+
+    // ==========================================
+    // MODO 2: AGRUPADO POR PEDIDO / NF-E (PADRÃO)
+    // ==========================================
+    let guiasFiltradas = guias;
+    if (termo) {
+        guiasFiltradas = guias.filter(g => {
+            const matchCli = (g.customer_name || '').toLowerCase().includes(termo);
+            const matchNf = (g.nf_number || '').toLowerCase().includes(termo);
+            const matchPed = (g.order_number || '').toLowerCase().includes(termo);
+            const matchPeca = (g.itens || []).some(it => (it.descricao || '').toLowerCase().includes(termo) || (it.sku || '').toLowerCase().includes(termo));
+            return matchCli || matchNf || matchPed || matchPeca;
+        });
+    }
+
+    if (guiasFiltradas.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhum pedido encontrado para a busca "${escapeHtml(termo)}".</div>`;
+        return;
+    }
+
+    grid.innerHTML = guiasFiltradas.map(g => {
+        const itens = g.itens || (g.peca_principal ? [g.peca_principal] : []);
+        const totalPecas = g.total_pecas || itens.length;
+        const peca = g.peca_principal || itens[0] || {};
+        const fotoUrl = peca.foto_url || null;
+        const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
+        const isMultiItem = itens.length > 1;
+
         const statusGuiaBadge = statusBadges[g.status_bancario] || statusBadges.aguardando_pagamento;
 
         const alertaDevolucaoHtml = hasDevolucao
@@ -3667,25 +3833,82 @@ function renderizarCards360(data) {
                </div>`
             : '';
 
-        const thumbHtml = fotoUrl
-            ? `<img src="${escapeHtml(fotoUrl)}" alt="${escapeHtml(peca.descricao || 'Peça')}" class="piece-thumb-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" title="Foto oficial www.boah.com.br">
-               <div class="piece-thumb-empty" style="display:none;"><span>${iconePadrao}</span></div>`
-            : `<div class="piece-thumb-empty" title="Foto não vinculada na Vnda"><span>${iconePadrao}</span></div>`;
+        let pecasHtml = '';
+
+        if (isMultiItem) {
+            // Galeria multi-peças para quando a cliente comprou 2 ou mais peças no mesmo pedido
+            pecasHtml = `
+                <div style="margin-bottom: 6px;">
+                    <div class="order-pieces-gallery">
+                        ${itens.map((it, idx) => `
+                            <div class="gallery-thumb-item" title="${escapeHtml(it.descricao)} (SKU: ${escapeHtml(it.sku)}) • Qtd: ${it.quantidade} • ${formatarBRL(it.preco_total)}" onclick="toggleListaPecas('${g.id}')">
+                                ${it.foto_url 
+                                    ? `<img src="${escapeHtml(it.foto_url)}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
+                                    : `<div class="gallery-thumb-empty"><span>${obterIconePeca(it.descricao)}</span></div>`
+                                }
+                                ${it.quantidade > 1 ? `<span class="gallery-qty-badge">x${it.quantidade}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button type="button" class="btn-toggle-pieces-list" onclick="toggleListaPecas('${g.id}')" id="btn-toggle-pecas-${g.id}">
+                        <span>Ver todas as ${totalPecas} peças do pedido</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+
+                    <div id="pedido-pecas-${g.id}" class="order-pieces-dropdown" style="display: none;">
+                        ${itens.map(it => `
+                            <div class="order-piece-row">
+                                ${it.foto_url
+                                    ? `<img src="${escapeHtml(it.foto_url)}" class="order-piece-row-thumb">`
+                                    : `<div class="order-piece-row-thumb" style="display:flex;align-items:center;justify-content:center;font-size:18px;">${obterIconePeca(it.descricao)}</div>`
+                                }
+                                <div class="order-piece-row-info">
+                                    <div class="order-piece-row-title" title="${escapeHtml(it.descricao)}">${escapeHtml(it.descricao || 'Peça Boah')}</div>
+                                    <div class="order-piece-row-sub">
+                                        <span>SKU: ${escapeHtml(it.sku)} • Qtd: ${it.quantidade}</span>
+                                        <strong>${formatarBRL(it.preco_total)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            // Visualização clássica de peça única
+            const thumbHtml = fotoUrl
+                ? `<img src="${escapeHtml(fotoUrl)}" alt="${escapeHtml(peca.descricao || 'Peça')}" class="piece-thumb-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" title="Foto oficial www.boah.com.br">
+                   <div class="piece-thumb-empty" style="display:none;"><span>${obterIconePeca(peca.descricao)}</span></div>`
+                : `<div class="piece-thumb-empty" title="Foto não vinculada na Vnda"><span>${obterIconePeca(peca.descricao)}</span></div>`;
+
+            pecasHtml = `
+                <div class="card-360-top">
+                    <div class="piece-thumb-wrap" title="Peça: ${escapeHtml(peca.descricao || 'Boah')}">
+                        ${thumbHtml}
+                    </div>
+                    <div class="sale-info-main">
+                        <span class="sale-sku-tag">SKU: ${escapeHtml(peca.sku || 'N/D')}</span>
+                        <div class="sale-piece-title" title="${escapeHtml(peca.descricao || 'Peça Boah')}">
+                            ${escapeHtml(peca.descricao || 'Peça da Coleção Boah')}
+                        </div>
+                        <div style="font-size: 11.5px; color: #64748B; margin-top: 2px;">
+                            Qtd: ${peca.quantidade || 1} • ${formatarBRL(peca.preco_total || g.valor_venda)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         return `
             <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}">
                 <div>
                     ${alertaDevolucaoHtml}
-                    <div class="card-360-top">
-                        <div class="piece-thumb-wrap" title="Peça: ${escapeHtml(peca.descricao || 'Boah')}">
-                            ${thumbHtml}
-                        </div>
-                        <div class="sale-info-main">
-                            <span class="sale-sku-tag">SKU: ${escapeHtml(peca.sku || 'N/D')}</span>
-                            <div class="sale-piece-title" title="${escapeHtml(peca.descricao || 'Peça Boah')}">
-                                ${escapeHtml(peca.descricao || 'Peça da Coleção Boah')}
-                            </div>
-                            <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}">
+                    
+                    <!-- Cabeçalho do Pedido e Destinatário -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div>
+                            <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}" style="font-size: 13.5px; margin-bottom: 2px;">
                                 <span>👤 ${escapeHtml(g.customer_name)}</span>
                             </div>
                             <div class="sale-dest-pill">
@@ -3693,11 +3916,22 @@ function renderizarCards360(data) {
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
                             </div>
                         </div>
+                        <div style="text-align: right;">
+                            <span class="badge-pieces-count">
+                                🛍️ ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças'}
+                            </span>
+                            <div style="font-size: 11px; color: #64748B; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                                NF ${escapeHtml(g.nf_number)}
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Peças do Pedido -->
+                    ${pecasHtml}
 
                     <div class="sale-metrics-box">
                         <div class="metric-col-venda">
-                            <div>Valor da Venda</div>
+                            <div>Valor do Pedido</div>
                             <div class="metric-val-venda">${formatarBRL(g.valor_venda)}</div>
                         </div>
                         <div class="metric-col-difal">

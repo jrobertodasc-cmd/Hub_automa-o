@@ -1,5 +1,6 @@
 // services/ecommerce_service.js
 // Orquestrador de Alta Performance do Cockpit E-commerce & Vendas 360° (Vnda + Linx + DIFAL + Devoluções)
+// Suporta pedidos multi-peças, agrupamento por pedido e agrupamento por cliente
 
 const https = require('https');
 const crypto = require('crypto');
@@ -169,7 +170,7 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
 }
 
 /**
- * Extrai dados do produto e cliente a partir do XML da NF-e armazenado no Storage
+ * Extrai dados do cliente e TODOS os itens/peças a partir do XML da NF-e no Storage
  */
 async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
     if (!xmlStoragePath) return null;
@@ -182,22 +183,59 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
         if (error || !file) return null;
 
         const xml = await file.text();
-        const cProd = xml.match(/<cProd>(.*?)<\/cProd>/)?.[1] || '';
-        const xProd = xml.match(/<xProd>(.*?)<\/xProd>/)?.[1] || '';
-        const vProd = parseFloat(xml.match(/<vProd>(.*?)<\/vProd>/)?.[1] || '0');
         const vNF = parseFloat(xml.match(/<vNF>(.*?)<\/vNF>/)?.[1] || '0');
         const xNome = xml.match(/<dest>[\s\S]*?<xNome>(.*?)<\/xNome>/)?.[1] || '';
         const xMun = xml.match(/<dest>[\s\S]*?<xMun>(.*?)<\/xMun>/)?.[1] || '';
         const uf = xml.match(/<dest>[\s\S]*?<UF>(.*?)<\/UF>/)?.[1] || '';
 
+        // Extrai todas as tags <det nItem="..."> da NF-e
+        const detRegex = /<det\s+nItem="(\d+)">([\s\S]*?)<\/det>/g;
+        let match;
+        const itens = [];
+        while ((match = detRegex.exec(xml)) !== null) {
+            const detXml = match[2];
+            const cProd = detXml.match(/<cProd>(.*?)<\/cProd>/)?.[1] || '';
+            const xProd = detXml.match(/<xProd>(.*?)<\/xProd>/)?.[1] || '';
+            const qCom = parseFloat(detXml.match(/<qCom>(.*?)<\/qCom>/)?.[1] || '1');
+            const vUnCom = parseFloat(detXml.match(/<vUnCom>(.*?)<\/vUnCom>/)?.[1] || '0');
+            const vProd = parseFloat(detXml.match(/<vProd>(.*?)<\/vProd>/)?.[1] || '0');
+            if (cProd || xProd) {
+                itens.push({
+                    item_num: parseInt(match[1]),
+                    sku: cProd,
+                    descricao: xProd,
+                    quantidade: qCom,
+                    preco_unitario: vUnCom,
+                    preco_total: vProd,
+                    foto_url: null
+                });
+            }
+        }
+
+        // Fallback caso a regex de det não case
+        if (itens.length === 0) {
+            const cProd = xml.match(/<cProd>(.*?)<\/cProd>/)?.[1] || '';
+            const xProd = xml.match(/<xProd>(.*?)<\/xProd>/)?.[1] || '';
+            const vProd = parseFloat(xml.match(/<vProd>(.*?)<\/vProd>/)?.[1] || '0');
+            if (cProd || xProd) {
+                itens.push({
+                    item_num: 1,
+                    sku: cProd,
+                    descricao: xProd,
+                    quantidade: 1,
+                    preco_unitario: vProd,
+                    preco_total: vProd,
+                    foto_url: null
+                });
+            }
+        }
+
         const parsed = {
-            cProd,
-            xProd,
-            vProd,
-            vNF,
             customer_name: xNome,
             cidade: xMun,
-            uf
+            uf,
+            vNF,
+            itens
         };
         xmlParsedCache.set(xmlStoragePath, parsed);
         return parsed;
@@ -207,7 +245,7 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
 }
 
 /**
- * Monta o Cockpit 360° para as guias do lote ativo de forma ultra-rápida (concorrente)
+ * Monta o Cockpit 360° para as guias do lote ativo agrupando por Pedido e Cliente
  */
 async function gerarCockpit360(supabase, tenant, batchId) {
     // 1. Busca as guias do lote
@@ -219,7 +257,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         .order('nf_number', { ascending: true });
 
     if (gErr) throw gErr;
-    if (!guides || guides.length === 0) return { guias360: [], resumo: {} };
+    if (!guides || guides.length === 0) return { guias360: [], clientes360: [], resumo: {} };
 
     // 2. Descriptografa token Vnda
     let vndaToken = null;
@@ -243,7 +281,15 @@ async function gerarCockpit360(supabase, tenant, batchId) {
     const itemsPorNf = new Map();
     (itemsRes.data || []).forEach(it => {
         if (!itemsPorNf.has(it.nf_number)) itemsPorNf.set(it.nf_number, []);
-        itemsPorNf.get(it.nf_number).push(it);
+        itemsPorNf.get(it.nf_number).push({
+            item_num: it.item_number || 1,
+            sku: it.product_code,
+            descricao: it.product_description,
+            quantidade: it.quantity || 1,
+            preco_unitario: parseFloat(it.unit_price || 0),
+            preco_total: parseFloat(it.total_price || 0),
+            foto_url: null
+        });
     });
 
     const devolucoesPorNf = new Map();
@@ -262,18 +308,13 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         }
     });
 
-    // 5. Coleta preliminar de SKUs únicos para pré-carregamento concorrente da Vnda
+    // 5. Coleta preliminar de SKUs únicos de TODAS as peças de todos os pedidos
     const skusUnicos = new Set();
     guides.forEach(g => {
-        const items = itemsPorNf.get(g.nf_number);
-        if (items && items.length > 0 && items[0].product_code) {
-            skusUnicos.add(items[0].product_code.trim().toUpperCase());
-        } else {
-            const xml = xmlResultsMap.get(g.nf_number);
-            if (xml && xml.cProd) {
-                skusUnicos.add(xml.cProd.trim().toUpperCase());
-            }
-        }
+        const itensDaNf = itemsPorNf.get(g.nf_number) || (xmlResultsMap.get(g.nf_number)?.itens || []);
+        itensDaNf.forEach(it => {
+            if (it.sku) skusUnicos.add(it.sku.trim().toUpperCase());
+        });
     });
 
     // Pré-carrega fotos do catálogo Vnda concorrentemente (Pool de 8 consultas paralelas às variantes)
@@ -284,15 +325,16 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         });
     }
 
-    // 6. Montagem instantânea do retorno consolidado 360°
+    // 6. Montagem do Cockpit consolidado por Pedido / NF-e
     const guias360 = [];
     let totalDifal = 0;
     let totalVenda = 0;
     let totalDevolucoesAlerta = 0;
     let economiaDifalDevolucoes = 0;
+    let totalPecasGlobal = 0;
 
     for (const g of guides) {
-        let nfItems = itemsPorNf.get(g.nf_number) || [];
+        let itens = itemsPorNf.get(g.nf_number) || [];
         const devolucao = devolucoesPorNf.get(g.nf_number) || null;
         const valorDifal = parseFloat(g.value || 0);
         totalDifal += valorDifal;
@@ -300,49 +342,39 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         let clienteNome = g.customer_name;
         let cidadeDestino = g.customer_city || g.uf;
         let valorVendaNf = 0;
-        let pecaPrincipal = null;
 
-        if (nfItems.length === 0) {
+        if (itens.length === 0) {
             const xmlData = xmlResultsMap.get(g.nf_number);
             if (xmlData) {
                 if (!clienteNome || clienteNome.includes('Cliente Boah')) clienteNome = xmlData.customer_name;
                 if (!cidadeDestino || cidadeDestino === g.uf) cidadeDestino = xmlData.cidade;
-                valorVendaNf = xmlData.vNF || xmlData.vProd || 0;
-                if (xmlData.xProd) {
-                    pecaPrincipal = {
-                        sku: xmlData.cProd,
-                        descricao: xmlData.xProd,
-                        quantidade: 1,
-                        preco: xmlData.vProd,
-                        foto_url: null
-                    };
-                }
+                valorVendaNf = xmlData.vNF || 0;
+                itens = xmlData.itens || [];
             }
-        } else {
-            valorVendaNf = nfItems.reduce((acc, it) => acc + parseFloat(it.total_price || 0), 0);
-            const it = nfItems[0];
-            pecaPrincipal = {
-                sku: it.product_code,
-                descricao: it.product_description,
-                quantidade: it.quantity,
-                preco: it.unit_price,
-                foto_url: null
-            };
         }
 
+        // Calcula total de venda caso não tenha vNF
+        if (!valorVendaNf || valorVendaNf === 0) {
+            valorVendaNf = itens.reduce((acc, it) => acc + (it.preco_total || 0), 0);
+        }
         totalVenda += valorVendaNf;
 
-        // Foto real oficial da peça no catálogo da Vnda recuperada instantaneamente do cache em memória
-        if (pecaPrincipal && pecaPrincipal.sku) {
-            const cleanKey = String(pecaPrincipal.sku).trim().toUpperCase();
-            const infoVnda = vndaProductCache.get(cleanKey);
-            if (infoVnda && infoVnda.picture_url) {
-                pecaPrincipal.foto_url = infoVnda.picture_url;
-                if (infoVnda.name && !pecaPrincipal.descricao) {
-                    pecaPrincipal.descricao = infoVnda.name;
+        // Associa foto real oficial e descrição da Vnda a CADA peça do pedido
+        let totalPecasPedido = 0;
+        itens.forEach(it => {
+            totalPecasPedido += (it.quantidade || 1);
+            if (it.sku) {
+                const cleanKey = String(it.sku).trim().toUpperCase();
+                const infoVnda = vndaProductCache.get(cleanKey);
+                if (infoVnda && infoVnda.picture_url) {
+                    it.foto_url = infoVnda.picture_url;
+                    if (infoVnda.name && !it.descricao) {
+                        it.descricao = infoVnda.name;
+                    }
                 }
             }
-        }
+        });
+        totalPecasGlobal += (totalPecasPedido || 1);
 
         // Status de alerta fiscal / e-commerce
         let statusAlerta = 'NORMAL';
@@ -353,6 +385,8 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             totalDevolucoesAlerta++;
             economiaDifalDevolucoes += valorDifal;
         }
+
+        const pecaPrincipal = itens.length > 0 ? itens[0] : null;
 
         guias360.push({
             id: g.id,
@@ -372,18 +406,52 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             gnre_url: (g.uf !== 'SP' && valorDifal > 0) ? `/api/guide/download/${g.id}` : null,
             is_sp: g.uf === 'SP',
             peca_principal: pecaPrincipal,
-            total_itens_nf: nfItems.length || 1,
-            itens: nfItems,
+            itens: itens,
+            total_pecas: totalPecasPedido || itens.length || 1,
             status_alerta: statusAlerta,
             alerta_mensagem: alertaMensagem,
             devolucao: devolucao
         });
     }
 
+    // 7. Agrupamento consolidado por Cliente (Visão Cliente 360°)
+    const clientesMap = new Map();
+    guias360.forEach(g => {
+        const key = (g.customer_name || 'Cliente Sem Nome').trim().toUpperCase();
+        if (!clientesMap.has(key)) {
+            clientesMap.set(key, {
+                cliente_nome: g.customer_name,
+                cidade: g.cidade,
+                uf: g.uf,
+                pedidos: [],
+                todas_pecas: [],
+                total_venda: 0,
+                total_difal: 0,
+                total_pecas: 0,
+                status_bancario_geral: g.status_bancario,
+                has_devolucao: false
+            });
+        }
+        const c = clientesMap.get(key);
+        c.pedidos.push(g);
+        c.total_venda += g.valor_venda;
+        c.total_difal += g.valor_difal;
+        c.total_pecas += g.total_pecas;
+        if (g.status_alerta === 'DEVOLUCAO_IDENTIFICADA') c.has_devolucao = true;
+        // Adiciona peças do pedido
+        (g.itens || []).forEach(it => c.todas_pecas.push(it));
+    });
+
+    const clientes360 = Array.from(clientesMap.values());
+
     return {
         guias360,
+        clientes360,
         resumo: {
             totalGuias: guias360.length,
+            totalPedidos: guias360.length,
+            totalClientes: clientes360.length,
+            totalPecas: totalPecasGlobal,
             totalVendas: totalVenda,
             totalDifal: totalDifal,
             totalDevolucoes: totalDevolucoesAlerta,

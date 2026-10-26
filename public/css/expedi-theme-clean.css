@@ -520,3 +520,137 @@ body {
     background: #E2E8F0;
     color: #0F172A;
 }
+
+
+/* Estilos de Galeria Multi-Peças do Cockpit 360° */
+.order-pieces-gallery {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    overflow-x: auto;
+    padding: 4px 0 8px;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+}
+.gallery-thumb-item {
+    position: relative;
+    width: 62px;
+    height: 78px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.gallery-thumb-item:hover {
+    transform: translateY(-2px);
+    border-color: #2563EB;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.gallery-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.gallery-thumb-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #F1F5F9;
+    color: #94A3B8;
+}
+.gallery-qty-badge {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+.badge-pieces-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4F46E5;
+    background: #EEF2FF;
+    border: 1px solid #C7D2FE;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.btn-toggle-pieces-list {
+    background: none;
+    border: none;
+    color: #2563EB;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-toggle-pieces-list:hover {
+    text-decoration: underline;
+}
+.order-pieces-dropdown {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.order-piece-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #EEF2F6;
+}
+.order-piece-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.order-piece-row-thumb {
+    width: 38px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #E2E8F0;
+    flex-shrink: 0;
+}
+.order-piece-row-info {
+    flex: 1;
+    min-width: 0;
+}
+.order-piece-row-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #1E293B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.order-piece-row-sub {
+    font-size: 10.5px;
+    color: #64748B;
+    display: flex;
+    justify-content: space-between;
+}

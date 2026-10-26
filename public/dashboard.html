@@ -1768,8 +1768,13 @@
                     </div>
                     <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
                         <div style="text-align: right;">
-                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Vendas no Lote</div>
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Pedidos / NF-e</div>
                             <div id="kpi-360-vendas" style="font-size: 20px; font-weight: 800; color: #0F172A; font-family: 'JetBrains Mono', monospace;">0</div>
+                        </div>
+                        <div style="width: 1px; height: 32px; background: #CBD5E1;"></div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Total Peças</div>
+                            <div id="kpi-360-pecas" style="font-size: 20px; font-weight: 800; color: #4F46E5; font-family: 'JetBrains Mono', monospace;">0</div>
                         </div>
                         <div style="width: 1px; height: 32px; background: #CBD5E1;"></div>
                         <div style="text-align: right;">
@@ -1789,6 +1794,24 @@
                         <button type="button" class="btn sm" onclick="carregarCockpit360(true)" title="Recarregar e sincronizar catálogo Vnda" style="margin-left: 10px;">
                             🔄 Sincronizar
                         </button>
+                    </div>
+                </div>
+
+                <!-- Barra de Filtros e Agrupamento (Por Pedidos vs Por Cliente) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div class="view-mode-pill-group">
+                        <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                            <span>📦 Por Pedidos / NF-e</span>
+                        </button>
+                        <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <span>👥 Agrupado por Cliente</span>
+                        </button>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="cockpit-360-search" placeholder="🔍 Buscar cliente, pedido, NF-e ou peça..." oninput="filtrarCockpit360(this.value)" style="padding: 8px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 13px; width: 320px; outline: none; background: #FFFFFF;">
                     </div>
                 </div>
 
