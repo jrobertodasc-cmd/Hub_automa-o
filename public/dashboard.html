@@ -1541,7 +1541,25 @@
             <!-- Barra de Abas e Filtros Integrada -->
             <div class="dock-tabs-header">
                 <!-- Abas Rápidas de Situação -->
-                <div class="dock-nav-tabs">
+                <!-- Seletor de Modo de Visualização (Fiscal vs E-commerce 360° vs Devoluções) -->
+                <div class="view-mode-pill-group" style="margin-right: 14px;">
+                    <button type="button" id="btn-toggle-fiscal" class="btn-view-toggle active" onclick="alternarModoVisualizacao('fiscal')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>Tabela Fiscal</span>
+                    </button>
+                    <button type="button" id="btn-toggle-ecommerce" class="btn-view-toggle" onclick="alternarModoVisualizacao('ecommerce')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        <span>E-commerce 360°</span>
+                        <span class="badge-vnda-live">VNDA LIVE</span>
+                    </button>
+                    <button type="button" id="btn-toggle-devolucoes" class="btn-view-toggle" onclick="alternarModoVisualizacao('devolucoes')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        <span>Devoluções</span>
+                        <span class="badge-ret-live" id="badge-radar-devolucoes">0</span>
+                    </button>
+                </div>
+
+                <div class="dock-nav-tabs" id="dock-status-tabs">
                     <button type="button" class="dock-tab-btn active" onclick="filtrarPorSituacaoTab('TODAS', this)">
                         <span>Todos no Lote</span>
                         <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
@@ -1617,6 +1635,8 @@
                 </div>
             </div>
 
+            <!-- CONTAINER 1: MODO TABELA FISCAL -->
+            <div id="container-view-fiscal">
             <!-- Tabela de Cargas com Dados Ricos de Moda E-commerce -->
             <table class="cockpit-table">
                 <thead>

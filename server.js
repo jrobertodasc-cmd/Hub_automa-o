@@ -23,6 +23,7 @@ const syncService = require('./services/sync_service');
 const asaasService = require('./services/asaas_service');
 const closingService = require('./services/closing_service');
 const auditService = require('./services/audit_service');
+const ecommerceService = require('./services/ecommerce_service');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -146,8 +147,13 @@ function decrypt(text, secretKey) {
     try {
         return tryDecryptWithKey(secretKey);
     } catch (primaryErr) {
-        const legacyKey = getEncryptionKey('expedi_default_secret_key_32_bytes_long!!');
-        return tryDecryptWithKey(legacyKey);
+        try {
+            const legacyKey1 = getEncryptionKey('d7b5f12a893e4b0c7a6d9f8e5c3b2a10');
+            return tryDecryptWithKey(legacyKey1);
+        } catch {
+            const legacyKey2 = getEncryptionKey('expedi_default_secret_key_32_bytes_long!!');
+            return tryDecryptWithKey(legacyKey2);
+        }
     }
 }
 
@@ -2015,8 +2021,10 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 cnabText = cnabService.gerarRemessaBB(dadosBancarios, mapped, paymentDateChosen);
             }
 
+            const [anoB, mesB, diaB] = (paymentDateChosen || new Date().toISOString().split('T')[0]).split('-');
+            const shortBankFilename = (diaB && mesB) ? `REM${diaB}${mesB}` : `REMESSA`;
             res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="remessa_${bankParam}_${batch.id}.txt"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${shortBankFilename}.txt"`);
             return res.send(cnabText);
         }
 
@@ -2072,8 +2080,11 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             .upload(remessaPath, Buffer.from(cnabText, 'latin1'), { contentType: 'text/plain', upsert: true })
             .catch(e => console.warn('[Storage] Falha ao persistir remessa Itaú:', e.message));
 
+        const [anoRem, mesRem, diaRem] = (dataPagamentoEfetiva || '').split('-');
+        const shortFilename = (diaRem && mesRem) ? `REM${diaRem}${mesRem}` : `REMESSA`; // Máx 7 caracteres (ex: REM2610) exigido pelo Itaú SISPAG
+
         res.setHeader('Content-Type', 'text/plain; charset=ISO-8859-1');
-        res.setHeader('Content-Disposition', `attachment; filename="remessa_itau_${batch.id}.txt"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${shortFilename}.txt"`);
         return res.send(Buffer.from(cnabText, 'latin1'));
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -4428,6 +4439,50 @@ app.get('/api/vnda/pedidos', requireAuth, async (req, res) => {
         return res.json({ pedidos });
     } catch (err) {
         return res.status(500).json({ error: 'Erro ao buscar pedidos da Vnda: ' + err.message });
+    }
+});
+
+// ==========================================
+// ROTAS: COCKPIT E-COMMERCE & VENDAS 360° (VNDA + LINX + DIFAL)
+// ==========================================
+app.get('/api/ecommerce/cockpit-360/:batchId', requireAuth, async (req, res) => {
+    try {
+        let batchId = req.params.batchId;
+        if (!batchId || batchId === 'ativo') {
+            const { data: batches } = await supabase
+                .from('batches')
+                .select('id')
+                .eq('tenant_id', req.tenant.id)
+                .neq('status', 'cancelado')
+                .order('created_at', { ascending: false })
+                .limit(1);
+            batchId = batches && batches[0] ? batches[0].id : null;
+        }
+
+        if (!batchId) {
+            return res.status(404).json({ error: 'Nenhum lote ativo encontrado.' });
+        }
+
+        const data = await ecommerceService.gerarCockpit360(supabase, req.tenant, batchId);
+        return res.json(data);
+    } catch (err) {
+        console.error('[Cockpit360] Erro ao carregar dados:', err);
+        return res.status(500).json({ error: 'Falha ao carregar Cockpit 360: ' + err.message });
+    }
+});
+
+app.get('/api/ecommerce/devolucoes', requireAuth, async (req, res) => {
+    try {
+        const { data: returnNotes, error } = await supabase
+            .from('return_notes')
+            .select('*')
+            .eq('tenant_id', req.tenant.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return res.json({ devolucoes: returnNotes || [] });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
     }
 });
 

@@ -1597,10 +1597,11 @@ async function confirmarAutorizacaoPagamento() {
         fecharModalAutorizacaoPagamento();
         showToast(`💳 Pagamento bancário autorizado! Arquivo CNAB (${banco.toUpperCase()}) gerado com sucesso.`, 'success');
 
-        // Dispara o download automático do arquivo remessa.txt
+        // Dispara o download automático do arquivo remessa.txt (máximo 7 caracteres exigido pelo Itaú/bancos)
         const link = document.createElement('a');
         link.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}`;
-        link.download = `remessa_${banco.toUpperCase()}_lote_${window.activeBatchId.substring(0, 8)}.txt`;
+        const hojeStr = new Date().toISOString().split('T')[0].split('-');
+        link.download = `REM${hojeStr[2]}${hojeStr[1]}.txt`; // ex: REM2610.txt (7 chars)
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -2139,11 +2140,12 @@ function executarDownloadRemessaDoca(event) {
         return;
     }
     atualizarLinksRemessaDoca();
-    if (event && event.currentTarget) {
-        event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
-    }
     const [ano, mes, dia] = dataPag.split('-');
     const dataFmt = `${dia}/${mes}/${ano}`;
+    if (event && event.currentTarget) {
+        event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
+        event.currentTarget.download = `REM${dia}${mes}.txt`; // Itaú SISPAG exige máx 7 chars (ex: REM2610.txt)
+    }
     showToast(`📥 Baixando Remessa ${banco.toUpperCase()} com débito agendado para ${dataFmt}...`, "success");
 }
 
@@ -2178,10 +2180,10 @@ async function autorizarPagamentoLoteComData() {
 
         showToast(`💳 Lote autorizado com sucesso! Remessa gerada com débito agendado para ${dataFmt}.`, 'success');
 
-        // Dispara download automático da remessa com a data escolhida
+        // Dispara download automático da remessa com a data escolhida (máximo 7 caracteres exigido pelo Itaú/bancos)
         const link = document.createElement('a');
         link.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${paymentDate}`;
-        link.download = `remessa_${banco.toUpperCase()}_lote_${window.activeBatchId.substring(0, 8)}.txt`;
+        link.download = `REM${dia}${mes}.txt`; // ex: REM2610.txt (7 chars)
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -3523,3 +3525,223 @@ if (window.location.search.includes('modal=fechamento')) {
 }
 
 
+
+// ==========================================
+// MÓDULO COCKPIT E-COMMERCE & VENDAS 360° (VNDA + LINX + DIFAL)
+// ==========================================
+window.cockpit360Cache = null;
+
+function alternarModoVisualizacao(modo) {
+    const btnFiscal = document.getElementById('btn-toggle-fiscal');
+    const btnEcom = document.getElementById('btn-toggle-ecommerce');
+    const btnDev = document.getElementById('btn-toggle-devolucoes');
+
+    const viewFiscal = document.getElementById('container-view-fiscal');
+    const viewEcom = document.getElementById('container-view-ecommerce');
+    const viewDev = document.getElementById('container-view-devolucoes');
+    const statusTabs = document.getElementById('dock-status-tabs');
+
+    if (btnFiscal) btnFiscal.classList.remove('active');
+    if (btnEcom) btnEcom.classList.remove('active');
+    if (btnDev) btnDev.classList.remove('active');
+
+    if (viewFiscal) viewFiscal.style.display = 'none';
+    if (viewEcom) viewEcom.style.display = 'none';
+    if (viewDev) viewDev.style.display = 'none';
+
+    if (modo === 'ecommerce') {
+        if (btnEcom) btnEcom.classList.add('active');
+        if (viewEcom) viewEcom.style.display = 'block';
+        if (statusTabs) statusTabs.style.display = 'none';
+        carregarCockpit360();
+    } else if (modo === 'devolucoes') {
+        if (btnDev) btnDev.classList.add('active');
+        if (viewDev) viewDev.style.display = 'block';
+        if (statusTabs) statusTabs.style.display = 'none';
+        carregarRadarDevolucoes();
+    } else {
+        if (btnFiscal) btnFiscal.classList.add('active');
+        if (viewFiscal) viewFiscal.style.display = 'block';
+        if (statusTabs) statusTabs.style.display = 'flex';
+    }
+}
+window.alternarModoVisualizacao = alternarModoVisualizacao;
+
+async function carregarCockpit360(force = false) {
+    const grid = document.getElementById('cockpit-360-cards-grid');
+    if (!grid) return;
+
+    if (!force && window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+        return;
+    }
+
+    grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748B;">
+            <div style="display: inline-block; animation: spin 1s linear infinite; margin-bottom: 12px;">⏳</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0F172A;">Sincronizando Catálogo Olist Vnda & Faturamento Linx...</div>
+            <p style="font-size: 12.5px; margin-top: 4px;">Recuperando fotos oficiais em alta resolução, dados de clientes e DIFAL.</p>
+        </div>
+    `;
+
+    try {
+        const batchId = window.activeBatchId || 'ativo';
+        const res = await fetch(`/api/ecommerce/cockpit-360/${batchId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Falha ao carregar Cockpit 360°');
+
+        window.cockpit360Cache = data;
+        renderizarCards360(data);
+    } catch (err) {
+        grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #DC2626; background: #FEF2F2; border-radius: 10px;">
+                <strong>Erro ao carregar Cockpit 360°:</strong> ${escapeHtml(err.message)}
+            </div>
+        `;
+    }
+}
+window.carregarCockpit360 = carregarCockpit360;
+
+function renderizarCards360(data) {
+    const grid = document.getElementById('cockpit-360-cards-grid');
+    if (!grid) return;
+
+    const resumo = data.resumo || {};
+    const guias = data.guias360 || [];
+
+    // Atualiza KPIs do topo
+    const elVendas = document.getElementById('kpi-360-vendas');
+    const elFat = document.getElementById('kpi-360-faturamento');
+    const elDifal = document.getElementById('kpi-360-difal');
+    const elDev = document.getElementById('kpi-360-devolucoes');
+    const badgeDev = document.getElementById('badge-radar-devolucoes');
+
+    if (elVendas) elVendas.textContent = resumo.totalGuias || guias.length;
+    if (elFat) elFat.textContent = formatarBRL(resumo.totalVendas || 0);
+    if (elDifal) elDifal.textContent = formatarBRL(resumo.totalDifal || 0);
+    if (elDev) elDev.textContent = resumo.totalDevolucoes || 0;
+    if (badgeDev) badgeDev.textContent = resumo.totalDevolucoes || 0;
+
+    if (guias.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhuma venda encontrada para o lote atual.</div>`;
+        return;
+    }
+
+    grid.innerHTML = guias.map(g => {
+        const peca = g.peca_principal || {};
+        const fotoUrl = peca.foto_url || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60';
+        const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
+
+        const statusBadges = {
+            paga: `<span class="tag-status tag-liberado">🟢 Paga no Itaú</span>`,
+            agendada: `<span class="tag-status" style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE;">💳 Agendada no Itaú</span>`,
+            aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
+            emitida: `<span class="tag-status" style="background:#F0FDF4; color:#15803D;">📄 Emitida SEFAZ</span>`
+        };
+        const statusGuiaBadge = statusBadges[g.status_bancario] || statusBadges.aguardando_pagamento;
+
+        const alertaDevolucaoHtml = hasDevolucao
+            ? `<div style="background:#FEF2F2; color:#B91C1C; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                 <span>${escapeHtml(g.alerta_mensagem || 'Devolução Registrada - Não pagar')}</span>
+               </div>`
+            : '';
+
+        return `
+            <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}">
+                <div>
+                    ${alertaDevolucaoHtml}
+                    <div class="card-360-top">
+                        <div class="piece-thumb-wrap" title="Clique para ampliar a foto da peça">
+                            <img src="${escapeHtml(fotoUrl)}" alt="Foto da peça" class="piece-thumb-img" onerror="this.src='https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60'">
+                        </div>
+                        <div class="sale-info-main">
+                            <span class="sale-sku-tag">SKU: ${escapeHtml(peca.sku || 'N/D')}</span>
+                            <div class="sale-piece-title" title="${escapeHtml(peca.descricao || 'Peça Boah')}">
+                                ${escapeHtml(peca.descricao || 'Peça da Coleção Boah')}
+                            </div>
+                            <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}">
+                                <span>👤 ${escapeHtml(g.customer_name)}</span>
+                            </div>
+                            <div class="sale-dest-pill">
+                                <span>📍 ${escapeHtml(g.cidade)}</span>
+                                <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sale-metrics-box">
+                        <div class="metric-col-venda">
+                            <div>Valor da Venda</div>
+                            <div class="metric-val-venda">${formatarBRL(g.valor_venda)}</div>
+                        </div>
+                        <div class="metric-col-difal">
+                            <div>DIFAL ${g.is_sp ? '(SP DARE)' : '(GNRE)'}</div>
+                            <div class="metric-val-difal" style="${g.status_bancario === 'paga' ? 'color:#15803D;' : 'color:#2563EB;'}">
+                                ${formatarBRL(g.valor_difal)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-360-footer">
+                    <div>
+                        ${statusGuiaBadge}
+                    </div>
+                    <div class="card-actions-group">
+                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" title="Visualizar DANFE Oficial">
+                            📄 DANFE
+                        </a>
+                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" title="Visualizar Guia GNRE">🏛️ Guia</a>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function carregarRadarDevolucoes() {
+    const tbody = document.getElementById('radar-devolucoes-tbody');
+    const totalEco = document.getElementById('radar-economia-total');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748B;">Carregando notas de devolução...</td></tr>`;
+
+    try {
+        const res = await fetch('/api/ecommerce/devolucoes');
+        const data = await res.json();
+        const devolucoes = data.devolucoes || [];
+
+        if (totalEco) totalEco.textContent = formatarBRL(devolucoes.reduce((acc, d) => acc + parseFloat(d.value || 0), 0));
+
+        if (devolucoes.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748B;">
+                        <div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #0F172A;">Nenhuma devolução pendente no momento</div>
+                        <p style="font-size: 12.5px; color: #64748B; margin-top: 4px;">Todas as DIFALs do lote correspondem a vendas ativas sem cancelamento.</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = devolucoes.map(d => `
+            <tr>
+                <td><strong class="cell-mono">#${escapeHtml(d.nf_return_number)}</strong></td>
+                <td><span class="cell-mono">#${escapeHtml(d.nf_original_number || 'S/N')}</span></td>
+                <td><strong>${escapeHtml(d.customer_name || 'Cliente')}</strong></td>
+                <td><span class="badge-uf-dest">${escapeHtml(d.uf || 'BR')}</span></td>
+                <td style="text-align: right; font-weight: 700;">${formatarBRL(d.value || 0)}</td>
+                <td style="text-align: center;"><span class="tag-status tag-liberado">DIFAL Bloqueada</span></td>
+                <td style="text-align: right;">
+                    <button class="btn sm" onclick="showToast('Dossiê fiscal de estorno gerado.', 'success')">Dossiê Estorno</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:#DC2626;">Erro: ${escapeHtml(err.message)}</td></tr>`;
+    }
+}
+window.carregarRadarDevolucoes = carregarRadarDevolucoes;

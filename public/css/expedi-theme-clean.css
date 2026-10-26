@@ -300,3 +300,212 @@ body {
     backdrop-filter: blur(4px) !important;
     background-color: rgba(15, 23, 42, 0.45) !important;
 }
+
+/* ==========================================
+   COCKPIT E-COMMERCE & VENDAS 360° (VNDA + LINX + DIFAL)
+   ========================================== */
+.view-mode-pill-group {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    padding: 3px;
+    border-radius: 9px;
+    gap: 3px;
+    border: 1px solid #CBD5E1;
+}
+.btn-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-view-toggle:hover {
+    color: #0F172A;
+    background: rgba(255, 255, 255, 0.7);
+}
+.btn-view-toggle.active {
+    background: #FFFFFF;
+    color: #2563EB;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.badge-vnda-live {
+    background: #FDF2F8;
+    color: #DB2777;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+}
+.badge-ret-live {
+    background: #FEF3C7;
+    color: #B45309;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Grid de Cards 360° */
+.cockpit-360-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 16px;
+    padding: 16px 0;
+}
+.card-sale-360 {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.card-sale-360:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+    border-color: #CBD5E1;
+}
+.card-sale-360.has-devolucao {
+    border-color: #F87171 !important;
+    background: #FFFBFB !important;
+}
+.card-360-top {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+.piece-thumb-wrap {
+    width: 72px;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    flex-shrink: 0;
+    position: relative;
+}
+.piece-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+.piece-thumb-wrap:hover .piece-thumb-img {
+    transform: scale(1.08);
+}
+.sale-info-main {
+    flex: 1;
+    min-width: 0;
+}
+.sale-piece-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.35;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.sale-sku-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #475569;
+    background: #F1F5F9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.sale-customer-line {
+    font-size: 12.5px;
+    color: #1E293B;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.sale-dest-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11.5px;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+/* Valores e DIFAL no Card */
+.sale-metrics-box {
+    background: #F8FAFC;
+    border: 1px solid #EEF2F6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.metric-col-venda {
+    font-size: 11px;
+    color: #64748B;
+}
+.metric-val-venda {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0F172A;
+    font-family: 'JetBrains Mono', monospace;
+}
+.metric-col-difal {
+    text-align: right;
+    font-size: 11px;
+    color: #64748B;
+}
+.metric-val-difal {
+    font-size: 14.5px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Ações e Rodapé do Card */
+.card-360-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #F1F5F9;
+}
+.card-actions-group {
+    display: flex;
+    gap: 6px;
+}
+.btn-card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #334155;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+.btn-card-action:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
