@@ -4279,6 +4279,15 @@ function navegarAbaPrincipal(aba) {
         }
     }
 
+    if (aba === 'dashboard' || aba === 'tesouraria') {
+        if (typeof inicializarPainelFintechDoca === 'function') {
+            inicializarPainelFintechDoca();
+        }
+        if (typeof carregarCargasDocaReais === 'function') {
+            carregarCargasDocaReais();
+        }
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.navegarAbaPrincipal = navegarAbaPrincipal;

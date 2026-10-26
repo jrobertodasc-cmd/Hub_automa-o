@@ -1442,239 +1442,222 @@
                 </div>
             </div>
         </div>
-        <div id="secao-view-dashboard" class="main-view-section" style="display: none;">
-            <!-- BARRA SUPERIOR EXECUTIVA (VOLTAR + METADADOS) -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 14px;">
-                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-bottom: 60px;">
+            <!-- NAVEGAÇÃO SUPERIOR LIMPA -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>← Voltar ao Menu Principal</span>
                 </button>
 
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <div class="meta-batch-tag" id="meta-batch-tag" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); padding: 7px 14px; border-radius: 999px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
-                        <span class="tenant-dot"></span>
-                        <span>Remessa Ativa: Lote Linx Microvix · 91 Guias Pendentes</span>
-                    </div>
-                    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <span>Alçada Financeira Segregada: Diretoria & Tesouraria</span>
-                    </div>
+                <div id="meta-batch-tag" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34D399; padding: 7px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></span>
+                    <span>Lote Ativo: 91 Guias (Remessa CNAB 240)</span>
                 </div>
             </div>
 
-            <!-- TÍTULO DA PÁGINA -->
-            <div style="margin-bottom: 22px;">
-                <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0 0 4px 0; letter-spacing: -0.02em;">Painel de Liquidação Financeira & Expedição</h1>
-                <p style="font-size: 13.5px; color: #94A3B8; margin: 0;">Gestão de remessas bancárias CNAB 240, conciliação tributária e liberação operacional de cargas</p>
+            <!-- TÍTULO PRINCIPAL DIRETO AO PONTO -->
+            <div style="margin-bottom: 26px;">
+                <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; margin: 0 0 6px 0; letter-spacing: -0.02em;">Liquidação Bancária do Lote</h1>
+                <p style="font-size: 14px; color: #94A3B8; margin: 0;">Gere a remessa bancária para pagamento das guias tributárias e liberação das cargas na expedição.</p>
             </div>
 
-            <!-- HUD DE INDICADORES OPERACIONAIS (4 CARDS) -->
-            <div class="hud-kpi-grid">
-                <!-- 1. Volumes sob Custódia -->
-                <div class="hud-card">
-                    <div class="hud-card-top">
-                        <span>Volumes sob Custódia</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                    </div>
-                    <div class="hud-value font-mono" id="kpi-volumes">91</div>
-                    <div class="hud-subtext">Total de volumes no lote faturado</div>
+            <!-- RESUMO RÁPIDO DO LOTE (STRIP COMPACTA, SEM POLUIÇÃO) -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Volumes no Lote</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-volumes">91</div>
                 </div>
-
-                <!-- 2. Cargas Liberadas -->
-                <div class="hud-card">
-                    <div class="hud-card-top">
-                        <span>Cargas Liberadas</span>
-                        <span class="hud-badge hud-badge-green" id="kpi-ready-badge">0% Pronto</span>
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Cargas Prontas</span>
+                        <span id="kpi-ready-badge" style="font-size: 10px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 2px 7px; border-radius: 999px;">96% Pronto</span>
                     </div>
-                    <div class="hud-value font-mono" style="color: #10B981;" id="kpi-ready-val">0</div>
-                    <div class="hud-subtext">Prontas para expedição e transporte</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-ready-val">87</div>
                 </div>
-
-                <!-- 3. Pendências Tributárias -->
-                <div class="hud-card">
-                    <div class="hud-card-top">
-                        <span>Pendências Tributárias</span>
-                        <span class="hud-badge hud-badge-red" id="kpi-blocked-badge">91 Pendentes</span>
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pendências</span>
+                        <span id="kpi-blocked-badge" style="font-size: 10px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #F87171; padding: 2px 7px; border-radius: 999px;">4 Retidas</span>
                     </div>
-                    <div class="hud-value font-mono" style="color: #F87171;" id="kpi-status">91</div>
-                    <div class="hud-subtext">Aguardando recolhimento SEFAZ</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #F87171; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-status">4</div>
                 </div>
-
-                <!-- 4. DIFAL a Liquidar -->
-                <div class="hud-card">
-                    <div class="hud-card-top">
-                        <span>DIFAL a Recolher</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                    </div>
-                    <div class="hud-value font-mono" id="kpi-difal" style="color: #38BDF8;">R$ 4.019,14</div>
-                    <div class="hud-subtext">Débito em Conta / Alçada Diretoria</div>
+                <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), #111B2E); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 14px 18px;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #93C5FD; text-transform: uppercase;">Total a Recolher (DIFAL)</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #60A5FA; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-difal">R$ 4.020,42</div>
                 </div>
             </div>
 
-            <!-- PAINEL REVOLUCIONÁRIO DE LIQUIDAÇÃO FINANCEIRA (CNAB 240) -->
-            <section class="fintech-payment-panel" id="fintech-payment-panel" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-                <!-- Header do Painel -->
-                <div class="fintech-panel-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
-                    <div class="fintech-title-wrap" style="display: flex; gap: 14px; align-items: center;">
-                        <div class="fintech-icon-badge" style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #38BDF8;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            <!-- CARD PRINCIPAL: PASSO A PASSO DA LIQUIDAÇÃO (FOCO TOTAL NA AÇÃO) -->
+            <section id="fintech-payment-panel" style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 18px; padding: 28px; margin-bottom: 28px; box-shadow: 0 10px 35px rgba(0,0,0,0.4);">
+                
+                <!-- Cabeçalho do Card de Ação -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">💳</span>
+                            <span>Gerar Remessa CNAB 240</span>
                         </div>
-                        <div>
-                            <div class="fintech-title" style="font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">Liquidação Financeira do Lote · Remessa CNAB 240</div>
-                            <div class="fintech-subtitle" id="fintech-batch-summary" style="font-size: 13px; color: #94A3B8; margin-top: 3px;">Lote Ativo: 91 guias · Total a Recolher: R$ 4.019,14 · Status: Aguardando Autorização</div>
+                        <div id="fintech-batch-summary" style="font-size: 13px; color: #94A3B8; margin-top: 4px;">
+                            Lote Fiscal #REM2610 · 91 guias auditadas · Total DIFAL: R$ 4.020,42
                         </div>
                     </div>
 
-                    <div class="fintech-bank-pill" id="fintech-bank-info" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.08); padding: 8px 14px; border-radius: 10px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
+                    <div id="fintech-bank-info" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 8px 16px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
-                        <span>Conta Corrente Autorizada · Agência 0334 · C/C 98775-7 (LALUA)</span>
+                        <span>Conta Autorizada: Ag. 0334 · C/C 98775-7 (LALUA)</span>
                     </div>
                 </div>
 
-                <!-- Zona 1: Parâmetros & Ações Principais -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 16px; margin-bottom: 20px; align-items: flex-end;" class="fintech-main-grid">
-                    <!-- Data de Vencimento -->
+                <!-- Formulário com 2 Passos Claros -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
                     <div>
-                        <label style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;" for="doca-input-data-pagamento">Data de Pagamento / Vencimento</label>
-                        <input type="date" id="doca-input-data-pagamento" class="fintech-input-date" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: #FFFFFF; font-size: 13px; outline: none;">
+                        <label for="doca-input-data-pagamento" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
+                            1. Data de Vencimento / Pagamento
+                        </label>
+                        <input type="date" id="doca-input-data-pagamento" value="2026-10-26" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none;">
+                        <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px;">Data que constará no cabeçalho e registros do lote CNAB 240.</span>
                     </div>
 
-                    <!-- Layout Bancário CNAB 240 -->
                     <div>
-                        <label style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 6px;" for="doca-select-banco">Layout Bancário (CNAB 240)</label>
-                        <select id="doca-select-banco" class="fintech-select" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: #FFFFFF; font-size: 13px; outline: none; cursor: pointer;">
+                        <label for="doca-select-banco" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
+                            2. Layout Bancário Autorizado
+                        </label>
+                        <select id="doca-select-banco" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none; cursor: pointer;">
                             <option value="itau" selected>Layout CNAB 240 - Segmento O (Tributos & DIFAL)</option>
                             <option value="bradesco">Layout CNAB 240 - Tributos (Bradesco)</option>
                             <option value="bb">Layout CNAB 240 - Tributos (Banco do Brasil)</option>
                         </select>
+                        <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px;">Homologado para leitura automática de código de barras tributário.</span>
+                    </div>
+                </div>
+
+                <!-- AÇÃO PRIMÁRIA INCONFUNDÍVEL -->
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Pronto para baixar a remessa?</div>
+                        <div style="font-size: 12.5px; color: #94A3B8; margin-top: 2px;">O arquivo gerado deve ser transmitido no Internet Banking para efetivação do débito.</div>
                     </div>
 
-                    <!-- Ações Principais (Botões em Destaque) -->
-                    <div style="display: flex; gap: 10px;">
-                        <a id="btn-doca-baixar-remessa" href="#" class="btn-fintech-primary" onclick="executarDownloadRemessaDoca(event)" style="flex: 1; background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); cursor: pointer;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <a id="btn-doca-baixar-remessa" href="#" onclick="executarDownloadRemessaDoca(event)" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45); cursor: pointer; transition: transform 0.15s ease;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             <span id="btn-doca-baixar-remessa-text">Baixar Arquivo de Remessa (.TXT)</span>
                         </a>
 
-                        <button type="button" id="btn-doca-autorizar-lote" class="btn-fintech-secondary" onclick="autorizarPagamentoLoteComData()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700; font-size: 13px; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
+                        <button type="button" id="btn-doca-autorizar-lote" onclick="autorizarPagamentoLoteComData()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             <span>Confirmar Agendamento</span>
                         </button>
                     </div>
                 </div>
+            </section>
 
-                <!-- Zona 2: Toolbar de Documentos & Integrações -->
-                <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" id="btn-doca-emitir-sefaz-data" class="btn-fintech-secondary" onclick="reemitirGuiasSefazComData(false)" title="Emite ou atualiza na SEFAZ com a data escolhida" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                            <span>Emitir SEFAZ c/ Data</span>
-                        </button>
+            <!-- SEÇÃO DE APOIO EM 2 COLUNAS: DISTRIBUIÇÃO FISCAL + FERRAMENTAS COMPLEMENTARES -->
+            <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px;">
+                <!-- Coluna 1: Distribuição por Estado (UF) -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                            <span>Distribuição Tributária por Estado</span>
+                        </div>
+                        <span style="font-size: 12px; color: #64748B;">DIFAL / DARE por UF</span>
+                    </div>
+                    <div id="uf-distribution-grid" class="uf-cards-grid">
+                        <div style="color: #94A3B8; font-size: 13px;">Carregando dados das guias...</div>
+                    </div>
+                </div>
 
-                        <a id="btn-doca-baixar-xml-sp" href="#" class="btn-fintech-outline" onclick="baixarXmlLoteSpComData(event)" title="Gera e baixa o XML em lote das notas de SP" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <span>XML Lote SP</span>
-                        </a>
+                <!-- Coluna 2: Ações & Ferramentas Auxiliares -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            <span>Ferramentas Auxiliares</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px 0;">Emissões e downloads fiscais pontuais.</p>
 
-                        <a id="btn-doca-baixar-guias" href="#" target="_blank" class="btn-fintech-outline" title="Baixa pacote PDF de todas as guias GNRE do lote" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <span>Guias GNRE (PDF)</span>
-                        </a>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button type="button" id="btn-doca-emitir-sefaz-data" onclick="reemitirGuiasSefazComData(false)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                                <span>Emitir SEFAZ com Nova Data</span>
+                            </button>
+
+                            <a id="btn-doca-baixar-xml-sp" href="#" onclick="baixarXmlLoteSpComData(event)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                <span>Baixar XML em Lote (SP)</span>
+                            </a>
+
+                            <a id="btn-doca-baixar-guias" href="#" target="_blank" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                <span>Baixar Pacote de Guias PDF</span>
+                            </a>
+                        </div>
                     </div>
 
-                    <button type="button" onclick="navegarAbaPrincipal('ecommerce')" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); color: #FB7185; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer;" title="Ir para o E-commerce 360°">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg>
-                        <span>Ver no E-commerce 360°</span>
-                    </button>
+                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                        <button type="button" onclick="navegarAbaPrincipal('ecommerce')" style="width: 100%; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); color: #60A5FA; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+                            <span>Ver Detalhes no E-commerce 360° →</span>
+                        </button>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- GRID DE DISTRIBUIÇÃO FISCAL POR UF -->
-            <section class="uf-distribution-section" style="margin-bottom: 24px;">
-                <div class="uf-section-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
-                    <span>Distribuição Tributária por Estado de Destino (DIFAL / DARE)</span>
-                </div>
-                <div id="uf-distribution-grid" class="uf-cards-grid">
-                    <div style="color: #94A3B8; font-size: 13px;">Carregando mapa fiscal de UFs...</div>
-                </div>
-            </section>
-
-            <!-- MANIFESTOS DE EMBARQUE POR OPERADOR LOGÍSTICO -->
-            <section class="carrier-coleta-section" style="margin-bottom: 24px;">
-                <div class="carrier-section-title" style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">
+            <!-- EMBARQUE & TRANSPORTADORAS (ORGANIZADO NA BASE) -->
+            <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
+                <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    <span>Manifestos de Embarque por Operador Logístico</span>
+                    <span>Status de Liberação das Transportadoras</span>
                 </div>
 
-                <div class="carrier-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
-                    <!-- Card 1: TOTAL EXPRESS -->
-                    <div class="carrier-coleta-card" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div class="carrier-card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <div class="carrier-name-badge" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #FFFFFF;">
-                                    <div class="carrier-icon-pill" style="width: 28px; height: 28px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
-                                    </div>
-                                    <span>Total Express</span>
-                                </div>
-                                <span class="hud-badge hud-badge-red" id="carrier-total-badge">91 Retidas</span>
-                            </div>
-                            <div class="carrier-progress-bar-bg" style="background: #0E1626; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 12px;">
-                                <div class="carrier-progress-bar-fill" id="carrier-total-bar" style="width: 0%; height: 100%; background: #10B981; border-radius: 6px;"></div>
-                            </div>
-                            <div class="carrier-meta-stats" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8;">
-                                <span>Liberadas: <strong id="carrier-total-liberadas" style="color: #10B981;">0</strong></span>
-                                <span>Pendentes: <strong style="color: #F87171;" id="carrier-total-retidas">91</strong></span>
-                                <span>Status: <strong>Aguardando Quitação</strong></span>
-                            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <!-- Total Express -->
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Total Express</span>
+                            <span class="hud-badge hud-badge-red" id="carrier-total-badge" style="font-size: 11px;">91 Retidas</span>
                         </div>
-                        <div class="carrier-card-buttons" style="display: flex; gap: 8px; margin-top: 14px;">
-                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn-carrier-combo" style="flex: 1; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                                <span>Romaneio Oficial</span>
+                        <div style="background: rgba(255, 255, 255, 0.06); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px;">
+                            <div id="carrier-total-bar" style="width: 0%; height: 100%; background: #10B981; border-radius: 6px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; margin-bottom: 12px;">
+                            <span>Liberadas: <strong id="carrier-total-liberadas" style="color: #10B981;">0</strong></span>
+                            <span>Pendentes: <strong id="carrier-total-retidas" style="color: #F87171;">91</strong></span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="flex: 1; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                                📄 Romaneio
                             </a>
-                            <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" class="btn-carrier-coletar" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Liberar Embarque</span>
+                            <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                                Liberar Embarque
                             </button>
                         </div>
                     </div>
 
-                    <!-- Card 2: CORREIOS -->
-                    <div class="carrier-coleta-card" style="background: #111B2E; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div class="carrier-card-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <div class="carrier-name-badge" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #FFFFFF;">
-                                    <div class="carrier-icon-pill" style="width: 28px; height: 28px; border-radius: 6px; background: rgba(245, 158, 11, 0.15); color: #FBBF24; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                    </div>
-                                    <span>Correios</span>
-                                </div>
-                                <span class="hud-badge" id="carrier-correios-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3);">Pronto para Coleta</span>
-                            </div>
-                            <div class="carrier-progress-bar-bg" style="background: #0E1626; border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 12px;">
-                                <div class="carrier-progress-bar-fill" style="width: 100%; height: 100%; background: #10B981; border-radius: 6px;"></div>
-                            </div>
-                            <div class="carrier-meta-stats" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8;">
-                                <span>Expedição: <strong>Nacional</strong></span>
-                                <span>Modalidade: <strong>Sedex / PAC</strong></span>
-                            </div>
+                    <!-- Correios -->
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Correios (Sedex / PAC)</span>
+                            <span id="carrier-correios-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; padding: 2px 8px; border-radius: 999px;">Pronto para Coleta</span>
                         </div>
-                        <div class="carrier-card-buttons" style="margin-top: 14px;">
-                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn-carrier-combo" style="width: 100%; background: #0E1626; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                                <span>Romaneio Correios</span>
+                        <div style="background: rgba(255, 255, 255, 0.06); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px;">
+                            <div style="width: 100%; height: 100%; background: #10B981; border-radius: 6px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; margin-bottom: 12px;">
+                            <span>Expedição: <strong style="color: #FFFFFF;">Nacional</strong></span>
+                            <span>Status: <strong style="color: #10B981;">Liberado</strong></span>
+                        </div>
+                        <div>
+                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="width: 100%; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                                📄 Romaneio Correios
                             </a>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ABA 2: COCKPIT E-COMMERCE 360° -->
-        <!-- ========================================== -->
         <div id="secao-view-ecommerce" class="main-view-section" style="display: none;">
             <!-- Botão Voltar ao Menu Principal -->
             <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
