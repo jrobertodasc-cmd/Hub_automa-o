@@ -2007,3 +2007,71 @@ h1, h2, h3, h4,
     border-color: #3B82F6 !important;
     color: #FFFFFF !important;
 }
+
+
+/* ==========================================================================
+   ÍCONES VIBRANTES & GLOWING EM CORES (SEM APAGADO)
+   ========================================================================== */
+.card-bg-icon-wrap {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+    margin-top: 10px !important;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.hub-menu-card:hover .card-bg-icon-wrap {
+    transform: scale(1.08) translateY(-2px) !important;
+}
+
+.card-bg-icon-wrap.icon-emerald svg, .card-bg-icon-wrap.emerald svg {
+    stroke: #10B981 !important;
+    filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.65)) !important;
+    opacity: 0.95 !important;
+}
+
+.card-bg-icon-wrap.icon-cyan svg, .card-bg-icon-wrap.blue svg {
+    stroke: #38BDF8 !important;
+    filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.65)) !important;
+    opacity: 0.95 !important;
+}
+
+.card-bg-icon-wrap.icon-purple svg, .card-bg-icon-wrap.purple svg {
+    stroke: #C084FC !important;
+    filter: drop-shadow(0 0 14px rgba(192, 132, 252, 0.65)) !important;
+    opacity: 0.95 !important;
+}
+
+.card-bg-icon-wrap.icon-amber svg, .card-bg-icon-wrap.amber svg {
+    stroke: #FBBF24 !important;
+    filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.65)) !important;
+    opacity: 0.95 !important;
+}
+
+/* Sparkline do Card 2 com brilho */
+.sparkline-col svg path {
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6)) !important;
+}
+
+/* Botão da Navbar (Sino) sem caixa branca */
+.hub-icon-btn, button.hub-icon-btn {
+    background: #111B2E !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 50% !important;
+    width: 38px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #CBD5E1 !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    padding: 0 !important;
+}
+
+.hub-icon-btn:hover, button.hub-icon-btn:hover {
+    background: #16243D !important;
+    border-color: #38BDF8 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.4) !important;
+}
