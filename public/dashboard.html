@@ -1442,80 +1442,11 @@
                 </div>
             </div>
         </div>
-        <!-- ============================================================== -->
-        <!-- SEGUNDA TELA: WORKSPACE COM SIDEBAR GLOWING & TOP KPIS (IMAGE 2) -->
-        <!-- ============================================================== -->
-        <div id="secao-view-screen2" class="screen2-two-column-layout" style="display: none;">
-            <!-- SIDEBAR VERTICAL (IMAGE 2) -->
-            <aside class="screen2-sidebar">
-                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    <span>← Menu de Módulos</span>
-                </button>
-
-                <div class="sidebar-menu-list">
-                    <button type="button" id="side-btn-dashboard" class="sidebar-nav-btn glow-cyan" onclick="navegarAbaPrincipal('dashboard')">
-                        <div class="sidebar-icon-wrap cyan">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        </div>
-                        <span>Dashboard & Métricas</span>
-                    </button>
-
-                    <button type="button" id="side-btn-ecommerce" class="sidebar-nav-btn glow-rose" onclick="navegarAbaPrincipal('ecommerce')">
-                        <div class="sidebar-icon-wrap rose">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        </div>
-                        <span>E-commerce 360°</span>
-                    </button>
-
-                    <button type="button" id="side-btn-relatorios" class="sidebar-nav-btn glow-emerald" onclick="navegarAbaPrincipal('relatorios')">
-                        <div class="sidebar-icon-wrap emerald">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        </div>
-                        <span>Relatórios</span>
-                    </button>
-
-                    <button type="button" id="side-btn-cargas" class="sidebar-nav-btn glow-blue" onclick="navegarAbaPrincipal('cargas')">
-                        <div class="sidebar-icon-wrap blue">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M21 5v14M7 5v14M11 5v14M15 5v14M18 5v14"></path></svg>
-                        </div>
-                        <span>Expedição Operacional</span>
-                    </button>
-
-                    <button type="button" id="side-btn-tesouraria" class="sidebar-nav-btn glow-purple" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
-                        <div class="sidebar-icon-wrap purple">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>
-                        </div>
-                        <span>Tesouraria</span>
-                    </button>
-
-                    <button type="button" id="side-btn-devolucoes" class="sidebar-nav-btn glow-amber" onclick="navegarAbaPrincipal('ecommerce')">
-                        <div class="sidebar-icon-wrap amber">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-                        </div>
-                        <span>Radar Devoluções</span>
-                    </button>
-                </div>
-            </aside>
-
-            <!-- WORKSPACE PRINCIPAL (IMAGE 2) -->
-            <section class="screen2-workspace">
-                <!-- TOP 3 KPI CARDS (IMAGE 2) -->
-                <div class="screen2-top-kpis">
-                    <div class="screen2-kpi-card">
-                        <span class="screen2-kpi-label">KPI</span>
-                        <span class="screen2-kpi-val font-mono" id="top-kpi-val1">R$ 51.480,00</span>
-                    </div>
-                    <div class="screen2-kpi-card">
-                        <span class="screen2-kpi-label">KPI</span>
-                        <span class="screen2-kpi-val font-mono" id="top-kpi-val2">R$ 3.846,22</span>
-                    </div>
-                    <div class="screen2-kpi-card">
-                        <span class="screen2-kpi-label">NF-e</span>
-                        <span class="screen2-kpi-val font-mono" id="top-kpi-val3">NF-e #4920</span>
-                    </div>
-                </div>
         <div id="secao-view-dashboard" class="main-view-section" style="display: none;">
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>← Voltar ao Menu Principal</span>
+            </button>
 
             <!-- FAIXA DE METADADOS DA REMESSA & ALÇADA CORPORATIVA -->
         <div class="dock-meta-strip">
@@ -1731,106 +1662,89 @@
         <!-- ABA 2: COCKPIT E-COMMERCE 360° -->
         <!-- ========================================== -->
         <div id="secao-view-ecommerce" class="main-view-section" style="display: none;">
+            <!-- Botão Voltar ao Menu Principal -->
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>← Voltar ao Menu Principal</span>
+            </button>
 
-            <!-- CONTAINER 2: MODO COCKPIT E-COMMERCE 360° -->
-            <div id="container-view-ecommerce" style="display: block; padding: 20px;">
-                <!-- Barra de Resumo e KPIs da Moda E-commerce -->
-                
-                <!-- LOOKBOOK SHOWCASE COM 4 FOTOS VERTICAIS (IMAGE 2) -->
-                <div class="ecommerce-360-header">
-                    <h2>E-commerce 360°</h2>
-                    <p>Lookbook catalog with high-res fashion apparel</p>
+            <!-- Cabeçalho Exclusivo do E-commerce 360° -->
+            <div class="ecom-hero-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                        <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0; letter-spacing: -0.02em;">E-commerce 360°</h1>
+                        <span class="badge-vnda-live">VNDA + LINX LIVE</span>
+                    </div>
+                    <p style="font-size: 13.5px; color: #94A3B8; margin: 0;">
+                        Gestão integrada de vendas www.boah.com.br · Fotos em alta resolução · Multi-peças por pedido e proteção DIFAL
+                    </p>
+                </div>
+                <button type="button" class="btn-sync-vnda" onclick="carregarCockpit360(true)" title="Sincronizar com Vnda e Linx">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                    <span>Sincronizar VNDA</span>
+                </button>
+            </div>
+
+            <!-- Grade de KPIs Exclusivos do E-commerce 360° -->
+            <div class="ecom-kpi-grid">
+                <div class="ecom-kpi-card">
+                    <span class="ecom-kpi-label">Faturamento E-commerce</span>
+                    <span class="ecom-kpi-value font-mono text-emerald" id="kpi-360-faturamento">R$ 57.527,75</span>
+                    <span class="ecom-kpi-sub">Total faturado no catálogo Boah</span>
+                </div>
+                <div class="ecom-kpi-card">
+                    <span class="ecom-kpi-label">Total DIFAL Itaú</span>
+                    <span class="ecom-kpi-value font-mono text-cyan" id="kpi-360-difal">R$ 4.020,42</span>
+                    <span class="ecom-kpi-sub">Imposto interestadual agendado</span>
+                </div>
+                <div class="ecom-kpi-card">
+                    <span class="ecom-kpi-label">Pedidos Faturados</span>
+                    <span class="ecom-kpi-value font-mono" id="kpi-360-vendas">91</span>
+                    <span class="ecom-kpi-sub">Notas fiscais sincronizadas</span>
+                </div>
+                <div class="ecom-kpi-card">
+                    <span class="ecom-kpi-label">Peças Vendidas</span>
+                    <span class="ecom-kpi-value font-mono text-purple" id="kpi-360-pecas">162</span>
+                    <span class="ecom-kpi-sub">Média de 1.8 peças por pedido</span>
+                </div>
+                <div class="ecom-kpi-card">
+                    <span class="ecom-kpi-label">Radar de Devoluções</span>
+                    <span class="ecom-kpi-value font-mono text-ok" id="kpi-360-devolucoes">0</span>
+                    <span class="ecom-kpi-sub">Zero bitributação identificada</span>
+                </div>
+            </div>
+
+            <!-- Barra de Filtros e Busca em Tempo Real -->
+            <div class="ecom-toolbar">
+                <div class="view-mode-pill-group">
+                    <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')">
+                        <span>📦 Por Pedidos / NF-e</span>
+                    </button>
+                    <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')">
+                        <span>👥 Agrupado por Cliente</span>
+                    </button>
                 </div>
 
-                <div class="screen2-lookbook-catalog">
-                    <div class="lookbook-catalog-card">
-                        <div class="lookbook-img-frame">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
-                            <span class="badge-ratio">3 : 4</span>
-                        </div>
-                        <div class="lookbook-info">
-                            <div class="lookbook-name">Macacão Pantacourt Antonia</div>
-                            <div class="lookbook-tags">
-                                <span class="tag-pill gray">Clean</span>
-                                <span class="tag-pill green">Status</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lookbook-catalog-card">
-                        <div class="lookbook-img-frame">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
-                            <span class="badge-ratio">3 : 4</span>
-                        </div>
-                        <div class="lookbook-info">
-                            <div class="lookbook-name">Calça Longa Chay</div>
-                            <div class="lookbook-tags">
-                                <span class="tag-pill gray">Clean</span>
-                                <span class="tag-pill green">Status</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lookbook-catalog-card">
-                        <div class="lookbook-img-frame">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
-                            <span class="badge-ratio">3 : 4</span>
-                        </div>
-                        <div class="lookbook-info">
-                            <div class="lookbook-name">Bag Bahia Palha</div>
-                            <div class="lookbook-tags">
-                                <span class="tag-pill gray">Clean</span>
-                                <span class="tag-pill green">Status</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lookbook-catalog-card">
-                        <div class="lookbook-img-frame">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Marta Linho Offwhite">
-                            <span class="badge-ratio">3 : 4</span>
-                        </div>
-                        <div class="lookbook-info">
-                            <div class="lookbook-name">Blusa Marta Linho Offwhite</div>
-                            <div class="lookbook-tags">
-                                <span class="tag-pill gray">Clean</span>
-                                <span class="tag-pill green">Status</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ecom-search-box">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="input-busca-360" placeholder="Buscar por cliente, cidade, UF, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)">
                 </div>
-                <!-- BARRA DE FILTROS & PESQUISA E-COMMERCE (TEMA ESCURO SLATE) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 20px;">
-                    <div class="view-mode-pill-group" style="background: #0E1626; border: 1px solid rgba(255,255,255,0.08); padding: 4px; border-radius: 10px; display: inline-flex; gap: 4px;">
-                        <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')" style="background: #2563EB; color: #FFFFFF; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;">
-                            <span>📦 Por Pedidos / NF-e</span>
-                        </button>
-                        <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')" style="background: transparent; color: #94A3B8; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer;">
-                            <span>👥 Agrupado por Cliente</span>
-                        </button>
-                    </div>
+            </div>
 
-                    <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 420px;">
-                        <div style="position: relative; width: 100%;">
-                            <input type="text" id="input-busca-360" placeholder="Buscar cliente, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 9px 14px 9px 36px; color: #FFFFFF; font-size: 13px; outline: none;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 12px; top: 12px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </div>
-                        <button type="button" class="btn sm" onclick="carregarCockpit360(true)" title="Sincronizar VNDA" style="background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #F1F5F9; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                            <span>🔄 Sincronizar</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Grid de Cards de Vendas 360° -->
-                <div id="cockpit-360-cards-grid" class="cockpit-360-grid">
-                    <!-- Cards renderizados dinamicamente via JS -->
-                </div>
+            <!-- Grade de Pedidos e Peças Reais do E-commerce (100% Largura, Sem Sidebar) -->
+            <div id="cockpit-360-cards-grid" class="cockpit-360-grid">
+                <!-- Cards renderizados dinamicamente via JS com fotos reais e modal de pagamento -->
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- ABA 3: RELATÓRIOS & AUDITORIA -->
+        <!-- ABA 3: RELATÓRIOS -->
         <!-- ========================================== -->
         <div id="secao-view-relatorios" class="main-view-section" style="display: none;">
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>← Voltar ao Menu Principal</span>
+            </button>
 
             <div class="reports-section-header">
                 <div>
@@ -1992,6 +1906,10 @@
         <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
         <!-- ========================================== -->
         <div id="secao-view-cargas" class="main-view-section" style="display: none;">
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>← Voltar ao Menu Principal</span>
+            </button>
 
             <!-- ZONA 3: TERMINAL DE CONFERÊNCIA FISCAL & LEITURA ÓPTICA -->
         <div class="laser-station-card" id="laser-station-box">
@@ -2241,8 +2159,7 @@
         </div>
 
     
-            </section>
-        </div>
+            
         </main>
 
     <!-- MODAL DOSSIÊ DE PAGAMENTO & DIFAL 360° -->

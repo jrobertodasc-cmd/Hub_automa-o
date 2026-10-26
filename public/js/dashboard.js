@@ -4246,56 +4246,39 @@ function atualizarTopKpisScreen2() {
 }
 
 function navegarAbaPrincipal(aba) {
-    const hubSecao = document.getElementById('secao-view-hub');
-    const screen2Secao = document.getElementById('secao-view-screen2');
-    const abas = ['dashboard', 'ecommerce', 'relatorios', 'cargas'];
+    const abas = ['hub', 'ecommerce', 'dashboard', 'relatorios', 'cargas'];
 
-    if (aba === 'hub') {
-        if (hubSecao) hubSecao.style.display = 'block';
-        if (screen2Secao) screen2Secao.style.display = 'none';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-    }
-
-    // Se for devoluções, direciona para o ecommerce com filtro de devoluções
-    if (aba === 'devolucoes') {
-        navegarAbaPrincipal('ecommerce');
+    // Se for atalho de tesouraria a partir do hub
+    if (aba === 'tesouraria') {
+        navegarAbaPrincipal('dashboard');
         setTimeout(() => {
-            const btnDev = document.getElementById('btn-filtro-devolucoes');
-            if (btnDev) btnDev.click();
+            const el = document.getElementById('secao-fintech-itau');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
         }, 150);
         return;
     }
 
-    // Ativa Segunda Tela (Screen 2)
-    if (hubSecao) hubSecao.style.display = 'none';
-    if (screen2Secao) screen2Secao.style.display = 'flex';
+    // Se for atalho de devoluções a partir do hub
+    if (aba === 'devolucoes') {
+        navegarAbaPrincipal('ecommerce');
+        return;
+    }
 
-    // Ativa sub-view e botão da sidebar
+    // Exibe apenas a seção selecionada, ocultando 100% de qualquer outra
     abas.forEach(a => {
         const secao = document.getElementById(`secao-view-${a}`);
-        const sideBtn = document.getElementById(`side-btn-${a}`);
         if (secao) {
             secao.style.display = (a === aba) ? 'block' : 'none';
         }
-        if (sideBtn) {
-            if (a === aba) sideBtn.classList.add('active');
-            else sideBtn.classList.remove('active');
-        }
     });
 
+    // Se for o e-commerce 360°, carrega e sincroniza os dados
     if (aba === 'ecommerce') {
-        const containerEcom = document.getElementById('container-view-ecommerce');
-        if (containerEcom) containerEcom.style.display = 'block';
         if (typeof carregarCockpit360 === 'function') {
             carregarCockpit360(false);
         }
-    } else if (aba === 'cargas') {
-        const viewFiscal = document.getElementById('container-view-fiscal');
-        if (viewFiscal) viewFiscal.style.display = 'block';
     }
 
-    atualizarTopKpisScreen2();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.navegarAbaPrincipal = navegarAbaPrincipal;
