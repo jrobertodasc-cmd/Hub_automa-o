@@ -1950,7 +1950,7 @@
             <div class="dock-tabs-header">
                 <!-- Abas Rápidas de Situação -->
                 <!-- Seletor de Modo de Visualização (Fiscal vs E-commerce 360° vs Devoluções) -->
-                <div class="view-mode-pill-group" style="margin-right: 14px;">
+                <div class="view-mode-pill-group" style="display: none;">
                     <button type="button" id="btn-toggle-fiscal" class="btn-view-toggle active" onclick="alternarModoVisualizacao('fiscal')">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                         <span>Tabela Fiscal</span>
@@ -1980,11 +1980,11 @@
                         <span>🟢 Liberadas</span>
                         <span class="tab-counter-badge" id="tab-cnt-liberadas">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Isento', this)">
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Isento', this)" style="display: none;">
                         <span>Isento (SP)</span>
                         <span class="tab-counter-badge" id="tab-cnt-isentas">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Despachado', this)">
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Despachado', this)" style="display: none;">
                         <span>🚚 Concluídas</span>
                         <span class="tab-counter-badge">Histórico</span>
                     </button>
@@ -1992,7 +1992,7 @@
 
                 <!-- Controles Compactos à Direita -->
                 <div class="dock-filter-controls-group">
-                    <select id="select-filter-data" onchange="filtrarPorDataEmissao(this.value, null)" class="dock-select-input" title="Filtrar por data de faturamento">
+                    <select id="select-filter-data" style="display: none;" onchange="filtrarPorDataEmissao(this.value, null)" class="dock-select-input" title="Filtrar por data de faturamento">
                         <option value="TODAS" selected>📅 Todas as Datas de Emissão</option>
                         <option value="HOJE">📅 Emissões Recentes</option>
                     </select>
@@ -2011,7 +2011,7 @@
             </div>
 
             <!-- Barra Flutuante de Ação em Lote (Aparece ao selecionar checkboxes) -->
-            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none;">
+            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none; background: #111B2E !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; color: #FFFFFF !important;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-weight: 700;" id="bulk-selected-count">0</span>
                     <span>cargas selecionadas na doca</span>
