@@ -452,7 +452,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             id: g.id,
             nf_number: g.nf_number,
             chave_nfe: g.chave_nfe,
-            customer_name: clienteNome || 'Cliente E-commerce',
+            customer_name: clienteNome || 'Consumidor Final',
             uf: g.uf,
             cidade: cidadeDestino,
             order_number: numeroPedido,

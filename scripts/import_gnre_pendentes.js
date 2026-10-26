@@ -68,7 +68,7 @@ async function main() {
                             const nfNum = nnfM[1];
                             xmlMap[nfNum] = {
                                 uf: ufM ? ufM[1] : 'BA',
-                                nome: nomeM ? nomeM[1] : 'Cliente Boah',
+                                nome: nomeM ? nomeM[1] : 'Consumidor Final',
                                 municipio: munM ? munM[1] : '',
                                 chave: chaveM ? chaveM[1] : '',
                                 transportadora: transpM ? transpM[1] : 'Total Express'
