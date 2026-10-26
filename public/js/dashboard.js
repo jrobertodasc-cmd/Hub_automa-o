@@ -4229,7 +4229,14 @@ window.carregarRadarDevolucoes = carregarRadarDevolucoes;
 // (Dashboard, E-commerce 360°, Relatórios, Doca & Cargas)
 // ==========================================
 function navegarAbaPrincipal(aba) {
-    const abas = ['dashboard', 'ecommerce', 'relatorios', 'cargas'];
+    const abas = ['hub', 'dashboard', 'ecommerce', 'relatorios', 'cargas'];
+    const tabsBar = document.querySelector('.hub-main-tabs-bar');
+    
+    // Se for o hub (Primeira Tela de Cards-Menu), esconde a barra de abas secundária
+    if (tabsBar) {
+        tabsBar.style.display = (aba === 'hub') ? 'none' : 'flex';
+    }
+
     abas.forEach(a => {
         const secao = document.getElementById(`secao-view-${a}`);
         const tabBtn = document.getElementById(`tab-btn-${a}`);
@@ -4256,6 +4263,15 @@ function navegarAbaPrincipal(aba) {
     } else if (aba === 'cargas') {
         const viewFiscal = document.getElementById('container-view-fiscal');
         if (viewFiscal) viewFiscal.style.display = 'block';
+    } else if (aba === 'devolucoes') {
+        navegarAbaPrincipal('relatorios');
+        const devView = document.getElementById('container-view-devolucoes');
+        if (devView) {
+            devView.style.display = 'block';
+            devView.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (typeof carregarRadarDevolucoes === 'function') carregarRadarDevolucoes();
+        return;
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4283,3 +4299,9 @@ function exportarRelatorioConciliacaoCsv() {
     URL.revokeObjectURL(url);
 }
 window.exportarRelatorioConciliacaoCsv = exportarRelatorioConciliacaoCsv;
+
+
+// Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
+document.addEventListener('DOMContentLoaded', () => {
+    navegarAbaPrincipal('hub');
+});
