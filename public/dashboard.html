@@ -1544,7 +1544,7 @@
         </section>
 
         <!-- ZONA 5: COCKPIT DE AUDITORIA FISCAL & FILTROS INTEGRADOS -->
-        <div class="dock-table-container">
+        <div id="dock-table-container" class="dock-table-container">
             
             <!-- Barra de Abas e Filtros Integrada -->
             <div class="dock-tabs-header">
@@ -1748,6 +1748,91 @@
                             </a>
                         </div>
                     </div>
+                </div>
+            </div>
+            </div>
+            <!-- FIM CONTAINER 1: MODO TABELA FISCAL -->
+
+            <!-- CONTAINER 2: MODO COCKPIT E-COMMERCE 360° -->
+            <div id="container-view-ecommerce" style="display: none; padding: 20px;">
+                <!-- Barra de Resumo e KPIs da Moda E-commerce -->
+                <div class="cockpit-360-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px 20px;">
+                    <div>
+                        <div style="font-size: 17px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
+                            <span>👗 Cockpit E-commerce & Vendas 360°</span>
+                            <span class="badge-vnda-live">VNDA + LINX LIVE</span>
+                        </div>
+                        <p style="font-size: 13px; color: #64748B; margin: 4px 0 0;">
+                            Visualização unificada de NF-e com fotos reais do catálogo www.boah.com.br, destinatários e proteção de DIFAL.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Vendas no Lote</div>
+                            <div id="kpi-360-vendas" style="font-size: 20px; font-weight: 800; color: #0F172A; font-family: 'JetBrains Mono', monospace;">0</div>
+                        </div>
+                        <div style="width: 1px; height: 32px; background: #CBD5E1;"></div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Faturamento</div>
+                            <div id="kpi-360-faturamento" style="font-size: 20px; font-weight: 800; color: #059669; font-family: 'JetBrains Mono', monospace;">R$ 0,00</div>
+                        </div>
+                        <div style="width: 1px; height: 32px; background: #CBD5E1;"></div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Total DIFAL</div>
+                            <div id="kpi-360-difal" style="font-size: 20px; font-weight: 800; color: #2563EB; font-family: 'JetBrains Mono', monospace;">R$ 0,00</div>
+                        </div>
+                        <div style="width: 1px; height: 32px; background: #CBD5E1;"></div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 700;">Devoluções</div>
+                            <div id="kpi-360-devolucoes" style="font-size: 20px; font-weight: 800; color: #DC2626; font-family: 'JetBrains Mono', monospace;">0</div>
+                        </div>
+                        <button type="button" class="btn sm" onclick="carregarCockpit360(true)" title="Recarregar e sincronizar catálogo Vnda" style="margin-left: 10px;">
+                            🔄 Sincronizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid de Cards de Vendas 360° -->
+                <div id="cockpit-360-cards-grid" class="cockpit-360-grid">
+                    <!-- Cards renderizados dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- CONTAINER 3: MODO RADAR DE DEVOLUÇÕES & CRÉDITO DIFAL -->
+            <div id="container-view-devolucoes" style="display: none; padding: 20px;">
+                <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 800; color: #92400E; display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            <span>Radar Fiscal de Devoluções & Proteção de Caixa</span>
+                        </div>
+                        <p style="font-size: 13px; color: #B45309; margin: 4px 0 0;">
+                            Identifica devoluções parciais ou totais antes da transmissão ao Itaú, evitando pagamento indevido de DIFAL e gerando créditos tributários.
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: #92400E; text-transform: uppercase; font-weight: 700;">Economia Fiscal Potencial</div>
+                        <div id="radar-economia-total" style="font-size: 22px; font-weight: 800; color: #15803D; font-family: 'JetBrains Mono', monospace;">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
+                    <table class="cockpit-table">
+                        <thead>
+                            <tr>
+                                <th>NF Devolução</th>
+                                <th>NF Origem (Venda)</th>
+                                <th>Cliente</th>
+                                <th>UF Destino</th>
+                                <th style="text-align: right;">Valor Devolução</th>
+                                <th style="text-align: center;">Status DIFAL</th>
+                                <th style="text-align: right;">Ação Fiscal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="radar-devolucoes-tbody">
+                            <!-- Inserido dinamicamente via JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

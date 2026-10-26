@@ -1,5 +1,5 @@
 // services/ecommerce_service.js
-// Orquestrador do Cockpit E-commerce & Vendas 360° (Vnda + Linx + DIFAL + Devoluções)
+// Orquestrador de Alta Performance do Cockpit E-commerce & Vendas 360° (Vnda + Linx + DIFAL + Devoluções)
 
 const https = require('https');
 const crypto = require('crypto');
@@ -38,6 +38,26 @@ function decrypt(text, secretKey) {
             return tryDecryptWithKey(getEncryptionKey('expedi_default_secret_key_32_bytes_long!!'));
         }
     }
+}
+
+// Executador concorrente com limite para altíssima performance
+async function mapConcurrent(items, limit, fn) {
+    if (!items || items.length === 0) return [];
+    const results = new Array(items.length);
+    let index = 0;
+    const workerCount = Math.min(limit, items.length);
+    const workers = new Array(workerCount).fill(0).map(async () => {
+        while (index < items.length) {
+            const currentIdx = index++;
+            try {
+                results[currentIdx] = await fn(items[currentIdx], currentIdx);
+            } catch (err) {
+                results[currentIdx] = null;
+            }
+        }
+    });
+    await Promise.all(workers);
+    return results;
 }
 
 // Cache local em memória de produtos e fotos por SKU
@@ -85,7 +105,7 @@ async function buscarInfoProdutoVnda(token, shopHost, skuOuRef) {
                 });
             });
             req.on('error', () => resolve(null));
-            req.setTimeout(3500, () => { req.destroy(); resolve(null); });
+            req.setTimeout(2500, () => { req.destroy(); resolve(null); });
             req.end();
         });
 
@@ -156,7 +176,7 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
 }
 
 /**
- * Monta o Cockpit 360° para as guias do lote ativo
+ * Monta o Cockpit 360° para as guias do lote ativo de forma ultra-rápida (concorrente)
  */
 async function gerarCockpit360(supabase, tenant, batchId) {
     // 1. Busca as guias do lote
@@ -182,33 +202,58 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         }
     }
 
-    // 3. Busca itens de faturamento (invoice_items)
+    // 3. Busca itens de faturamento (invoice_items) e notas de devolução em paralelo
     const nfList = guides.map(g => g.nf_number).filter(Boolean);
-    const { data: items } = await supabase
-        .from('invoice_items')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .in('nf_number', nfList);
+    const [itemsRes, returnNotesRes] = await Promise.all([
+        supabase.from('invoice_items').select('*').eq('tenant_id', tenant.id).in('nf_number', nfList),
+        supabase.from('return_notes').select('*').eq('tenant_id', tenant.id).in('nf_original_number', nfList)
+    ]);
 
     const itemsPorNf = new Map();
-    (items || []).forEach(it => {
+    (itemsRes.data || []).forEach(it => {
         if (!itemsPorNf.has(it.nf_number)) itemsPorNf.set(it.nf_number, []);
         itemsPorNf.get(it.nf_number).push(it);
     });
 
-    // 4. Busca notas de devolução vinculadas
-    const { data: returnNotes } = await supabase
-        .from('return_notes')
-        .select('*')
-        .eq('tenant_id', tenant.id)
-        .in('nf_original_number', nfList);
-
     const devolucoesPorNf = new Map();
-    (returnNotes || []).forEach(rn => {
+    (returnNotesRes.data || []).forEach(rn => {
         devolucoesPorNf.set(rn.nf_original_number, rn);
     });
 
-    // 5. Enriquecimento 360° linha a linha
+    // 4. Download concorrente dos XMLs faltantes (Pool de 12 downloads simultâneos)
+    const guiasPrecisandoXml = guides.filter(g => (!itemsPorNf.has(g.nf_number) || itemsPorNf.get(g.nf_number).length === 0) && g.xml_storage_path);
+    const xmlResultsMap = new Map();
+
+    await mapConcurrent(guiasPrecisandoXml, 12, async (g) => {
+        const xmlData = await extrairDadosXmlStorage(supabase, g.xml_storage_path);
+        if (xmlData) {
+            xmlResultsMap.set(g.nf_number, xmlData);
+        }
+    });
+
+    // 5. Coleta preliminar de SKUs únicos para pré-carregamento concorrente da Vnda
+    const skusUnicos = new Set();
+    guides.forEach(g => {
+        const items = itemsPorNf.get(g.nf_number);
+        if (items && items.length > 0 && items[0].product_code) {
+            skusUnicos.add(items[0].product_code.trim().toUpperCase());
+        } else {
+            const xml = xmlResultsMap.get(g.nf_number);
+            if (xml && xml.cProd) {
+                skusUnicos.add(xml.cProd.trim().toUpperCase());
+            }
+        }
+    });
+
+    // Pré-carrega fotos do catálogo Vnda concorrentemente (Pool de 8 consultas paralelas)
+    if (vndaToken && skusUnicos.size > 0) {
+        const listaSkus = Array.from(skusUnicos);
+        await mapConcurrent(listaSkus, 8, async (sku) => {
+            await buscarInfoProdutoVnda(vndaToken, shopHost, sku);
+        });
+    }
+
+    // 6. Montagem instantânea do retorno consolidado 360°
     const guias360 = [];
     let totalDifal = 0;
     let totalVenda = 0;
@@ -226,9 +271,8 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         let valorVendaNf = 0;
         let pecaPrincipal = null;
 
-        // Se não tem invoice_items gravado, tenta extrair direto do XML da nota
-        if (nfItems.length === 0 && g.xml_storage_path) {
-            const xmlData = await extrairDadosXmlStorage(supabase, g.xml_storage_path);
+        if (nfItems.length === 0) {
+            const xmlData = xmlResultsMap.get(g.nf_number);
             if (xmlData) {
                 if (!clienteNome || clienteNome.includes('Cliente Boah')) clienteNome = xmlData.customer_name;
                 if (!cidadeDestino || cidadeDestino === g.uf) cidadeDestino = xmlData.cidade;
@@ -243,7 +287,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
                     };
                 }
             }
-        } else if (nfItems.length > 0) {
+        } else {
             valorVendaNf = nfItems.reduce((acc, it) => acc + parseFloat(it.total_price || 0), 0);
             const it = nfItems[0];
             pecaPrincipal = {
@@ -257,15 +301,16 @@ async function gerarCockpit360(supabase, tenant, batchId) {
 
         totalVenda += valorVendaNf;
 
-        // Busca foto oficial no catálogo da Vnda
-        if (pecaPrincipal && pecaPrincipal.sku && vndaToken) {
-            const infoVnda = await buscarInfoProdutoVnda(vndaToken, shopHost, pecaPrincipal.sku);
+        // Foto da Vnda recuperada instantaneamente do cache em memória
+        if (pecaPrincipal && pecaPrincipal.sku) {
+            const cleanKey = String(pecaPrincipal.sku).trim().toUpperCase();
+            const infoVnda = vndaProductCache.get(cleanKey);
             if (infoVnda && infoVnda.picture_url) {
                 pecaPrincipal.foto_url = infoVnda.picture_url;
             }
         }
 
-        // Placeholder elegante se não tiver imagem
+        // Placeholder elegante caso não haja foto no catálogo
         if (pecaPrincipal && !pecaPrincipal.foto_url) {
             pecaPrincipal.foto_url = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&auto=format&fit=crop&q=60';
         }

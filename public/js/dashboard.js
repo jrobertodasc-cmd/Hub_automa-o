@@ -3554,15 +3554,21 @@ function alternarModoVisualizacao(modo) {
         if (viewEcom) viewEcom.style.display = 'block';
         if (statusTabs) statusTabs.style.display = 'none';
         carregarCockpit360();
+        const targetEl = document.getElementById('dock-table-container') || viewEcom;
+        if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else if (modo === 'devolucoes') {
         if (btnDev) btnDev.classList.add('active');
         if (viewDev) viewDev.style.display = 'block';
         if (statusTabs) statusTabs.style.display = 'none';
         carregarRadarDevolucoes();
+        const targetEl = document.getElementById('dock-table-container') || viewDev;
+        if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         if (btnFiscal) btnFiscal.classList.add('active');
         if (viewFiscal) viewFiscal.style.display = 'block';
         if (statusTabs) statusTabs.style.display = 'flex';
+        const targetEl = document.getElementById('dock-table-container') || viewFiscal;
+        if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 window.alternarModoVisualizacao = alternarModoVisualizacao;
@@ -3585,6 +3591,9 @@ async function carregarCockpit360(force = false) {
     `;
 
     try {
+        if (typeof showToast === 'function') {
+            showToast('Sincronizando Catálogo Vnda e Vendas 360°...', 'info');
+        }
         const batchId = window.activeBatchId || 'ativo';
         const res = await fetch(`/api/ecommerce/cockpit-360/${batchId}`);
         const data = await res.json();
