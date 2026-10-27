@@ -17,6 +17,7 @@ const duaEsService = require('./services/dua_es_service');
 const microvixService = require('./services/microvix_service');
 const erpService = require('./services/erp_service');
 const danfeService = require('./services/danfe_service');
+const totalExpressService = require('./services/total_express_service');
 const printService = require('./services/print_service');
 const vndaService = require('./services/vnda_service');
 const syncService = require('./services/sync_service');
@@ -3859,6 +3860,152 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="espelho_GNRE_NF_${guide.nf_number}.pdf"`);
+        return res.send(buffer);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Despachar Carga na Total Express (API Smart Label) e Gerar Etiqueta Térmica 10x15cm
+ */
+app.post('/api/total-express/despachar/:guideId', requireAuth, requireActiveSubscription, async (req, res) => {
+    const { guideId } = req.params;
+    const tenant = req.tenant;
+
+    try {
+        const { data: guide, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', guideId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (gErr || !guide) {
+            return res.status(404).json({ error: "Guia não encontrada no sistema." });
+        }
+
+        // Carrega o XML da NF-e
+        let xmlContent = null;
+        if (guide.xml_storage_path) {
+            try {
+                const { data: xData } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(guide.xml_storage_path);
+                if (xData) xmlContent = await xData.text();
+            } catch (e) {}
+        }
+
+        if (!xmlContent) {
+            return res.status(400).json({ error: `XML da NF-e ${guide.nf_number} não encontrado para registrar na Total Express.` });
+        }
+
+        const dadosNfe = parserService.extrairDadosNfeXML(xmlContent);
+
+        // Configuração da conta da Total Express
+        const totalConfig = {
+            environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
+            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'linx_total',
+            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || 'total@123',
+            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 1,
+            cnpj: tenant.cnpj || '10436619000105',
+            servicoTipo: tenant.total_express_servico || 1 // 1 = Standard
+        };
+
+        // Registra encomenda na API Smart Label
+        const retornoSmartLabel = await totalExpressService.registrarEncomendaSmartLabel(dadosNfe, totalConfig);
+
+        // Gera a Etiqueta Térmica 10x15cm em PDF (100mm x 150mm)
+        const etiquetaPdf = await totalExpressService.gerarEtiquetaTermicaPdfBuffer({
+            awb: retornoSmartLabel.awb,
+            rota: retornoSmartLabel.rota,
+            servico: totalConfig.servicoTipo === 7 ? 'EXP - EXPRESSO' : 'STD - STANDARD',
+            dadosNfe,
+            empresa: tenant
+        });
+
+        // Salva etiqueta no Storage
+        const remoteLabelPath = `${tenant.id}/etiquetas/etiqueta_NF_${guide.nf_number}.pdf`;
+        await supabase.storage
+            .from('tenant-storage')
+            .upload(remoteLabelPath, etiquetaPdf, {
+                contentType: 'application/pdf',
+                upsert: true
+            });
+
+        // Atualiza a guia com a AWB
+        await supabase
+            .from('guides')
+            .update({
+                carrier_name: 'Total Express',
+                carrier_cnpj: '73939449000156',
+                return_nf_reference: retornoSmartLabel.awb
+            })
+            .eq('id', guide.id)
+            .eq('tenant_id', tenant.id);
+
+        return res.status(200).json({
+            success: true,
+            awb: retornoSmartLabel.awb,
+            rota: retornoSmartLabel.rota,
+            codigoBarras: retornoSmartLabel.codigoBarras,
+            etiquetaUrl: `/api/total-express/etiqueta/${guide.id}`,
+            message: `Encomenda despachada com sucesso na Total Express! AWB: ${retornoSmartLabel.awb} | Rota: ${retornoSmartLabel.rota}`
+        });
+
+    } catch (err) {
+        console.error("Erro ao registrar Smart Label Total Express:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Visualizar / Imprimir Etiqueta Térmica 10x15cm da Total Express
+ */
+app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) => {
+    try {
+        const { data: guide, error } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', req.params.guideId)
+            .eq('tenant_id', req.tenant.id)
+            .single();
+
+        if (error || !guide) {
+            return res.status(404).json({ error: "Guia não encontrada." });
+        }
+
+        const remoteLabelPath = `${req.tenant.id}/etiquetas/etiqueta_NF_${guide.nf_number}.pdf`;
+        let buffer = null;
+
+        try {
+            const { data } = await supabase.storage
+                .from('tenant-storage')
+                .download(remoteLabelPath);
+            if (data) buffer = Buffer.from(await data.arrayBuffer());
+        } catch(e) {}
+
+        if (!buffer) {
+            let xmlContent = null;
+            if (guide.xml_storage_path) {
+                const { data: xData } = await supabase.storage.from('tenant-storage').download(guide.xml_storage_path);
+                if (xData) xmlContent = await xData.text();
+            }
+            if (!xmlContent) {
+                return res.status(400).send("Etiqueta da Total Express ainda não foi gerada para esta nota.");
+            }
+            const dadosNfe = parserService.extrairDadosNfeXML(xmlContent);
+            buffer = await totalExpressService.gerarEtiquetaTermicaPdfBuffer({
+                awb: guide.return_nf_reference || `TX${guide.nf_number}BR`,
+                rota: '(A)99-SAO-L-TZO-[999]',
+                servico: 'STD - STANDARD',
+                dadosNfe,
+                empresa: req.tenant
+            });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="etiqueta_TotalExpress_NF_${guide.nf_number}.pdf"`);
         return res.send(buffer);
     } catch (err) {
         return res.status(500).json({ error: err.message });

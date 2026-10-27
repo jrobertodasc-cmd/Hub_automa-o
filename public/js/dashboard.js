@@ -3011,6 +3011,7 @@ function renderizarPaginaDoca(pagina = 1) {
                         </td>
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
+                            <a href="/api/total-express/etiqueta/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #0284C7; font-weight: 600;" title="Imprimir Etiqueta Térmica 10x15cm Total Express">Etiqueta</a>
                             ${isSp && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : ''}
                             ${btnCopiar}
                             ${(() => {

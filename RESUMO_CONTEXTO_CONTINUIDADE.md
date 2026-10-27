@@ -1,16 +1,30 @@
 # EXPEDI HUB — RESUMO EXECUTIVO & BRIEFING DE CONTINUIDADE
 
-> **Data da Última Atualização:** 27 de Outubro de 2026 — 14:15 (Horário de Brasília)  
+> **Data da Última Atualização:** 27 de Outubro de 2026 — 15:05 (Horário de Brasília)  
 > **Repositório:** [https://github.com/jrobertodasc-cmd/Hub_automa-o](https://github.com/jrobertodasc-cmd/Hub_automa-o)  
 > **Branch Ativo:** `main` (Deploy contínuo no Render: [expedihub.onrender.com](https://expedihub.onrender.com))  
 > **Empresa Piloto:** Lalua Comércio de Modas Eireli (Boah) — CNPJ: `10.436.619/0001-05`  
-> **Objetivo deste documento:** Ponto de ancoragem completo com a conclusão da conciliação bancária, blindagem anti-duplicidade, eliminação definitiva de prévias internas sem valor fiscal, adição da coluna de emissão individual direta na SEFAZ com modal de data de pagamento e transmissão em lote filtrando estritamente notas não pagas.
+> **Objetivo deste documento:** Ponto de ancoragem completo com a conclusão da conciliação bancária, blindagem anti-duplicidade, eliminação definitiva de prévias internas sem valor fiscal, adição da coluna de emissão individual direta na SEFAZ com modal de data de pagamento, transmissão em lote filtrando estritamente notas não pagas e conector oficial da Total Express Smart Label com geração de etiquetas térmicas 10x15cm.
 
 ---
 
 ## 1. Conquistas Recentes & Validações Críticas
 
-### 1.1. Eliminação Definitiva da "Prévia Interna / Não Pagar"
+### 1.1. Conector Oficial Total Express Smart Label & Etiquetas Térmicas 10x15cm
+* **Serviço Implementado:** [`services/total_express_service.js`](file:///c:/Users/Roberto/Desktop/Web_Services/services/total_express_service.js).
+* **Integração com API Smart Label:**
+  * Endpoint oficial `https://apis.totalexpress.com.br/ics-edi-lv/v1/coleta/smartlabel/registrar` via Basic Auth Base64.
+  * Montagem automática do payload com dados do remetente (Lalua `10.436.619/0001-05`), NF-e (número, série, chave de 44 dígitos, valor e CFOP) e destinatário completo.
+  * Captura imediata do código de rastreio **AWB** e da **Rota Operacional** (ex: `(A)99-SAO-L-TZO-[999]`).
+* **Gerador de Etiqueta Térmica 100mm x 150mm (PDFKit + bwip-js):**
+  * Dimensões exatas de 10x15cm em pontos PDF (`[283.46, 425.20]`).
+  * Inclui: Cabeçalho Total Express, Rota Operacional em destaque, Código de Barras Code 128 da AWB, Data Matrix 2D (25x25mm), dados completos do Destinatário, Código de Barras Code 128 do CEP e dados fiscais da NF-e e remetente.
+* **Rotas Integradas no Backend:**
+  * `POST /api/total-express/despachar/:guideId`: registra a encomenda e gera a etiqueta.
+  * `GET /api/total-express/etiqueta/:guideId`: visualiza e imprime a etiqueta térmica em formato pronto para impressora Zebra/térmica.
+  * Botão **"Etiqueta"** adicionado diretamente na coluna de Ações da Doca ao lado de DANFE.
+
+### 1.2. Eliminação Definitiva da "Prévia Interna / Não Pagar"
 * **Status:** **BANIDO TOTALMENTE DO SISTEMA.**
 * No gerador de PDFs (`services/print_service.js`), foi removida a lógica de emitir espelhos simulados com faixa vermelha *"PRÉVIA INTERNA / DOCUMENTO SEM VALOR FISCAL / NÃO PAGAR"*.
 * Se uma guia ainda não possui código de barras oficial retornado pela SEFAZ, o sistema recusa a geração de prévias fake e orienta o operador a realizar a emissão oficial via **"⚡ Emitir SEFAZ"**.
