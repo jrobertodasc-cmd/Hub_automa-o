@@ -1,16 +1,42 @@
 # EXPEDI HUB — RESUMO EXECUTIVO & BRIEFING DE CONTINUIDADE
 
-> **Data da Última Atualização:** 27 de Outubro de 2026 — 12:35 (Horário de Brasília)  
+> **Data da Última Atualização:** 27 de Outubro de 2026 — 14:15 (Horário de Brasília)  
 > **Repositório:** [https://github.com/jrobertodasc-cmd/Hub_automa-o](https://github.com/jrobertodasc-cmd/Hub_automa-o)  
 > **Branch Ativo:** `main` (Deploy contínuo no Render: [expedihub.onrender.com](https://expedihub.onrender.com))  
 > **Empresa Piloto:** Lalua Comércio de Modas Eireli (Boah) — CNPJ: `10.436.619/0001-05`  
-> **Objetivo deste documento:** Ponto de ancoragem completo com a conclusão da conciliação bancária, implementação da blindagem anti-duplicidade, estruturação das 3 abas operacionais na Doca e reestruturação do Cockpit E-commerce 360° com foco nas emissões atuais e sincronização visual fidedigna das DIFALs.
+> **Objetivo deste documento:** Ponto de ancoragem completo com a conclusão da conciliação bancária, blindagem anti-duplicidade, eliminação definitiva de prévias internas sem valor fiscal, adição da coluna de emissão individual direta na SEFAZ com modal de data de pagamento e transmissão em lote filtrando estritamente notas não pagas.
 
 ---
 
 ## 1. Conquistas Recentes & Validações Críticas
 
-### 1.1. Conciliação Bancária Oficial Concluída e Zerada (27/10/2026)
+### 1.1. Eliminação Definitiva da "Prévia Interna / Não Pagar"
+* **Status:** **BANIDO TOTALMENTE DO SISTEMA.**
+* No gerador de PDFs (`services/print_service.js`), foi removida a lógica de emitir espelhos simulados com faixa vermelha *"PRÉVIA INTERNA / DOCUMENTO SEM VALOR FISCAL / NÃO PAGAR"*.
+* Se uma guia ainda não possui código de barras oficial retornado pela SEFAZ, o sistema recusa a geração de prévias fake e orienta o operador a realizar a emissão oficial via **"⚡ Emitir SEFAZ"**.
+* Na rota `GET /api/guide/download/:guideId`, guias pendentes de retorno exibem tela informativa elegante com os dados da NF e instrução para emissão oficial com data de pagamento, impedindo que documentos inválidos circulem na expedição.
+
+### 1.2. Coluna "Emissão SEFAZ" e Transmissão Individual com Pop-up de Data (`public/dashboard.html` / `dashboard.js` / `server.js`)
+* **Coluna Exclusiva na Doca:** Adicionada a coluna **"Emissão SEFAZ"** na tabela de cargas, posicionada ao lado de Ações/DANFE.
+* **Modal Individual de Data de Pagamento:**
+  * Ao clicar no botão **"⚡ Emitir SEFAZ"**, abre um pop-up com os dados da NF (número, UF de destino, valor do tributo) e campo para escolha da **Data Prevista de Pagamento / Vencimento** (default: data atual).
+  * O operador pode definir livremente a data (hoje, amanhã ou data programada).
+* **Endpoint de Transmissão Direta (`POST /api/guide/emitir-sefaz/:guideId`):**
+  * Dispara a transmissão em tempo real no WebService oficial (GNRE v2.00 / DUA-ES / XML Lote SP) utilizando o certificado digital A1 PFX do tenant.
+  * Captura o código de barras Febraban oficial e a linha digitável retornados pela SEFAZ.
+  * Atualiza o registro da guia no banco de dados, gera o espelho oficial e disponibiliza imediatamente o link **"🏛️ Guia Oficial"** e a opção de **"🔄 Reemitir"** (se precisar alterar vencimento).
+  * Se a guia já estiver como `paga`, a reemissão é bloqueada automaticamente com aviso na tela para prevenir duplicidade.
+
+### 1.3. Emissão em Lote na Barra Superior com Filtro Estrito de Não Pagas
+* **Botão na Barra da Doca & Barra Flutuante:** `⚡ Emitir SEFAZ em Lote (c/ Data)`.
+* **Modal de Transmissão em Lote:**
+  * Exibe o resumo detalhado: calcula em tempo real quantas guias estão pendentes e quantas já foram pagas.
+  * Garante que notas já quitadas (ex: as 87 guias pagas no Itaú) sejam **100% preservadas e ignoradas da transmissão**, sem nenhum risco de reemissão duplicada.
+  * Permite selecionar a data de vencimento unificada para o lote pendente.
+* **Backend Reforçado (`server.js`):**
+  * O método `transmitStagedBatchToSefaz` ignora ativamente notas com `status = 'paga'`, `comprovada` ou `paid_at IS NOT NULL`, emitindo logs de auditoria claros na esteira de faturamento.
+
+### 1.4. Conciliação Bancária Oficial Concluída e Zerada (27/10/2026)
 * **Status:** **100% RESOLVIDO E BATIDO NO LINX MICROVIX.**
 * **Extrato Bancário Itaú:** Lote de 87 guias (57 interestaduais + 30 DAREs SP) debitado em 26/10/2026 via remessa SISPAG (`REM2610.txt`) no valor total de **R$ 3.846,22**.
 * **Resolução da Diferença de R$ 25,58 no Contas a Pagar:**

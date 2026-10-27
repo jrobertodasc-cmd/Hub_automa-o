@@ -1591,9 +1591,9 @@
                         <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px 0;">Emissões e downloads fiscais pontuais.</p>
 
                         <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button type="button" id="btn-doca-emitir-sefaz-data" onclick="reemitirGuiasSefazComData(false)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
+                            <button type="button" id="btn-doca-emitir-sefaz-data" onclick="abrirModalEmitirSefazLote(false)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                                <span>Emitir SEFAZ com Nova Data</span>
+                                <span>⚡ Emitir SEFAZ em Lote (c/ Data)</span>
                             </button>
 
                             <a id="btn-doca-baixar-xml-sp" href="#" onclick="baixarXmlLoteSpComData(event)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
@@ -2082,7 +2082,7 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                         <span>XML Lote SP (c/ Data)</span>
                     </button>
-                    <button type="button" onclick="reemitirGuiasSefazComData(true)" class="btn-bulk-action" style="background: #15803D; border-color: #22C55E;">
+                    <button type="button" onclick="abrirModalEmitirSefazLote(true)" class="btn-bulk-action" style="background: #15803D; border-color: #22C55E;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                         <span>Emitir SEFAZ (c/ Data)</span>
                     </button>
@@ -2111,13 +2111,14 @@
                         <th>Transportadora</th>
                         <th style="text-align: right; width: 150px;">Venda / DIFAL</th>
                         <th style="text-align: center; width: 150px;">Situação Portão</th>
-                        <th style="text-align: right; width: 170px;">Ações</th>
+                        <th style="text-align: center; width: 160px;">Emissão SEFAZ</th>
+                        <th style="text-align: right; width: 160px;">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="guides-table-body">
                     <!-- Estado Inicial Limpo / Sem Cargas Ativas -->
                     <tr id="empty-dock-state">
-                        <td colspan="8" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <td colspan="9" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
                             <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(37, 99, 235, 0.08); color: var(--primary-blue); display: grid; place-items: center; margin: 0 auto 14px;">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon></svg>
                             </div>
@@ -2648,7 +2649,125 @@
         </div>
     </div>
 
+    <!-- MODAL DE EMISSÃO INDIVIDUAL DIRETA NA SEFAZ COM DATA -->
+    <div id="modal-emitir-sefaz-individual" style="display: none; position: fixed; inset: 0; background: rgba(10, 16, 28, 0.75); backdrop-filter: blur(8px); z-index: 10005; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 520px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #38BDF8;">
+                        ⚡
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 17px; font-weight: 800; color: #FFFFFF;">Emissão Individual SEFAZ</h2>
+                        <div style="font-size: 12px; color: #94A3B8;">Transmissão oficial via WebService GNRE v2.00 / DUA-ES / SP</div>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalEmitirSefazIndividual()" style="border: none; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: #94A3B8;">×</button>
+            </div>
+
+            <!-- Dados da Nota -->
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">Nota Fiscal</div>
+                    <div id="sefaz-ind-nf" style="font-size: 15px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">-</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">UF Favorecida</div>
+                    <div id="sefaz-ind-uf" style="font-size: 15px; font-weight: 700; color: #38BDF8; margin-top: 2px;">-</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">Valor DIFAL / FCP</div>
+                    <div id="sefaz-ind-valor" style="font-size: 15px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">-</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">Ambiente Fiscal</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #10B981; margin-top: 2px;">PRODUÇÃO (mTLS A1)</div>
+                </div>
+            </div>
+
+            <!-- Input de Data de Pagamento / Vencimento -->
+            <div style="margin-bottom: 18px;">
+                <label for="sefaz-ind-data" style="display: block; font-size: 12.5px; font-weight: 700; color: #E2E8F0; margin-bottom: 6px;">
+                    📅 Data Prevista para Pagamento / Vencimento:
+                </label>
+                <input type="date" id="sefaz-ind-data" style="width: 100%; height: 38px; background: #0E1626; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 0 12px; color: #FFFFFF; font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; box-sizing: border-box;">
+                <p style="font-size: 11.5px; color: #94A3B8; margin: 6px 0 0; line-height: 1.4;">
+                    A SEFAZ exige a data de recolhimento para calcular a validade e gerar a linha digitável e o código de barras oficiais.
+                </p>
+            </div>
+
+            <!-- Status e Feedback em tempo real -->
+            <div id="sefaz-ind-feedback" style="display: none; padding: 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 16px; line-height: 1.4;"></div>
+
+            <!-- Botões de Ação -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="fecharModalEmitirSefazIndividual()" class="btn sm" style="background: rgba(255,255,255,0.08); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-confirmar-sefaz-ind" onclick="executarEmissaoSefazIndividual()" style="background: #2563EB; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+                    <span>⚡ Transmitir à SEFAZ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EMISSÃO SEFAZ EM LOTE (SOMENTE NÃO PAGAS) -->
+    <div id="modal-emitir-sefaz-lote" style="display: none; position: fixed; inset: 0; background: rgba(10, 16, 28, 0.75); backdrop-filter: blur(8px); z-index: 10005; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 560px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #34D399;">
+                        🏛️
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 17px; font-weight: 800; color: #FFFFFF;">Emitir SEFAZ em Lote</h2>
+                        <div style="font-size: 12px; color: #94A3B8;">Transmite exclusivamente guias que NÃO foram pagas</div>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalEmitirSefazLote()" style="border: none; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: #94A3B8;">×</button>
+            </div>
+
+            <!-- Resumo de Segurança Anti-Duplicidade -->
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12.5px; color: #94A3B8;">Guias Pendentes a Emitir:</span>
+                    <strong id="sefaz-lote-qtd-pendentes" style="font-size: 14px; color: #FBBF24; font-weight: 700;">Calculando...</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                    <span style="font-size: 12px; color: #34D399; display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️ Trava Anti-Duplicidade:</span>
+                    </span>
+                    <span id="sefaz-lote-qtd-pagas-bloqueadas" style="font-size: 12px; color: #94A3B8;">Guias já pagas serão ignoradas</span>
+                </div>
+            </div>
+
+            <!-- Input de Data de Pagamento / Vencimento -->
+            <div style="margin-bottom: 18px;">
+                <label for="sefaz-lote-data" style="display: block; font-size: 12.5px; font-weight: 700; color: #E2E8F0; margin-bottom: 6px;">
+                    📅 Data Prevista para Pagamento de Todas as Guias do Lote:
+                </label>
+                <input type="date" id="sefaz-lote-data" style="width: 100%; height: 38px; background: #0E1626; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 0 12px; color: #FFFFFF; font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; box-sizing: border-box;">
+                <p style="font-size: 11.5px; color: #94A3B8; margin: 6px 0 0; line-height: 1.4;">
+                    Apenas as notas fiscais <b>não pagas</b> serão transmitidas para a SEFAZ com esta data. Notas de SP terão seu XML gerado com esta mesma data.
+                </p>
+            </div>
+
+            <!-- Feedback -->
+            <div id="sefaz-lote-feedback" style="display: none; padding: 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 16px; line-height: 1.4;"></div>
+
+            <!-- Botões de Ação -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="fecharModalEmitirSefazLote()" class="btn sm" style="background: rgba(255,255,255,0.08); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-confirmar-sefaz-lote" onclick="executarEmissaoSefazLote()" style="background: #10B981; color: #FFFFFF; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(16,185,129,0.4);">
+                    <span>🚀 Transmitir Apenas Não Pagas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 <script src="/js/auth.js?v=6"></script>
-    <script src="/js/dashboard.js?v=13"></script>
+    <script src="/js/dashboard.js?v=14"></script>
 </body>
 </html>

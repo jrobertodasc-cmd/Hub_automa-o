@@ -3523,6 +3523,260 @@ app.get('/api/bi/devolucoes', requireAuth, async (req, res) => {
     }
 });
 
+async function getTenantHttpsAgent(tenant) {
+    if (tenant.environment !== 'producao') return null;
+    if (!tenant.pfx_filename) {
+        throw new Error("Nenhum certificado digital PFX cadastrado para este emitente.");
+    }
+    const { data: pfxFile, error: downloadError } = await supabase.storage
+        .from('tenant-storage')
+        .download(`${tenant.id}/certificados/${tenant.pfx_filename}`);
+
+    if (downloadError || !pfxFile) {
+        throw new Error("Falha ao baixar certificado digital: " + (downloadError?.message || 'Arquivo ausente'));
+    }
+
+    const pfxBuffer = Buffer.from(await pfxFile.arrayBuffer());
+    const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+    const passphrase = decrypt(tenant.pfx_passphrase_encrypted, key);
+
+    return gnreService.createHttpsAgent({ pfxBuffer, passphrase });
+}
+
+/**
+ * ROTA: Emissão Individual Direta na SEFAZ com Seleção de Data de Vencimento/Pagamento
+ */
+app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscription, async (req, res) => {
+    const { guideId } = req.params;
+    const { paymentDate } = req.body;
+    const tenant = req.tenant;
+
+    try {
+        const { data: guide, error: gErr } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('id', guideId)
+            .eq('tenant_id', tenant.id)
+            .single();
+
+        if (gErr || !guide) {
+            return res.status(404).json({ error: "Guia não localizada no sistema." });
+        }
+
+        // TRAVA ANTI-DUPLICIDADE RIGOROSA
+        const st = (guide.status || '').toLowerCase();
+        if (st === 'paga' || guide.paid_at) {
+            return res.status(400).json({
+                error: "Esta guia já consta como PAGA e liquidada no sistema. A reemissão está bloqueada para evitar duplicidade de pagamento."
+            });
+        }
+
+        const hoje = new Date().toISOString().split('T')[0];
+        const dataAlvo = paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(paymentDate) ? paymentDate : hoje;
+
+        // Localiza e carrega o XML da NF-e
+        let xmlContent = null;
+        if (guide.xml_storage_path) {
+            try {
+                const { data: xData } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(guide.xml_storage_path);
+                if (xData) xmlContent = await xData.text();
+            } catch (e) {}
+        }
+
+        if (!xmlContent && guide.nf_number) {
+            const { data: otherGuide } = await supabase
+                .from('guides')
+                .select('xml_storage_path')
+                .eq('tenant_id', tenant.id)
+                .eq('nf_number', guide.nf_number)
+                .not('xml_storage_path', 'is', null)
+                .limit(1)
+                .single();
+            if (otherGuide && otherGuide.xml_storage_path) {
+                try {
+                    const { data: xData } = await supabase.storage
+                        .from('tenant-storage')
+                        .download(otherGuide.xml_storage_path);
+                    if (xData) xmlContent = await xData.text();
+                } catch (e) {}
+            }
+        }
+
+        if (!xmlContent) {
+            return res.status(400).json({
+                error: `Arquivo XML da NF-e ${guide.nf_number} não encontrado para transmissão à SEFAZ.`
+            });
+        }
+
+        const dadosNfe = parserService.extrairDadosNfeXML(xmlContent);
+        dadosNfe.guide_id = guide.id;
+        dadosNfe.dataVencimento = dataAlvo;
+        dadosNfe.dataPagamento = dataAlvo;
+
+        const uf = (guide.uf || dadosNfe.ufFavorecida || '').toUpperCase().trim();
+
+        // 1. Caso SP: Gera indicação para importação na DARE SP
+        if (uf === 'SP') {
+            await supabase
+                .from('guides')
+                .update({
+                    due_date: dataAlvo,
+                    barcode: 'IMPORTAR_NO_SEFAZ_SP',
+                    line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
+                    status: 'requer_dare_sp',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', guide.id)
+                .eq('tenant_id', tenant.id);
+
+            return res.status(200).json({
+                success: true,
+                uf: 'SP',
+                isSpDare: true,
+                message: `Guia de SP configurada com vencimento para ${dataAlvo}. Baixe o XML do lote SP para gerar a DARE no Portal da SEFAZ-SP.`,
+                dueDate: dataAlvo
+            });
+        }
+
+        // 2. Caso ES: DUA-e WebService
+        if (uf === 'ES') {
+            let agent = null;
+            if (tenant.environment === 'producao') {
+                agent = await getTenantHttpsAgent(tenant);
+            }
+            const { nDua, nBar } = await duaEsService.transmitirEmissao(dadosNfe, agent, tenant.environment);
+            const pdfBuffer = await duaEsService.transmitirObterPdf(nDua, dadosNfe.destCnpjCpf, agent, tenant.environment);
+            const remotePath = `${tenant.id}/guias/guia_NF_${dadosNfe.documentoOrigem}.pdf`;
+            await supabase.storage
+                .from('tenant-storage')
+                .upload(remotePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+
+            await supabase
+                .from('guides')
+                .update({
+                    barcode: nBar,
+                    line_digitizable: nBar,
+                    due_date: dataAlvo,
+                    status: 'aguardando_pagamento',
+                    storage_path: remotePath,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', guide.id)
+                .eq('tenant_id', tenant.id);
+
+            return res.status(200).json({
+                success: true,
+                uf: 'ES',
+                barcode: nBar,
+                lineDigitizable: nBar,
+                dueDate: dataAlvo,
+                message: `Guia DUA-ES emitida com sucesso na SEFAZ!`,
+                downloadUrl: `/api/guide/download/${guide.id}`
+            });
+        }
+
+        // 3. Demais UFs: WebService GNRE v2.00 Oficial
+        const logsDir = process.env.NODE_ENV === 'production' || process.env.VERCEL
+            ? path.join('/tmp', 'xml_logs')
+            : path.join(__dirname, 'xml_logs');
+        await fs.mkdir(logsDir, { recursive: true });
+
+        let agent = null;
+        if (tenant.environment === 'producao') {
+            agent = await getTenantHttpsAgent(tenant);
+        }
+
+        const recibo = await gnreService.enviarLote([dadosNfe], agent, uf, tenant.environment, tenant, logsDir);
+
+        let dadosGuias = null;
+        let tentativas = 0;
+        const maxTentativas = ['RJ', 'SE'].includes(uf) ? 35 : 20;
+
+        while (tentativas < maxTentativas) {
+            const seg = tentativas === 0 ? 5 : 3;
+            await new Promise(r => setTimeout(r, seg * 1000));
+            const xmlConsulta = await gnreService.consultarLote(recibo, agent, uf, tenant.environment, logsDir);
+            const sitProcess = parserService.extrairTag(xmlConsulta, 'situacaoProcess');
+            const codSit = sitProcess ? parserService.extrairTag(sitProcess, 'codigo') : null;
+            const descSit = sitProcess ? parserService.extrairTag(sitProcess, 'descricao') : '';
+            const processando = !codSit || ['401', '103', '105'].includes(codSit) || (descSit.toLowerCase().includes('processamento') && !['402', '403', '404'].includes(codSit));
+            if (!processando) {
+                dadosGuias = parserService.extrairDadosGuiaXML(xmlConsulta);
+                break;
+            }
+            tentativas++;
+        }
+
+        if (!dadosGuias) {
+            throw new Error(`Tempo esgotado aguardando retorno da SEFAZ ${uf}. Recibo gerado: ${recibo}.`);
+        }
+
+        if (Array.isArray(dadosGuias.rejeicoesDetalhadas) && dadosGuias.rejeicoesDetalhadas.length > 0) {
+            const rej = dadosGuias.rejeicoesDetalhadas[0];
+            await supabase
+                .from('guides')
+                .update({ status: 'rejeitada_sefaz', updated_at: new Date().toISOString() })
+                .eq('id', guide.id)
+                .eq('tenant_id', tenant.id);
+
+            return res.status(400).json({
+                error: `Guia rejeitada pela SEFAZ ${uf}: ${rej.motivo || 'Rejeição cadastral/fiscal.'}`
+            });
+        }
+
+        const guiaEmitida = Array.isArray(dadosGuias) ? dadosGuias[0] : dadosGuias;
+        if (!guiaEmitida || !guiaEmitida.codigoBarras) {
+            throw new Error(`A SEFAZ ${uf} não retornou código de barras numérico válido para a NF ${guide.nf_number}.`);
+        }
+
+        const dadosBancarios = {
+            cnpj: tenant.cnpj,
+            razaoSocial: tenant.razao_social,
+            agencia: tenant.bank_agency,
+            conta: tenant.bank_account,
+            dac: tenant.bank_dac
+        };
+
+        const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guiaEmitida, dadosNfe);
+        const remotePath = `${tenant.id}/guias/guia_NF_${guide.nf_number}.html`;
+        await supabase.storage
+            .from('tenant-storage')
+            .upload(remotePath, Buffer.from(htmlGuia, 'utf-8'), {
+                contentType: 'text/html',
+                upsert: true
+            });
+
+        await supabase
+            .from('guides')
+            .update({
+                barcode: guiaEmitida.codigoBarras,
+                line_digitizable: guiaEmitida.linhaDigitavel || guiaEmitida.codigoBarras,
+                due_date: dataAlvo,
+                status: 'aguardando_pagamento',
+                storage_path: remotePath,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', guide.id)
+            .eq('tenant_id', tenant.id);
+
+        return res.status(200).json({
+            success: true,
+            uf,
+            barcode: guiaEmitida.codigoBarras,
+            lineDigitizable: guiaEmitida.linhaDigitavel || guiaEmitida.codigoBarras,
+            dueDate: dataAlvo,
+            message: `Guia oficial autorizada e emitida com sucesso na SEFAZ ${uf}!`,
+            downloadUrl: `/api/guide/download/${guide.id}`
+        });
+
+    } catch (err) {
+        console.error(`Erro na emissão individual SEFAZ (Guia ${guideId}):`, err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
     try {
         const { data: guide, error } = await supabase
@@ -3536,17 +3790,57 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Guia não encontrada." });
         }
 
+        const barLimpo = String(guide.barcode || '').replace(/\D/g, '');
+        const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
+
+        // REGRA ABSOLUTA: Não gera documento fake. Se não possui código de barras oficial retornado pela SEFAZ, orienta emissão.
+        if (!isSimulado && (barLimpo.length < 44 || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP')) {
+            return res.status(400).send(`
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="utf-8">
+                    <title>Guia Pendente de Emissão SEFAZ</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0E1626; color: #E2E8F0; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                        .card { background: #111B2E; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 32px; max-width: 520px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+                        h2 { color: #FBBF24; margin-top: 0; font-size: 20px; }
+                        p { font-size: 14px; color: #94A3B8; line-height: 1.6; }
+                        .pill { display: inline-block; background: rgba(59,130,246,0.15); color: #60A5FA; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 6px 14px; font-weight: 700; font-size: 13px; margin: 12px 0; }
+                        button { background: #2563EB; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+                        button:hover { background: #1D4ED8; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div style="font-size: 40px; margin-bottom: 12px;">⚡</div>
+                        <h2>Guia Oficial Ainda Não Emitida</h2>
+                        <div class="pill">NF ${guide.nf_number} · ${guide.uf} · R$ ${(guide.value || 0).toFixed(2).replace('.', ',')}</div>
+                        <p>Esta nota ainda não possui código de barras oficial retornado pela Secretaria da Fazenda.</p>
+                        <p>Para gerar o documento oficial apto para pagamento, retorne ao painel e utilize o botão <strong>"⚡ Emitir SEFAZ"</strong> informando a data de vencimento desejada.</p>
+                        <button onclick="window.close()">Fechar Janela</button>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
         if (req.query.paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(req.query.paymentDate)) {
             guide.due_date = req.query.paymentDate;
         }
 
-        const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
-        if (isSimulado && (!guide.barcode || guide.barcode.length < 44 || !guide.line_digitizable)) {
-            const auto = printService.gerarCodigoBarrasELinhaDigitavelGNRE(guide, req.tenant);
-            if (auto.codigoBarras) {
-                guide.barcode = auto.codigoBarras;
-                guide.line_digitizable = auto.linhaDigitavel;
-            }
+        // Se o storage_path for HTML (espelho oficial retornado pelo WebService GNRE)
+        if (guide.storage_path && guide.storage_path.toLowerCase().endsWith('.html')) {
+            try {
+                const { data: hData } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(guide.storage_path);
+                if (hData) {
+                    const htmlText = await hData.text();
+                    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+                    return res.send(htmlText);
+                }
+            } catch (e) {}
         }
 
         let buffer = null;
@@ -5043,11 +5337,16 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 throw new Error("Nenhuma nota encontrada para este lote.");
             }
 
-            // Carrega os XMLs do storage (ignora guias já pagas/comprovadas)
+            // Carrega os XMLs do storage (TRAVA ANTI-DUPLICIDADE: ignora solenemente guias já pagas/comprovadas)
             const notasFiscais = [];
+            let guiasPagasIgnoradas = 0;
             for (const g of stagedGuides) {
                 const st = (g.status || '').toLowerCase();
-                if (st === 'paga' || st === 'comprovada') continue;
+                const sit = (g.situacao_pagamento || '').toLowerCase();
+                if (st === 'paga' || st === 'comprovada' || sit === 'paga' || g.paid_at) {
+                    guiasPagasIgnoradas++;
+                    continue;
+                }
                 let content = null;
                 if (g.xml_storage_path) {
                     try {
@@ -5065,7 +5364,18 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 }
             }
 
+            if (guiasPagasIgnoradas > 0) {
+                log(`🛡 Trava anti-duplicidade ativada: ${guiasPagasIgnoradas} guia(s) já quitadas/pagas foram preservadas e não reenviadas.`);
+            }
+
             if (notasFiscais.length === 0) {
+                if (guiasPagasIgnoradas > 0) {
+                    log(`✔ Todas as guias deste lote já constam como quitadas/pagas. Nenhuma transmissão pendente necessária.`);
+                    task.progress = 100;
+                    task.status = 'concluido';
+                    await supabase.from('batches').update({ status: 'concluido' }).eq('id', batchId);
+                    return;
+                }
                 throw new Error("Não foi possível carregar os arquivos XML do lote para transmissão.");
             }
 

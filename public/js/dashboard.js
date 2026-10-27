@@ -2917,7 +2917,7 @@ function renderizarPaginaDoca(pagina = 1) {
         if (total === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
+                    <td colspan="9" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
                         <div style="font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px;">Nenhuma carga localizada para este filtro</div>
                         <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Tente alterar os filtros de transportadora ou buscar por outro termo.</p>
                     </td>
@@ -2990,9 +2990,28 @@ function renderizarPaginaDoca(pagina = 1) {
                         <td style="text-align: center;">
                             ${statusBadge}
                         </td>
+                        <td style="text-align: center;">
+                            ${(() => {
+                                if (sitCalc === 'paga') {
+                                    return '<span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 11.5px;">🟢 Já Paga</span>';
+                                }
+                                if (isSp) {
+                                    return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', 'SP', ${g.value || 0})" class="btn-table-action" style="background: rgba(15,118,110,0.15); color: #2DD4BF; border: 1px solid rgba(20,184,166,0.35); font-weight: 700; border-radius: 6px; padding: 3px 8px; cursor: pointer;" title="Definir data e gerar XML de lote SP">⚡ Ajustar Data SP</button>`;
+                                }
+                                if (barNum.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP') {
+                                    return `
+                                        <div style="display: flex; flex-direction: column; gap: 3px; align-items: center;">
+                                            <a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #34D399; font-weight: 700; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 2px 7px;" title="Visualizar e Imprimir Guia Oficial SEFAZ">🏛️ Guia Oficial</a>
+                                            <button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" style="background: none; border: none; color: #60A5FA; font-size: 10.5px; font-weight: 600; cursor: pointer; text-decoration: underline;" title="Reemitir guia com nova data de pagamento">🔄 Reemitir</button>
+                                        </div>
+                                    `;
+                                }
+                                return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-table-action" style="background: rgba(37, 99, 235, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.5); font-weight: 700; border-radius: 6px; padding: 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(37,99,235,0.25);" title="Emitir Guia Oficial na SEFAZ com seleção de data"><span style="color: #FBBF24;">⚡</span> Emitir SEFAZ</button>`;
+                            })()}
+                        </td>
                         <td style="text-align: right;">
                             <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
-                            ${g.uf !== 'SP' && g.uf !== 'ND' && g.value > 0 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #4338CA; font-weight: 600;" title="Visualizar Guia GNRE">GNRE</a>` : (g.uf === 'SP' && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : '')}
+                            ${isSp && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : ''}
                             ${btnCopiar}
                             ${(() => {
                                 if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
@@ -4490,6 +4509,273 @@ function exportarRelatorioConciliacaoCsv() {
     URL.revokeObjectURL(url);
 }
 window.exportarRelatorioConciliacaoCsv = exportarRelatorioConciliacaoCsv;
+
+/* =========================================================================
+   EMISSÃO INDIVIDUAL DIRETA NA SEFAZ (MODAL COM DATA DE PAGAMENTO)
+   ========================================================================= */
+let guiaEmissaoIndividualAtual = null;
+
+function abrirModalEmitirSefazIndividual(guideId, nf, uf, valor) {
+    guiaEmissaoIndividualAtual = { guideId, nf, uf, valor };
+
+    const modal = document.getElementById('modal-emitir-sefaz-individual');
+    if (!modal) return;
+
+    const nfEl = document.getElementById('sefaz-ind-nf');
+    if (nfEl) nfEl.textContent = `NF ${nf}`;
+
+    const ufEl = document.getElementById('sefaz-ind-uf');
+    if (ufEl) ufEl.textContent = uf;
+
+    const valEl = document.getElementById('sefaz-ind-valor');
+    if (valEl) valEl.textContent = `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
+
+    const dataInput = document.getElementById('sefaz-ind-data');
+    if (dataInput) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+
+    const feedback = document.getElementById('sefaz-ind-feedback');
+    if (feedback) {
+        feedback.style.display = 'none';
+        feedback.innerHTML = '';
+    }
+
+    const btn = document.getElementById('btn-confirmar-sefaz-ind');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>⚡ Transmitir à SEFAZ</span>`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function fecharModalEmitirSefazIndividual() {
+    const modal = document.getElementById('modal-emitir-sefaz-individual');
+    if (modal) modal.style.display = 'none';
+    guiaEmissaoIndividualAtual = null;
+}
+
+async function executarEmissaoSefazIndividual() {
+    if (!guiaEmissaoIndividualAtual || !guiaEmissaoIndividualAtual.guideId) return;
+
+    const guideId = guiaEmissaoIndividualAtual.guideId;
+    const paymentDate = document.getElementById('sefaz-ind-data')?.value;
+    const btn = document.getElementById('btn-confirmar-sefaz-ind');
+    const feedback = document.getElementById('sefaz-ind-feedback');
+
+    if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(59, 130, 246, 0.15)';
+        feedback.style.color = '#93C5FD';
+        feedback.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+        feedback.innerHTML = `⏳ <b>Conectando com a SEFAZ...</b> Enviando envelope GNRE v2.00 com certificado digital A1. Aguarde o retorno oficial...`;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Transmitindo...</span>`;
+    }
+
+    try {
+        const res = await fetch(`/api/guide/emitir-sefaz/${guideId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentDate })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || "Falha na emissão da guia na SEFAZ.");
+        }
+
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(16, 185, 129, 0.15)';
+            feedback.style.color = '#34D399';
+            feedback.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+            const barInfo = data.barcode ? `<div style="font-family: monospace; font-size: 11px; margin-top: 6px; word-break: break-all; color: #FFFFFF;"><b>Código de Barras:</b> ${data.barcode}</div>` : '';
+            feedback.innerHTML = `
+                <div>✔ <b>Guia emitida e autorizada com sucesso na SEFAZ!</b></div>
+                ${barInfo}
+                <div style="margin-top: 10px;">
+                    <a href="${data.downloadUrl || `/api/guide/download/${guideId}`}" target="_blank" class="btn sm" style="background: #10B981; color: white; text-decoration: none; font-weight: 700; padding: 6px 12px; border-radius: 6px; display: inline-block;">
+                        🏛️ Abrir Guia Oficial SEFAZ
+                    </a>
+                </div>
+            `;
+        }
+
+        showToast("Guia emitida na SEFAZ com sucesso!", "success");
+
+        if (typeof carregarCargasDocaReais === 'function') {
+            carregarCargasDocaReais();
+        }
+
+        if (btn) {
+            btn.innerHTML = `<span>✔ Emitida</span>`;
+        }
+
+        setTimeout(() => {
+            fecharModalEmitirSefazIndividual();
+        }, 3500);
+
+    } catch (err) {
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+            feedback.style.color = '#F87171';
+            feedback.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+            feedback.innerHTML = `❌ <b>Erro na transmissão SEFAZ:</b> ${err.message}`;
+        }
+        showToast(err.message, "error");
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>⚡ Tentar Novamente</span>`;
+        }
+    }
+}
+
+/* =========================================================================
+   EMISSÃO SEFAZ EM LOTE (COM DATA E FILTRANDO SOMENTE NÃO PAGAS)
+   ========================================================================= */
+let emissaoLoteApenasSelecionadas = false;
+
+function abrirModalEmitirSefazLote(apenasSelecionadas = false) {
+    emissaoLoteApenasSelecionadas = apenasSelecionadas;
+    const modal = document.getElementById('modal-emitir-sefaz-lote');
+    if (!modal) return;
+
+    const lista = window.todasCargasDoca || [];
+    let guiasAlvo = lista;
+
+    if (apenasSelecionadas) {
+        const selIds = window.selectedGuideIds || new Set();
+        guiasAlvo = lista.filter(g => selIds.has(g.id));
+        if (guiasAlvo.length === 0) {
+            showToast("Selecione pelo menos uma carga na tabela para emitir.", "warning");
+            return;
+        }
+    }
+
+    // Calcula estritamente as NÃO PAGAS
+    const naoPagas = guiasAlvo.filter(g => {
+        const st = (g.status || '').toUpperCase();
+        const sit = (g.situacao_pagamento || '').toLowerCase();
+        return !g.is_paga && st !== 'PAGA' && sit !== 'paga' && !g.paid_at;
+    });
+
+    const pagas = guiasAlvo.length - naoPagas.length;
+    const totalValorNaoPagas = naoPagas.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0);
+
+    const pendEl = document.getElementById('sefaz-lote-qtd-pendentes');
+    if (pendEl) {
+        pendEl.textContent = `${naoPagas.length} guia(s) não paga(s) — Total: R$ ${totalValorNaoPagas.toFixed(2).replace('.', ',')}`;
+    }
+
+    const pagasEl = document.getElementById('sefaz-lote-qtd-pagas-bloqueadas');
+    if (pagasEl) {
+        pagasEl.textContent = `${pagas} guia(s) já quitadas/pagas serão preservadas e NÃO reenviadas`;
+    }
+
+    const dataInput = document.getElementById('sefaz-lote-data');
+    if (dataInput) {
+        dataInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    const feedback = document.getElementById('sefaz-lote-feedback');
+    if (feedback) {
+        feedback.style.display = 'none';
+        feedback.innerHTML = '';
+    }
+
+    const btn = document.getElementById('btn-confirmar-sefaz-lote');
+    if (btn) {
+        btn.disabled = (naoPagas.length === 0);
+        btn.innerHTML = naoPagas.length > 0 ? `<span>🚀 Transmitir ${naoPagas.length} Guia(s) à SEFAZ</span>` : `<span>Nenhuma Guia Pendente</span>`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+function fecharModalEmitirSefazLote() {
+    const modal = document.getElementById('modal-emitir-sefaz-lote');
+    if (modal) modal.style.display = 'none';
+}
+
+async function executarEmissaoSefazLote() {
+    if (!window.activeBatchId) {
+        showToast("Nenhum lote ativo selecionado na doca.", "warning");
+        return;
+    }
+
+    const paymentDate = document.getElementById('sefaz-lote-data')?.value || new Date().toISOString().split('T')[0];
+    const btn = document.getElementById('btn-confirmar-sefaz-lote');
+    const feedback = document.getElementById('sefaz-lote-feedback');
+
+    let ids = null;
+    if (emissaoLoteApenasSelecionadas) {
+        ids = Array.from(window.selectedGuideIds || []);
+    }
+
+    if (feedback) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(59, 130, 246, 0.15)';
+        feedback.style.color = '#93C5FD';
+        feedback.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+        feedback.innerHTML = `🚀 <b>Transmissão em Lote Iniciada!</b> Transmitindo exclusivamente guias não pagas com vencimento ${paymentDate}. Acompanhe na fita de auditoria.`;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ Transmitindo...</span>`;
+    }
+
+    try {
+        const res = await fetch(`/api/batch/authorize-emission/${window.activeBatchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentDate, ids })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Falha ao iniciar transmissão em lote.");
+
+        showToast("Emissão na SEFAZ iniciada com sucesso!", "success");
+
+        if (typeof iniciarPollingLote === 'function') {
+            iniciarPollingLote(window.activeBatchId);
+        }
+
+        setTimeout(() => {
+            fecharModalEmitirSefazLote();
+            if (typeof carregarCargasDocaReais === 'function') {
+                carregarCargasDocaReais();
+            }
+        }, 2000);
+
+    } catch (err) {
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+            feedback.style.color = '#F87171';
+            feedback.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+            feedback.innerHTML = `❌ <b>Erro na transmissão:</b> ${err.message}`;
+        }
+        showToast(err.message, "error");
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>🚀 Tentar Novamente</span>`;
+        }
+    }
+}
+
+window.abrirModalEmitirSefazIndividual = abrirModalEmitirSefazIndividual;
+window.fecharModalEmitirSefazIndividual = fecharModalEmitirSefazIndividual;
+window.executarEmissaoSefazIndividual = executarEmissaoSefazIndividual;
+window.abrirModalEmitirSefazLote = abrirModalEmitirSefazLote;
+window.fecharModalEmitirSefazLote = fecharModalEmitirSefazLote;
+window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 
 
 // Inicia por padrão no Portal de Cards-Menu (Primeira Tela)

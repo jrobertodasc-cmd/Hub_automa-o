@@ -160,11 +160,14 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             }
 
             const temCodigoSefazValido = codBarras.length >= 44 && guia.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && !isCodigoBarrasSinteticoLocal(codBarras);
-            const isPreviaSemValor = isSimulado || !temCodigoSefazValido;
 
-            const linhaDigitavelVisual = temCodigoSefazValido
-                ? formatarLinhaDigitavelVisual(linhaDigitavel || codBarras)
-                : 'SEM CÓDIGO DE BARRAS OFICIAL SEFAZ — PRÉVIA INTERNA — NÃO PAGAR';
+            // REGRA ABSOLUTA: O sistema NUNCA gera documento fake ou prévia interna sem valor fiscal.
+            // Se não há código de barras oficial retornado pela SEFAZ, bloqueia a geração.
+            if (!temCodigoSefazValido && !isSimulado) {
+                return reject(new Error('Esta guia ainda não possui código de barras oficial retornado pela SEFAZ. Utilize o botão "⚡ Emitir SEFAZ" na Doca para transmiti-la com a data de pagamento desejada.'));
+            }
+
+            const linhaDigitavelVisual = formatarLinhaDigitavelVisual(linhaDigitavel || codBarras);
 
             let barcodeBuffer = null;
             if (temCodigoSefazValido) {
@@ -187,20 +190,12 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             // Borda do container principal
             doc.rect(x0, y0, wTotal, 410).lineWidth(2).stroke('#000000');
 
-            // Aviso superior de status fiscal
-            if (isPreviaSemValor) {
-                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#fee2e2', '#dc2626');
-                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#991b1b').text(
-                    'PRÉVIA INTERNA / PENDENTE DE RETORNO SEFAZ — DOCUMENTO SEM VALOR FISCAL — NÃO PAGAR',
-                    x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
-                );
-            } else {
-                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#dcfce7', '#16a34a');
-                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#166534').text(
-                    'GUIA EMITIDA E AUTORIZADA VIA WEBSERVICE SEFAZ GNRE v2.00 — APTA PARA PAGAMENTO',
-                    x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
-                );
-            }
+            // Cabeçalho oficial de autorização SEFAZ
+            doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#dcfce7', '#16a34a');
+            doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#166534').text(
+                'GUIA EMITIDA E AUTORIZADA VIA WEBSERVICE SEFAZ GNRE v2.00 — APTA PARA PAGAMENTO',
+                x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
+            );
 
             // Título da Guia
             doc.font('Helvetica-Bold').fontSize(11).fillColor('#000000').text(
