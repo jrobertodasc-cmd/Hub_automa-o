@@ -1824,6 +1824,28 @@ async function carregarCargasDocaReais() {
         // 4. Salva cargas e renderiza a primeira página paginada (12 por página)
         window.todasCargasDoca = cargas;
         window.cargasFiltradasDoca = cargas;
+
+        // Atualiza Hero e Badge da Navbar
+        const badgeNav = document.getElementById('nav-badge-pendentes');
+        if (badgeNav) badgeNav.textContent = resumo.naoPagas || 0;
+
+        const heroPend = document.getElementById('hero-qtd-pendentes');
+        if (heroPend) heroPend.textContent = `${resumo.naoPagas || 0} guias GNRE pendentes de emissão na SEFAZ`;
+
+        const heroConc = document.getElementById('hero-qtd-conciliadas');
+        if (heroConc) heroConc.textContent = `${resumo.pagas || liberadasCount} cargas liberadas no Itaú`;
+
+        // Se houver notas não pagas (ex: 9 notas do Linx), foca na aba de não pagas por padrão
+        if (resumo.naoPagas > 0 && !window.usuarioJaFiltrouManualmente) {
+            filtroSituacaoAtivo = 'NAO_PAGAS';
+            const btnNaoPagas = document.getElementById('tab-btn-nao-pagas');
+            if (btnNaoPagas && btnNaoPagas.parentElement) {
+                btnNaoPagas.parentElement.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
+                btnNaoPagas.classList.add('active');
+            }
+        }
+
+        aplicarFiltrosRapidos();
         renderizarPaginaDoca(1);
 
         // 6. Atualiza Painel Fintech e Metadados do Lote com formato limpo
@@ -4444,6 +4466,15 @@ function atualizarTopKpisScreen2() {
 function navegarAbaPrincipal(aba) {
     const abas = ['hub', 'ecommerce', 'dashboard', 'relatorios', 'cargas'];
 
+    // Sincroniza visual das abas do pipeline no cabeçalho
+    ['cargas', 'dashboard', 'relatorios'].forEach(k => {
+        const btn = document.getElementById(`nav-btn-${k}`);
+        if (btn) {
+            if (k === aba) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+    });
+
     // Se for atalho de tesouraria a partir do hub
     if (aba === 'tesouraria') {
         navegarAbaPrincipal('dashboard');
@@ -4472,6 +4503,12 @@ function navegarAbaPrincipal(aba) {
     if (aba === 'ecommerce') {
         if (typeof carregarCockpit360 === 'function') {
             carregarCockpit360(false);
+        }
+    }
+
+    if (aba === 'cargas') {
+        if (typeof carregarCargasDocaReais === 'function') {
+            carregarCargasDocaReais();
         }
     }
 
@@ -4781,5 +4818,5 @@ window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 
 // Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
 document.addEventListener('DOMContentLoaded', () => {
-    navegarAbaPrincipal('hub');
+    navegarAbaPrincipal('cargas');
 });

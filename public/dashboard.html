@@ -132,6 +132,54 @@
             text-decoration: none;
         }
 
+                /* PIPELINE OPERACIONAL LINEAR (PASSO 1-2-3) */
+        .hub-pipeline-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #0B111E;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hub-pipeline-btn {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .hub-pipeline-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .hub-pipeline-btn.active {
+            background: #2563EB;
+            color: #FFFFFF;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+        }
+
+        .hub-pipeline-badge {
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 1px 7px;
+            border-radius: 999px;
+            line-height: 1.4;
+        }
+
         .hub-nav-item.active {
             color: #ffffff;
             background: #2563EB;
@@ -1286,6 +1334,20 @@
             </div>
 
             <!-- Conexão Fiscal Online -->
+                        <!-- PIPELINE LINEAR DO DIA: 3 PASSOS OPERACIONAIS DIRETOS -->
+            <div class="hub-pipeline-nav" id="hub-pipeline-nav">
+                <button type="button" class="hub-pipeline-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
+                    <span>🚚 1. Expedição & SEFAZ</span>
+                    <span class="hub-pipeline-badge" id="nav-badge-pendentes">9</span>
+                </button>
+                <button type="button" class="hub-pipeline-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')" title="Geração da Remessa Bancária Itaú (CNAB 240)">
+                    <span>💳 2. Remessa Itaú</span>
+                </button>
+                <button type="button" class="hub-pipeline-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')" title="Manifesto, Romaneio A4 e Auditoria Contábil">
+                    <span>📊 3. Histórico & Auditoria</span>
+                </button>
+            </div>
+
             <div class="live-sse-indicator">
                 <div class="pulse-dot"></div>
                 <span>Conexão Fiscal Online</span>
@@ -1457,9 +1519,9 @@
                 <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-bottom: 60px;">
             <!-- NAVEGAÇÃO SUPERIOR LIMPA -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
+                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    <span>← Voltar ao Menu Principal</span>
+                    <span>← Voltar para Fila de Expedição</span>
                 </button>
 
                 <div id="meta-batch-tag" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34D399; padding: 7px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
@@ -1791,15 +1853,15 @@
         <!-- ABA 3: RELATÓRIOS -->
         <!-- ========================================== -->
         <div id="secao-view-relatorios" class="main-view-section" style="display: none;">
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span>← Voltar ao Menu Principal</span>
+                <span>← Voltar para Fila de Expedição</span>
             </button>
 
             <div class="reports-section-header">
                 <div>
                     <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
-                        <span>📑 Central Executiva de Relatórios & Auditoria Fiscal</span>
+                        <span>📑 Histórico de Romaneios, Manifestos & Fechamento Contábil</span>
                     </h2>
                     <p style="margin: 4px 0 0; font-size: 13px; color: #64748B;">
                         Documentos oficiais de expedição, conciliação bancária Itaú SISPAG e arquivos para auditoria contábil.
@@ -1956,10 +2018,36 @@
         <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
         <!-- ========================================== -->
         <div id="secao-view-cargas" class="main-view-section" style="display: none;">
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span>← Voltar ao Menu Principal</span>
-            </button>
+            <!-- COCKPIT HERO: INTELIGÊNCIA FISCAL & FATURAMENTO LINX MICROVIX -->
+            <div class="cockpit-today-hero" style="background: linear-gradient(135deg, #111B2E 0%, #0F172A 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 22px 26px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
+                <div style="display: flex; align-items: center; gap: 18px;">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.35); display: grid; place-items: center; font-size: 26px;">
+                        ⚡
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">Fila de Emissão Fiscal & Expedição do Dia</span>
+                            <span style="font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 10px; border-radius: 999px;">Linx Microvix Online</span>
+                        </div>
+                        <div style="font-size: 13.5px; color: #94A3B8; margin-top: 5px;">
+                            <span id="hero-pendentes-texto"><strong id="hero-qtd-pendentes" style="color: #F87171;">9 guias GNRE pendentes de emissão na SEFAZ</strong> (Total: R$ 403,36)</span> · <span id="hero-qtd-conciliadas" style="color: #34D399;">87 cargas liberadas no Itaú</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <button type="button" class="btn primary" onclick="abrirModalEmitirSefazLote()" style="background: #2563EB; color: #FFFFFF; border: none; font-weight: 700; font-size: 13.5px; padding: 11px 20px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45); transition: all 0.15s;">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        <span>Emitir Todas na SEFAZ</span>
+                    </button>
+                    <button type="button" class="btn outline" onclick="abrirModalMicrovix()" style="background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.15); font-weight: 600; font-size: 13px; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        <span>Sincronizar Linx</span>
+                    </button>
+                    <button type="button" class="btn outline" onclick="navegarAbaPrincipal('dashboard')" style="background: rgba(16, 185, 129, 0.12); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.35); font-weight: 700; font-size: 13px; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <span>Ir para Remessa Itaú →</span>
+                    </button>
+                </div>
+            </div>
 
             <!-- ZONA 3: TERMINAL DE CONFERÊNCIA FISCAL & LEITURA ÓPTICA -->
         <div class="laser-station-card" id="laser-station-box">
@@ -2021,22 +2109,20 @@
                 </div>
 
                 <div class="dock-nav-tabs" id="dock-status-tabs">
-                    <button type="button" class="dock-tab-btn active" onclick="filtrarPorSituacaoTab('TODAS', this)">
+                    <button type="button" class="dock-tab-btn active" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)">
+                        <span>🔴 Pendentes de Emissão SEFAZ</span>
+                        <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)">
+                        <span>🟢 Conciliadas & Pagas (Itaú)</span>
+                        <span class="tab-counter-badge counter-green" id="tab-cnt-pagas" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">0</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)">
                         <span>Todos no Lote</span>
                         <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('PAGAS', this)">
-                        <span>🟢 Pagas</span>
-                        <span class="tab-counter-badge counter-green" id="tab-cnt-pagas" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">0</span>
-                    </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('PENDENTES', this)">
-                        <span>🟡 Pendentes</span>
-                        <span class="tab-counter-badge counter-yellow" id="tab-cnt-pendentes" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);">0</span>
-                    </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)">
-                        <span>🔴 Não Pagas / Retidas</span>
-                        <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
-                    </button>
+                    <!-- Contadores legados para retrocompatibilidade -->
+                    <span id="tab-cnt-pendentes" style="display:none;">0</span>
                     <!-- Contadores legados para retrocompatibilidade -->
                     <span id="tab-cnt-bloqueadas" style="display:none;">0</span>
                     <span id="tab-cnt-liberadas" style="display:none;">0</span>
