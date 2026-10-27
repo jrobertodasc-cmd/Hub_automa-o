@@ -2043,7 +2043,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             .select('*')
             .eq('batch_id', batch.id)
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (req.query.ids) {
             const idList = String(req.query.ids).split(',').map(s => s.trim()).filter(Boolean);
@@ -2249,7 +2249,7 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
             .from('guides')
             .select('*')
             .eq('tenant_id', tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (activeBatch) {
             query = query.eq('batch_id', activeBatch.id);
@@ -2461,7 +2461,7 @@ app.get('/api/expedicao/romaneio', requireAuth, async (req, res) => {
         let query = supabase.from('guides')
             .select('*')
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (batchId) {
             query = query.eq('batch_id', batchId);
@@ -3107,7 +3107,7 @@ app.get('/api/expedicao/romaneio-pdf', requireAuth, async (req, res) => {
         let query = supabase.from('guides')
             .select('*')
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (batchId) {
             query = query.eq('batch_id', batchId);
@@ -3140,7 +3140,7 @@ app.get('/api/expedicao/combo/:batchId', requireAuth, async (req, res) => {
             .select('*')
             .eq('batch_id', batchId)
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (carrier && carrier !== 'TODAS') {
             query = query.eq('carrier_name', carrier);
@@ -3200,7 +3200,7 @@ async function obterGuiasParaFechamento(tenantId, batchId, dataFiltro) {
                     .select('*')
                     .eq('tenant_id', tenantId)
                     .eq('batch_id', latestBatch.id)
-                    .order('nf_number', { ascending: true });
+                    .order('nf_number', { ascending: false });
                 if (batchGuias && batchGuias.length > 0) {
                     guias = batchGuias;
                 }
@@ -3398,7 +3398,7 @@ app.get('/api/bi/export-csv', requireAuth, async (req, res) => {
             .from('guides')
             .select('*')
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (error) throw error;
 
@@ -4128,7 +4128,7 @@ app.get('/api/guide/print-interleaved/:batchId', requireAuth, async (req, res) =
             .select('*')
             .eq('batch_id', req.params.batchId)
             .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: true });
+            .order('nf_number', { ascending: false });
 
         if (error || !guides || guides.length === 0) {
             return res.status(404).json({ error: "Nenhuma guia encontrada para este lote." });
