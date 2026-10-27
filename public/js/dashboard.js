@@ -2424,39 +2424,38 @@ function playAudioFeedback(tipo) {
         if (!AudioContext) return;
         const audioCtx = new AudioContext();
         if (tipo === 'liberado') {
-            // Bipe duplo harmônico agradável de liberação
-            const osc1 = audioCtx.createOscillator();
-            const osc2 = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc1.type = 'sine';
-            osc2.type = 'sine';
-            osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-            osc2.frequency.setValueAtTime(880, audioCtx.currentTime + 0.08); // A5
-            osc1.connect(gain);
-            osc2.connect(gain);
-            gain.connect(audioCtx.destination);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-            osc1.start(audioCtx.currentTime);
-            osc1.stop(audioCtx.currentTime + 0.08);
-            osc2.start(audioCtx.currentTime + 0.08);
-            osc2.stop(audioCtx.currentTime + 0.25);
+            // Arpejo harmônico ascendente cristalino (Dó Maior: C5 -> E5 -> G5)
+            const notas = [523.25, 659.25, 783.99];
+            notas.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.07));
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime + (idx * 0.07));
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (idx * 0.07) + 0.22);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + (idx * 0.07));
+                osc.stop(audioCtx.currentTime + (idx * 0.07) + 0.22);
+            });
         } else if (tipo === 'bloqueado') {
-            // Alerta grave e seco de bloqueio fiscal
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
-            osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.35);
+            // Alarme sonoro triplo urgente descendente (BEEP! BEEP! BEEP!) para ambiente fabril/galpão
+            [0, 0.14, 0.28].forEach((startTime) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth'; // Onda tipo buzina/alarme industrial
+                osc.frequency.setValueAtTime(650, audioCtx.currentTime + startTime);
+                osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + startTime + 0.11);
+                gain.gain.setValueAtTime(0.40, audioCtx.currentTime + startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startTime + 0.11);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + startTime);
+                osc.stop(audioCtx.currentTime + startTime + 0.12);
+            });
         }
     } catch (e) {
-        // Ignora silenciosamente se o navegador restringir áudio antes do primeiro clique
+        // Ignora se o navegador restringir áudio antes do primeiro clique do usuário
     }
 }
 
@@ -2851,7 +2850,16 @@ function exibirResultadoPortaoFiscal(guia) {
         return;
     }
 
-    // ESTADO BLOQUEADO (PARADA OBRIGATÓRIA NA EXPEDIÇÃO)
+    // ESTADO BLOQUEADO (PARADA OBRIGATÓRIA NA EXPEDIÇÃO - TRAVA ANTI-APREENSÃO)
+    const boxLaser = document.getElementById('laser-station-box');
+    if (boxLaser) {
+        boxLaser.classList.remove('flash-success');
+        boxLaser.classList.remove('flash-error-shake');
+        void boxLaser.offsetWidth; // Força reflow para disparar a animação
+        boxLaser.classList.add('flash-error-shake');
+        setTimeout(() => boxLaser.classList.remove('flash-error-shake'), 1200);
+    }
+
     playAudioFeedback('bloqueado');
     adicionarUltimoBipado(guia, 'bloqueado');
 
@@ -4820,3 +4828,164 @@ window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 document.addEventListener('DOMContentLoaded', () => {
     navegarAbaPrincipal('hub');
 });
+
+
+
+// ==============================================================
+// GESTÃO DE RETORNO BANCÁRIO ITAÚ SISPAG (CNAB 240)
+// ==============================================================
+let arquivoRetornoSelecionado = null;
+
+function abrirModalUploadRetorno() {
+    arquivoRetornoSelecionado = null;
+    const modal = document.getElementById('modal-upload-retorno-itau');
+    if (!modal) return;
+    
+    const info = document.getElementById('retorno-selected-file-info');
+    if (info) info.style.display = 'none';
+    const drop = document.getElementById('dropzone-retorno-itau');
+    if (drop) drop.style.display = 'block';
+    const feedback = document.getElementById('retorno-feedback-area');
+    if (feedback) feedback.style.display = 'none';
+    const btn = document.getElementById('btn-confirmar-upload-retorno');
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.innerHTML = 'Processar e Baixar Guias';
+    }
+    modal.style.display = 'flex';
+}
+
+function fecharModalUploadRetorno() {
+    const modal = document.getElementById('modal-upload-retorno-itau');
+    if (modal) modal.style.display = 'none';
+}
+
+function handleFileSelectRetorno(files) {
+    if (!files || !files.length) return;
+    const file = files[0];
+    arquivoRetornoSelecionado = file;
+
+    const drop = document.getElementById('dropzone-retorno-itau');
+    if (drop) drop.style.display = 'none';
+    const info = document.getElementById('retorno-selected-file-info');
+    if (info) info.style.display = 'flex';
+    const fn = document.getElementById('retorno-filename');
+    if (fn) fn.textContent = file.name;
+    const fs = document.getElementById('retorno-filesize');
+    if (fs) fs.textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+    const btn = document.getElementById('btn-confirmar-upload-retorno');
+    if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+}
+
+function handleDropRetorno(event) {
+    event.preventDefault();
+    const box = document.getElementById('dropzone-retorno-itau');
+    if (box) box.style.borderColor = 'rgba(255,255,255,0.18)';
+    if (event.dataTransfer && event.dataTransfer.files) {
+        handleFileSelectRetorno(event.dataTransfer.files);
+    }
+}
+
+function cancelarArquivoRetornoSelecionado() {
+    arquivoRetornoSelecionado = null;
+    const input = document.getElementById('file-input-retorno');
+    if (input) input.value = '';
+    const info = document.getElementById('retorno-selected-file-info');
+    if (info) info.style.display = 'none';
+    const drop = document.getElementById('dropzone-retorno-itau');
+    if (drop) drop.style.display = 'block';
+    const btn = document.getElementById('btn-confirmar-upload-retorno');
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    }
+}
+
+async function executarUploadRetornoItau() {
+    if (!arquivoRetornoSelecionado) return;
+    const btn = document.getElementById('btn-confirmar-upload-retorno');
+    const feedback = document.getElementById('retorno-feedback-area');
+    
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Processando CNAB 240...';
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('retornoFile', arquivoRetornoSelecionado);
+
+        const res = await fetch('/api/cnab/upload-retorno', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Erro ao processar arquivo de retorno.');
+        }
+
+        playAudioFeedback('liberado');
+
+        const totalBaixadas = data.resumo ? data.resumo.baixadas : (data.atualizadas ? data.atualizadas.length : 0);
+        const totalLidas = data.resumo ? data.resumo.totalProcessadas : totalBaixadas;
+
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `
+                <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 14px 18px; color: #34D399;">
+                    <div style="font-weight: 800; font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                        <span>✅ Conciliação Bancária Concluída!</span>
+                    </div>
+                    <div style="font-size: 13px; color: #CBD5E1; line-height: 1.5;">
+                        • <strong>${totalBaixadas}</strong> guias autenticadas e quitadas no Itaú SISPAG.<br>
+                        • Total de registros processados: <strong>${totalLidas}</strong><br>
+                        • Cargas liberadas imediatamente para embarque na Doca.
+                    </div>
+                </div>
+            `;
+        }
+
+        if (btn) {
+            btn.innerHTML = '✓ Concluído com Sucesso!';
+        }
+
+        // Recarrega as cargas da doca e os números
+        setTimeout(async () => {
+            if (typeof carregarCargasDocaReais === 'function') {
+                await carregarCargasDocaReais();
+            }
+            if (typeof inicializarPainelFintechDoca === 'function') {
+                inicializarPainelFintechDoca();
+            }
+        }, 1200);
+
+    } catch (err) {
+        playAudioFeedback('bloqueado');
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 14px 18px; color: #F87171;">
+                    <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">Falha no processamento:</div>
+                    <div style="font-size: 12.5px;">${err.message || 'Erro ao processar o arquivo de retorno'}</div>
+                </div>
+            `;
+        }
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Tentar Novamente';
+        }
+    }
+}
+
+window.abrirModalUploadRetorno = abrirModalUploadRetorno;
+window.fecharModalUploadRetorno = fecharModalUploadRetorno;
+window.handleFileSelectRetorno = handleFileSelectRetorno;
+window.handleDropRetorno = handleDropRetorno;
+window.cancelarArquivoRetornoSelecionado = cancelarArquivoRetornoSelecionado;
+window.executarUploadRetornoItau = executarUploadRetornoItau;

@@ -351,6 +351,21 @@
             transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
         }
 
+        
+        /* Animações da Trava Anti-Apreensão da Doca */
+        @keyframes shakeLaserError {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60%, 90% { transform: translateX(6px); }
+        }
+
+        .laser-station-card.flash-error-shake {
+            animation: shakeLaserError 0.45s cubic-bezier(.36,.07,.19,.97) both !important;
+            border-color: #EF4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35), 0 8px 25px rgba(239, 68, 68, 0.25) !important;
+            background-color: rgba(239, 68, 68, 0.05) !important;
+        }
+
         .laser-station-card.flash-success {
             border-color: #10B981 !important;
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25) !important;
@@ -1617,6 +1632,11 @@
                     </div>
 
                     <div style="display: flex; gap: 12px; align-items: center;">
+                        <!-- BOTAO UPLOAD RETORNO ITAU CNAB 240 -->
+                        <button type="button" id="btn-doca-upload-retorno" onclick="abrirModalUploadRetorno()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" title="Subir arquivo de retorno do Itaú SISPAG para conciliação automática das guias">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span>Subir Retorno Itaú (.RET)</span>
+                        </button>
                         <a id="btn-doca-baixar-remessa" href="#" onclick="executarDownloadRemessaDoca(event)" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45); cursor: pointer; transition: transform 0.15s ease;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             <span id="btn-doca-baixar-remessa-text">Baixar Arquivo de Remessa (.TXT)</span>
@@ -2461,6 +2481,56 @@
                 </button>
                 <button onclick="fecharModalBipagem()" style="width: 100%; height: 44px; background: #ffffff; color: #182536; font-size: 13px; font-weight: 600; border: 1.5px solid #CBD5E1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;">
                     Separar Caixa na Expedição & Próximo Volume (Enter)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- ==================== MODAL: UPLOAD RETORNO ITAU SISPAG ==================== -->
+    <div id="modal-upload-retorno-itau" style="display: none; position: fixed; inset: 0; background: rgba(11, 15, 25, 0.82); backdrop-filter: blur(8px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #0E1626; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 18px; width: 100%; max-width: 540px; padding: 28px 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #F1F5F9; position: relative;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10B981;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF;">Conciliação de Retorno Itaú</h3>
+                        <p style="margin: 3px 0 0; font-size: 12.5px; color: #94A3B8;">Importe o arquivo <strong>.RET</strong> do SISPAG para liquidar as guias</p>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalUploadRetorno()" style="background: none; border: none; color: #64748B; font-size: 24px; cursor: pointer; padding: 4px; line-height: 1;">&times;</button>
+            </div>
+
+            <!-- Zona de Drop do Arquivo -->
+            <div id="dropzone-retorno-itau" ondragover="event.preventDefault(); this.style.borderColor='#38BDF8';" ondragleave="this.style.borderColor='rgba(255,255,255,0.15)';" ondrop="handleDropRetorno(event)" onclick="document.getElementById('file-input-retorno').click()" style="border: 2px dashed rgba(255, 255, 255, 0.18); border-radius: 12px; padding: 32px 20px; text-align: center; cursor: pointer; background: rgba(255, 255, 255, 0.02); transition: all 0.2s;">
+                <input type="file" id="file-input-retorno" accept=".ret,.txt,.RET,.TXT" style="display: none;" onchange="handleFileSelectRetorno(this.files)">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8" style="margin-bottom: 12px; opacity: 0.9;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
+                <div style="font-size: 14px; font-weight: 700; color: #F1F5F9; margin-bottom: 4px;">Clique para selecionar ou arraste o arquivo aqui</div>
+                <div style="font-size: 12px; color: #64748B;">Suporta arquivos padrão CNAB 240 (.RET ou .TXT)</div>
+            </div>
+
+            <div id="retorno-selected-file-info" style="display: none; margin-top: 16px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 16px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 18px;">📄</span>
+                    <div>
+                        <div id="retorno-filename" style="font-size: 13px; font-weight: 700; color: #38BDF8;">arquivo.ret</div>
+                        <div id="retorno-filesize" style="font-size: 11px; color: #94A3B8;">0 KB</div>
+                    </div>
+                </div>
+                <button type="button" onclick="cancelarArquivoRetornoSelecionado()" style="background: none; border: none; color: #EF4444; font-size: 13px; font-weight: 700; cursor: pointer;">Remover</button>
+            </div>
+
+            <!-- Feedback de Processamento -->
+            <div id="retorno-feedback-area" style="display: none; margin-top: 18px;"></div>
+
+            <!-- Botões de Ação -->
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="button" onclick="fecharModalUploadRetorno()" style="flex: 1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 11px; cursor: pointer;">Cancelar</button>
+                <button type="button" id="btn-confirmar-upload-retorno" onclick="executarUploadRetornoItau()" disabled style="flex: 2; background: #10B981; border: 1px solid #059669; color: #FFFFFF; font-weight: 800; font-size: 13.5px; border-radius: 10px; padding: 11px; cursor: pointer; opacity: 0.5; transition: all 0.2s;">
+                    Processar e Baixar Guias
                 </button>
             </div>
         </div>
