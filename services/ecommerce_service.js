@@ -301,14 +301,20 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
  * Monta o Cockpit 360° para as guias do lote ativo agrupando por Pedido e Cliente
  */
 async function gerarCockpit360(supabase, tenant, batchId) {
-    // 1. Busca as guias do lote ordenadas pelas emissões mais recentes primeiro (Outubro/atuais primeiro)
-    const { data: guides, error: gErr } = await supabase
+    // 1. Busca as guias ordenadas pelas emissões mais recentes primeiro (26/10, 22/10, Outubro primeiro)
+    let query = supabase
         .from('guides')
         .select('*')
-        .eq('batch_id', batchId)
         .eq('tenant_id', tenant.id)
         .order('nf_issue_date', { ascending: false })
         .order('nf_number', { ascending: false });
+
+    // Se um lote específico for solicitado (diferente de 'todas' e 'ativo'), filtra por ele
+    if (batchId && batchId !== 'ativo' && batchId !== 'todas') {
+        query = query.eq('batch_id', batchId);
+    }
+
+    const { data: guides, error: gErr } = await query;
 
     if (gErr) throw gErr;
     if (!guides || guides.length === 0) return { guias360: [], clientes360: [], resumo: {} };
