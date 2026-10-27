@@ -4467,7 +4467,7 @@ function navegarAbaPrincipal(aba) {
     const abas = ['hub', 'ecommerce', 'dashboard', 'relatorios', 'cargas'];
 
     // Sincroniza visual das abas do pipeline no cabeçalho
-    ['cargas', 'dashboard', 'relatorios'].forEach(k => {
+    ['hub', 'cargas', 'dashboard', 'relatorios'].forEach(k => {
         const btn = document.getElementById(`nav-btn-${k}`);
         if (btn) {
             if (k === aba) btn.classList.add('active');
@@ -4818,5 +4818,5 @@ window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 
 // Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
 document.addEventListener('DOMContentLoaded', () => {
-    navegarAbaPrincipal('cargas');
+    navegarAbaPrincipal('hub');
 });

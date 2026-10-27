@@ -1335,16 +1335,19 @@
 
             <!-- Conexão Fiscal Online -->
                         <!-- PIPELINE LINEAR DO DIA: 3 PASSOS OPERACIONAIS DIRETOS -->
-            <div class="hub-pipeline-nav" id="hub-pipeline-nav">
-                <button type="button" class="hub-pipeline-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
+                        <div class="hub-pipeline-nav" id="hub-pipeline-nav">
+                <button type="button" class="hub-pipeline-btn active" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')" title="Portal de Módulos (6 Cards)">
+                    <span>🏠 Início</span>
+                </button>
+                <button type="button" class="hub-pipeline-btn" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
                     <span>🚚 1. Expedição & SEFAZ</span>
                     <span class="hub-pipeline-badge" id="nav-badge-pendentes">9</span>
                 </button>
                 <button type="button" class="hub-pipeline-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')" title="Geração da Remessa Bancária Itaú (CNAB 240)">
-                    <span>💳 2. Remessa Itaú</span>
+                    <span>🏦 2. Remessa Itaú</span>
                 </button>
                 <button type="button" class="hub-pipeline-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')" title="Manifesto, Romaneio A4 e Auditoria Contábil">
-                    <span>📊 3. Histórico & Auditoria</span>
+                    <span>📄 3. Histórico & Auditoria</span>
                 </button>
             </div>
 
