@@ -50,11 +50,11 @@ function iniciarSSEAtualizacaoDoca() {
                     }
                     if (data.type === 'GUIA_PAGA') {
                         if (typeof showToast === 'function') {
-                            showToast(`🟢 NF-e ${data.nf} LIBERADA! Semáforo atualizado na doca.`, 'success');
+                            showToast(`✓ NF-e ${data.nf} LIBERADA! Semáforo atualizado na doca.`, 'success');
                         }
                     } else if (data.type === 'GUIA_ERRO') {
                         if (typeof showToast === 'function') {
-                            showToast(`🔴 Falha no pagamento da NF-e ${data.nf}: ${data.motivo || 'Erro'}`, 'error');
+                            showToast(`✕ Falha no pagamento da NF-e ${data.nf}: ${data.motivo || 'Erro'}`, 'error');
                         }
                     }
                 }
@@ -241,7 +241,7 @@ function atualizarListaArquivosVisual() {
     listDiv.classList.remove('d-none');
     listDiv.innerHTML = selectedFiles.map((file, idx) => `
         <div class="file-item">
-            <span>📄 ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)</span>
+            <span> ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)</span>
             <span class="remove-file" onclick="removerArquivo(${idx})">✖</span>
         </div>
     `).join('');
@@ -1138,7 +1138,7 @@ async function abrirModalMicrovix() {
         const btnConfirm = document.getElementById('btn-microvix-confirm');
         if (btnConfirm) {
             btnConfirm.disabled    = false;
-            btnConfirm.textContent = '🚀 Iniciar Sincronização';
+            btnConfirm.textContent = 'Iniciar Sincronização';
         }
     }
 
@@ -1234,17 +1234,17 @@ async function executarSincronizacaoMicrovix() {
         if (!resp.ok) {
             showToast(data.error || `Erro ao sincronizar com ${erpNome}.`, 'error');
             btnConfirm.disabled    = false;
-            btnConfirm.textContent = '🚀 Iniciar Sincronização';
+            btnConfirm.textContent = 'Iniciar Sincronização';
             return;
         }
 
         // Exibe resumo no modal
-        let summaryHtml = `<strong style="color:#fff;">✅ ${data.message}</strong><br><br>`;
-        summaryHtml += `📊 <strong>Total no período:</strong> ${data.total ?? 0} notas<br>`;
+        let summaryHtml = `<strong style="color:#fff;">✓ ${data.message}</strong><br><br>`;
+        summaryHtml += `<strong>Total no período:</strong> ${data.total ?? 0} notas<br>`;
         if (data.duplicadas > 0) summaryHtml += `⏭️ <strong>Já importadas (ignoradas):</strong> ${data.duplicadas}<br>`;
-        if (data.novas       > 0) summaryHtml += `🆕 <strong>Novas notas:</strong> ${data.novas}<br>`;
+        if (data.novas       > 0) summaryHtml += `<strong>Novas notas:</strong> ${data.novas}<br>`;
         if (data.sem_difal   > 0) summaryHtml += `➡️ <strong>Sem DIFAL (não precisam de GNRE):</strong> ${data.sem_difal}<br>`;
-        if (data.com_difal   > 0) summaryHtml += `⚡ <strong>Com DIFAL (enviadas para emissão):</strong> ${data.com_difal}<br>`;
+        if (data.com_difal   > 0) summaryHtml += ` <strong>Com DIFAL (enviadas para emissão):</strong> ${data.com_difal}<br>`;
 
         previewContent.innerHTML = summaryHtml;
         preview.style.display    = 'block';
@@ -1260,13 +1260,13 @@ async function executarSincronizacaoMicrovix() {
             }, 1800);
         } else {
             btnConfirm.disabled    = false;
-            btnConfirm.textContent = '✔ Concluído';
+            btnConfirm.textContent = '✓ Concluído';
         }
 
     } catch (err) {
         showToast('Erro de conexão: ' + err.message, 'error');
         btnConfirm.disabled    = false;
-        btnConfirm.textContent = '🚀 Iniciar Sincronização';
+        btnConfirm.textContent = 'Iniciar Sincronização';
     }
 }
 
@@ -1310,11 +1310,11 @@ async function uploadRetornoBancario(event) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Falha ao processar arquivo');
 
-        showToast(`✅ ${data.message}`, 'success');
+        showToast(`✓ ${data.message}`, 'success');
 
         // Mostra resumo detalhado se houver guias atualizadas
         const r = data.resumo;
-        alert(`📊 Conciliação Bancária Concluída!\n\n` +
+        alert(`Conciliação Bancária Concluída!\n\n` +
               `• Total de registros no arquivo: ${r.totalNoArquivo}\n` +
               `• Pagamentos Baixados (00): ${r.baixadas}\n` +
               `• Pagamentos Agendados (BD): ${r.agendadas}\n` +
@@ -1341,7 +1341,7 @@ function atualizarLinkBancoRemessa() {
 
     const banco = bankSelect ? bankSelect.value : 'itau';
     remessaBtn.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}`;
-    remessaBtn.textContent = `📥 Baixar remessa (${banco.toUpperCase()}).txt`;
+    remessaBtn.textContent = `Baixar remessa (${banco.toUpperCase()}).txt`;
 }
 
 /**
@@ -1387,7 +1387,7 @@ async function dispararSyncImediata() {
 
         const data = await res.json();
         if (res.ok) {
-            showToast(`✅ ${data.mensagem || 'Sincronização concluída com sucesso!'}`, 'success');
+            showToast(`✓ ${data.mensagem || 'Sincronização concluída com sucesso!'}`, 'success');
             await carregarHistoricoLotes();
             await carregarStatusSync();
         } else {
@@ -1398,7 +1398,7 @@ async function dispararSyncImediata() {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.textContent = '⚡ Sincronizar Agora';
+            btn.textContent = 'Sincronizar Agora';
         }
     }
 }
@@ -1473,7 +1473,7 @@ async function confirmarAutorizacaoEmissao() {
         if (!res.ok) throw new Error(data.error || "Falha ao autorizar transmissão.");
 
         fecharModalAutorizacaoEmissao();
-        showToast("🚀 Transmissão autorizada! Acompanhe o envio no terminal.", 'success');
+        showToast("Transmissão autorizada! Acompanhe o envio no terminal.", 'success');
 
         // Fecha o banner de aprovação imediatamente e inicia polling do lote
         const banner = document.getElementById('batch-approval-banner');
@@ -1488,7 +1488,7 @@ async function confirmarAutorizacaoEmissao() {
     } finally {
         if (btnConfirm) {
             btnConfirm.disabled = false;
-            btnConfirm.textContent = '🚀 Confirmar e Transmitir na SEFAZ';
+            btnConfirm.textContent = 'Confirmar e Transmitir na SEFAZ';
         }
     }
 }
@@ -1595,7 +1595,7 @@ async function confirmarAutorizacaoPagamento() {
         if (!res.ok) throw new Error(data.error || "Falha ao autorizar pagamento bancário.");
 
         fecharModalAutorizacaoPagamento();
-        showToast(`💳 Pagamento bancário autorizado! Arquivo CNAB (${banco.toUpperCase()}) gerado com sucesso.`, 'success');
+        showToast(`Pagamento bancário autorizado! Arquivo CNAB (${banco.toUpperCase()}) gerado com sucesso.`, 'success');
 
         // Dispara o download automático do arquivo remessa.txt (máximo 7 caracteres exigido pelo Itaú/bancos)
         const link = document.createElement('a');
@@ -1615,7 +1615,7 @@ async function confirmarAutorizacaoPagamento() {
     } finally {
         if (btnConfirm) {
             btnConfirm.disabled = false;
-            btnConfirm.textContent = '💳 Autorizar e Gerar CNAB 240';
+            btnConfirm.textContent = 'Autorizar e Gerar CNAB 240';
         }
     }
 }
@@ -1688,7 +1688,7 @@ async function abrirModalAutorizacaoAsaas() {
             }
             if (coberturaEl) {
                 if (saldoNum >= totalValor) {
-                    coberturaEl.innerHTML = `<span style="color: #10b981;">✔ Saldo suficiente para liquidação</span>`;
+                    coberturaEl.innerHTML = `<span style="color: #10b981;">✓ Saldo suficiente para liquidação</span>`;
                 } else {
                     const falta = totalValor - saldoNum;
                     coberturaEl.innerHTML = `<span style="color: #f59e0b;">⚠ Saldo insuficiente: abastecer R$ ${falta.toFixed(2).replace('.', ',')}</span>`;
@@ -1944,7 +1944,7 @@ function formatarBRL(n) {
 }
 
 function copiarCodigoBarras(cod) {
-    const done = () => showToast('📋 Código de barras copiado!', 'success');
+    const done = () => showToast('Código de barras copiado!', 'success');
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(cod).then(done).catch(() => showToast(cod, 'info'));
     } else {
@@ -2027,12 +2027,12 @@ function renderizarConciliacao() {
     }
 
     const rotulo = {
-        paga: '<span style="color:#157347; font-weight:700;">🟢 Paga</span>',
-        agendada: '<span style="color:#1D4ED8; font-weight:700;">🔵 Agendada</span>',
-        a_pagar: '<span style="color:#DC2626; font-weight:700;">🔴 A pagar</span>',
+        paga: '<span style="color:#157347; font-weight:700;"><span class="status-dot green"></span>Paga</span>',
+        agendada: '<span style="color:#1D4ED8; font-weight:700;"><span class="status-dot blue"></span>Agendada</span>',
+        a_pagar: '<span style="color:#DC2626; font-weight:700;"><span class="status-dot red"></span>A pagar</span>',
         rejeitada: '<span style="color:#C2410C; font-weight:700;">⚠ Rejeitada</span>',
         sem_guia: '<span style="color:#92400E; font-weight:700;">⚠ Sem guia emitida</span>',
-        sp_manual: '<span style="color:#0F766E; font-weight:700;">📦 SP manual</span>'
+        sp_manual: '<span style="color:#0F766E; font-weight:700;"><span class="status-dot purple"></span>SP manual</span>'
     };
 
     const body = document.getElementById('conc-tabela-body');
@@ -2049,7 +2049,7 @@ function renderizarConciliacao() {
                     <td style="padding:6px 8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(g.customer_name)}</td>
                     <td style="padding:6px 8px; text-align:right; font-family:'JetBrains Mono',monospace;">${formatarBRL(g.value)}</td>
                     <td style="padding:6px 8px;">${rotulo[g.situacao_pagamento] || rotulo.a_pagar}${g.paid_at ? `<div style="font-size:10.5px; color:#5B6B7F;">${formatarDataCurta(g.paid_at)}</div>` : ''}</td>
-                    <td style="padding:6px 8px; text-align:right;">${bar.length >= 44 ? `<button type="button" onclick="copiarCodigoBarras('${bar}')" style="border:none; background:none; cursor:pointer; color:#475569; font-size:11px;">📋 copiar</button>` : '—'}</td>
+                    <td style="padding:6px 8px; text-align:right;">${bar.length >= 44 ? `<button type="button" onclick="copiarCodigoBarras('${bar}')" style="border:none; background:none; cursor:pointer; color:#475569; font-size:11px;">copiar</button>` : '—'}</td>
                 </tr>`;
             }).join('');
     }
@@ -2100,7 +2100,7 @@ async function marcarGuiasPagas(ids, paga = true) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Falha ao conciliar.');
-        showToast(`✔ ${data.message}`, 'success');
+        showToast(`✓ ${data.message}`, 'success');
         window.conciliacaoSelecionadas.clear();
         await carregarCargasDocaReais();
     } catch (err) {
@@ -2127,13 +2127,13 @@ async function enviarRetornoBancario(inputEl) {
         if (!res.ok) throw new Error(data.error || 'Falha ao processar retorno.');
         const r = data.resumo || {};
         if (out) {
-            out.innerHTML = `<strong style="color:#157347;">✔ ${escapeHtml(data.message)}</strong><br>` +
+            out.innerHTML = `<strong style="color:#157347;">✓ ${escapeHtml(data.message)}</strong><br>` +
                 `No arquivo: ${r.totalNoArquivo ?? 0} · Pagas: ${r.baixadas ?? 0} · Agendadas: ${r.agendadas ?? 0} · Rejeitadas: ${r.rejeitadas ?? 0} · Não localizadas: ${r.naoLocalizadasNoBanco ?? 0}`;
         }
         showToast(data.message, 'success');
         await carregarCargasDocaReais();
     } catch (err) {
-        if (out) out.innerHTML = `<span style="color:#B42318; font-weight:600;">❌ ${escapeHtml(err.message)}</span>`;
+        if (out) out.innerHTML = `<span style="color:#B42318; font-weight:600;">✕ ${escapeHtml(err.message)}</span>`;
         showToast(err.message, 'error');
     } finally {
         inputEl.value = '';
@@ -2210,7 +2210,7 @@ function atualizarLinksRemessaDoca() {
                 btn.style.borderColor = '#3B82F6';
                 btn.style.color = '#FFFFFF';
             } else {
-                btnText.textContent = '✅ Todas as Guias deste Lote estão Pagas';
+                btnText.textContent = 'Todas as Guias deste Lote estão Pagas';
                 btn.style.background = 'rgba(16, 185, 129, 0.2)';
                 btn.style.borderColor = 'rgba(16, 185, 129, 0.5)';
                 btn.style.color = '#34D399';
@@ -2232,7 +2232,7 @@ function executarDownloadRemessaDoca(event) {
     const pendentesCount = window.currentResumoLote?.pendentes !== undefined ? window.currentResumoLote.pendentes : 0;
     if (pendentesCount === 0) {
         if (event) event.preventDefault();
-        showToast("⚠️ Todas as guias deste lote já foram quitadas/pagas anteriormente. Nenhuma nova remessa é necessária para evitar pagamento em duplicidade no Itaú.", "warning");
+        showToast(" Todas as guias deste lote já foram quitadas/pagas anteriormente. Nenhuma nova remessa é necessária para evitar pagamento em duplicidade no Itaú.", "warning");
         return;
     }
     const banco = document.getElementById('doca-select-banco')?.value || 'itau';
@@ -2249,7 +2249,7 @@ function executarDownloadRemessaDoca(event) {
         event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
         event.currentTarget.download = `REM${dia}${mes}.txt`; // Itaú SISPAG exige máx 7 chars (ex: REM2610.txt)
     }
-    showToast(`📥 Baixando Remessa com ${pendentesCount} guias pendentes para débito em ${dataFmt}...`, "success");
+    showToast(`Baixando Remessa com ${pendentesCount} guias pendentes para débito em ${dataFmt}...`, "success");
 }
 
 async function autorizarPagamentoLoteComData() {
@@ -2281,7 +2281,7 @@ async function autorizarPagamentoLoteComData() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Falha ao autorizar pagamento.");
 
-        showToast(`💳 Lote autorizado com sucesso! Remessa gerada com débito agendado para ${dataFmt}.`, 'success');
+        showToast(`Lote autorizado com sucesso! Remessa gerada com débito agendado para ${dataFmt}.`, 'success');
 
         // Dispara download automático da remessa com a data escolhida (máximo 7 caracteres exigido pelo Itaú/bancos)
         const link = document.createElement('a');
@@ -2326,7 +2326,7 @@ function baixarXmlLoteSpComData(event, apenasSelecionadas = false) {
     }
 
     const [ano, mes, dia] = dataPag.split('-');
-    showToast(`📦 Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
+    showToast(`Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
     window.open(url, '_blank');
 }
 
@@ -2369,7 +2369,7 @@ async function reemitirGuiasSefazComData(apenasSelecionadas = false) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Falha ao transmitir guias na SEFAZ.");
 
-        showToast(`🚀 Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
+        showToast(`Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
         if (typeof iniciarPollingLote === 'function') {
             iniciarPollingLote(window.activeBatchId);
         }
@@ -2414,7 +2414,7 @@ async function confirmarAutorizacaoAsaas() {
 
     if (btnConfirm) {
         btnConfirm.disabled = false;
-        btnConfirm.textContent = '⚡ Autorizar e Liquidar Agora';
+        btnConfirm.textContent = 'Autorizar e Liquidar Agora';
     }
 }
 
@@ -2499,7 +2499,7 @@ async function autorizarPagamentoGuiaAvulsa(guideId, nfNumber, skipConfirm = tru
     }
 
     try {
-        showToast(`⚡ Liquidando NF ${nfNumber} no Asaas...`, 'warning');
+        showToast(`Liquidando NF ${nfNumber} no Asaas...`, 'warning');
         if (guideId && !guideId.startsWith('mock-')) {
             try {
                 await fetch(`/api/guide/authorize-payment-asaas/${guideId}`, {
@@ -2556,7 +2556,7 @@ async function autorizarPagamentoGuiaAvulsa(guideId, nfNumber, skipConfirm = tru
         }
 
         playAudioFeedback('liberado');
-        showToast(`✔ NF ${nfNumber} PAGA com sucesso! Portão Fiscal Liberado.`, 'success');
+        showToast(`✓ NF ${nfNumber} PAGA com sucesso! Portão Fiscal Liberado.`, 'success');
 
         // 4. Atualiza modal para liberado
         if (currentGuiaPortaoFiscal) {
@@ -2609,7 +2609,7 @@ function confirmarRegistroDevolucao() {
 
     fecharModalDevolucoes();
     playAudioFeedback('liberado');
-    showToast(`✔ Devolução NF ${nfEntrada} vinculada à NF ${nfSaida}! Crédito de R$ ${valorEstorno.toFixed(2).replace('.', ',')} compensado no lote.`, 'success');
+    showToast(`✓ Devolução NF ${nfEntrada} vinculada à NF ${nfSaida}! Crédito de R$ ${valorEstorno.toFixed(2).replace('.', ',')} compensado no lote.`, 'success');
 }
 window.confirmarRegistroDevolucao = confirmarRegistroDevolucao;
 
@@ -2675,7 +2675,7 @@ async function handleBipagemPortaoFiscal(event) {
         exibirResultadoPortaoFiscal(guiaEncontrada);
     } else {
         playAudioFeedback('bloqueado');
-        showToast(`❌ Volume não localizado no lote ativo! (Código lido: ${termo.slice(0, 20)}...)`, 'error');
+        showToast(`✕ Volume não localizado no lote ativo! (Código lido: ${termo.slice(0, 20)}...)`, 'error');
         if (input) {
             input.select();
             input.focus();
@@ -2973,19 +2973,19 @@ function renderizarPaginaDoca(pagina = 1) {
                 }
 
                 const badgesSituacao = {
-                    paga: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); font-weight:700;">🟢 Paga${dtPg}</span>`,
-                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); font-weight:700;">🔵 Agendada</span>',
-                    pendente: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;">🟡 Pendente</span>',
-                    a_pagar: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;">🟡 Pendente</span>',
-                    nao_paga: '<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;">🔴 Não Paga / Retida</span>',
-                    sem_guia: '<span class="tag-status" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;">🔴 Sem Guia</span>',
-                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4; font-weight:700;">📦 SP Manual</span>',
+                    paga: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); font-weight:700;"><span class="status-dot green"></span>Paga${dtPg}</span>`,
+                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); font-weight:700;"><span class="status-dot blue"></span>Agendada</span>',
+                    pendente: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;"><span class="status-dot amber"></span>Pendente</span>',
+                    a_pagar: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;"><span class="status-dot amber"></span>Pendente</span>',
+                    nao_paga: '<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;"><span class="status-dot red"></span>Não Paga / Retida</span>',
+                    sem_guia: '<span class="tag-status" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;"><span class="status-dot red"></span>Sem Guia</span>',
+                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4; font-weight:700;"><span class="status-dot purple"></span>SP Manual</span>',
                     rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; font-weight:700;">⚠ Rejeitada</span>'
                 };
                 const statusBadge = badgesSituacao[sitCalc] || badgesSituacao.nao_paga;
                 const barNum = String(g.barcode || '').replace(/\D/g, '');
                 const btnCopiar = barNum.length >= 44
-                    ? `<button type="button" class="btn-table-action" style="color:#475569; background:none; border:none; cursor:pointer;" title="Copiar código de barras" onclick="copiarCodigoBarras('${barNum}')">📋 Cód. barras</button>`
+                    ? `<button type="button" class="btn-table-action" style="color:#475569; background:none; border:none; cursor:pointer;" title="Copiar código de barras" onclick="copiarCodigoBarras('${barNum}')">Cód. barras</button>`
                     : '';
 
                 return `
@@ -3005,7 +3005,7 @@ function renderizarPaginaDoca(pagina = 1) {
                         </td>
                         <td>
                             <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">20/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok">🕒 ${10 + (inicio + idx) * 2}m na doca</span>
+                            <span class="dock-time-pill time-ok"> ${10 + (inicio + idx) * 2}m na doca</span>
                         </td>
                         <td>
                             <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
@@ -3023,20 +3023,20 @@ function renderizarPaginaDoca(pagina = 1) {
                         <td style="text-align: center;">
                             ${(() => {
                                 if (sitCalc === 'paga') {
-                                    return '<span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 11.5px;">🟢 Já Paga</span>';
+                                    return '<span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 11.5px;"><span class="status-dot green"></span> Já Paga</span>';
                                 }
                                 if (isSp) {
-                                    return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', 'SP', ${g.value || 0})" class="btn-table-action" style="background: rgba(15,118,110,0.15); color: #2DD4BF; border: 1px solid rgba(20,184,166,0.35); font-weight: 700; border-radius: 6px; padding: 3px 8px; cursor: pointer;" title="Definir data e gerar XML de lote SP">⚡ Ajustar Data SP</button>`;
+                                    return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', 'SP', ${g.value || 0})" class="btn-table-action" style="background: rgba(15,118,110,0.15); color: #2DD4BF; border: 1px solid rgba(20,184,166,0.35); font-weight: 700; border-radius: 6px; padding: 3px 8px; cursor: pointer;" title="Definir data e gerar XML de lote SP">Ajustar Data SP</button>`;
                                 }
                                 if (barNum.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP') {
                                     return `
                                         <div style="display: flex; flex-direction: column; gap: 3px; align-items: center;">
-                                            <a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #34D399; font-weight: 700; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 2px 7px;" title="Visualizar e Imprimir Guia Oficial SEFAZ">🏛️ Guia Oficial</a>
+                                            <a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #34D399; font-weight: 700; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 2px 7px;" title="Visualizar e Imprimir Guia Oficial SEFAZ">Guia Oficial</a>
                                             <button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" style="background: none; border: none; color: #60A5FA; font-size: 10.5px; font-weight: 600; cursor: pointer; text-decoration: underline;" title="Reemitir guia com nova data de pagamento">🔄 Reemitir</button>
                                         </div>
                                     `;
                                 }
-                                return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-table-action" style="background: rgba(37, 99, 235, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.5); font-weight: 700; border-radius: 6px; padding: 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(37,99,235,0.25);" title="Emitir Guia Oficial na SEFAZ com seleção de data"><span style="color: #FBBF24;">⚡</span> Emitir SEFAZ</button>`;
+                                return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-table-action" style="background: rgba(37, 99, 235, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.5); font-weight: 700; border-radius: 6px; padding: 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(37,99,235,0.25);" title="Emitir Guia Oficial na SEFAZ com seleção de data"><span style="color: #FBBF24;"></span> Emitir SEFAZ</button>`;
                             })()}
                         </td>
                         <td style="text-align: right;">
@@ -3049,7 +3049,7 @@ function renderizarPaginaDoca(pagina = 1) {
                                 const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
                                 const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
                                 if (canAuth) {
-                                    return `<button type="button" onclick="marcarGuiasPagas(['${escapeHtml(g.id)}'], true)" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;" title="Conciliar manualmente: marcar esta guia como paga">✔ Marcar paga</button>`;
+                                    return `<button type="button" onclick="marcarGuiasPagas(['${escapeHtml(g.id)}'], true)" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;" title="Conciliar manualmente: marcar esta guia como paga">✓ Marcar paga</button>`;
                                 } else {
                                     return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
                                 }
@@ -3593,7 +3593,7 @@ function baixarXmlLoteSpComData(event, apenasSelecionadas = false) {
     }
 
     const [ano, mes, dia] = dataPag.split('-');
-    showToast(`📦 Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
+    showToast(`Gerando XML Lote SP com data de pagamento/vencimento ${dia}/${mes}/${ano}...`, 'success');
     window.open(url, '_blank');
 }
 
@@ -3636,7 +3636,7 @@ async function reemitirGuiasSefazComData(apenasSelecionadas = false) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Falha ao transmitir guias na SEFAZ.");
 
-        showToast(`🚀 Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
+        showToast(`Transmissão SEFAZ iniciada para a data ${dataFmt}! Aguarde alguns segundos e atualize a página.`, 'success');
         if (typeof iniciarPollingLote === 'function') {
             iniciarPollingLote(window.activeBatchId);
         }
@@ -3820,7 +3820,7 @@ function abrirModalPagamento360(guideId) {
 
     // DIFAL e Status Itaú
     const elTipoDifal = document.getElementById('modal-pag-difal-tipo');
-    if (elTipoDifal) elTipoDifal.textContent = g.is_sp ? '🏛️ Guia DIFAL SP (DARE - Código 246)' : `🏛️ Guia DIFAL (GNRE Partilha ${g.uf})`;
+    if (elTipoDifal) elTipoDifal.textContent = g.is_sp ? 'Guia DIFAL SP (DARE - Código 246)' : `Guia DIFAL (GNRE Partilha ${g.uf})`;
     const elValDifal = document.getElementById('modal-pag-difal-valor');
     if (elValDifal) elValDifal.textContent = formatarBRL(g.valor_difal);
 
@@ -3860,7 +3860,7 @@ function abrirModalPagamento360(guideId) {
                         ${escapeHtml(g.barcode)}
                     </div>
                     <button type="button" class="btn sm" onclick="navigator.clipboard.writeText('${escapeHtml(g.barcode)}'); showToast('Código de barras copiado!', 'success');" style="flex-shrink: 0;">
-                        📋 Copiar
+                        Copiar
                     </button>
                 </div>
             `;
@@ -3879,7 +3879,7 @@ function abrirModalPagamento360(guideId) {
             <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">
                 ${it.foto_url 
                     ? `<img src="${escapeHtml(it.foto_url)}" style="width: 36px; height: 46px; border-radius: 4px; object-fit: cover;">`
-                    : `<div style="width: 36px; height: 46px; border-radius: 4px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px;">👗</div>`
+                    : `<div style="width: 36px; height: 46px; border-radius: 4px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px;"></div>`
                 }
                 <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -4084,24 +4084,24 @@ function renderizarCards360(data) {
 
     function obterIconePeca(desc) {
         const d = String(desc || '').toUpperCase();
-        if (d.includes('BAG') || d.includes('BOLSA')) return '👜';
+        if (d.includes('BAG') || d.includes('BOLSA')) return '';
         if (d.includes('CALCA') || d.includes('SHORTS') || d.includes('BERMUDA')) return '👖';
-        if (d.includes('MACACAO') || d.includes('VESTIDO')) return '👗';
-        if (d.includes('BLUSA') || d.includes('REGATA') || d.includes('COLETE') || d.includes('T-SHIRT') || d.includes('CAMISA')) return '👚';
+        if (d.includes('MACACAO') || d.includes('VESTIDO')) return '';
+        if (d.includes('BLUSA') || d.includes('REGATA') || d.includes('COLETE') || d.includes('T-SHIRT') || d.includes('CAMISA')) return '';
         if (d.includes('SAIA')) return '🥻';
-        return '👗';
+        return '';
     }
 
     function obterBadgeSituacaoDifal(g) {
         if (g.is_paga || g.status_bancario === 'paga') {
             const dt = g.paid_at ? ` · ${formatarDataCurta(g.paid_at)}` : '';
-            return `<span class="tag-status" style="background:rgba(16,185,129,0.18); color:#34D399; border:1px solid rgba(16,185,129,0.4); font-weight:700;">🟢 Paga (Liquidada)${dt}</span>`;
+            return `<span class="tag-status" style="background:rgba(16,185,129,0.18); color:#34D399; border:1px solid rgba(16,185,129,0.4); font-weight:700;"><span class="status-dot green"></span>Paga (Liquidada)${dt}</span>`;
         }
         if (g.status_bancario === 'agendada') {
-            return `<span class="tag-status" style="background:rgba(59,130,246,0.18); color:#60A5FA; border:1px solid rgba(59,130,246,0.4); font-weight:700;">🔵 Agendada no Banco</span>`;
+            return `<span class="tag-status" style="background:rgba(59,130,246,0.18); color:#60A5FA; border:1px solid rgba(59,130,246,0.4); font-weight:700;"><span class="status-dot blue"></span>Agendada no Banco</span>`;
         }
         if (g.status_bancario === 'a_pagar') {
-            return `<span class="tag-status" style="background:rgba(245,158,11,0.18); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); font-weight:700;">🟡 A Pagar (Pendente)</span>`;
+            return `<span class="tag-status" style="background:rgba(245,158,11,0.18); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); font-weight:700;"><span class="status-dot amber"></span>A Pagar (Pendente)</span>`;
         }
         if (g.status_bancario === 'sp_manual') {
             return `<span class="tag-status" style="background:rgba(20,184,166,0.18); color:#2DD4BF; border:1px solid rgba(20,184,166,0.4); font-weight:700;">📦 SP · A Pagar Manual</span>`;
@@ -4109,7 +4109,7 @@ function renderizarCards360(data) {
         if (g.status_bancario === 'rejeitada') {
             return `<span class="tag-status" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">⚠ Rejeitada / Divergência</span>`;
         }
-        return `<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">🔴 Não Paga / Retida</span>`;
+        return `<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;"><span class="status-dot red"></span>Não Paga / Retida</span>`;
     }
 
     // ==========================================
@@ -4172,7 +4172,7 @@ function renderizarCards360(data) {
                                 </div>
                             </div>
                             <span class="badge-pieces-count">
-                                🛍️ ${c.total_pecas} ${c.total_pecas === 1 ? 'peça' : 'peças'} (${c.pedidos.length} ${c.pedidos.length === 1 ? 'pedido' : 'pedidos'})
+                                 ${c.total_pecas} ${c.total_pecas === 1 ? 'peça' : 'peças'} (${c.pedidos.length} ${c.pedidos.length === 1 ? 'pedido' : 'pedidos'})
                             </span>
                         </div>
 
@@ -4233,7 +4233,7 @@ function renderizarCards360(data) {
                         <div class="card-actions-group">
                             ${c.pedidos.map(p => `
                                 <a href="${escapeHtml(p.danfe_url)}" target="_blank" class="btn-card-action" title="DANFE NF-e ${p.nf_number}">
-                                    📄 NF ${p.nf_number}
+                                    NF ${p.nf_number}
                                 </a>
                             `).join('')}
                         </div>
@@ -4249,7 +4249,7 @@ function renderizarCards360(data) {
     // ==========================================
     if (guiasFiltradas.length === 0) {
         grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: #64748B;">
-            <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+            <div style="font-size: 24px; margin-bottom: 8px;"></div>
             <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Nenhum pedido encontrado</div>
             <p style="font-size: 13px; color: #94A3B8; margin-top: 4px;">Tente alterar os filtros de período ou situação da DIFAL acima.</p>
         </div>`;
@@ -4350,18 +4350,18 @@ function renderizarCards360(data) {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                         <div>
                             <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}" style="font-size: 13.5px; margin-bottom: 2px;">
-                                <span>👤 ${escapeHtml(g.customer_name)}</span>
+                                <span> ${escapeHtml(g.customer_name)}</span>
                             </div>
                             <div class="sale-dest-pill">
-                                <span>📍 ${escapeHtml(g.cidade)}</span>
+                                <span> ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
                                 <span style="margin: 0 3px; color: #CBD5E1;">•</span>
-                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;">📅 ${dataExibir}</span>
+                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;"> ${dataExibir}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
                             <span class="badge-pieces-count">
-                                🛍️ ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças'}
+                                 ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças'}
                             </span>
                             <div style="font-size: 11px; font-weight: 700; color: #2563EB; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
                                 Pedido #${escapeHtml(g.order_number)}
@@ -4395,12 +4395,12 @@ function renderizarCards360(data) {
                     </div>
                     <div class="card-actions-group">
                         <button type="button" class="btn-card-action" style="background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; font-weight:700;" onclick="event.stopPropagation(); abrirModalPagamento360('${g.id}')" title="Ver parcelas e informações de pagamento">
-                            💳 Pagamento & DIFAL
+                            Pagamento & DIFAL
                         </button>
                         <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" onclick="event.stopPropagation();" title="Visualizar DANFE Oficial">
-                            📄 DANFE
+                            DANFE
                         </a>
-                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" onclick="event.stopPropagation();" title="Visualizar Guia GNRE">🏛️ Guia</a>` : ''}
+                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" onclick="event.stopPropagation();" title="Visualizar Guia GNRE">Guia</a>` : ''}
                     </div>
                 </div>
             </div>
@@ -4425,7 +4425,7 @@ async function carregarRadarDevolucoes() {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="7" style="text-align: center; padding: 48px 16px; color: #64748B;">
-                        <div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>
+                        <div style="font-size: 28px; margin-bottom: 8px;"></div>
                         <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Nenhuma devolução pendente no momento</div>
                         <p style="font-size: 12.5px; color: #64748B; margin-top: 4px;">Todas as DIFALs do lote correspondem a vendas ativas sem cancelamento.</p>
                     </td>
@@ -4591,7 +4591,7 @@ function abrirModalEmitirSefazIndividual(guideId, nf, uf, valor) {
     const btn = document.getElementById('btn-confirmar-sefaz-ind');
     if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<span>⚡ Transmitir à SEFAZ</span>`;
+        btn.innerHTML = `<span>Transmitir à SEFAZ</span>`;
     }
 
     modal.style.display = 'flex';
@@ -4643,11 +4643,11 @@ async function executarEmissaoSefazIndividual() {
             feedback.style.border = '1px solid rgba(16, 185, 129, 0.4)';
             const barInfo = data.barcode ? `<div style="font-family: monospace; font-size: 11px; margin-top: 6px; word-break: break-all; color: #FFFFFF;"><b>Código de Barras:</b> ${data.barcode}</div>` : '';
             feedback.innerHTML = `
-                <div>✔ <b>Guia emitida e autorizada com sucesso na SEFAZ!</b></div>
+                <div>✓ <b>Guia emitida e autorizada com sucesso na SEFAZ!</b></div>
                 ${barInfo}
                 <div style="margin-top: 10px;">
                     <a href="${data.downloadUrl || `/api/guide/download/${guideId}`}" target="_blank" class="btn sm" style="background: #10B981; color: white; text-decoration: none; font-weight: 700; padding: 6px 12px; border-radius: 6px; display: inline-block;">
-                        🏛️ Abrir Guia Oficial SEFAZ
+                         Abrir Guia Oficial SEFAZ
                     </a>
                 </div>
             `;
@@ -4660,7 +4660,7 @@ async function executarEmissaoSefazIndividual() {
         }
 
         if (btn) {
-            btn.innerHTML = `<span>✔ Emitida</span>`;
+            btn.innerHTML = `<span>✓ Emitida</span>`;
         }
 
         setTimeout(() => {
@@ -4673,12 +4673,12 @@ async function executarEmissaoSefazIndividual() {
             feedback.style.background = 'rgba(239, 68, 68, 0.15)';
             feedback.style.color = '#F87171';
             feedback.style.border = '1px solid rgba(239, 68, 68, 0.4)';
-            feedback.innerHTML = `❌ <b>Erro na transmissão SEFAZ:</b> ${err.message}`;
+            feedback.innerHTML = `✕ <b>Erro na transmissão SEFAZ:</b> ${err.message}`;
         }
         showToast(err.message, "error");
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `<span>⚡ Tentar Novamente</span>`;
+            btn.innerHTML = `<span> Tentar Novamente</span>`;
         }
     }
 }
@@ -4739,7 +4739,7 @@ function abrirModalEmitirSefazLote(apenasSelecionadas = false) {
     const btn = document.getElementById('btn-confirmar-sefaz-lote');
     if (btn) {
         btn.disabled = (naoPagas.length === 0);
-        btn.innerHTML = naoPagas.length > 0 ? `<span>🚀 Transmitir ${naoPagas.length} Guia(s) à SEFAZ</span>` : `<span>Nenhuma Guia Pendente</span>`;
+        btn.innerHTML = naoPagas.length > 0 ? `<span>Transmitir ${naoPagas.length} Guia(s) à SEFAZ</span>` : `<span>Nenhuma Guia Pendente</span>`;
     }
 
     modal.style.display = 'flex';
@@ -4770,7 +4770,7 @@ async function executarEmissaoSefazLote() {
         feedback.style.background = 'rgba(59, 130, 246, 0.15)';
         feedback.style.color = '#93C5FD';
         feedback.style.border = '1px solid rgba(59, 130, 246, 0.3)';
-        feedback.innerHTML = `🚀 <b>Transmissão em Lote Iniciada!</b> Transmitindo exclusivamente guias não pagas com vencimento ${paymentDate}. Acompanhe na fita de auditoria.`;
+        feedback.innerHTML = ` <b>Transmissão em Lote Iniciada!</b> Transmitindo exclusivamente guias não pagas com vencimento ${paymentDate}. Acompanhe na fita de auditoria.`;
     }
 
     if (btn) {
@@ -4806,12 +4806,12 @@ async function executarEmissaoSefazLote() {
             feedback.style.background = 'rgba(239, 68, 68, 0.15)';
             feedback.style.color = '#F87171';
             feedback.style.border = '1px solid rgba(239, 68, 68, 0.4)';
-            feedback.innerHTML = `❌ <b>Erro na transmissão:</b> ${err.message}`;
+            feedback.innerHTML = `✕ <b>Erro na transmissão:</b> ${err.message}`;
         }
         showToast(err.message, "error");
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `<span>🚀 Tentar Novamente</span>`;
+            btn.innerHTML = `<span> Tentar Novamente</span>`;
         }
     }
 }
@@ -4940,7 +4940,7 @@ async function executarUploadRetornoItau() {
             feedback.innerHTML = `
                 <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 14px 18px; color: #34D399;">
                     <div style="font-weight: 800; font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-                        <span>✅ Conciliação Bancária Concluída!</span>
+                        <span>✓ Conciliação Bancária Concluída!</span>
                     </div>
                     <div style="font-size: 13px; color: #CBD5E1; line-height: 1.5;">
                         • <strong>${totalBaixadas}</strong> guias autenticadas e quitadas no Itaú SISPAG.<br>
