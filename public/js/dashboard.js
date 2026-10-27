@@ -1,90 +1,3 @@
-
-async function atualizarPaineisExecutivosBi() {
-    try {
-        const res = await fetch('/api/bi/stats');
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        // 1. Empresa
-        if (data.tenant) {
-            const sub = document.getElementById('hub-navbar-subtitle');
-            if (sub) sub.textContent = `${data.tenant.nomeFantasia || data.tenant.razaoSocial} • Painel BI`;
-            const comp = document.getElementById('company-info');
-            if (comp) comp.textContent = `${data.tenant.razaoSocial} • CNPJ: ${data.tenant.cnpj} • Sincronizado com ERP e Asaas`;
-        }
-
-        // 2. Os 4 Cards de KPIs Executivos
-        if (data.resumo) {
-            const elTot = document.getElementById('kpi-total-guias');
-            if (elTot) elTot.textContent = data.resumo.totalGuias.toLocaleString('pt-BR');
-
-            const elValTot = document.getElementById('kpi-total-valor');
-            if (elValTot) elValTot.textContent = `R$ ${data.resumo.totalValorDifal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-
-            const elPagas = document.getElementById('kpi-total-pagas');
-            if (elPagas) elPagas.textContent = `R$ ${data.resumo.valorPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-
-            const elValPago = document.getElementById('kpi-valor-pago');
-            if (elValPago) elValPago.textContent = `${data.resumo.totalPagas.toLocaleString('pt-BR')} guias autenticadas`;
-
-            const elPend = document.getElementById('kpi-total-pendentes');
-            if (elPend) elPend.textContent = `${data.resumo.totalPendentes.toLocaleString('pt-BR')} pendentes`;
-
-            const elValPend = document.getElementById('kpi-valor-pendente');
-            if (elValPend) elValPend.textContent = `R$ ${data.resumo.valorPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a pagar`;
-        }
-
-        // 3. Ranking UFs (Top Estados de Destino)
-        const ufsContainer = document.getElementById('ufs-bars-container');
-        if (ufsContainer && data.rankingUf && data.rankingUf.length > 0) {
-            const maxValUf = data.rankingUf[0].valor || 1;
-            ufsContainer.innerHTML = data.rankingUf.slice(0, 7).map(u => {
-                const pct = Math.max(8, Math.round((u.valor / maxValUf) * 100));
-                return `
-                    <div class="bar-item">
-                        <div class="bar-header">
-                            <span class="title">
-                                <strong style="color: #2563EB;">${u.uf}</strong>
-                                <span style="color: var(--text-muted); font-size: 11px;">(${u.count} encomendas)</span>
-                            </span>
-                            <span class="value">R$ ${u.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div class="bar-track">
-                            <div class="bar-fill" style="width: ${pct}%;"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 4. Ranking Transportadoras
-        const transpContainer = document.getElementById('transp-bars-container');
-        if (transpContainer && data.rankingTransp && data.rankingTransp.length > 0) {
-            const maxCountTransp = data.rankingTransp[0].count || 1;
-            transpContainer.innerHTML = data.rankingTransp.map(t => {
-                const pct = Math.max(10, Math.round((t.count / maxCountTransp) * 100));
-                return `
-                    <div class="bar-item">
-                        <div class="bar-header">
-                            <span class="title">
-                                <strong>${t.transp}</strong>
-                                <span style="color: var(--text-muted); font-size: 11px;">(${t.count} volumes)</span>
-                            </span>
-                            <span class="value">R$ ${t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div class="bar-track">
-                            <div class="bar-fill carrier" style="width: ${pct}%;"></div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-    } catch(err) {
-        console.warn("Erro ao atualizar painéis analíticos do BI:", err);
-    }
-}
-window.atualizarPaineisExecutivosBi = atualizarPaineisExecutivosBi;
-
 // public/js/dashboard.js
 // Lógica do Painel de Faturamento e Processamento de Lotes
 
@@ -1932,7 +1845,6 @@ async function carregarCargasDocaReais() {
             }
         }
 
-        atualizarPaineisExecutivosBi();
         aplicarFiltrosRapidos();
         renderizarPaginaDoca(1);
 
@@ -4907,5 +4819,4 @@ window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 // Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
 document.addEventListener('DOMContentLoaded', () => {
     navegarAbaPrincipal('cargas');
-    if (typeof atualizarPaineisExecutivosBi === 'function') { atualizarPaineisExecutivosBi(); }
 });
