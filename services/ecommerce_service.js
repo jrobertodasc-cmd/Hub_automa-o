@@ -301,13 +301,14 @@ async function extrairDadosXmlStorage(supabase, xmlStoragePath) {
  * Monta o Cockpit 360° para as guias do lote ativo agrupando por Pedido e Cliente
  */
 async function gerarCockpit360(supabase, tenant, batchId) {
-    // 1. Busca as guias do lote
+    // 1. Busca as guias do lote ordenadas pelas emissões mais recentes primeiro (Outubro/atuais primeiro)
     const { data: guides, error: gErr } = await supabase
         .from('guides')
         .select('*')
         .eq('batch_id', batchId)
         .eq('tenant_id', tenant.id)
-        .order('nf_number', { ascending: true });
+        .order('nf_issue_date', { ascending: false })
+        .order('nf_number', { ascending: false });
 
     if (gErr) throw gErr;
     if (!guides || guides.length === 0) return { guias360: [], clientes360: [], resumo: {} };
@@ -448,6 +449,29 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             ? xmlData.parcelas
             : [{ numero: '1/1', vencimento: dataVenda.substring(0, 10), valor: valorVendaNf }];
 
+        // Determinação rigorosa da situação do pagamento da DIFAL
+        const st = String(g.status || '').toLowerCase().trim();
+        const bar = String(g.barcode || '').replace(/\D/g, '');
+        const isPaga = (['paga', 'comprovada', 'liquidada', 'baixada', 'pago'].includes(st) || !!g.paid_at || !!g.receipt_storage_path || !!g.bank_authentication || valorDifal <= 0);
+
+        let sitBancaria = 'sem_guia';
+        if (isPaga) {
+            sitBancaria = 'paga';
+        } else if (['agendada', 'pagamento_autorizado', 'pagamento_enviado', 'pagamento_em_processamento', 'remessa_gerada'].includes(st)) {
+            sitBancaria = 'agendada';
+        } else if (bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP') {
+            sitBancaria = 'a_pagar';
+        } else if (g.uf === 'SP' || g.barcode === 'IMPORTAR_NO_SEFAZ_SP') {
+            sitBancaria = 'sp_manual';
+        } else if (['rejeitada', 'rejeitada_sefaz', 'erro_pagamento', 'divergencia_uf_portal', 'cancelada'].includes(st)) {
+            sitBancaria = 'rejeitada';
+        } else {
+            sitBancaria = 'sem_guia';
+        }
+
+        const dataEmissaoOficial = g.nf_issue_date || (dataVenda ? dataVenda.substring(0, 10) : '') || '';
+        const mesEmissao = dataEmissaoOficial ? dataEmissaoOficial.substring(0, 7) : '2026-10';
+
         guias360.push({
             id: g.id,
             nf_number: g.nf_number,
@@ -456,14 +480,19 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             uf: g.uf,
             cidade: cidadeDestino,
             order_number: numeroPedido,
-            data_venda: dataVenda,
+            data_venda: dataVenda || dataEmissaoOficial,
+            data_emissao: dataEmissaoOficial,
+            mes_emissao: mesEmissao,
             forma_pagamento: formaPagamento,
             parcelas: parcelas,
             total_parcelas: parcelas.length,
             carrier_name: g.carrier_name || 'Total Express',
             valor_venda: valorVendaNf,
             valor_difal: valorDifal,
-            status_bancario: g.status, // paga, agendada, aguardando_pagamento
+            status_bancario: sitBancaria,
+            is_paga: isPaga,
+            is_pendente: (sitBancaria === 'a_pagar' || sitBancaria === 'agendada'),
+            is_nao_paga: (!isPaga && sitBancaria !== 'a_pagar' && sitBancaria !== 'agendada'),
             paid_at: g.paid_at,
             barcode: g.barcode,
             danfe_url: `/api/guide/danfe/${g.id}`,
@@ -487,6 +516,7 @@ async function gerarCockpit360(supabase, tenant, batchId) {
                 cliente_nome: g.customer_name,
                 cidade: g.cidade,
                 uf: g.uf,
+                mes_emissao: g.mes_emissao,
                 pedidos: [],
                 todas_pecas: [],
                 total_venda: 0,
@@ -508,6 +538,36 @@ async function gerarCockpit360(supabase, tenant, batchId) {
 
     const clientes360 = Array.from(clientesMap.values());
 
+    // 8. Resumo consolidado por Mês e por Situação DIFAL
+    let countPagas = 0, countPendentes = 0, countNaoPagas = 0;
+    let valorPagas = 0, valorPendentes = 0, valorNaoPagas = 0;
+    const porMes = {};
+
+    guias360.forEach(g => {
+        const m = g.mes_emissao || '2026-10';
+        if (!porMes[m]) {
+            porMes[m] = { total: 0, pagas: 0, pendentes: 0, naoPagas: 0, valorVendas: 0, valorDifal: 0, pecas: 0 };
+        }
+        porMes[m].total++;
+        porMes[m].valorVendas += g.valor_venda;
+        porMes[m].valorDifal += g.valor_difal;
+        porMes[m].pecas += g.total_pecas;
+
+        if (g.is_paga) {
+            countPagas++;
+            valorPagas += g.valor_difal;
+            porMes[m].pagas++;
+        } else if (g.is_pendente) {
+            countPendentes++;
+            valorPendentes += g.valor_difal;
+            porMes[m].pendentes++;
+        } else {
+            countNaoPagas++;
+            valorNaoPagas += g.valor_difal;
+            porMes[m].naoPagas++;
+        }
+    });
+
     return {
         guias360,
         clientes360,
@@ -518,6 +578,13 @@ async function gerarCockpit360(supabase, tenant, batchId) {
             totalPecas: totalPecasGlobal,
             totalVendas: totalVenda,
             totalDifal: totalDifal,
+            pagas: countPagas,
+            pendentes: countPendentes,
+            naoPagas: countNaoPagas,
+            valorPagas: parseFloat(valorPagas.toFixed(2)),
+            valorPendentes: parseFloat(valorPendentes.toFixed(2)),
+            valorNaoPagas: parseFloat(valorNaoPagas.toFixed(2)),
+            porMes: porMes,
             totalDevolucoes: totalDevolucoesAlerta,
             economiaPotencialDifal: economiaDifalDevolucoes,
             lojaVirtual: shopHost,

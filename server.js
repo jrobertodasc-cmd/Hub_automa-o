@@ -2002,9 +2002,17 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             };
 
             const validGuides = (batchGuides || []).filter(g => {
+                // TRAVA ANTI-DUPLICIDADE RIGOROSA
+                const sit = situacaoPagamentoGuia(g);
+                if (sit === 'paga' && !req.query.forcarPagas) return false;
+
                 const bar = String(g.barcode || '').replace(/\D/g, '');
                 return bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
             });
+
+            if (validGuides.length === 0) {
+                return res.status(400).json({ error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram quitadas ou não possuem código de barras válido." });
+            }
 
             const mapped = validGuides.map(g => ({
                 codigoBarras: g.barcode,
@@ -2059,9 +2067,22 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         const validItauGuides = (batchGuides || []).filter(g => {
             const bar = String(g.barcode || '').replace(/\D/g, '');
             const isSynthetic = !isSimuladoCnab && printService.isCodigoBarrasSinteticoLocal(bar);
+
+            // TRAVA ANTI-DUPLICIDADE RIGOROSA
+            const sit = situacaoPagamentoGuia(g);
+            if (sit === 'paga' && !req.query.forcarPagas) {
+                return false; // Nunca exporta guias já quitadas
+            }
+
             // Permite guias válidas com código de barras >= 44 dígitos (inclusive guias reais de SP)
             return !isSynthetic && bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
         });
+
+        if (validItauGuides.length === 0) {
+            return res.status(400).json({ 
+                error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram liquidadas anteriormente ou não possuem código de barras válido." 
+            });
+        }
 
         const mapped = validItauGuides.map(g => ({
             codigoBarras: g.barcode,
@@ -2184,13 +2205,30 @@ app.post('/api/cnab/upload-retorno', requireAuth, requireRole(['diretoria', 'fin
  * paga | agendada | a_pagar | rejeitada | sp_manual
  */
 function situacaoPagamentoGuia(g) {
-    const st = String(g.status || '').toLowerCase();
-    const bar = String(g.barcode || '');
-    if (['paga', 'comprovada', 'liquidada', 'baixada', 'pago'].includes(st) || g.receipt_storage_path || g.bank_authentication) return 'paga';
-    if (String(g.uf || '').toUpperCase() === 'SP' || bar === 'IMPORTAR_NO_SEFAZ_SP') return 'sp_manual';
-    if (['agendada', 'pagamento_autorizado', 'pagamento_enviado', 'pagamento_em_processamento'].includes(st)) return 'agendada';
-    if (['rejeitada', 'rejeitada_sefaz', 'erro_pagamento', 'divergencia_uf_portal', 'cancelada'].includes(st)) return 'rejeitada';
-    if (bar.replace(/\D/g, '').length < 40) return 'sem_guia';
+    const st = String(g.status || '').toLowerCase().trim();
+    const bar = String(g.barcode || '').replace(/\D/g, '');
+    const val = parseFloat(g.value || g.valor || 0);
+
+    // 1. Pagas / Liquidadas (ou isentas / valor zerado)
+    if (['paga', 'comprovada', 'liquidada', 'baixada', 'pago'].includes(st) || !!g.paid_at || g.receipt_storage_path || g.bank_authentication || val <= 0) {
+        return 'paga';
+    }
+
+    // 2. Não Pagas / Retidas (sem XML, sem código de barras válido ou rejeitadas)
+    if (g.barcode === 'IMPORTAR_NO_SEFAZ_SP') return 'sp_manual';
+    if (['rejeitada', 'rejeitada_sefaz', 'erro_pagamento', 'divergencia_uf_portal', 'cancelada', 'pendente_xml'].includes(st)) {
+        return 'rejeitada';
+    }
+    if (bar.length < 44) {
+        return 'sem_guia';
+    }
+
+    // 3. Agendada ou em processamento bancário
+    if (['agendada', 'pagamento_autorizado', 'pagamento_enviado', 'pagamento_em_processamento', 'remessa_gerada'].includes(st)) {
+        return 'agendada';
+    }
+
+    // 4. Pendente pronta para entrar em lote de remessa
     return 'a_pagar';
 }
 
@@ -2221,22 +2259,33 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
         const lista = guias || [];
 
         let total = lista.length;
-        let liberadas = 0;
-        let retidas = 0;
+        let countPagas = 0;
+        let countPendentes = 0;
+        let countNaoPagas = 0;
         let valorTotal = 0;
-        let valorPendente = 0;
+        let valorPagas = 0;
+        let valorPendentes = 0;
+        let valorNaoPagas = 0;
 
         const porTransportadora = {};
 
         lista.forEach(g => {
             const val = parseFloat(g.value || 0);
             valorTotal += val;
-            const isLib = printService.isGuiaLiberada(g);
-            if (isLib) {
-                liberadas++;
+            const sit = situacaoPagamentoGuia(g);
+            const isPaga = (sit === 'paga');
+            const isPendente = (sit === 'a_pagar' || sit === 'agendada');
+            const isNaoPaga = (sit === 'sem_guia' || sit === 'sp_manual' || sit === 'rejeitada');
+
+            if (isPaga) {
+                countPagas++;
+                valorPagas += val;
+            } else if (isPendente) {
+                countPendentes++;
+                valorPendentes += val;
             } else {
-                retidas++;
-                valorPendente += val;
+                countNaoPagas++;
+                valorNaoPagas += val;
             }
 
             let transp = (g.carrier_name || 'Total Express').trim();
@@ -2245,41 +2294,67 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
             else if (transp.toUpperCase().includes('MT')) transp = 'MT Log';
 
             if (!porTransportadora[transp]) {
-                porTransportadora[transp] = { total: 0, liberadas: 0, retidas: 0, valor: 0 };
+                porTransportadora[transp] = { total: 0, liberadas: 0, retidas: 0, pagas: 0, pendentes: 0, naoPagas: 0, valor: 0 };
             }
             porTransportadora[transp].total++;
-            if (isLib) porTransportadora[transp].liberadas++;
-            else porTransportadora[transp].retidas++;
             porTransportadora[transp].valor += val;
+            if (isPaga) {
+                porTransportadora[transp].liberadas++;
+                porTransportadora[transp].pagas = (porTransportadora[transp].pagas || 0) + 1;
+            } else if (isPendente) {
+                porTransportadora[transp].retidas++;
+                porTransportadora[transp].pendentes = (porTransportadora[transp].pendentes || 0) + 1;
+            } else {
+                porTransportadora[transp].retidas++;
+                porTransportadora[transp].naoPagas = (porTransportadora[transp].naoPagas || 0) + 1;
+            }
         });
 
         return res.json({
             batch: activeBatch,
             resumo: {
                 total,
-                liberadas,
-                retidas,
+                pagas: countPagas,
+                pendentes: countPendentes,
+                naoPagas: countNaoPagas,
+                liberadas: countPagas,
+                retidas: countPendentes + countNaoPagas,
                 valorTotal: parseFloat(valorTotal.toFixed(2)),
-                valorPendente: parseFloat(valorPendente.toFixed(2))
+                valorPagas: parseFloat(valorPagas.toFixed(2)),
+                valorPendentes: parseFloat(valorPendentes.toFixed(2)),
+                valorNaoPagas: parseFloat(valorNaoPagas.toFixed(2)),
+                valorPendente: parseFloat(valorPendentes.toFixed(2))
             },
             porTransportadora,
-            cargas: lista.map(g => ({
-                id: g.id,
-                nf_number: g.nf_number,
-                chave_nfe: g.chave_nfe,
-                uf: g.uf,
-                value: parseFloat(g.value || 0),
-                customer_name: g.customer_name || 'Consumidor Final',
-                carrier_name: g.carrier_name || 'Transportadora Padrão',
-                status: g.status,
-                is_liberada: printService.isGuiaLiberada(g),
-                created_at: g.created_at,
-                barcode: g.barcode || null,
-                line_digitizable: g.line_digitizable || null,
-                paid_at: g.paid_at || null,
-                bank_authentication: g.bank_authentication || null,
-                situacao_pagamento: situacaoPagamentoGuia(g)
-            }))
+            cargas: lista.map(g => {
+                const val = parseFloat(g.value || 0);
+                const sit = situacaoPagamentoGuia(g);
+                const isPaga = (sit === 'paga');
+                const isPendente = (sit === 'a_pagar' || sit === 'agendada');
+                const isNaoPaga = !isPaga && !isPendente;
+
+                return {
+                    id: g.id,
+                    nf_number: g.nf_number,
+                    chave_nfe: g.chave_nfe,
+                    uf: g.uf,
+                    value: val,
+                    customer_name: g.customer_name || 'Consumidor Final',
+                    carrier_name: g.carrier_name || 'Transportadora Padrão',
+                    status: g.status,
+                    situacao_operacional: isPaga ? 'PAGA' : (isPendente ? 'PENDENTE' : 'NAO_PAGA'),
+                    is_paga: isPaga,
+                    is_pendente: isPendente,
+                    is_nao_paga: isNaoPaga,
+                    is_liberada: isPaga,
+                    created_at: g.created_at,
+                    barcode: g.barcode || null,
+                    line_digitizable: g.line_digitizable || null,
+                    paid_at: g.paid_at || null,
+                    bank_authentication: g.bank_authentication || null,
+                    situacao_pagamento: sit
+                };
+            })
         });
     } catch (err) {
         console.error("Erro ao buscar cargas ativas:", err);

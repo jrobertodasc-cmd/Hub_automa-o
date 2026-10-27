@@ -1867,16 +1867,32 @@ async function carregarCargasDocaReais() {
             `).join('');
         }
 
-        // 7. Atualiza Contadores das Abas
+        // 7. Salva resumo e atualiza Contadores das 3 Abas Operacionais
+        window.currentResumoLote = resumo;
+
         const tabTodas = document.getElementById('tab-cnt-todas');
         if (tabTodas) tabTodas.textContent = resumo.total;
+
+        const tabPagas = document.getElementById('tab-cnt-pagas');
+        if (tabPagas) tabPagas.textContent = resumo.pagas !== undefined ? resumo.pagas : liberadasCount;
+
+        const tabPend = document.getElementById('tab-cnt-pendentes');
+        if (tabPend) tabPend.textContent = resumo.pendentes !== undefined ? resumo.pendentes : (resumo.retidas || 0);
+
+        const tabNaoPagas = document.getElementById('tab-cnt-nao-pagas');
+        if (tabNaoPagas) tabNaoPagas.textContent = resumo.naoPagas !== undefined ? resumo.naoPagas : 0;
+
+        // IDs legados para retrocompatibilidade
         const tabBloq = document.getElementById('tab-cnt-bloqueadas');
-        if (tabBloq) tabBloq.textContent = retidasCount;
+        if (tabBloq) tabBloq.textContent = resumo.naoPagas !== undefined ? resumo.naoPagas : retidasCount;
         const tabLib = document.getElementById('tab-cnt-liberadas');
-        if (tabLib) tabLib.textContent = liberadasCount;
+        if (tabLib) tabLib.textContent = resumo.pagas !== undefined ? resumo.pagas : liberadasCount;
         const isentasCount = (cargas || []).filter(c => c.uf === 'SP').length;
         const tabIsentas = document.getElementById('tab-cnt-isentas');
         if (tabIsentas) tabIsentas.textContent = isentasCount;
+
+        // Atualiza links e trava anti-duplicidade da Tesouraria
+        atualizarLinksRemessaDoca();
 
         // Inicializa controles de data do painel fintech
         inicializarPainelFintechDoca();
@@ -2152,6 +2168,7 @@ function atualizarBancoRemessaDoca(novoBanco) {
 
 function atualizarLinksRemessaDoca() {
     const btn = document.getElementById('btn-doca-baixar-remessa');
+    const btnText = document.getElementById('btn-doca-baixar-remessa-text');
     const btnSp = document.getElementById('btn-doca-baixar-xml-sp');
     const btnDropdownSp = document.getElementById('download-sp-xml-btn');
     const btnGuiasPdf = document.getElementById('btn-doca-baixar-guias');
@@ -2159,8 +2176,24 @@ function atualizarLinksRemessaDoca() {
     const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
     const batchAlvo = window.activeBatchId || 'todos';
 
+    const pendentesCount = window.currentResumoLote?.pendentes !== undefined ? window.currentResumoLote.pendentes : 0;
+    const valorPendentes = window.currentResumoLote?.valorPendentes !== undefined ? window.currentResumoLote.valorPendentes : 0;
+
     if (btn && window.activeBatchId) {
         btn.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${dataPag}`;
+        if (btnText) {
+            if (pendentesCount > 0) {
+                btnText.textContent = `Baixar Remessa (${pendentesCount} guias pendentes · R$ ${valorPendentes.toFixed(2).replace('.', ',')})`;
+                btn.style.background = '#2563EB';
+                btn.style.borderColor = '#3B82F6';
+                btn.style.color = '#FFFFFF';
+            } else {
+                btnText.textContent = '✅ Todas as Guias deste Lote estão Pagas';
+                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                btn.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                btn.style.color = '#34D399';
+            }
+        }
     }
     if (btnSp) {
         btnSp.href = `/api/batch/download-xml/${batchAlvo}?paymentDate=${dataPag}`;
@@ -2174,6 +2207,12 @@ function atualizarLinksRemessaDoca() {
 }
 
 function executarDownloadRemessaDoca(event) {
+    const pendentesCount = window.currentResumoLote?.pendentes !== undefined ? window.currentResumoLote.pendentes : 0;
+    if (pendentesCount === 0) {
+        if (event) event.preventDefault();
+        showToast("⚠️ Todas as guias deste lote já foram quitadas/pagas anteriormente. Nenhuma nova remessa é necessária para evitar pagamento em duplicidade no Itaú.", "warning");
+        return;
+    }
     const banco = document.getElementById('doca-select-banco')?.value || 'itau';
     const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0];
     if (!window.activeBatchId) {
@@ -2188,7 +2227,7 @@ function executarDownloadRemessaDoca(event) {
         event.currentTarget.href = `/api/remessa/download/${window.activeBatchId}?banco=${banco}&paymentDate=${encodeURIComponent(dataPag)}`;
         event.currentTarget.download = `REM${dia}${mes}.txt`; // Itaú SISPAG exige máx 7 chars (ex: REM2610.txt)
     }
-    showToast(`📥 Baixando Arquivo de Remessa com débito agendado para ${dataFmt}...`, "success");
+    showToast(`📥 Baixando Remessa com ${pendentesCount} guias pendentes para débito em ${dataFmt}...`, "success");
 }
 
 async function autorizarPagamentoLoteComData() {
@@ -2894,15 +2933,26 @@ function renderizarPaginaDoca(pagina = 1) {
 
                 const sit = g.situacao_pagamento || (isLib ? 'paga' : 'a_pagar');
                 const dtPg = g.paid_at ? ` · ${formatarDataCurta(g.paid_at)}` : '';
+                let sitCalc = 'nao_paga';
+                if (g.is_paga || (g.status || '').toUpperCase() === 'PAGA' || !!g.paid_at || g.value <= 0) {
+                    sitCalc = 'paga';
+                } else if (g.is_pendente || (g.barcode && g.barcode.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP')) {
+                    sitCalc = 'pendente';
+                } else {
+                    sitCalc = 'nao_paga';
+                }
+
                 const badgesSituacao = {
-                    paga: `<span class="tag-status tag-liberado">🟢 Paga${dtPg}</span>`,
-                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">🔵 Agendada no banco</span>',
-                    a_pagar: '<span class="tag-status tag-bloqueado" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">🔴 A pagar</span>',
-                    rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA;">⚠ Rejeitada / Divergência</span>',
-                    sem_guia: '<span class="tag-status" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A;">⚠ Sem guia emitida</span>',
-                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4;">📦 SP · emissão manual</span>'
+                    paga: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); font-weight:700;">🟢 Paga${dtPg}</span>`,
+                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); font-weight:700;">🔵 Agendada</span>',
+                    pendente: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;">🟡 Pendente</span>',
+                    a_pagar: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;">🟡 Pendente</span>',
+                    nao_paga: '<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;">🔴 Não Paga / Retida</span>',
+                    sem_guia: '<span class="tag-status" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;">🔴 Sem Guia</span>',
+                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4; font-weight:700;">📦 SP Manual</span>',
+                    rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; font-weight:700;">⚠ Rejeitada</span>'
                 };
-                const statusBadge = badgesSituacao[sit] || badgesSituacao.a_pagar;
+                const statusBadge = badgesSituacao[sitCalc] || badgesSituacao.nao_paga;
                 const barNum = String(g.barcode || '').replace(/\D/g, '');
                 const btnCopiar = barNum.length >= 44
                     ? `<button type="button" class="btn-table-action" style="color:#475569; background:none; border:none; cursor:pointer;" title="Copiar código de barras" onclick="copiarCodigoBarras('${barNum}')">📋 Cód. barras</button>`
@@ -3045,11 +3095,13 @@ function aplicarFiltrosRapidos() {
             }
         }
 
-        // 2. Filtro Situação Tab
-        if (filtroSituacaoAtivo === 'Bloqueado') {
-            if (isLib) return false;
-        } else if (filtroSituacaoAtivo === 'Liberado') {
-            if (!isLib) return false;
+        // 2. Filtro Situação Tab (Visualização em 3 Estados)
+        if (filtroSituacaoAtivo === 'PAGAS' || filtroSituacaoAtivo === 'Liberado') {
+            if (!g.is_paga) return false;
+        } else if (filtroSituacaoAtivo === 'PENDENTES') {
+            if (!g.is_pendente) return false;
+        } else if (filtroSituacaoAtivo === 'NAO_PAGAS' || filtroSituacaoAtivo === 'Bloqueado') {
+            if (!g.is_nao_paga) return false;
         } else if (filtroSituacaoAtivo === 'Isento') {
             if (!isSp) return false;
         }
@@ -3595,6 +3647,44 @@ function filtrarCockpit360(termo) {
 }
 window.filtrarCockpit360 = filtrarCockpit360;
 
+function filtrarCockpit360PorPeriodo(periodo, btn) {
+    window.cockpit360Periodo = periodo;
+    const btns = [
+        document.getElementById('btn-periodo-360-atual'),
+        document.getElementById('btn-periodo-360-set'),
+        document.getElementById('btn-periodo-360-todas')
+    ];
+    btns.forEach(b => {
+        if (b) b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+
+    if (window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+    }
+}
+window.filtrarCockpit360PorPeriodo = filtrarCockpit360PorPeriodo;
+
+function filtrarCockpit360PorSituacao(situacao, btn) {
+    window.cockpit360Situacao = situacao;
+    const btns = [
+        document.getElementById('btn-situacao-360-todas'),
+        document.getElementById('btn-situacao-360-pagas'),
+        document.getElementById('btn-situacao-360-pendentes'),
+        document.getElementById('btn-situacao-360-nao-pagas')
+    ];
+    btns.forEach(b => {
+        if (b) b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+
+    if (window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+    }
+}
+window.filtrarCockpit360PorSituacao = filtrarCockpit360PorSituacao;
+
+
 function formatarDataBR(isoStr) {
     if (!isoStr) return 'N/D';
     try {
@@ -3862,11 +3952,67 @@ function renderizarCards360(data) {
 
     const resumo = data.resumo || {};
     const guias = data.guias360 || [];
-    const clientes = data.clientes360 || [];
     const modoAgrupamento = window.cockpit360Agrupamento || 'pedidos';
     const termo = window.cockpit360TermoBusca || '';
 
-    // Atualiza KPIs do topo
+    // 1. Contadores Globais de Período
+    const totalAtual = guias.filter(g => (g.mes_emissao === '2026-10' || (g.data_venda || '').startsWith('2026-10') || (g.data_emissao || '').startsWith('2026-10'))).length;
+    const totalSet = guias.filter(g => (g.mes_emissao === '2026-09' || (g.data_venda || '').startsWith('2026-09') || (g.data_emissao || '').startsWith('2026-09'))).length;
+    const totalTodas = guias.length;
+
+    const elCntAtual = document.getElementById('cnt-360-atual');
+    const elCntSet = document.getElementById('cnt-360-set');
+    const elCntTodas = document.getElementById('cnt-360-todas');
+    if (elCntAtual) elCntAtual.textContent = totalAtual;
+    if (elCntSet) elCntSet.textContent = totalSet;
+    if (elCntTodas) elCntTodas.textContent = totalTodas;
+
+    // 2. Filtro por Período (Padrão: 'atual' = Outubro/2026)
+    const periodo = window.cockpit360Periodo || 'atual';
+    let guiasDoPeriodo = guias;
+    if (periodo === 'atual') {
+        guiasDoPeriodo = guias.filter(g => (g.mes_emissao === '2026-10' || (g.data_venda || '').startsWith('2026-10') || (g.data_emissao || '').startsWith('2026-10')));
+    } else if (periodo === '2026-09') {
+        guiasDoPeriodo = guias.filter(g => (g.mes_emissao === '2026-09' || (g.data_venda || '').startsWith('2026-09') || (g.data_emissao || '').startsWith('2026-09')));
+    }
+
+    // 3. Contadores Operacionais da DIFAL (para o período selecionado)
+    const countPagas = guiasDoPeriodo.filter(g => g.is_paga || g.status_bancario === 'paga').length;
+    const countPend = guiasDoPeriodo.filter(g => g.is_pendente || g.status_bancario === 'a_pagar' || g.status_bancario === 'agendada').length;
+    const countNaoPagas = guiasDoPeriodo.filter(g => g.is_nao_paga || g.status_bancario === 'sem_guia' || g.status_bancario === 'rejeitada' || g.status_bancario === 'sp_manual').length;
+
+    const elCntPagas = document.getElementById('cnt-360-pagas');
+    const elCntPend = document.getElementById('cnt-360-pendentes');
+    const elCntNaoPagas = document.getElementById('cnt-360-nao-pagas');
+    if (elCntPagas) elCntPagas.textContent = countPagas;
+    if (elCntPend) elCntPend.textContent = countPend;
+    if (elCntNaoPagas) elCntNaoPagas.textContent = countNaoPagas;
+
+    // 4. Filtro por Situação da DIFAL (TODAS, PAGAS, PENDENTES, NAO_PAGAS)
+    const sitFiltro = window.cockpit360Situacao || 'TODAS';
+    let guiasFiltradas = guiasDoPeriodo;
+    if (sitFiltro === 'PAGAS') {
+        guiasFiltradas = guiasFiltradas.filter(g => g.is_paga || g.status_bancario === 'paga');
+    } else if (sitFiltro === 'PENDENTES') {
+        guiasFiltradas = guiasFiltradas.filter(g => g.is_pendente || g.status_bancario === 'a_pagar' || g.status_bancario === 'agendada');
+    } else if (sitFiltro === 'NAO_PAGAS') {
+        guiasFiltradas = guiasFiltradas.filter(g => g.is_nao_paga || g.status_bancario === 'sem_guia' || g.status_bancario === 'rejeitada' || g.status_bancario === 'sp_manual');
+    }
+
+    // 5. Filtro por Termo de Busca (Cliente, NF, Pedido, SKU, Peça, UF)
+    if (termo) {
+        guiasFiltradas = guiasFiltradas.filter(g => {
+            const matchCli = (g.customer_name || '').toLowerCase().includes(termo);
+            const matchNf = (g.nf_number || '').toLowerCase().includes(termo);
+            const matchPed = (g.order_number || '').toLowerCase().includes(termo);
+            const matchUf = (g.uf || '').toLowerCase().includes(termo);
+            const matchCid = (g.cidade || '').toLowerCase().includes(termo);
+            const matchPeca = (g.itens || []).some(it => (it.descricao || '').toLowerCase().includes(termo) || (it.sku || '').toLowerCase().includes(termo));
+            return matchCli || matchNf || matchPed || matchUf || matchCid || matchPeca;
+        });
+    }
+
+    // 6. Atualiza KPIs Dinâmicos com base no Período Selecionado
     const elVendas = document.getElementById('kpi-360-vendas');
     const elPecas = document.getElementById('kpi-360-pecas');
     const elFat = document.getElementById('kpi-360-faturamento');
@@ -3874,12 +4020,17 @@ function renderizarCards360(data) {
     const elDev = document.getElementById('kpi-360-devolucoes');
     const badgeDev = document.getElementById('badge-radar-devolucoes');
 
-    if (elVendas) elVendas.textContent = resumo.totalPedidos || guias.length;
-    if (elPecas) elPecas.textContent = resumo.totalPecas || guias.length;
-    if (elFat) elFat.textContent = formatarBRL(resumo.totalVendas || 0);
-    if (elDifal) elDifal.textContent = formatarBRL(resumo.totalDifal || 0);
-    if (elDev) elDev.textContent = resumo.totalDevolucoes || 0;
-    if (badgeDev) badgeDev.textContent = resumo.totalDevolucoes || 0;
+    const totalFatPeriodo = guiasDoPeriodo.reduce((acc, g) => acc + (g.valor_venda || 0), 0);
+    const totalDifalPeriodo = guiasDoPeriodo.reduce((acc, g) => acc + (g.valor_difal || 0), 0);
+    const totalPecasPeriodo = guiasDoPeriodo.reduce((acc, g) => acc + (g.total_pecas || 1), 0);
+    const totalDevolucoes = guiasDoPeriodo.filter(g => g.status_alerta === 'DEVOLUCAO_IDENTIFICADA').length;
+
+    if (elVendas) elVendas.textContent = guiasDoPeriodo.length;
+    if (elPecas) elPecas.textContent = totalPecasPeriodo;
+    if (elFat) elFat.textContent = formatarBRL(totalFatPeriodo);
+    if (elDifal) elDifal.textContent = formatarBRL(totalDifalPeriodo);
+    if (elDev) elDev.textContent = totalDevolucoes;
+    if (badgeDev) badgeDev.textContent = totalDevolucoes;
 
     function obterIconePeca(desc) {
         const d = String(desc || '').toUpperCase();
@@ -3891,34 +4042,66 @@ function renderizarCards360(data) {
         return '👗';
     }
 
-    const statusBadges = {
-        paga: `<span class="tag-status tag-liberado">🟢 Paga (Liquidada)</span>`,
-        agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3);">💳 Agendada no Banco</span>`,
-        aguardando_pagamento: `<span class="tag-status tag-bloqueado">🔴 A Pagar</span>`,
-        emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3);">📄 Emitida SEFAZ</span>`
-    };
+    function obterBadgeSituacaoDifal(g) {
+        if (g.is_paga || g.status_bancario === 'paga') {
+            const dt = g.paid_at ? ` · ${formatarDataCurta(g.paid_at)}` : '';
+            return `<span class="tag-status" style="background:rgba(16,185,129,0.18); color:#34D399; border:1px solid rgba(16,185,129,0.4); font-weight:700;">🟢 Paga (Liquidada)${dt}</span>`;
+        }
+        if (g.status_bancario === 'agendada') {
+            return `<span class="tag-status" style="background:rgba(59,130,246,0.18); color:#60A5FA; border:1px solid rgba(59,130,246,0.4); font-weight:700;">🔵 Agendada no Banco</span>`;
+        }
+        if (g.status_bancario === 'a_pagar') {
+            return `<span class="tag-status" style="background:rgba(245,158,11,0.18); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); font-weight:700;">🟡 A Pagar (Pendente)</span>`;
+        }
+        if (g.status_bancario === 'sp_manual') {
+            return `<span class="tag-status" style="background:rgba(20,184,166,0.18); color:#2DD4BF; border:1px solid rgba(20,184,166,0.4); font-weight:700;">📦 SP · A Pagar Manual</span>`;
+        }
+        if (g.status_bancario === 'rejeitada') {
+            return `<span class="tag-status" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">⚠ Rejeitada / Divergência</span>`;
+        }
+        return `<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">🔴 Não Paga / Retida</span>`;
+    }
 
     // ==========================================
     // MODO 1: AGRUPADO POR CLIENTE
     // ==========================================
     if (modoAgrupamento === 'clientes') {
-        let clientesFiltrados = clientes;
-        if (termo) {
-            clientesFiltrados = clientes.filter(c => {
-                const matchNome = (c.cliente_nome || '').toLowerCase().includes(termo);
-                const matchCid = (c.cidade || '').toLowerCase().includes(termo);
-                const matchPeca = (c.todas_pecas || []).some(it => (it.descricao || '').toLowerCase().includes(termo) || (it.sku || '').toLowerCase().includes(termo));
-                return matchNome || matchCid || matchPeca;
-            });
-        }
+        const clientesMap = new Map();
+        guiasFiltradas.forEach(g => {
+            const key = (g.customer_name || 'Consumidor Final').trim().toUpperCase();
+            if (!clientesMap.has(key)) {
+                clientesMap.set(key, {
+                    cliente_nome: g.customer_name || 'Consumidor Final',
+                    cidade: g.cidade,
+                    uf: g.uf,
+                    pedidos: [],
+                    todas_pecas: [],
+                    total_venda: 0,
+                    total_difal: 0,
+                    total_pecas: 0,
+                    status_bancario_geral: g.status_bancario,
+                    is_paga: g.is_paga,
+                    has_devolucao: false
+                });
+            }
+            const c = clientesMap.get(key);
+            c.pedidos.push(g);
+            c.total_venda += (g.valor_venda || 0);
+            c.total_difal += (g.valor_difal || 0);
+            c.total_pecas += (g.total_pecas || 1);
+            if (g.status_alerta === 'DEVOLUCAO_IDENTIFICADA') c.has_devolucao = true;
+            (g.itens || []).forEach(it => c.todas_pecas.push(it));
+        });
+
+        const clientesFiltrados = Array.from(clientesMap.values());
 
         if (clientesFiltrados.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhum cliente encontrado com os filtros atuais.</div>`;
+            grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhum cliente encontrado com os filtros atuais (${periodo === 'atual' ? 'Mês Atual' : periodo}).</div>`;
             return;
         }
 
         grid.innerHTML = clientesFiltrados.map((c, cIdx) => {
-            const statusBadge = statusBadges[c.status_bancario_geral] || statusBadges.agendada;
+            const statusBadge = obterBadgeSituacaoDifal(c.pedidos[0] || {});
             const pecas = c.todas_pecas || [];
 
             return `
@@ -3986,7 +4169,7 @@ function renderizarCards360(data) {
                             </div>
                             <div class="metric-col-difal">
                                 <div>Total DIFAL</div>
-                                <div class="metric-val-difal" style="color: #2563EB;">
+                                <div class="metric-val-difal" style="${c.is_paga ? 'color:#34D399;' : 'color:#FBBF24;'}">
                                     ${formatarBRL(c.total_difal)}
                                 </div>
                             </div>
@@ -4012,21 +4195,14 @@ function renderizarCards360(data) {
     }
 
     // ==========================================
-    // MODO 2: AGRUPADO POR PEDIDO / NF-E (PADRÃO)
+    // MODO 2: AGRUPADO POR PEDIDO / NF-E (PADRÃO - MAIS RECENTES PRIMEIRO)
     // ==========================================
-    let guiasFiltradas = guias;
-    if (termo) {
-        guiasFiltradas = guias.filter(g => {
-            const matchCli = (g.customer_name || '').toLowerCase().includes(termo);
-            const matchNf = (g.nf_number || '').toLowerCase().includes(termo);
-            const matchPed = (g.order_number || '').toLowerCase().includes(termo);
-            const matchPeca = (g.itens || []).some(it => (it.descricao || '').toLowerCase().includes(termo) || (it.sku || '').toLowerCase().includes(termo));
-            return matchCli || matchNf || matchPed || matchPeca;
-        });
-    }
-
     if (guiasFiltradas.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">Nenhum pedido encontrado para a busca "${escapeHtml(termo)}".</div>`;
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 48px; color: #64748B;">
+            <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+            <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Nenhum pedido encontrado</div>
+            <p style="font-size: 13px; color: #94A3B8; margin-top: 4px;">Tente alterar os filtros de período ou situação da DIFAL acima.</p>
+        </div>`;
         return;
     }
 
@@ -4038,7 +4214,7 @@ function renderizarCards360(data) {
         const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
         const isMultiItem = itens.length > 1;
 
-        const statusGuiaBadge = statusBadges[g.status_bancario] || statusBadges.aguardando_pagamento;
+        const statusGuiaBadge = obterBadgeSituacaoDifal(g);
 
         const alertaDevolucaoHtml = hasDevolucao
             ? `<div style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
@@ -4050,7 +4226,6 @@ function renderizarCards360(data) {
         let pecasHtml = '';
 
         if (isMultiItem) {
-            // Galeria multi-peças para quando a cliente comprou 2 ou mais peças no mesmo pedido
             pecasHtml = `
                 <div style="margin-bottom: 6px;">
                     <div class="order-pieces-gallery">
@@ -4090,7 +4265,6 @@ function renderizarCards360(data) {
                 </div>
             `;
         } else {
-            // Visualização clássica de peça única
             const thumbHtml = fotoUrl
                 ? `<img src="${escapeHtml(fotoUrl)}" alt="${escapeHtml(peca.descricao || 'Peça')}" class="piece-thumb-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" title="Foto oficial www.boah.com.br">
                    <div class="piece-thumb-empty" style="display:none;"><span>${obterIconePeca(peca.descricao)}</span></div>`
@@ -4114,6 +4288,9 @@ function renderizarCards360(data) {
             `;
         }
 
+        const dataExibir = g.data_emissao ? formatarDataBR(g.data_emissao) : formatarDataBR(g.data_venda);
+        const corDifal = (g.is_paga || g.status_bancario === 'paga') ? '#34D399' : (g.is_pendente ? '#FBBF24' : '#F87171');
+
         return `
             <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}" onclick="abrirModalPagamento360('${g.id}')" style="cursor: pointer;" title="Clique para ver detalhes do pagamento, parcelas e DIFAL">
                 <div>
@@ -4129,7 +4306,7 @@ function renderizarCards360(data) {
                                 <span>📍 ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
                                 <span style="margin: 0 3px; color: #CBD5E1;">•</span>
-                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;">📅 ${formatarDataBR(g.data_venda)}</span>
+                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;">📅 ${dataExibir}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -4155,7 +4332,7 @@ function renderizarCards360(data) {
                         </div>
                         <div class="metric-col-difal">
                             <div>DIFAL ${g.is_sp ? '(SP DARE)' : '(GNRE)'}</div>
-                            <div class="metric-val-difal" style="${g.status_bancario === 'paga' ? 'color:#15803D;' : 'color:#2563EB;'}">
+                            <div class="metric-val-difal" style="color: ${corDifal}; font-weight: 800;">
                                 ${formatarBRL(g.valor_difal)}
                             </div>
                         </div>
@@ -4180,7 +4357,6 @@ function renderizarCards360(data) {
         `;
     }).join('');
 }
-
 async function carregarRadarDevolucoes() {
     const tbody = document.getElementById('radar-devolucoes-tbody');
     const totalEco = document.getElementById('radar-economia-total');

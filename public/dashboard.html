@@ -680,9 +680,21 @@
         }
 
         .tab-counter-badge.counter-red {
-            background: var(--err-bg);
-            color: var(--err);
-            border: 1px solid var(--err-border);
+            background: rgba(239, 68, 68, 0.18);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .tab-counter-badge.counter-green {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .tab-counter-badge.counter-yellow {
+            background: rgba(245, 158, 11, 0.18);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
         }
 
         .dock-filter-controls-group {
@@ -1712,22 +1724,63 @@
             </div>
 
             <!-- Barra de Filtros e Busca em Tempo Real -->
-            <div class="ecom-toolbar">
-                <div class="view-mode-pill-group">
-                    <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')">
-                        <span>📦 Por Pedidos / NF-e</span>
-                    </button>
-                    <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')">
-                        <span>👥 Agrupado por Cliente</span>
-                    </button>
+            <div class="ecom-toolbar" style="flex-direction: column; gap: 12px; align-items: stretch;">
+                <!-- Linha 1: Seletor de Período (Mês Atual x Histórico) e Situação da DIFAL -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <!-- Seletor de Período -->
+                    <div class="dock-tabs-group" style="margin: 0; padding: 0; border-bottom: none; gap: 6px;">
+                        <button type="button" class="dock-tab-btn active" id="btn-periodo-360-atual" onclick="filtrarCockpit360PorPeriodo('atual', this)" title="Exibir apenas emissões de Outubro/2026">
+                            <span>📅 Mês Atual (Out/26)</span>
+                            <span class="tab-counter-badge" id="cnt-360-atual" style="background: rgba(37,99,235,0.25); color: #60A5FA; border: 1px solid rgba(37,99,235,0.5);">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="btn-periodo-360-set" onclick="filtrarCockpit360PorPeriodo('2026-09', this)" title="Exibir emissões de Setembro/2026">
+                            <span>📅 Set/2026</span>
+                            <span class="tab-counter-badge" id="cnt-360-set">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="btn-periodo-360-todas" onclick="filtrarCockpit360PorPeriodo('todas', this)" title="Exibir todo o histórico (Julho, Setembro, Outubro)">
+                            <span>📚 Histórico Completo</span>
+                            <span class="tab-counter-badge" id="cnt-360-todas">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Filtro Operacional de Situação da DIFAL -->
+                    <div class="dock-tabs-group" style="margin: 0; padding: 0; border-bottom: none; gap: 6px;">
+                        <button type="button" class="dock-tab-btn active" id="btn-situacao-360-todas" onclick="filtrarCockpit360PorSituacao('TODAS', this)">
+                            <span>Todas as DIFALs</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-pagas" onclick="filtrarCockpit360PorSituacao('PAGAS', this)">
+                            <span>🟢 Pagas</span>
+                            <span class="tab-counter-badge counter-green" id="cnt-360-pagas">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-pendentes" onclick="filtrarCockpit360PorSituacao('PENDENTES', this)">
+                            <span>🟡 A Pagar</span>
+                            <span class="tab-counter-badge counter-yellow" id="cnt-360-pendentes">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-nao-pagas" onclick="filtrarCockpit360PorSituacao('NAO_PAGAS', this)">
+                            <span>🔴 Não Pagas / Retidas</span>
+                            <span class="tab-counter-badge counter-red" id="cnt-360-nao-pagas">0</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="ecom-search-box">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="input-busca-360" placeholder="Buscar por cliente, cidade, UF, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)">
+                <!-- Linha 2: Agrupamento e Busca Rápida -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div class="view-mode-pill-group">
+                        <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')">
+                            <span>📦 Por Pedidos / NF-e</span>
+                        </button>
+                        <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')">
+                            <span>👥 Agrupado por Cliente</span>
+                        </button>
+                    </div>
+
+                    <div class="ecom-search-box" style="flex: 1; max-width: 480px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="input-busca-360" placeholder="Buscar por cliente, cidade, UF, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)">
+                    </div>
                 </div>
             </div>
-
+            
             <!-- Grade de Pedidos e Peças Reais do E-commerce (100% Largura, Sem Sidebar) -->
             <div id="cockpit-360-cards-grid" class="cockpit-360-grid">
                 <!-- Cards renderizados dinamicamente via JS com fotos reais e modal de pagamento -->
@@ -1972,22 +2025,22 @@
                         <span>Todos no Lote</span>
                         <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Bloqueado', this)">
-                        <span>🔴 Retidas SEFAZ</span>
-                        <span class="tab-counter-badge counter-red" id="tab-cnt-bloqueadas">0</span>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('PAGAS', this)">
+                        <span>🟢 Pagas</span>
+                        <span class="tab-counter-badge counter-green" id="tab-cnt-pagas" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Liberado', this)">
-                        <span>🟢 Liberadas</span>
-                        <span class="tab-counter-badge" id="tab-cnt-liberadas">0</span>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('PENDENTES', this)">
+                        <span>🟡 Pendentes</span>
+                        <span class="tab-counter-badge counter-yellow" id="tab-cnt-pendentes" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Isento', this)" style="display: none;">
-                        <span>Isento (SP)</span>
-                        <span class="tab-counter-badge" id="tab-cnt-isentas">0</span>
+                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)">
+                        <span>🔴 Não Pagas / Retidas</span>
+                        <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" onclick="filtrarPorSituacaoTab('Despachado', this)" style="display: none;">
-                        <span>🚚 Concluídas</span>
-                        <span class="tab-counter-badge">Histórico</span>
-                    </button>
+                    <!-- Contadores legados para retrocompatibilidade -->
+                    <span id="tab-cnt-bloqueadas" style="display:none;">0</span>
+                    <span id="tab-cnt-liberadas" style="display:none;">0</span>
+                    <span id="tab-cnt-isentas" style="display:none;">0</span>
                 </div>
 
                 <!-- Controles Compactos à Direita -->
