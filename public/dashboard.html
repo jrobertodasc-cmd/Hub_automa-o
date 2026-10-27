@@ -418,17 +418,17 @@
         }
 
         :root {
-            --bg-page: #090D1A;
-            --surface: #0E1626;
-            --surface-hover: #16243D;
+            --bg-page: #F8FAFC;
+            --surface: #FFFFFF;
+            --surface-hover: #F1F5F9;
             --navy: #FFFFFF;
-            --navy-light: #1E293B;
+            --navy-light: #F8FAFC;
             --primary-blue: #3B82F6;
             --primary-blue-hover: #2563EB;
-            --border-line: rgba(255, 255, 255, 0.08);
-            --border-subtle: rgba(255, 255, 255, 0.05);
-            --text-dark: #F1F5F9;
-            --text-secondary: #94A3B8;
+            --border-line: #E3E8EF;
+            --border-subtle: #F1F5F9;
+            --text-dark: #111F33;
+            --text-secondary: #5B6B7F;
             --text-muted: #64748B;
             --ok: #10B981;
             --ok-bg: rgba(16, 185, 129, 0.12);
@@ -1890,7 +1890,7 @@
                 <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-bottom: 60px;">
             <!-- NAVEGAÇÃO SUPERIOR LIMPA -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
+                <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>← Voltar para Fila de Expedição</span>
                 </button>
@@ -1909,32 +1909,32 @@
 
             <!-- RESUMO RÁPIDO DO LOTE (STRIP COMPACTA, SEM POLUIÇÃO) -->
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                <div style="background: #FFFFFF; border: 1px solid #E3E8EF; border-radius: 12px; padding: 16px 20px; box-shadow: var(--card-shadow);">
                     <div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Volumes no Lote</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-volumes">91</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #111F33; font-family: 'Inter', sans-serif; margin-top: 4px;" id="kpi-volumes">91</div>
                 </div>
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                <div style="background: #FFFFFF; border: 1px solid #E3E8EF; border-radius: 12px; padding: 16px 20px; box-shadow: var(--card-shadow);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Cargas Prontas</span>
                         <span id="kpi-ready-badge" style="font-size: 10px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 2px 7px; border-radius: 999px;">96% Pronto</span>
                     </div>
                     <div style="font-size: 24px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-ready-val">87</div>
                 </div>
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+                <div style="background: #FFFFFF; border: 1px solid #E3E8EF; border-radius: 12px; padding: 16px 20px; box-shadow: var(--card-shadow);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pendências</span>
                         <span id="kpi-blocked-badge" style="font-size: 10px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #F87171; padding: 2px 7px; border-radius: 999px;">4 Retidas</span>
                     </div>
                     <div style="font-size: 24px; font-weight: 800; color: #F87171; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-status">4</div>
                 </div>
-                <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), #111B2E); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 14px 18px;">
+                <div style="background: #FFFFFF; border: 1px solid #E3E8EF; border-radius: 12px; padding: 16px 20px; box-shadow: var(--card-shadow); position: relative; overflow: hidden;">
                     <div style="font-size: 11.5px; font-weight: 700; color: #93C5FD; text-transform: uppercase;">Total a Recolher (DIFAL)</div>
                     <div style="font-size: 24px; font-weight: 800; color: #60A5FA; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-difal">R$ 4.020,42</div>
                 </div>
             </div>
 
             <!-- CARD PRINCIPAL: PASSO A PASSO DA LIQUIDAÇÃO (FOCO TOTAL NA AÇÃO) -->
-            <section id="fintech-payment-panel" style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 18px; padding: 28px; margin-bottom: 28px; box-shadow: 0 10px 35px rgba(0,0,0,0.4);">
+            <section id="fintech-payment-panel" style="background: #FFFFFF; border: 1px solid #E3E8EF; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: var(--card-shadow);">
                 
                 <!-- Cabeçalho do Card de Ação -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
@@ -1948,7 +1948,7 @@
                         </div>
                     </div>
 
-                    <div id="fintech-bank-info" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 8px 16px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
+                    <div id="fintech-bank-info" style="background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; color: #111F33; display: flex; align-items: center; gap: 8px;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
                         <span>Conta Autorizada: Ag. 0334 · C/C 98775-7 (LALUA)</span>
                     </div>
@@ -1960,7 +1960,7 @@
                         <label for="doca-input-data-pagamento" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
                             1. Data de Vencimento / Pagamento
                         </label>
-                        <input type="date" id="doca-input-data-pagamento" value="2026-10-26" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none;">
+                        <input type="date" id="doca-input-data-pagamento" value="2026-10-26" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 8px; padding: 10px 14px; color: #111F33; font-size: 13.5px; font-weight: 600; outline: none;">
                         <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px;">Data que constará no cabeçalho e registros do lote CNAB 240.</span>
                     </div>
 
@@ -1968,7 +1968,7 @@
                         <label for="doca-select-banco" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
                             2. Layout Bancário Autorizado
                         </label>
-                        <select id="doca-select-banco" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none; cursor: pointer;">
+                        <select id="doca-select-banco" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 8px; padding: 10px 14px; color: #111F33; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer;">
                             <option value="itau" selected>Layout CNAB 240 - Segmento O (Tributos & DIFAL)</option>
                             <option value="bradesco">Layout CNAB 240 - Tributos (Bradesco)</option>
                             <option value="bb">Layout CNAB 240 - Tributos (Banco do Brasil)</option>
@@ -1978,7 +1978,7 @@
                 </div>
 
                 <!-- AÇÃO PRIMÁRIA INCONFUNDÍVEL -->
-                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div style="background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 10px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
                     <div>
                         <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Pronto para baixar a remessa?</div>
                         <div style="font-size: 12.5px; color: #94A3B8; margin-top: 2px;">O arquivo gerado deve ser transmitido no Internet Banking para efetivação do débito.</div>
@@ -2001,7 +2001,7 @@
             <!-- SEÇÃO DE APOIO EM 2 COLUNAS: DISTRIBUIÇÃO FISCAL + FERRAMENTAS COMPLEMENTARES -->
             <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px;">
                 <!-- Coluna 1: Distribuição por Estado (UF) -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
+                <div style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
@@ -2015,7 +2015,7 @@
                 </div>
 
                 <!-- Coluna 2: Ações & Ferramentas Auxiliares -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -2050,7 +2050,7 @@
             </div>
 
             <!-- EMBARQUE & TRANSPORTADORAS (ORGANIZADO NA BASE) -->
-            <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
+            <div style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
                 <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                     <span>Status de Liberação das Transportadoras</span>
@@ -2058,7 +2058,7 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <!-- Total Express -->
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
+                    <div style="background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 8px; padding: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Total Express</span>
                             <span class="hud-badge hud-badge-red" id="carrier-total-badge" style="font-size: 11px;">91 Retidas</span>
@@ -2071,7 +2071,7 @@
                             <span>Pendentes: <strong id="carrier-total-retidas" style="color: #F87171;">91</strong></span>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="flex: 1; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="flex: 1; background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
                                 📄 Romaneio
                             </a>
                             <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;">
@@ -2081,7 +2081,7 @@
                     </div>
 
                     <!-- Correios -->
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
+                    <div style="background: #F8FAFC; border: 1px solid #E3E8EF; border-radius: 8px; padding: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Correios (Sedex / PAC)</span>
                             <span id="carrier-correios-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; padding: 2px 8px; border-radius: 999px;">Pronto para Coleta</span>
@@ -2094,7 +2094,7 @@
                             <span>Status: <strong style="color: #10B981;">Liberado</strong></span>
                         </div>
                         <div>
-                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="width: 100%; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
+                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="width: 100%; background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
                                 📄 Romaneio Correios
                             </a>
                         </div>
@@ -2224,7 +2224,7 @@
         <!-- ABA 3: RELATÓRIOS -->
         <!-- ========================================== -->
         <div id="secao-view-relatorios" class="main-view-section" style="display: none;">
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px;">
+            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 <span>← Voltar para Fila de Expedição</span>
             </button>
@@ -2581,7 +2581,7 @@
             </div>
 
             <!-- Barra Flutuante de Ação em Lote (Aparece ao selecionar checkboxes) -->
-            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none; background: #111B2E !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; color: #FFFFFF !important;">
+            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none; background: #111F33 !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; color: #FFFFFF !important;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-weight: 700;" id="bulk-selected-count">0</span>
                     <span>cargas selecionadas na doca</span>
@@ -3168,7 +3168,7 @@
 
     <!-- MODAL DE EMISSÃO INDIVIDUAL DIRETA NA SEFAZ COM DATA -->
     <div id="modal-emitir-sefaz-individual" style="display: none; position: fixed; inset: 0; background: rgba(10, 16, 28, 0.75); backdrop-filter: blur(8px); z-index: 10005; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 520px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
+        <div style="background: #FFFFFF; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 520px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #38BDF8;">
@@ -3186,7 +3186,7 @@
             <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">Nota Fiscal</div>
-                    <div id="sefaz-ind-nf" style="font-size: 15px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">-</div>
+                    <div id="sefaz-ind-nf" style="font-size: 15px; font-weight: 700; color: #111F33; font-family: 'Inter', sans-serif; margin-top: 2px;">-</div>
                 </div>
                 <div>
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94A3B8; letter-spacing: 0.5px;">UF Favorecida</div>
@@ -3230,7 +3230,7 @@
 
     <!-- MODAL DE EMISSÃO SEFAZ EM LOTE (SOMENTE NÃO PAGAS) -->
     <div id="modal-emitir-sefaz-lote" style="display: none; position: fixed; inset: 0; background: rgba(10, 16, 28, 0.75); backdrop-filter: blur(8px); z-index: 10005; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 560px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
+        <div style="background: #FFFFFF; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; width: 100%; max-width: 560px; padding: 24px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); color: #FFFFFF;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #34D399;">
