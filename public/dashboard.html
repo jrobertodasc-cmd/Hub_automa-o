@@ -1781,10 +1781,16 @@
                         Gestão integrada de vendas www.boah.com.br · Fotos em alta resolução · Multi-peças por pedido e proteção DIFAL
                     </p>
                 </div>
-                <button type="button" class="btn-sync-vnda" onclick="carregarCockpit360(true)" title="Sincronizar com Vnda e Linx">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
-                    <span>Sincronizar VNDA</span>
-                </button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-sync-vnda" onclick="exportarRelatorio360Csv()" title="Exportar dados fiscais e logísticos para Excel/CSV" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>Exportar Excel (CSV)</span>
+                    </button>
+                    <button type="button" class="btn-sync-vnda" onclick="carregarCockpit360(true)" title="Sincronizar com Vnda e Linx">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                        <span>Sincronizar VNDA</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Grade de KPIs Exclusivos do E-commerce 360° -->
@@ -1871,6 +1877,15 @@
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         <input type="text" id="input-busca-360" placeholder="Buscar por cliente, cidade, UF, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)">
                     </div>
+                </div>
+
+                <!-- Linha 3: Resumo Geográfico / Filtro Rápido por Estados (UF) -->
+                <div id="bar-uf-chips-wrap" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px;">
+                    <span style="color: #64748B; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Destinos:
+                    </span>
+                    <div id="bar-uf-chips-list" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
                 </div>
             </div>
             

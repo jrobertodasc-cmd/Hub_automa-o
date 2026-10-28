@@ -1,4 +1,83 @@
 
+function filtrarPorUf360(uf) {
+    if (window.cockpit360UfFiltro === uf) {
+        window.cockpit360UfFiltro = null;
+    } else {
+        window.cockpit360UfFiltro = uf;
+    }
+    if (window.cockpit360Cache) {
+        renderizarCards360(window.cockpit360Cache);
+    }
+}
+window.filtrarPorUf360 = filtrarPorUf360;
+
+function exportarRelatorio360Csv() {
+    const data = window.cockpit360Cache;
+    const guias = (data && data.guias360) ? data.guias360 : (window.todasCargasDoca || []);
+    if (!guias || guias.length === 0) {
+        if (typeof showToast === 'function') showToast('Nenhum dado disponível para exportar.', 'warning');
+        else alert('Nenhum dado disponível para exportar.');
+        return;
+    }
+
+    const situacoesNomes = {
+        paga: 'PAGA / LIBERADA',
+        agendada: 'AGENDADA NO BANCO',
+        a_pagar: 'A PAGAR (PENDENTE)',
+        sem_guia: 'NÃO PAGA / RETIDA',
+        rejeitada: 'REJEITADA NA SEFAZ',
+        sp_manual: 'SP MANUAL'
+    };
+
+    const headers = [
+        'Pedido VNDA', 'NF-e', 'Data Emissao', 'Cliente', 'CPF/CNPJ',
+        'Cidade', 'UF', 'Transportadora', 'Valor Venda (R$)', 'DIFAL (R$)',
+        'Situacao Fiscal', 'Data Pagamento', 'Codigo de Barras Febraban', 'Pecas/Itens'
+    ];
+
+    const rows = [headers];
+
+    guias.forEach(g => {
+        const itensDesc = (g.itens || []).map(it => `${it.quantidade || 1}x ${it.descricao || ''} (${it.sku || ''})`).join(' | ');
+        const dtEmissao = g.data_emissao ? g.data_emissao.substring(0, 10) : (g.data_venda ? g.data_venda.substring(0, 10) : '');
+        const dtPag = g.paid_at ? g.paid_at.substring(0, 10) : '';
+
+        rows.push([
+            g.order_number || '',
+            g.nf_number || '',
+            dtEmissao,
+            g.customer_name || 'Consumidor Final',
+            g.customer_doc || '',
+            g.cidade || '',
+            g.uf || '',
+            g.carrier_name || 'Total Express',
+            (g.valor_venda || 0).toFixed(2).replace('.', ','),
+            (g.valor_difal || 0).toFixed(2).replace('.', ','),
+            situacoesNomes[g.status_bancario] || g.status_bancario || 'PENDENTE',
+            dtPag,
+            String(g.barcode || ''),
+            itensDesc
+        ]);
+    });
+
+    const csvContent = '\uFEFF' + rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dataHoje = new Date().toISOString().substring(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_ecommerce_difal_boah_${dataHoje}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof showToast === 'function') {
+        showToast(`✓ Planilha exportada com sucesso (${guias.length} pedidos)!`, 'success');
+    }
+}
+window.exportarRelatorio360Csv = exportarRelatorio360Csv;
+
+
 function formatarDataEmissaoDoca(g) {
     let raw = g.emission_date || g.nf_issue_date || g.created_at || '';
     if (!raw && g.chave_nfe && g.chave_nfe.length === 44) {
@@ -4127,6 +4206,7 @@ function renderizarCards360(data) {
     const guias = data.guias360 || [];
     const modoAgrupamento = window.cockpit360Agrupamento || 'pedidos';
     const termo = window.cockpit360TermoBusca || '';
+    const ufFiltro = window.cockpit360UfFiltro || null;
 
     // 1. Contadores Globais de Período
     const totalAtual = guias.filter(g => (g.mes_emissao === '2026-10' || (g.data_venda || '').startsWith('2026-10') || (g.data_emissao || '').startsWith('2026-10'))).length;
@@ -4164,6 +4244,11 @@ function renderizarCards360(data) {
     // 4. Filtro por Situação da DIFAL (TODAS, PAGAS, PENDENTES, NAO_PAGAS)
     const sitFiltro = window.cockpit360Situacao || 'TODAS';
     let guiasFiltradas = guiasDoPeriodo;
+    // Filtro Geográfico por UF
+    if (ufFiltro) {
+        guiasFiltradas = guiasFiltradas.filter(g => (g.uf || '').toUpperCase() === ufFiltro);
+    }
+
     if (sitFiltro === 'PAGAS') {
         guiasFiltradas = guiasFiltradas.filter(g => g.is_paga || g.status_bancario === 'paga');
     } else if (sitFiltro === 'PENDENTES') {
@@ -4204,6 +4289,35 @@ function renderizarCards360(data) {
     if (elDifal) elDifal.textContent = formatarBRL(totalDifalPeriodo);
     if (elDev) elDev.textContent = totalDevolucoes;
     if (badgeDev) badgeDev.textContent = totalDevolucoes;
+
+    // Métricas executivas refinadas: Ticket Médio e Impacto DIFAL
+    const ticketMedio = guiasDoPeriodo.length > 0 ? (totalFatPeriodo / guiasDoPeriodo.length) : 0;
+    const subFat = elFat ? elFat.nextElementSibling : null;
+    if (subFat) subFat.textContent = `Ticket Médio: ${formatarBRL(ticketMedio)} · Catálogo Boah`;
+
+    const pctDifal = totalFatPeriodo > 0 ? ((totalDifalPeriodo / totalFatPeriodo) * 100).toFixed(1) : '0.0';
+    const subDifal = elDifal ? elDifal.nextElementSibling : null;
+    if (subDifal) subDifal.textContent = `Carga média: ${pctDifal}% sobre o faturamento`;
+
+    // Resumo Geográfico por UF
+    const ufContagem = {};
+    guiasDoPeriodo.forEach(g => {
+        const u = (g.uf || 'ND').toUpperCase();
+        ufContagem[u] = (ufContagem[u] || 0) + 1;
+    });
+    const chipsListEl = document.getElementById('bar-uf-chips-list');
+    if (chipsListEl) {
+        chipsListEl.innerHTML = Object.entries(ufContagem)
+            .sort((a, b) => b[1] - a[1])
+            .map(([u, count]) => {
+                const isActive = (window.cockpit360UfFiltro === u);
+                return `
+                    <button type="button" onclick="filtrarPorUf360('${u}')" style="background: ${isActive ? '#2563EB' : 'rgba(255,255,255,0.06)'}; color: ${isActive ? '#FFFFFF' : '#CBD5E1'}; border: 1px solid ${isActive ? '#3B82F6' : 'rgba(255,255,255,0.1)'}; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.12s;" title="Filtrar pedidos de ${u}">
+                        ${u} <span style="opacity: 0.7; font-size: 10px;">(${count})</span>
+                    </button>
+                `;
+            }).join('') + (window.cockpit360UfFiltro ? `<button type="button" onclick="filtrarPorUf360(null)" style="background: none; border: none; color: #94A3B8; font-size: 11px; cursor: pointer; text-decoration: underline; margin-left: 4px;">✕ Limpar UF</button>` : '');
+    }
 
     function obterIconePeca(desc) {
         const d = String(desc || '').toUpperCase();
@@ -4475,11 +4589,15 @@ function renderizarCards360(data) {
                             <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}" style="font-size: 13.5px; margin-bottom: 2px;">
                                 <span> ${escapeHtml(g.customer_name)}</span>
                             </div>
-                            <div class="sale-dest-pill">
-                                <span> ${escapeHtml(g.cidade)}</span>
+                            <div class="sale-dest-pill" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
+                                <span>📍 ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
-                                <span style="margin: 0 3px; color: #CBD5E1;">•</span>
-                                <span style="font-size: 11px; color: #FFFFFF; font-weight: 600;"> ${dataExibir}</span>
+                                <span style="color: rgba(255,255,255,0.2);">•</span>
+                                <span style="font-size: 11px; color: #38BDF8; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                                    🚚 ${escapeHtml(g.carrier_name || 'Total Express')}
+                                </span>
+                                <span style="color: rgba(255,255,255,0.2);">•</span>
+                                <span style="font-size: 11px; color: #94A3B8;">${dataExibir}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -4516,14 +4634,18 @@ function renderizarCards360(data) {
                     <div>
                         ${statusGuiaBadge}
                     </div>
-                    <div class="card-actions-group">
-                        <button type="button" class="btn-card-action" style="background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; font-weight:700;" onclick="event.stopPropagation(); abrirModalPagamento360('${g.id}')" title="Ver parcelas e informações de pagamento">
-                            Pagamento & DIFAL
-                        </button>
-                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" onclick="event.stopPropagation();" title="Visualizar DANFE Oficial">
-                            DANFE
+                    <div class="card-actions-group" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        ${(!g.is_paga && g.status_bancario !== 'paga') 
+                            ? `<button type="button" class="btn-card-action" style="background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})" title="Emitir Guia Oficial na SEFAZ com data">⚡ Emitir SEFAZ</button>` 
+                            : `<span style="font-size: 11px; font-weight: 700; color: #34D399; display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Liberada</span>`
+                        }
+                        <a href="/api/total-express/etiqueta/${escapeHtml(g.id)}" target="_blank" class="btn-card-action" style="background: rgba(2, 132, 199, 0.12); color: #38BDF8; border: 1px solid rgba(2, 132, 199, 0.3); font-weight: 600;" onclick="event.stopPropagation();" title="Imprimir Etiqueta Térmica 10x15cm Total Express com AWB e Rota">
+                            🏷️ Etiqueta 10x15
                         </a>
-                        ${g.gnre_url ? `<a href="${escapeHtml(g.gnre_url)}" target="_blank" class="btn-card-action" style="color: #4338CA;" onclick="event.stopPropagation();" title="Visualizar Guia GNRE">Guia</a>` : ''}
+                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" style="background: rgba(255, 255, 255, 0.05); color: #E2E8F0; border: 1px solid rgba(255, 255, 255, 0.1);" onclick="event.stopPropagation();" title="Visualizar DANFE Oficial">
+                            📄 DANFE
+                        </a>
+                        ${g.barcode && g.barcode.length >= 44 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-card-action" style="background: rgba(99, 102, 241, 0.12); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3);" onclick="event.stopPropagation();" title="Baixar Espelho da Guia Oficial">🏛️ Guia</a>` : ''}
                     </div>
                 </div>
             </div>
