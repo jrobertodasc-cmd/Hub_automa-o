@@ -1688,6 +1688,13 @@
                                 <span>Baixar XML em Lote (SP)</span>
                             </a>
 
+
+                            <button type="button" id="btn-doca-importar-retorno-sp" onclick="document.getElementById('input-retorno-sp-zip').click()" style="background: #0E1626; border: 1px solid rgba(20, 184, 166, 0.4); color: #2DD4BF; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>📥 Importar Retorno SP (.zip)</span>
+                            </button>
+                            <input type="file" id="input-retorno-sp-zip" accept=".zip" style="display: none;" onchange="enviarRetornoSpZip(this)">
+
                             <a id="btn-doca-baixar-guias" href="#" target="_blank" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                                 <span>Baixar Pacote de Guias PDF</span>
@@ -2134,16 +2141,16 @@
                 </div>
 
                 <div class="dock-nav-tabs" id="dock-status-tabs">
-                    <button type="button" class="dock-tab-btn active" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Pendentes de Emissão SEFAZ</span>
+                    <button type="button" class="dock-tab-btn active" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Cargas que exigem emissão ou liquidação da guia">
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 🚨 Pendentes & Retidas</span>
                         <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Conciliadas & Pagas (Itaú)</span>
+                    <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)" title="Cargas liberadas pelo banco aguardando coleta física do transportador">
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> 🟢 Prontas para Coleta (Pagas)</span>
                         <span class="tab-counter-badge counter-green" id="tab-cnt-pagas" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">0</span>
                     </button>
-                    <button type="button" class="dock-tab-btn" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)">
-                        <span>Todos no Lote</span>
+                    <button type="button" class="dock-tab-btn" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)" title="Visualizar todo o lote da doca">
+                        <span>📦 Todas as Cargas</span>
                         <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
                     </button>
                     <!-- Contadores legados para retrocompatibilidade -->

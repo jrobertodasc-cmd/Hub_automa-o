@@ -25,6 +25,7 @@ const asaasService = require('./services/asaas_service');
 const closingService = require('./services/closing_service');
 const auditService = require('./services/audit_service');
 const ecommerceService = require('./services/ecommerce_service');
+const sefazSpRetornoService = require('./services/sefaz_sp_retorno_service');
 
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -2199,6 +2200,74 @@ app.post('/api/cnab/upload-retorno', requireAuth, requireRole(['diretoria', 'fin
 });
 
 /**
+ * 3.3 Importação Automática de Retorno de DAREs da SEFAZ-SP (.ZIP com PDFs)
+ * Recebe o arquivo compactado emitido pelo portal da Fazenda SP, extrai linhas digitáveis
+ * e códigos de barras e vincula automaticamente às guias de SP.
+ */
+const os = require('os');
+app.post('/api/sefaz-sp/upload-retorno-zip', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin', 'operador']), uploadRetorno.single('retornoZip'), async (req, res) => {
+    let tempFilePath = null;
+    try {
+        if (!req.file || !req.file.buffer) {
+            return res.status(400).json({ error: "Nenhum arquivo .ZIP de retorno da SEFAZ-SP foi enviado." });
+        }
+
+        tempFilePath = path.join(os.tmpdir(), `sefaz_sp_${Date.now()}_${req.file.originalname}`);
+        await fs.writeFile(tempFilePath, req.file.buffer);
+
+        const resultado = await sefazSpRetornoService.processarRetornoSpZip({
+            supabase,
+            tenantId: req.tenant.id,
+            caminhoZip: tempFilePath
+        });
+
+        // Limpa arquivo temporário
+        await fs.unlink(tempFilePath).catch(() => {});
+        tempFilePath = null;
+
+        // Se atualizou guias, notifica a doca em tempo real e grava auditoria
+        if (resultado.atualizadas > 0) {
+            broadcastDockEvent(req.tenant.id, {
+                type: 'LOTE_ATUALIZADO',
+                message: `${resultado.atualizadas} DAREs de SP importados com sucesso!`,
+                timestamp: new Date().toISOString()
+            });
+
+            await auditService.logAudit({
+                supabase,
+                tenantId: req.tenant.id,
+                userId: req.user ? req.user.id : null,
+                action: 'UPLOAD_RETORNO_SP_ZIP',
+                details: {
+                    atualizadas: resultado.atualizadas,
+                    totalProcessados: resultado.totalProcessados,
+                    nomeArquivo: req.file.originalname
+                }
+            }).catch(() => {});
+        }
+
+        return res.json({
+            success: true,
+            message: resultado.message,
+            resumo: {
+                totalEncontrados: resultado.totalEncontrados,
+                totalProcessados: resultado.totalProcessados,
+                atualizadas: resultado.atualizadas,
+                ignoradasJaPagas: resultado.ignoradasJaPagas,
+                naoLocalizadas: resultado.naoLocalizadas
+            },
+            detalhes: resultado.detalhes
+        });
+    } catch (err) {
+        if (tempFilePath) {
+            await fs.unlink(tempFilePath).catch(() => {});
+        }
+        console.error("Erro ao importar retorno SP (.zip):", err);
+        return res.status(500).json({ error: `Erro ao processar arquivo da SEFAZ-SP: ${err.message}` });
+    }
+});
+
+/**
  * 4.0 Consulta de Cargas Ativas da Doca (Tempo Real para Cockpit e Mobile)
  */
 /**
@@ -2349,12 +2418,23 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                     is_nao_paga: isNaoPaga,
                     is_liberada: isPaga,
                     created_at: g.created_at,
+                    emission_date: g.emission_date || g.nf_issue_date || g.created_at || null,
                     barcode: g.barcode || null,
                     line_digitizable: g.line_digitizable || null,
                     paid_at: g.paid_at || null,
                     bank_authentication: g.bank_authentication || null,
                     situacao_pagamento: sit
                 };
+            }).sort((a, b) => {
+                // Prioridade máxima para cargas que precisam de ação imediata:
+                // 1º: Não pagas / retidas (peso 1)
+                // 2º: Emitidas aguardando pagamento no banco (peso 2)
+                // 3º: Pagas prontas para coleta na doca (peso 3)
+                const pesoA = a.is_nao_paga ? 1 : (a.is_pendente ? 2 : 3);
+                const pesoB = b.is_nao_paga ? 1 : (b.is_pendente ? 2 : 3);
+                if (pesoA !== pesoB) return pesoA - pesoB;
+                // Critério de desempate: notas mais recentes primeiro
+                return (parseInt(b.nf_number, 10) || 0) - (parseInt(a.nf_number, 10) || 0);
             })
         });
     } catch (err) {

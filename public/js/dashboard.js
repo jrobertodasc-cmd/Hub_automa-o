@@ -1,3 +1,55 @@
+
+function formatarDataEmissaoDoca(g) {
+    let raw = g.emission_date || g.nf_issue_date || g.created_at || '';
+    if (!raw && g.chave_nfe && g.chave_nfe.length === 44) {
+        const aa = g.chave_nfe.substring(2, 4);
+        const mm = g.chave_nfe.substring(4, 6);
+        return { texto: `${mm}/20${aa}`, pill: `Emissão ${mm}/${aa}`, corPill: 'time-ok' };
+    }
+
+    if (!raw) {
+        return { texto: 'Data N/D', pill: 'Sem data', corPill: 'time-warn' };
+    }
+
+    try {
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) {
+            if (raw.length >= 10 && raw.includes('-')) {
+                const [ano, mes, dia] = raw.substring(0, 10).split('-');
+                return { texto: `${dia}/${mes}/${ano}`, pill: `Emissão ${dia}/${mes}`, corPill: 'time-ok' };
+            }
+            return { texto: raw.substring(0, 10), pill: '', corPill: 'time-ok' };
+        }
+
+        const hojeObj = new Date();
+        const hojeIso = hojeObj.toISOString().substring(0, 10);
+        const dataIso = d.toISOString().substring(0, 10);
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+
+        if (dataIso === hojeIso) {
+            return { texto: `${dia}/${mes} (Hoje)`, pill: 'Emitida hoje', corPill: 'time-ok' };
+        }
+
+        const diffDias = Math.max(0, Math.round((hojeObj.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)));
+        let pillTxt = '';
+        if (g.is_paga || g.paid_at) {
+            pillTxt = 'Pago';
+        } else if (diffDias === 0) {
+            pillTxt = 'Hoje';
+        } else if (diffDias === 1) {
+            pillTxt = 'Ontem';
+        } else {
+            pillTxt = `${diffDias}d na doca`;
+        }
+
+        return { texto: `${dia}/${mes}`, pill: pillTxt, corPill: (!g.is_paga && diffDias > 3) ? 'time-warn' : 'time-ok' };
+    } catch (e) {
+        return { texto: 'Data N/D', pill: '', corPill: 'time-ok' };
+    }
+}
+window.formatarDataEmissaoDoca = formatarDataEmissaoDoca;
+
 // public/js/dashboard.js
 // Lógica do Painel de Faturamento e Processamento de Lotes
 
@@ -984,11 +1036,10 @@ function renderizarLinhasTabela(guias) {
         }
 
         const nfFmt = String(g.nf_number || '').padStart(8, '0');
-        const emissaoRaw = g.emission_date || g.created_at || '';
-        const isOntem = emissaoRaw.includes('15') || (g.nf_number && ['03001003', '03000980', '03000975', '03000962'].includes(String(g.nf_number)));
-        const emissaoTexto = isOntem ? '15/10 (Ontem)' : '16/10 (Hoje)';
-        const emissaoColor = isOntem ? '#f59e0b' : '#94a3b8';
-        const emissaoWeight = isOntem ? 'font-weight: 600;' : '';
+        const infoEmissao = formatarDataEmissaoDoca(g);
+        const emissaoTexto = infoEmissao.texto;
+        const emissaoColor = infoEmissao.corPill === 'time-warn' ? '#f59e0b' : '#94a3b8';
+        const emissaoWeight = 'font-weight: 600;';
 
         return `
             <tr>
@@ -2141,6 +2192,67 @@ async function enviarRetornoBancario(inputEl) {
 }
 window.enviarRetornoBancario = enviarRetornoBancario;
 
+async function enviarRetornoSpZip(inputEl) {
+    const file = inputEl?.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+        if (typeof showToast === 'function') {
+            showToast('Selecione um arquivo .zip com os DAREs da SEFAZ-SP.', 'warning');
+        } else {
+            alert('Selecione um arquivo .zip com os DAREs da SEFAZ-SP.');
+        }
+        inputEl.value = '';
+        return;
+    }
+
+    if (typeof showToast === 'function') {
+        showToast('⏳ Processando arquivo .zip da SEFAZ-SP...', 'info');
+    }
+
+    try {
+        const fd = new FormData();
+        fd.append('retornoZip', file);
+
+        const res = await fetch('/api/sefaz-sp/upload-retorno-zip', {
+            method: 'POST',
+            body: fd
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || 'Falha ao processar arquivo da SEFAZ-SP.');
+        }
+
+        const qtd = data.resumo?.atualizadas ?? 0;
+        const msg = `✓ Sucesso: ${qtd} DARE(s) de SP vinculado(s) com código de barras!`;
+        if (typeof showToast === 'function') {
+            showToast(msg, 'success');
+        } else {
+            alert(msg);
+        }
+
+        // Atualiza a doca e o cockpit em tempo real
+        if (typeof carregarCargasDocaReais === 'function') {
+            await carregarCargasDocaReais();
+        }
+        if (typeof carregarCockpit360 === 'function') {
+            await carregarCockpit360(true);
+        }
+    } catch (err) {
+        console.error('Erro ao enviar retorno SP:', err);
+        if (typeof showToast === 'function') {
+            showToast(`✕ ${err.message}`, 'error');
+        } else {
+            alert(`Erro: ${err.message}`);
+        }
+    } finally {
+        inputEl.value = '';
+    }
+}
+window.enviarRetornoSpZip = enviarRetornoSpZip;
+
+
 function exportarConciliacaoCsv() {
     const todas = window.todasCargasDoca || [];
     if (todas.length === 0) {
@@ -3004,8 +3116,19 @@ function renderizarPaginaDoca(pagina = 1) {
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">20/10 (Hoje)</div>
-                            <span class="dock-time-pill time-ok"> ${10 + (inicio + idx) * 2}m na doca</span>
+                            ${(() => {
+                                const infoData = formatarDataEmissaoDoca(g);
+                                if (g.is_paga && g.paid_at) {
+                                    return `
+                                        <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">${escapeHtml(infoData.texto)}</div>
+                                        <span class="dock-time-pill time-ok" style="background: rgba(16,185,129,0.12); color: #10B981; border: 1px solid rgba(16,185,129,0.25);">✓ Pago ${formatarDataCurta(g.paid_at)}</span>
+                                    `;
+                                }
+                                return `
+                                    <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">${escapeHtml(infoData.texto)}</div>
+                                    <span class="dock-time-pill ${infoData.corPill}">${escapeHtml(infoData.pill)}</span>
+                                `;
+                            })()}
                         </td>
                         <td>
                             <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
