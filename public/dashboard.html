@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261028_1615">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261028_1615">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261028_1650">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1359,12 +1359,12 @@
             <div style="width: 1px; height: 20px; background: #29374E;"></div>
 
             <!-- Flat Navigation Links (Figma Node 2:10037) -->
-            <!-- Flat Navigation Links (Figma Node 2:10037) -->
+            <!-- Flat Navigation Links (Figma Node 2:9415 & 2:10037 1:1) -->
             <div class="hub-nav-links-figma" style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" class="hub-nav-link-btn" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')">
-                    Vis&atilde;o Geral
+                <button type="button" class="hub-nav-link-btn active" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')">
+                    In&iacute;cio
                 </button>
-                <button type="button" class="hub-nav-link-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')">
+                <button type="button" class="hub-nav-link-btn" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')">
                     <span>Expedi&ccedil;&atilde;o &amp; SEFAZ</span>
                     <span class="hub-nav-badge-amber" id="nav-badge-pendentes">5</span>
                 </button>
@@ -1372,10 +1372,10 @@
                     E-commerce 360&deg;
                 </button>
                 <button type="button" class="hub-nav-link-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')">
-                    Concilia&ccedil;&atilde;o Fiscal
+                    Remessa Ita&uacute;
                 </button>
                 <button type="button" class="hub-nav-link-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')">
-                    Hist&oacute;rico &amp; Fechamento
+                    Relat&oacute;rios
                 </button>
             </div>
         <!-- Right: Online Fiscal Connection + User Profile MC (Figma) -->
@@ -1418,134 +1418,354 @@
         <!-- ============================================================== -->
         <!-- PRIMEIRA TELA: PORTAL DE CARDS-MENU (HUB PRINCIPAL DE ENTRADA) -->
         <!-- ============================================================== -->
-        <div id="secao-view-hub" class="main-view-section" style="display: none;">
-            <!-- Header do Portal Hub (Image 1) -->
-            <div class="hub-portal-header">
-                <h1 class="hub-portal-title">Módulos Operacionais</h1>
-                
+                <!-- ============================================================== -->
+        <!-- PRIMEIRA TELA: FIGMA NODE 2:9415 (Início · BOAH - Módulos Operacionais 1:1) -->
+        <!-- ============================================================== -->
+        <div id="secao-view-hub" class="main-view-section" style="display: block; max-width: 1360px; margin: 0 auto; padding: 24px 0 60px 0;">
+
+            <!-- TÍTULO E DATA (Figma Node 2:9415) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div>
+                    <h1 style="font-size: 28px; font-weight: 700; color: #F1F5FC; margin: 0; letter-spacing: -0.02em;">M&oacute;dulos Operacionais</h1>
+                    <div style="font-size: 13px; color: #A6B5CA; margin-top: 6px;">Hoje, em todos os canais: 126 pedidos faturados &middot; R$ 74.920,80 &middot; 2 transportadoras</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 13px; font-weight: 600; color: #F1F5FC;">Quarta-feira, 30 de setembro</div>
+                    <div style="font-size: 11px; color: #8597B1; margin-top: 4px;">Turno da manh&atilde; &middot; atualizado &agrave;s 09:42</div>
+                </div>
             </div>
 
-            <!-- Grid de 6 Cards Principais (Image 1) -->
-            <div class="hub-menu-cards-grid">
-                <!-- Card 1: E-commerce 360° -->
-                <div class="hub-menu-card accent-pink" onclick="navegarAbaPrincipal('ecommerce')">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">E-commerce 360°</span>
-                        <span class="menu-card-pill">87 Pedidos · R$ 51.480</span>
+            <!-- ALERTAS ACIONÁVEIS (Figma Node 2:9415: 2 Colunas) -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <!-- Alerta 1: Guias Pendentes -->
+                <div style="background: #3A2E1D; border: 1px solid #5A4426; border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(245, 194, 104, 0.15); display: grid; place-items: center; color: #F5C268; flex-shrink: 0;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #F5C268;">5 guias GNRE pendentes de emiss&atilde;o</div>
+                            <div style="font-size: 11.5px; color: #D5B990; margin-top: 2px;">Priorize a emiss&atilde;o para seguir com a expedi&ccedil;&atilde;o.</div>
+                        </div>
                     </div>
-                    <div class="menu-lookbook-row">
-                        <div class="mini-lookbook-thumb" title="Macacão Pantacourt Antonia">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg?v=1774024717" alt="Macacão Antonia">
+                    <button type="button" onclick="navegarAbaPrincipal('cargas')" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s ease;" onmouseover="this.style.background='#1E2F4C'" onmouseout="this.style.background='#16233A'">
+                        Resolver na SEFAZ
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+                <!-- Alerta 2: Devoluções -->
+                <div style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="navegarAbaPrincipal('ecommerce')">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(102, 219, 172, 0.15); display: grid; place-items: center; color: #66DBAC; flex-shrink: 0;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="9 12 12 15 16 9"></polyline></svg>
                         </div>
-                        <div class="mini-lookbook-thumb" title="Calça Longa Chay">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2025/09/18/20_35_07_957_img_3858-20095390.jpg?v=1758238507" alt="Calça Chay">
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #F1F5FC;">0 devolu&ccedil;&otilde;es pendentes</div>
+                            <div style="font-size: 11.5px; color: #8597B1; margin-top: 2px;">Radar sem ocorr&ecirc;ncias</div>
                         </div>
-                        <div class="mini-lookbook-thumb" title="Bag Bahia Palha">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2024/12/02/18_46_30_470_18_12_0_060_boah_hike5528.jpg?v=1733176001" alt="Bag Bahia">
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </div>
+
+            <!-- ESCOPO DOS MÓDULOS (Figma Node 2:9415) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 11px; letter-spacing: 0.05em; color: #8597B1;">
+                <span style="font-weight: 700; text-transform: uppercase;">SEU ESPA&Ccedil;O DE OPERA&Ccedil;&Atilde;O</span>
+                <span style="letter-spacing: normal;">Indicadores de cada m&oacute;dulo mant&ecirc;m seu pr&oacute;prio recorte.</span>
+            </div>
+
+            <!-- GRADE DE MÓDULOS (3 Colunas x 2 Linhas: 6 Cards Figma 1:1) -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+
+                <!-- Card 1: E-commerce 360° -->
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <!-- Top Identificação -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">E-commerce 360&deg;</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
-                        <div class="mini-lookbook-thumb" title="Blusa Marta Linho Offwhite">
-                            <img src="https://cdn.vnda.com.br/x300/boah/2025/12/08/21_54_45_469_img_4614-21122120.JPG?v=1765241685" alt="Blusa Linho">
+
+                        <!-- Métrica e Visualização -->
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">87</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">pedidos na carteira</div>
+                            </div>
+                            <!-- Thumbnails de produtos reais BOAH da Figma -->
+                            <div style="display: flex; gap: 6px;">
+                                <img src="/images/figma_4f23d3eede.png" alt="Vestido linho" style="width: 48px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #29374E;">
+                                <img src="/images/figma_f2994db22c.png" alt="Blazer alfaiataria" style="width: 48px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #29374E;">
+                            </div>
                         </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">R$ 51.480,00 em vendas integradas</div>
+
+                        <!-- Badge de Status e Horário -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
+                                Sincronizado
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">09:42</span>
+                        </div>
+                    </div>
+
+                    <!-- Rodapé do Card -->
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('ecommerce')">Acessar pedidos &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">VNDA + Linx &middot; todos os per&iacute;odos</div>
                     </div>
                 </div>
 
                 <!-- Card 2: Dashboard & Métricas -->
-                <div class="hub-menu-card accent-cyan" onclick="navegarAbaPrincipal('dashboard')">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">Dashboard & Métricas</span>
-                    </div>
-                    <div class="metric-card-split">
-                        <div class="metric-col">
-                            <div class="metric-big-val font-mono">R$ 3.846,22</div>
-                            <div class="metric-sublabel">DIFAL Itaú</div>
-                            <div class="metric-big-val font-mono" style="margin-top: 10px;">87</div>
-                            <div class="metric-sublabel">Cargas Liberadas</div>
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Dashboard &amp; M&eacute;tricas</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
-                        <div class="sparkline-col">
-                            <svg width="130" height="50" viewBox="0 0 130 50" fill="none">
-                                <path d="M0 38C20 35 30 42 50 28C70 14 85 36 105 10C115 5 122 18 130 12" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
-                                <path d="M0 38C20 35 30 42 50 28C70 14 85 36 105 10C115 5 122 18 130 12V50H0V38Z" fill="url(#spark-grad)" opacity="0.3"/>
-                                <defs>
-                                    <linearGradient id="spark-grad" x1="65" y1="0" x2="65" y2="50" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#38BDF8"/>
-                                        <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
-                                    </linearGradient>
-                                </defs>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #F1F5FC; line-height: 1;">R$ 3.846,22</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">DIFAL Ita&uacute; conciliado</div>
+                            </div>
+                            <!-- Sparkline Figma SVG -->
+                            <svg width="96" height="48" viewBox="0 0 96 48" fill="none">
+                                <path d="M2 38 L24 38 L40 24 L56 30 L72 16 L94 4" stroke="#66DBAC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">87 cargas liberadas no dia</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
+                                Atualizado
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('dashboard')">Ver indicadores &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Todos os canais &middot; consolidado di&aacute;rio</div>
                     </div>
                 </div>
 
                 <!-- Card 3: Central de Relatórios -->
-                <div class="hub-menu-card accent-emerald" onclick="navegarAbaPrincipal('relatorios')">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">Central de Relatórios</span>
-                        <span class="menu-card-pill">4 Relatórios Oficiais</span>
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Central de Relat&oacute;rios</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">4</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">relat&oacute;rios oficiais</div>
+                            </div>
+                            <!-- Mini Lista de relatórios -->
+                            <div style="font-size: 11px; color: #A6B5CA; display: flex; flex-direction: column; gap: 5px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    Fiscal / SEFAZ
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    Cargas / financeiro
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">Fiscal, financeiro, cargas e vendas</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(165, 180, 252, 0.12); border: 1px solid rgba(165, 180, 252, 0.25); color: #A5B4FC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                Dispon&iacute;veis
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                        </div>
                     </div>
-                    <div class="card-bg-icon-wrap icon-emerald">
-                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5)); opacity: 0.9;">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <line x1="10" y1="9" x2="8" y2="9"></line>
-                        </svg>
+
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('relatorios')">Abrir relat&oacute;rios &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">&Uacute;ltima gera&ccedil;&atilde;o hoje, &agrave;s 09:38</div>
                     </div>
                 </div>
 
-                <!-- Card 4: Doca & Expedição Operacional -->
-                <div class="hub-menu-card accent-blue" onclick="navegarAbaPrincipal('cargas')">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">Expedição Operacional</span>
-                        <span class="menu-card-pill status-green">Esteira Ativa</span>
+                <!-- Card 4: Expedição Operacional -->
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Expedi&ccedil;&atilde;o Operacional</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">5</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">guias pendentes de emiss&atilde;o</div>
+                            </div>
+                            <!-- 5 Barras douradas da esteira Figma -->
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
+                                <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
+                                <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
+                                <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
+                                <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">R$ 403,36 em DIFAL a resolver</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(245, 194, 104, 0.12); border: 1px solid rgba(245, 194, 104, 0.25); color: #F5C268; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Esteira ativa
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                        </div>
                     </div>
-                    <div class="card-bg-icon-wrap icon-cyan">
-                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5)); opacity: 0.9;">
-                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                            <path d="M6 7v6M9 7v6M13 7v6M16 7v6M18 7v6"></path>
-                        </svg>
+
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('cargas')">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">0 cargas liberadas neste recorte</div>
                     </div>
                 </div>
 
-                <!-- Card 5: Tesouraria & Itaú SISPAG -->
-                <div class="hub-menu-card accent-purple" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">Tesouraria</span>
-                        <span class="menu-card-pill status-green">REM2610 Confirmada</span>
+                <!-- Card 5: Tesouraria -->
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 6 12 3 19 6"/><line x1="4" y1="10" x2="4" y2="21"/><line x1="20" y1="10" x2="20" y2="21"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Tesouraria</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; color: #F1F5FC; line-height: 1;">REM2610</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">remessa Ita&uacute; confirmada</div>
+                            </div>
+                            <!-- Ícone Documento com Check -->
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="1.8">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/>
+                            </svg>
+                        </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">Concilia&ccedil;&atilde;o conclu&iacute;da &agrave;s 09:35</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
+                                Confirmada
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                        </div>
                     </div>
-                    <div class="card-bg-icon-wrap icon-purple">
-                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.5)); opacity: 0.9;">
-                            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
-                            <circle cx="12" cy="12" r="4"></circle>
-                            <line x1="12" y1="4" x2="12" y2="6"></line>
-                            <line x1="12" y1="18" x2="12" y2="20"></line>
-                            <line x1="4" y1="12" x2="6" y2="12"></line>
-                            <line x1="18" y1="12" x2="20" y2="12"></line>
-                            <circle cx="15.5" cy="12" r="0.7" fill="#C084FC"></circle>
-                        </svg>
+
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">Ver remessa Ita&uacute; &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Arquivo de retorno processado</div>
                     </div>
                 </div>
 
                 <!-- Card 6: Radar de Devoluções -->
-                <div class="hub-menu-card accent-amber" onclick="navegarAbaPrincipal('ecommerce')">
-                    <div class="menu-card-top-row">
-                        <span class="menu-card-title">Radar de Devoluções</span>
-                        <span class="menu-card-pill status-red">0 Pendências</span>
+                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Radar de Devolu&ccedil;&otilde;es</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">0</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">devolu&ccedil;&otilde;es pendentes</div>
+                            </div>
+                            <!-- Ícone Check Circular -->
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="1.8">
+                                <circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/>
+                            </svg>
+                        </div>
+
+                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">Nenhuma solicita&ccedil;&atilde;o aguardando a&ccedil;&atilde;o</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
+                                Sem pend&ecirc;ncias
+                            </span>
+                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                        </div>
                     </div>
-                    <div class="card-bg-icon-wrap icon-amber">
-                        <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5)); opacity: 0.9;">
-                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                            <path d="M3 3v5h5"></path>
-                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-                            <path d="M16 21h5v-5"></path>
-                        </svg>
+
+                    <div>
+                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
+                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('ecommerce')">Consultar devolu&ccedil;&otilde;es &rarr;</div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Monitoramento VNDA &middot; em tempo real</div>
                     </div>
                 </div>
+
             </div>
+
+            <!-- SAÚDE DAS INTEGRAÇÕES (Figma Node 2:9415) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid #1E2D44; font-size: 12px; color: #8597B1;">
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <div style="display: flex; align-items: center; gap: 6px; color: #F1F5FC;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>VNDA sincronizada</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: #F1F5FC;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Linx conectado</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: #F1F5FC;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Total Express online</span>
+                    </div>
+                </div>
+                <div style="font-size: 11.5px; color: #8597B1;">
+                    &Uacute;ltima verifica&ccedil;&atilde;o &middot; 09:42:18
+                </div>
+            </div>
+
+            <!-- RODAPÉ OPERACIONAL (Figma Node 2:9415) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0 0; font-size: 11px; color: #64748B;">
+                <span>BOAH &middot; expedi HUB / Opera&ccedil;&otilde;es integradas</span>
+                <span>Ambiente de produ&ccedil;&atilde;o &middot; 30 set 2026 &middot; Bras&iacute;lia (UTC&minus;3)</span>
+            </div>
+
         </div>
-                <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-top: 10px; padding-bottom: 60px;">
+
+        <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-top: 10px; padding-bottom: 60px;">
             <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
                 <div id="meta-batch-tag" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34D399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                     <span style="width: 7px; height: 7px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></span>
@@ -2065,7 +2285,7 @@
         <!-- ========================================== -->
         <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
         <!-- ========================================== -->
-        <div id="secao-view-cargas" class="main-view-section" style="display: block;">
+        <div id="secao-view-cargas" class="main-view-section" style="display: none;">
             <!-- BREADCRUMBS FIGMA -->
             <div class="breadcrumbs-figma">
                 <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')">
@@ -3014,6 +3234,6 @@
     </div>
 
     <script src="/js/auth.js?v=20261028_1615"></script>
-    <script src="/js/dashboard.js?v=20261028_1615"></script>
+    <script src="/js/dashboard.js?v=20261028_1650"></script>
 </body>
 </html>

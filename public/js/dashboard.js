@@ -4692,7 +4692,7 @@ function navegarAbaPrincipal(aba) {
     const abas = ['hub', 'ecommerce', 'dashboard', 'relatorios', 'cargas'];
 
     // Sincroniza visual das abas do pipeline no cabeçalho
-    ['hub', 'cargas', 'dashboard', 'relatorios'].forEach(k => {
+    ['hub', 'cargas', 'ecommerce', 'dashboard', 'relatorios'].forEach(k => {
         const btn = document.getElementById(`nav-btn-${k}`);
         if (btn) {
             if (k === aba) btn.classList.add('active');
@@ -5041,9 +5041,15 @@ window.fecharModalEmitirSefazLote = fecharModalEmitirSefazLote;
 window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 
 
-// Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
+// Inicia por padrão no Portal de Cards-Menu (Início · Módulos Operacionais - Figma Node 2:9415)
 document.addEventListener('DOMContentLoaded', () => {
-    navegarAbaPrincipal('cargas');
+    const urlParams = new URLSearchParams(window.location.search);
+    const abaUrl = urlParams.get('aba') || (window.location.hash ? window.location.hash.replace('#', '') : null);
+    if (abaUrl && ['cargas', 'ecommerce', 'dashboard', 'relatorios'].includes(abaUrl)) {
+        navegarAbaPrincipal(abaUrl);
+    } else {
+        navegarAbaPrincipal('hub');
+    }
 });
 
 
