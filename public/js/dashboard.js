@@ -4639,6 +4639,9 @@ function renderizarCards360(data) {
                             ? `<button type="button" class="btn-card-action" style="background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})" title="Emitir Guia Oficial na SEFAZ com data">⚡ Emitir SEFAZ</button>` 
                             : `<span style="font-size: 11px; font-weight: 700; color: #34D399; display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Liberada</span>`
                         }
+                        <button type="button" class="btn-card-action" style="background: rgba(14, 165, 233, 0.12); color: #38BDF8; border: 1px solid rgba(14, 165, 233, 0.3); font-weight: 600;" onclick="event.stopPropagation(); rastrearTotalExpress('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.return_nf_reference || '')}')" title="Rastrear Entrega e Ocorrências em tempo real na Total Express">
+                            📍 Rastreio
+                        </button>
                         <a href="/api/total-express/etiqueta/${escapeHtml(g.id)}" target="_blank" class="btn-card-action" style="background: rgba(2, 132, 199, 0.12); color: #38BDF8; border: 1px solid rgba(2, 132, 199, 0.3); font-weight: 600;" onclick="event.stopPropagation();" title="Imprimir Etiqueta Térmica 10x15cm Total Express com AWB e Rota">
                             🏷️ Etiqueta 10x15
                         </a>
@@ -5234,3 +5237,141 @@ window.handleFileSelectRetorno = handleFileSelectRetorno;
 window.handleDropRetorno = handleDropRetorno;
 window.cancelarArquivoRetornoSelecionado = cancelarArquivoRetornoSelecionado;
 window.executarUploadRetornoItau = executarUploadRetornoItau;
+
+
+/**
+ * =========================================================================
+ * MÓDULO TOTAL EXPRESS - RASTREAMENTO EM TEMPO REAL E OCORRÊNCIAS
+ * =========================================================================
+ */
+async function rastrearTotalExpress(guideId, nfNumber, awb) {
+    const modal = document.getElementById('modal-rastreio-total');
+    const titulo = document.getElementById('modal-rastreio-titulo');
+    const sub = document.getElementById('modal-rastreio-sub');
+    const corpo = document.getElementById('modal-rastreio-corpo');
+    const previsaoEl = document.getElementById('modal-rastreio-previsao');
+
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    if (titulo) titulo.textContent = `Rastreamento NF ${nfNumber || ''}`;
+    if (sub) sub.textContent = awb ? `AWB Total Express: ${awb}` : 'Consultando status oficial...';
+    if (previsaoEl) previsaoEl.textContent = '';
+    
+    corpo.innerHTML = `
+        <div style="text-align: center; padding: 48px 20px;">
+            <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(56, 189, 248, 0.2); border-top-color: #38BDF8; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+            <div style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; margin-top: 14px;">Consultando API Total Express...</div>
+            <p style="font-size: 12px; color: #64748B; margin-top: 4px;">Buscando histórico de coletas, transferências e comprovante de entrega.</p>
+        </div>
+    `;
+
+    try {
+        const res = await fetch('/api/total-express/tracking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guideId, nf_number: nfNumber, awb })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Não foi possível obter o rastreamento.');
+        }
+
+        const items = data.data || [];
+        if (items.length === 0) {
+            corpo.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 28px; margin-bottom: 8px;">📦</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Encomenda ainda não processada na Total Express</div>
+                    <p style="font-size: 12.5px; color: #94A3B8; margin-top: 6px; line-height: 1.5;">
+                        Esta carga ainda está aguardando a primeira bipagem no centro de triagem de Salvador ou foi registrada recentemente via EDI.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const enc = items[0];
+        const eventos = (enc.tracking || []).slice().reverse(); // Mais recentes primeiro
+        const recebedor = enc.dadosRecebedor;
+
+        if (sub && enc.awb) {
+            sub.textContent = `AWB: ${enc.awb} • Rota: ${enc.rota || 'N/D'} • Peso: ${enc.pesoCapturado || 0}kg`;
+        }
+
+        if (previsaoEl && enc.previsaoEntregaAtualizada) {
+            previsaoEl.innerHTML = `📅 Previsão de Entrega: <strong>${formatarDataBR(enc.previsaoEntregaAtualizada)}</strong>`;
+        }
+
+        // Card do Comprovante de Entrega se disponível
+        let comprovanteHtml = '';
+        if (recebedor && (recebedor.nome || (recebedor.comprovanteEntrega && recebedor.comprovanteEntrega.urlArquivo))) {
+            const compUrl = recebedor.comprovanteEntrega ? recebedor.comprovanteEntrega.urlArquivo : null;
+            comprovanteHtml = `
+                <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #34D399; font-weight: 700;">✓ Entregue com Sucesso</div>
+                        <div style="font-size: 13.5px; font-weight: 700; color: #FFFFFF; margin-top: 2px;">
+                            Recebido por: ${escapeHtml(recebedor.nome || 'Titular / Portaria')}
+                        </div>
+                        <div style="font-size: 11.5px; color: #A7F3D0; margin-top: 2px;">
+                            Doc: ${escapeHtml(recebedor.documento || 'Registrado')} • Grau: ${escapeHtml(recebedor.grauParente || 'Autorizado')}
+                        </div>
+                    </div>
+                    ${compUrl ? `
+                        <a href="${escapeHtml(compUrl)}" target="_blank" style="background: #10B981; color: #FFFFFF; text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                            <span>📸 Ver Comprovante</span>
+                        </a>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Timeline de eventos
+        const timelineHtml = `
+            <div style="position: relative; padding-left: 24px; border-left: 2px solid rgba(56, 189, 248, 0.25); margin-left: 8px;">
+                ${eventos.map((ev, idx) => {
+                    const isLatest = idx === 0;
+                    const dataFormatada = ev.data ? (ev.data.split('T')[0].split('-').reverse().join('/') + ' às ' + ev.data.split('T')[1].substring(0, 5)) : '';
+                    return `
+                        <div style="position: relative; margin-bottom: 18px;">
+                            <!-- Marcador -->
+                            <div style="position: absolute; left: -31px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${isLatest ? '#38BDF8' : '#475569'}; border: 2px solid #0B1120; box-shadow: ${isLatest ? '0 0 10px #38BDF8' : 'none'};"></div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px;">
+                                <div style="font-size: 13px; font-weight: ${isLatest ? '700' : '600'}; color: ${isLatest ? '#FFFFFF' : '#CBD5E1'};">
+                                    ${escapeHtml(ev.descricao)}
+                                </div>
+                                <div style="font-size: 11px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
+                                    ${dataFormatada}
+                                </div>
+                            </div>
+                            ${(ev.cidade || ev.uf) ? `
+                                <div style="font-size: 11.5px; color: #64748B; margin-top: 2px;">
+                                    📍 ${escapeHtml(ev.cidade || '')}${ev.uf ? ` - ${escapeHtml(ev.uf)}` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        corpo.innerHTML = comprovanteHtml + timelineHtml;
+
+    } catch (err) {
+        corpo.innerHTML = `
+            <div style="text-align: center; padding: 36px 20px; color: #F87171;">
+                <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                <div style="font-size: 14.5px; font-weight: 700;">Falha na consulta de rastreamento</div>
+                <p style="font-size: 12.5px; color: #94A3B8; margin-top: 4px;">${escapeHtml(err.message)}</p>
+            </div>
+        `;
+    }
+}
+
+function fecharModalRastreioTotal() {
+    const modal = document.getElementById('modal-rastreio-total');
+    if (modal) modal.style.display = 'none';
+}

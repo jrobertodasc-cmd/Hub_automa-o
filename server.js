@@ -4093,6 +4093,58 @@ app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) =>
 });
 
 /**
+ * ROTA: Consultar Rastreamento e Ocorrências de Entrega na Total Express
+ */
+app.post('/api/total-express/tracking', requireAuth, async (req, res) => {
+    try {
+        const tenant = req.tenant;
+        const { guideId, nf_number, awb, notasFiscais, awbs, pedidos } = req.body;
+
+        const config = {
+            environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
+            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
+            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
+            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276
+        };
+
+        let params = {};
+        if (awbs && awbs.length > 0) {
+            params.awbs = awbs;
+        } else if (awb) {
+            params.awbs = [String(awb).trim()];
+        } else if (notasFiscais && notasFiscais.length > 0) {
+            params.notasFiscais = notasFiscais;
+        } else if (nf_number) {
+            params.notasFiscais = [String(nf_number).trim()];
+        } else if (pedidos && pedidos.length > 0) {
+            params.pedidos = pedidos;
+        } else if (guideId) {
+            const { data: guide } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('id', guideId)
+                .eq('tenant_id', tenant.id)
+                .single();
+            if (!guide) return res.status(404).json({ error: "Guia não encontrada." });
+
+            if (guide.return_nf_reference && guide.return_nf_reference.startsWith('TX')) {
+                params.awbs = [guide.return_nf_reference];
+            } else {
+                params.notasFiscais = [String(guide.nf_number)];
+            }
+        } else {
+            return res.status(400).json({ error: "Informe ao menos guideId, nf_number, awb ou lista de notas." });
+        }
+
+        const resultado = await totalExpressService.consultarStatusEntrega(params, config);
+        return res.status(200).json({ success: true, ...resultado });
+    } catch (err) {
+        console.error("Erro na consulta de Tracking Total Express:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * Emissão e Impressão de Múltiplas Guias GNRE selecionadas
  */
 app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {

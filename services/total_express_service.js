@@ -7,6 +7,14 @@ const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 
 const ENDPOINTS = {
+    smartlabel: {
+        producao: 'https://apis.totalexpress.com.br/ics-edi-lv/v1/coleta/smartlabel/registrar',
+        homologacao: 'https://apis-qa.totalexpress.com.br/ics-edi-lv/v1/coleta/smartLabel/registrar'
+    },
+    tracking: {
+        producao: 'https://apis.totalexpress.com.br/ics-tracking-encomenda-lv/v1/tracking',
+        homologacao: 'https://apis-qa.totalexpress.com.br/ics-tracking-encomenda-lv/v1/tracking'
+    },
     producao: 'https://apis.totalexpress.com.br/ics-edi-lv/v1/coleta/smartlabel/registrar',
     homologacao: 'https://apis-qa.totalexpress.com.br/ics-edi-lv/v1/coleta/smartLabel/registrar'
 };
@@ -320,9 +328,90 @@ async function gerarEtiquetaTermicaPdfBuffer({ awb, rota, servico, dadosNfe, emp
     });
 }
 
+
+/**
+ * Consulta o status de entrega e ocorrências na API da Total Express
+ * @param {Object} params - { awbs: string[], notasFiscais: string[], pedidos: string[], comprovanteEntrega: boolean }
+ * @param {Object} config - { user, password, environment }
+ */
+async function consultarStatusEntrega(params, config = {}) {
+    const ambiente = (config.environment || 'producao').toLowerCase();
+    const endpointUrl = ambiente === 'homologacao' ? ENDPOINTS.tracking.homologacao : ENDPOINTS.tracking.producao;
+    const user = config.user || process.env.TOTAL_EXPRESS_USER || 'clara50276';
+    const password = config.password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010';
+    const authHeader = getBasicAuthHeader(user, password);
+
+    const payload = {};
+    if (params.awbs && params.awbs.length > 0) payload.awbs = params.awbs.map(String);
+    else if (params.notasFiscais && params.notasFiscais.length > 0) payload.notasFiscais = params.notasFiscais.map(String);
+    else if (params.pedidos && params.pedidos.length > 0) payload.pedidos = params.pedidos.map(String);
+    else if (params.ediRecebimentoInicioData) {
+        payload.ediRecebimentoInicioData = params.ediRecebimentoInicioData;
+        if (params.ediRecebimentoFimData) payload.ediRecebimentoFimData = params.ediRecebimentoFimData;
+    } else {
+        throw new Error('Informe ao menos um critério: awbs, notasFiscais, pedidos ou data.');
+    }
+
+    if (params.comprovanteEntrega !== undefined) {
+        payload.comprovanteEntrega = Boolean(params.comprovanteEntrega);
+    } else {
+        payload.comprovanteEntrega = true;
+    }
+
+    const bodyStr = JSON.stringify(payload);
+
+    return new Promise((resolve, reject) => {
+        const parsed = new URL(endpointUrl);
+        const options = {
+            hostname: parsed.hostname,
+            path: parsed.pathname + (parsed.search || ''),
+            method: 'POST',
+            headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/json',
+                'User-Agent': 'EXPEDI-HUB/1.0',
+                'Content-Length': Buffer.byteLength(bodyStr)
+            },
+            timeout: 12000
+        };
+
+        const req = https.request(options, (res) => {
+            let resData = '';
+            res.on('data', chunk => resData += chunk);
+            res.on('end', () => {
+                try {
+                    const parsedData = JSON.parse(resData);
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve(parsedData);
+                    } else if (res.statusCode === 404) {
+                        resolve({ data: [], message: 'Nenhuma encomenda encontrada.' });
+                    } else {
+                        reject(new Error(parsedData.descricao || parsedData.message || `Erro Total Express (${res.statusCode}): ${resData}`));
+                    }
+                } catch (parseErr) {
+                    reject(new Error(`Erro ao interpretar resposta da Total Express: ${resData}`));
+                }
+            });
+        });
+
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Timeout de comunicação com a API de Tracking da Total Express.'));
+        });
+
+        req.on('error', (err) => {
+            reject(new Error(`Falha de conexão com a Total Express: ${err.message}`));
+        });
+
+        req.write(bodyStr);
+        req.end();
+    });
+}
+
 module.exports = {
     registrarEncomendaSmartLabel,
     gerarEtiquetaTermicaPdfBuffer,
     montarPayloadSmartLabel,
+    consultarStatusEntrega,
     ENDPOINTS
 };
