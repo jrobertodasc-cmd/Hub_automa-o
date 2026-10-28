@@ -18,6 +18,10 @@ const microvixService = require('./services/microvix_service');
 const erpService = require('./services/erp_service');
 const danfeService = require('./services/danfe_service');
 const totalExpressService = require('./services/total_express_service');
+
+// Cache em memória de rastreamento em tempo real da Total Express (TTL de 2 minutos por NF)
+const globalTotalTrackingCache = {};
+
 const printService = require('./services/print_service');
 const vndaService = require('./services/vnda_service');
 const syncService = require('./services/sync_service');
@@ -2423,7 +2427,9 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                     line_digitizable: g.line_digitizable || null,
                     paid_at: g.paid_at || null,
                     bank_authentication: g.bank_authentication || null,
-                    situacao_pagamento: sit
+                    situacao_pagamento: sit,
+                    return_nf_reference: g.return_nf_reference || (globalTotalTrackingCache[g.nf_number]?.awb) || null,
+                    tracking: globalTotalTrackingCache[g.nf_number] || null
                 };
             }).sort((a, b) => {
                 // Prioridade máxima para cargas que precisam de ação imediata:
@@ -4192,6 +4198,131 @@ app.post('/api/total-express/tracking', requireAuth, async (req, res) => {
         return res.status(200).json({ success: true, ...resultado });
     } catch (err) {
         console.error("Erro na consulta de Tracking Total Express:", err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * ROTA: Sincronização Full-Time em Lote com API de Tracking da Total Express
+ * Consulta até 50 notas de uma só vez e atualiza cache em memória e status operacional em tempo real
+ */
+app.post('/api/total-express/sync-tracking-batch', requireAuth, async (req, res) => {
+    try {
+        const tenant = req.tenant;
+        let { nfs, force } = req.body;
+
+        // Se nenhuma lista de NFs for enviada, busca as NFs do lote ativo na doca
+        if (!nfs || !Array.isArray(nfs) || nfs.length === 0) {
+            const { data: activeGuides } = await supabase
+                .from('guides')
+                .select('nf_number, return_nf_reference')
+                .eq('tenant_id', tenant.id)
+                .order('nf_number', { ascending: false })
+                .limit(50);
+            
+            nfs = (activeGuides || []).map(g => String(g.nf_number).trim()).filter(Boolean);
+        }
+
+        if (nfs.length === 0) {
+            return res.json({ success: true, count: 0, trackingMap: {}, message: "Nenhuma NF para sincronizar." });
+        }
+
+        // Limita a 50 itens por lote conforme diretriz da API da Total Express
+        const nfsToQuery = nfs.slice(0, 50).map(String);
+
+        // Verifica cache se não for forçado (TTL de 2 minutos)
+        const now = Date.now();
+        const nfsPendentes = force ? nfsToQuery : nfsToQuery.filter(nf => {
+            const c = globalTotalTrackingCache[nf];
+            return !c || (now - c.syncedAt > 120000); // 2 min
+        });
+
+        if (nfsPendentes.length > 0) {
+            const config = {
+                environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
+                user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
+                password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
+                remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276
+            };
+
+            try {
+                const apiRes = await totalExpressService.consultarStatusEntrega({
+                    notasFiscais: nfsPendentes,
+                    comprovanteEntrega: true
+                }, config);
+
+                const encomendas = apiRes.data || [];
+                for (const enc of encomendas) {
+                    const nf = String(enc.notaFiscal || '').trim();
+                    if (!nf) continue;
+
+                    const eventos = enc.tracking || [];
+                    const ultEvento = eventos.length > 0 ? eventos[eventos.length - 1] : null;
+                    const statusCod = ultEvento ? parseInt(ultEvento.status, 10) : 0;
+                    const desc = (ultEvento?.descricao || 'ARQUIVO RECEBIDO').toUpperCase();
+
+                    const isEntregue = (statusCod === 1 || desc.includes('ENTREGA REALIZADA'));
+                    const isColetada = (statusCod >= 83 || isEntregue || desc.includes('COLETA') || desc.includes('CD') || desc.includes('EMBARCADO') || desc.includes('ROTA') || desc.includes('TRANSFER'));
+                    const isEmRota = (desc.includes('ROTA') || desc.includes('PROCESSO DE ENTREGA'));
+                    const isTransferencia = (desc.includes('TRANSFER') || desc.includes('EMBARCADO'));
+                    const hasProblema = (desc.includes('AUSENTE') || desc.includes('EXTRAV') || desc.includes('RETID') || desc.includes('INSUCESSO') || desc.includes('RECUSA'));
+
+                    const recebedor = enc.dadosRecebedor;
+
+                    globalTotalTrackingCache[nf] = {
+                        nf: nf,
+                        awb: enc.awb || null,
+                        rota: enc.rota || null,
+                        pesoCapturado: enc.pesoCapturado || 0,
+                        previsaoEntrega: enc.previsaoEntregaAtualizada || enc.previsaoEntrega || null,
+                        ultimoStatus: ultEvento?.descricao || 'ARQUIVO RECEBIDO',
+                        statusCodigo: statusCod,
+                        dataStatus: ultEvento?.data || null,
+                        cidadeStatus: ultEvento?.cidade || null,
+                        ufStatus: ultEvento?.uf || null,
+                        isColetada,
+                        isEntregue,
+                        isEmRota,
+                        isTransferencia,
+                        hasProblema,
+                        recebedorNome: recebedor?.nome || null,
+                        recebedorDoc: recebedor?.documento || null,
+                        comprovanteUrl: recebedor?.comprovanteEntrega?.urlArquivo || null,
+                        totalEventos: eventos.length,
+                        syncedAt: now
+                    };
+
+                    // Atualiza AWB na tabela guides se ainda não constava
+                    if (enc.awb) {
+                        await supabase
+                            .from('guides')
+                            .update({ carrier_name: 'Total Express', return_nf_reference: enc.awb })
+                            .eq('nf_number', nf)
+                            .eq('tenant_id', tenant.id)
+                            .is('return_nf_reference', null);
+                    }
+                }
+            } catch (errApi) {
+                console.warn("[TotalExpressSync] Erro na consulta em lote:", errApi.message);
+            }
+        }
+
+        // Monta o mapa de retorno apenas para as NFs solicitadas
+        const trackingMap = {};
+        nfsToQuery.forEach(nf => {
+            if (globalTotalTrackingCache[nf]) {
+                trackingMap[nf] = globalTotalTrackingCache[nf];
+            }
+        });
+
+        return res.json({
+            success: true,
+            count: Object.keys(trackingMap).length,
+            trackingMap,
+            syncedAt: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error("Erro na rota de sync em lote da Total Express:", err);
         return res.status(500).json({ error: err.message });
     }
 });

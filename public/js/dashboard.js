@@ -3221,6 +3221,20 @@ function renderizarPaginaDoca(pagina = 1) {
                         </td>
                         <td style="text-align: center;">
                             ${statusBadge}
+                            ${(() => {
+                                const tr = (window.totalTrackingMap && window.totalTrackingMap[g.nf_number]) || g.tracking || null;
+                                if (!tr) return '';
+                                if (tr.isEntregue) {
+                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 10.5px;" title="Entregue: ${escapeHtml(tr.recebedorNome || '')}">✓ Entregue</span></div>`;
+                                }
+                                if (tr.isEmRota) {
+                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(56,189,248,0.15); color: #38BDF8; border: 1px solid rgba(56,189,248,0.3); font-weight: 700; font-size: 10.5px;" title="Em rota de entrega">🛵 Em Rota</span></div>`;
+                                }
+                                if (tr.isColetada) {
+                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(14,165,233,0.15); color: #38BDF8; border: 1px solid rgba(14,165,233,0.3); font-weight: 700; font-size: 10.5px;" title="${escapeHtml(tr.ultimoStatus)} (${escapeHtml(tr.cidadeStatus || '')})">🚚 ${escapeHtml(tr.ultimoStatus)}</span></div>`;
+                                }
+                                return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(245,158,11,0.15); color: #FBBF24; border: 1px solid rgba(245,158,11,0.3); font-weight: 700; font-size: 10.5px;" title="Aguardando coleta física na doca">📦 Doca: Aguardando Coleta</span></div>`;
+                            })()}
                         </td>
                         <td style="text-align: center;">
                             ${(() => {
@@ -4593,9 +4607,22 @@ function renderizarCards360(data) {
                                 <span>📍 ${escapeHtml(g.cidade)}</span>
                                 <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
                                 <span style="color: rgba(255,255,255,0.2);">•</span>
-                                <span style="font-size: 11px; color: #38BDF8; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
-                                    🚚 ${escapeHtml(g.carrier_name || 'Total Express')}
-                                </span>
+                                ${(() => {
+                                    const tr = (window.totalTrackingMap && window.totalTrackingMap[g.nf_number]) || g.tracking || null;
+                                    if (tr) {
+                                        if (tr.isEntregue) {
+                                            return `<span style="font-size: 11px; font-weight: 700; color: #34D399; display: inline-flex; align-items: center; gap: 3px;" title="Entregue: ${escapeHtml(tr.recebedorNome || 'Destinatário')}">✓ Entregue (${escapeHtml(tr.cidadeStatus || '')})</span>`;
+                                        }
+                                        if (tr.isEmRota) {
+                                            return `<span style="font-size: 11px; font-weight: 700; color: #38BDF8; display: inline-flex; align-items: center; gap: 3px;" title="Em rota de entrega ao cliente">🛵 Em Rota</span>`;
+                                        }
+                                        if (tr.isColetada) {
+                                            return `<span style="font-size: 11px; font-weight: 700; color: #38BDF8; display: inline-flex; align-items: center; gap: 3px;" title="${escapeHtml(tr.ultimoStatus)} (${escapeHtml(tr.cidadeStatus || '')})">🚚 ${escapeHtml(tr.ultimoStatus)}</span>`;
+                                        }
+                                        return `<span style="font-size: 11px; font-weight: 700; color: #FBBF24; display: inline-flex; align-items: center; gap: 3px;" title="Etiquetada, aguardando coleta do caminhão">📦 Aguardando Coleta Total</span>`;
+                                    }
+                                    return `<span style="font-size: 11px; color: #38BDF8; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">🚚 ${escapeHtml(g.carrier_name || 'Total Express')}</span>`;
+                                })()}
                                 <span style="color: rgba(255,255,255,0.2);">•</span>
                                 <span style="font-size: 11px; color: #94A3B8;">${dataExibir}</span>
                             </div>
@@ -5374,4 +5401,92 @@ async function rastrearTotalExpress(guideId, nfNumber, awb) {
 function fecharModalRastreioTotal() {
     const modal = document.getElementById('modal-rastreio-total');
     if (modal) modal.style.display = 'none';
+}
+
+
+/**
+ * =========================================================================
+ * SINCRONIZAÇÃO FULL-TIME EM TEMPO REAL: TOTAL EXPRESS
+ * =========================================================================
+ */
+window.totalTrackingMap = window.totalTrackingMap || {};
+let _totalSyncEmAndamento = false;
+let _intervaloFullTimeTotal = null;
+
+async function sincronizarRastreioTotalDoca(silencioso = false) {
+    if (_totalSyncEmAndamento) return;
+    _totalSyncEmAndamento = true;
+
+    const btnLabel = document.getElementById('btn-sync-total-label');
+    const syncTag = document.getElementById('label-total-sync');
+    if (!silencioso && btnLabel) btnLabel.textContent = 'Sincronizando...';
+    if (syncTag) syncTag.textContent = 'Sincronizando com Total Express...';
+
+    try {
+        // Coleta NFs ativas da doca ou do cockpit 360
+        const nfsSet = new Set();
+        (window.cargasFiltradasDoca || []).forEach(g => { if (g.nf_number) nfsSet.add(String(g.nf_number).trim()); });
+        (window.cockpit360Cache?.guias || []).forEach(g => { if (g.nf_number) nfsSet.add(String(g.nf_number).trim()); });
+        
+        const nfs = Array.from(nfsSet).slice(0, 50);
+        if (nfs.length === 0) {
+            _totalSyncEmAndamento = false;
+            if (syncTag) syncTag.textContent = 'Total Express: Tempo Real';
+            if (btnLabel) btnLabel.textContent = 'Sync Total Express';
+            return;
+        }
+
+        const res = await fetch('/api/total-express/sync-tracking-batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nfs, force: !silencioso })
+        });
+
+        const data = await res.json();
+        if (data.success && data.trackingMap) {
+            window.totalTrackingMap = Object.assign(window.totalTrackingMap || {}, data.trackingMap);
+            
+            // Re-renderiza a página da doca mantendo a posição e seleção
+            if (typeof renderizarPaginaDoca === 'function' && window.cargasFiltradasDoca) {
+                renderizarPaginaDoca(window.paginaAtualDoca || 1);
+            }
+
+            // Re-renderiza o Cockpit 360 se estiver aberto
+            if (typeof renderizarCards360 === 'function' && window.cockpit360Cache) {
+                renderizarCards360(window.cockpit360Cache);
+            }
+
+            const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            if (syncTag) syncTag.textContent = `Total Express: Atualizado às ${agora}`;
+            if (!silencioso && typeof showToast === 'function') {
+                showToast(`✓ Rastreamentos sincronizados com a Total Express às ${agora}!`, 'success');
+            }
+        }
+    } catch (err) {
+        console.warn('[Sync Total Express] Erro suave:', err.message);
+        if (syncTag) syncTag.textContent = 'Total Express: Tempo Real';
+    } finally {
+        _totalSyncEmAndamento = false;
+        if (btnLabel) btnLabel.textContent = 'Sync Total Express';
+    }
+}
+
+function iniciarSincronizacaoFullTimeTotal() {
+    if (_intervaloFullTimeTotal) clearInterval(_intervaloFullTimeTotal);
+    // Sincroniza imediatamente na primeira carga
+    setTimeout(() => { sincronizarRastreioTotalDoca(true); }, 2500);
+
+    // Repete a cada 45 segundos de forma invisível em background
+    _intervaloFullTimeTotal = setInterval(() => {
+        if (!document.hidden) {
+            sincronizarRastreioTotalDoca(true);
+        }
+    }, 45000);
+}
+
+// Inicia no carregamento do DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciarSincronizacaoFullTimeTotal);
+} else {
+    iniciarSincronizacaoFullTimeTotal();
 }
