@@ -3985,9 +3985,9 @@ app.post('/api/total-express/despachar/:guideId', requireAuth, requireActiveSubs
         // Configuração da conta da Total Express
         const totalConfig = {
             environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
-            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'linx_total',
-            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || 'total@123',
-            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 1,
+            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
+            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
+            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276,
             cnpj: tenant.cnpj || '10436619000105',
             servicoTipo: tenant.total_express_servico || 1 // 1 = Standard
         };
