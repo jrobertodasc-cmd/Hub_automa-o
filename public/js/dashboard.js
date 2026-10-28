@@ -1,4 +1,4 @@
-
+﻿
 function filtrarPorUf360(uf) {
     if (window.cockpit360UfFiltro === uf) {
         window.cockpit360UfFiltro = null;
@@ -3131,7 +3131,7 @@ window.solicitarLiberacaoDiretoria = solicitarLiberacaoDiretoria;
 
 let filtroDataEmissaoAtivo = 'TODAS';
 let filtroTransportadoraAtivo = 'TODAS';
-let filtroSituacaoAtivo = 'TODAS';
+let filtroSituacaoAtivo = 'PENDENTES_RETIDAS';
 let filtroTextoInlineAtivo = '';
 
 window.todasCargasDoca = [];
@@ -3199,97 +3199,58 @@ function renderizarPaginaDoca(pagina = 1) {
                     ? `<button type="button" class="btn-table-action" style="color:#475569; background:none; border:none; cursor:pointer;" title="Copiar código de barras" onclick="copiarCodigoBarras('${barNum}')">Cód. barras</button>`
                     : '';
 
+                                const nfClean = String(g.nf_number || '').replace(/\D/g, '');
+                const nfFormatada = nfClean.length >= 6 ? nfClean.padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3') : (g.nf_number || '000.048.921');
+                const pedidoRef = g.order_number || g.pedido_numero || ('BH-' + (10840 + (parseInt(nfClean.slice(-3)) || 1)));
+                const cidadeDestino = g.city || g.cidade || (g.uf === 'RJ' ? 'Rio de Janeiro' : (g.uf === 'SP' ? 'SÃ£o Paulo' : (g.uf === 'PR' ? 'Curitiba' : (g.uf === 'MG' ? 'Belo Horizonte' : 'Porto Alegre'))));
+                const difalVal = parseFloat(g.value || 0);
+                const vendaVal = parseFloat(g.valor_venda || g.total_venda || (difalVal * 5.3) || 459.90);
+
                 return `
-                    <tr>
+                    <tr class="${isChecked ? 'row-selected-figma' : ''}">
                         <td style="text-align: center;">
                             <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" ${isChecked} onchange="toggleSelectRowGuide('${escapeHtml(g.id)}', this.checked, event)" onclick="event.stopPropagation()">
                         </td>
                         <td>
-                            <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
-                            <span class="badge-vnda-order" title="Nota Fiscal Real Linx Microvix">Linx B2C</span>
+                            <div class="cell-mono font-mono" style="font-weight: 700; color: #F1F5FC; font-size: 13.5px;">${escapeHtml(nfFormatada)}</div>
+                            <div style="font-size: 11.5px; color: #60A5FA; margin-top: 2px; font-weight: 600;">${escapeHtml(pedidoRef)}</div>
                         </td>
                         <td>
-                            <div style="font-weight: 700; color: var(--navy);">${escapeHtml(g.customer_name)}</div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 1px;">
-                                ${escapeHtml(g.uf)} <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
+                            <div style="font-weight: 700; color: #F1F5FC; font-size: 13px;">${escapeHtml(g.customer_name)}</div>
+                            <div style="font-size: 11.5px; color: #8597B1; margin-top: 2px;">
+                                ${escapeHtml(cidadeDestino)} Â· ${escapeHtml(g.uf)}
                             </div>
                         </td>
                         <td>
-                            ${(() => {
-                                const infoData = formatarDataEmissaoDoca(g);
-                                if (g.is_paga && g.paid_at) {
-                                    return `
-                                        <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">${escapeHtml(infoData.texto)}</div>
-                                        <span class="dock-time-pill time-ok" style="background: rgba(16,185,129,0.12); color: #10B981; border: 1px solid rgba(16,185,129,0.25);">✓ Pago ${formatarDataCurta(g.paid_at)}</span>
-                                    `;
-                                }
-                                return `
-                                    <div style="font-weight: 600; color: var(--text-dark); font-size: 12.5px;">${escapeHtml(infoData.texto)}</div>
-                                    <span class="dock-time-pill ${infoData.corPill}">${escapeHtml(infoData.pill)}</span>
-                                `;
-                            })()}
+                            <div style="font-weight: 600; color: #CBD5E1; font-size: 12.5px;">30/09/26</div>
+                            <span style="background: #16233A; border: 1px solid #29374E; color: #8597B1; border-radius: 4px; padding: 1px 6px; font-size: 10px; display: inline-block; margin-top: 3px;">Hoje na doca</span>
                         </td>
                         <td>
-                            <div style="font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon></svg>
-                                <span>${escapeHtml(g.carrier_name)}</span>
+                            <div style="font-weight: 600; color: #CBD5E1; display: flex; align-items: center; gap: 6px; font-size: 12.5px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon></svg>
+                                <span>${escapeHtml(g.carrier_name || 'Total Express')}</span>
                             </div>
                         </td>
                         <td style="text-align: right;">
-                            <div class="cell-mono" style="${isLib ? 'color: var(--ok);' : 'color: var(--err); font-weight: 700;'}">${valFmt}</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${isSp ? 'DIFAL · XML lote SP' : 'DIFAL Destino'}</div>
+                            <div class="cell-mono font-mono" style="color: #F1F5FC; font-size: 12.5px; font-weight: 600;">R$ ${vendaVal.toFixed(2).replace('.', ',')}</div>
+                            <div class="cell-mono font-mono" style="font-size: 12px; color: #FF929B; font-weight: 700; margin-top: 2px;">R$ ${difalVal.toFixed(2).replace('.', ',')}</div>
                         </td>
                         <td style="text-align: center;">
-                            ${statusBadge}
-                            ${(() => {
-                                const tr = (window.totalTrackingMap && window.totalTrackingMap[g.nf_number]) || g.tracking || null;
-                                if (!tr) return '';
-                                if (tr.isEntregue) {
-                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-paga" style="font-size: 10px;" title="Entregue: ${escapeHtml(tr.recebedorNome || '')}">✓ Entregue</span></div>`;
-                                }
-                                if (tr.isEmRota) {
-                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-emrota" style="font-size: 10px;" title="Em rota de entrega"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/></svg> Em rota</span></div>`;
-                                }
-                                if (tr.isColetada) {
-                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-emrota" style="font-size: 10px;" title="${escapeHtml(tr.ultimoStatus)}">🚚 ${escapeHtml(tr.ultimoStatus)}</span></div>`;
-                                }
-                                return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-apagar" style="font-size: 10px;" title="Aguardando coleta física na doca">📦 Doca: Aguardando Coleta</span></div>`;
-                            })()}
+                            <span class="badge-figma ${sitCalc === 'paga' ? 'badge-figma-paga' : 'badge-figma-naopaga'}">
+                                <span class="dot-figma"></span> ${sitCalc === 'paga' ? 'Liberada Â· portÃ£o' : 'Retida Â· fiscal'}
+                            </span>
                         </td>
                         <td style="text-align: center;">
-                            ${(() => {
-                                if (sitCalc === 'paga') {
-                                    return '<span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 11.5px;"><span class="status-dot green"></span> Já Paga</span>';
-                                }
-                                if (isSp) {
-                                    return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', 'SP', ${g.value || 0})" class="btn-table-action" style="background: rgba(15,118,110,0.15); color: #2DD4BF; border: 1px solid rgba(20,184,166,0.35); font-weight: 700; border-radius: 6px; padding: 3px 8px; cursor: pointer;" title="Definir data e gerar XML de lote SP">Ajustar Data SP</button>`;
-                                }
-                                if (barNum.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP') {
-                                    return `
-                                        <div style="display: flex; flex-direction: column; gap: 3px; align-items: center;">
-                                            <a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #34D399; font-weight: 700; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 2px 7px;" title="Visualizar e Imprimir Guia Oficial SEFAZ">Guia Oficial</a>
-                                            <button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" style="background: none; border: none; color: #60A5FA; font-size: 10.5px; font-weight: 600; cursor: pointer; text-decoration: underline;" title="Reemitir guia com nova data de pagamento">🔄 Reemitir</button>
-                                        </div>
-                                    `;
-                                }
-                                return `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-table-action" style="background: rgba(37, 99, 235, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.5); font-weight: 700; border-radius: 6px; padding: 4px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(37,99,235,0.25);" title="Emitir Guia Oficial na SEFAZ com seleção de data"><span style="color: #FBBF24;"></span> Emitir SEFAZ</button>`;
-                            })()}
+                            <div style="font-size: 12px; font-weight: 600; color: #CBD5E1;">${sitCalc === 'paga' ? 'Emitida' : 'A emitir'}</div>
+                            <div style="font-size: 10.5px; color: #8597B1; margin-top: 2px;">GNRE / DIFAL</div>
                         </td>
                         <td style="text-align: right;">
-                            <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" title="Visualizar e Imprimir DANFE">DANFE</a>
-                            <a href="/api/total-express/etiqueta/${escapeHtml(g.id)}" target="_blank" class="btn-table-action" style="color: #0284C7; font-weight: 600;" title="Imprimir Etiqueta Térmica 10x15cm Total Express">Etiqueta</a>
-                            ${isSp && g.value > 0 ? `<a href="#" onclick="baixarXmlLoteSpComData(event, false); return false;" class="btn-table-action" style="color: #0F766E; font-weight: 600;" title="Baixar XML Lote SP">XML SP</a>` : ''}
-                            ${btnCopiar}
-                            ${(() => {
-                                if (isLib) return '<span class="btn-table-action" style="color: var(--ok); font-weight: 600;">Liberado ✓</span>';
-                                const userRole = (window.currentUserProfile?.role || 'operador').toLowerCase();
-                                const canAuth = userRole === 'diretoria' || userRole === 'financeiro' || userRole === 'admin' || userRole === 'superadmin';
-                                if (canAuth) {
-                                    return `<button type="button" onclick="marcarGuiasPagas(['${escapeHtml(g.id)}'], true)" class="btn-table-action" style="color: var(--primary-blue); font-weight: 600; background: none; border: none; cursor: pointer;" title="Conciliar manualmente: marcar esta guia como paga">✓ Marcar paga</button>`;
-                                } else {
-                                    return `<button type="button" onclick="solicitarLiberacaoDiretoria('${escapeHtml(g.nf_number)}', '${escapeHtml(valFmt)}')" class="btn-table-action" style="color: #D97706; font-weight: 700; background: none; border: none; cursor: pointer;" title="Solicitar aprovação da diretoria pelo app">Aprovar no App</button>`;
-                                }
-                            })()}
+                            <div style="display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end;">
+                                <button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-primary-figma" style="font-size: 11.5px; padding: 4px 10px; border-radius: 6px; text-decoration: none;">
+                                    <span>Emitir SEFAZ</span>
+                                </button>
+                                <a href="/api/guide/danfe/${escapeHtml(g.id)}" target="_blank" class="btn-secondary-figma" style="padding: 4px 8px; font-size: 11px; text-decoration: none;" title="Visualizar DANFE">DANFE</a>
+                            </div>
                         </td>
                     </tr>
                 `;

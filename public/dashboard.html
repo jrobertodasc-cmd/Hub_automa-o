@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/expedi.css?v=20261028_1515">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261028_1515">
+    <link rel="stylesheet" href="css/expedi.css?v=20261028_1550">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261028_1550">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1335,66 +1335,70 @@
 <body>
 
     <!-- NAVBAR CORPORATIVA EXPEDI HUB ENTERPRISE -->
-    <nav class="hub-navbar">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')" class="hub-brand" title="Ir para o Portal de Módulos">
-                <div class="hub-logo-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#cyan-grad)" stroke="#38BDF8" stroke-width="1.5"/>
-                        <path d="M2 17L12 22L22 17" stroke="#818CF8" stroke-width="1.5" stroke-linecap="round"/>
-                        <path d="M2 12L12 17L22 12" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
-                        <defs>
-                            <linearGradient id="cyan-grad" x1="2" y1="2" x2="22" y2="12" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#38BDF8"/>
-                                <stop offset="1" stop-color="#818CF8"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <div class="hub-title-wrap">
-                    <h1>expedi HUB</h1>
-                    
-                </div>
+        <!-- NAVBAR FIGMA EXPEDI HUB (Node 2:10037 1:1) -->
+    <nav class="hub-navbar" style="background: #0B1220; border-bottom: 1px solid #29374E; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; position: sticky; top: 0;">
+        <!-- Left: Brand + Tenant Selector + Flat Nav Links -->
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <!-- Brand -->
+            <a href="dashboard.html" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F1F5FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                    <line x1="7" y1="12" x2="17" y2="12"/>
+                </svg>
+                <span style="font-size: 16px; font-weight: 800; color: #F1F5FC; letter-spacing: -0.02em;">expedi</span>
+                <span style="background: #16233A; border: 1px solid #29374E; color: #8597B1; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;">HUB</span>
             </a>
 
-            <!-- Identificação da Empresa -->
-            <div class="hub-tenant-pill" onclick="navegarAbaPrincipal('hub')" title="Empresa: Boah (Lalua Comércio de Modas)" style="cursor: pointer;">
-                <span class="tenant-dot"></span>
-                <span class="tenant-label" style="font-weight: 800; letter-spacing: 0.5px;">BOAH</span>
+            <!-- Tenant Selector Dropdown -->
+            <div class="hub-tenant-dropdown" onclick="navegarAbaPrincipal('hub')" title="Empresa Ativa: BOAH" style="background: #16233A; border: 1px solid #29374E; border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: #F1F5FC; font-size: 12.5px; font-weight: 700;">
+                <span id="tenant-name-short">BOAH</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
             </div>
 
-            <!-- Conexão Fiscal Online -->
-                        <!-- PIPELINE LINEAR DO DIA: 3 PASSOS OPERACIONAIS DIRETOS -->
-                        <div class="hub-pipeline-nav" id="hub-pipeline-nav">
-                <button type="button" class="hub-pipeline-btn" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')" title="Portal de Módulos (6 Cards)">
-                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Início</span>
-                </button>
-                <button type="button" class="hub-pipeline-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
-                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Expedição & SEFAZ</span>
-                    <span class="hub-pipeline-badge" id="nav-badge-pendentes">9</span>
-                </button>
-                <button type="button" class="hub-pipeline-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')" title="Geração da Remessa Bancária Itaú (CNAB 240)">
-                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg> Remessa Itaú</span>
-                </button>
-                <button type="button" class="hub-pipeline-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')" title="Manifesto, Romaneio A4 e Auditoria Contábil">
-                    <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Relatórios</span>
-                </button>
-            </div>
+            <!-- Separator -->
+            <div style="width: 1px; height: 20px; background: #29374E;"></div>
 
-            <div class="live-sse-indicator">
-                <div class="pulse-dot"></div>
-                <span>Conexão Fiscal Online</span>
+            <!-- Flat Navigation Links (Figma Node 2:10037) -->
+            <div class="hub-nav-links-figma" style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" class="hub-nav-link-btn" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')">
+                    VisÃ£o Geral
+                </button>
+                <button type="button" class="hub-nav-link-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')">
+                    <span>ExpediÃ§Ã£o & SEFAZ</span>
+                    <span class="hub-nav-badge-amber" id="nav-badge-pendentes">5</span>
+                </button>
+                <button type="button" class="hub-nav-link-btn" id="nav-btn-ecommerce" onclick="navegarAbaPrincipal('ecommerce')">
+                    E-commerce 360Â°
+                </button>
+                <button type="button" class="hub-nav-link-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')">
+                    ConciliaÃ§Ã£o Fiscal
+                </button>
+                <button type="button" class="hub-nav-link-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')">
+                    HistÃ³rico & Fechamento
+                </button>
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <a href="/profile.html" title="Configurações e Certificado Digital A1" style="color: #94A3B8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: #111B2E; transition: all 0.15s;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>Configurações</span>
-            </a>
-            <button onclick="logout()" title="Encerrar Sessão" style="background: none; border: 1px solid rgba(255, 255, 255, 0.08); color: #64748B; padding: 7px 11px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                <span>Sair</span>
+        <!-- Right: Online Fiscal Connection + User Profile MC (Figma) -->
+        <div style="display: flex; align-items: center; gap: 18px;">
+            <div class="badge-figma badge-figma-online" style="font-size: 11.5px; padding: 4px 10px;">
+                <span class="dot-figma"></span>
+                <span>ConexÃ£o Fiscal Online</span>
+            </div>
+
+            <div class="topbar-user-menu-figma" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='/profile.html'" title="Perfil do Operador & ConfiguraÃ§Ãµes">
+                <div class="user-avatar-figma" style="width: 32px; height: 32px; border-radius: 50%; background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-weight: 700; font-size: 12px; display: grid; place-items: center;" id="topbar-user-initials">
+                    MC
+                </div>
+                <div style="text-align: left; line-height: 1.2;">
+                    <div style="font-size: 12.5px; font-weight: 700; color: #F1F5FC;" id="topbar-user-name">Marina Costa</div>
+                    <div style="font-size: 10.5px; color: #8597B1;" id="topbar-user-role">OperaÃ§Ã£o BOAH</div>
+                </div>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+
+            <button onclick="logout()" title="Encerrar SessÃ£o" style="background: none; border: none; color: #64748B; font-size: 12px; cursor: pointer; padding: 4px 8px;" onmouseover="this.style.color='#FF929B'" onmouseout="this.style.color='#64748B'">
+                Sair
             </button>
         </div>
     </nav>
@@ -3010,7 +3014,7 @@
         </div>
     </div>
 
-    <script src="/js/auth.js?v=20261028_1515"></script>
-    <script src="/js/dashboard.js?v=20261028_1515"></script>
+    <script src="/js/auth.js?v=20261028_1550"></script>
+    <script src="/js/dashboard.js?v=20261028_1550"></script>
 </body>
 </html>

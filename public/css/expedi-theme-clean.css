@@ -3228,3 +3228,88 @@ h1, h2, h3, h4,
     border-color: rgba(255, 255, 255, 0.2) !important;
     color: #FFFFFF !important;
 }
+
+
+/* 11. Figma Top Navigation Bar & Links */
+.hub-nav-link-btn {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: #A6B5CA !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+}
+.hub-nav-link-btn:hover {
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+.hub-nav-link-btn.active {
+    background: #16233A !important;
+    border-color: #29374E !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+}
+.hub-nav-badge-amber {
+    background: #3A2E1D !important;
+    color: #F5C268 !important;
+    border: 1px solid rgba(245, 194, 104, 0.3) !important;
+    border-radius: 999px !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    padding: 1px 7px !important;
+}
+
+/* 12. Figma Underline Tabs */
+.dock-tab-underline {
+    background: none !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 8px 4px 12px 4px !important;
+    color: #8597B1 !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: color 0.15s, border-color 0.15s !important;
+    margin-bottom: -1px !important;
+}
+.dock-tab-underline:hover {
+    color: #F1F5FC !important;
+}
+.dock-tab-underline.active {
+    color: #F1F5FC !important;
+    border-bottom: 2px solid #2563EB !important;
+    font-weight: 700 !important;
+}
+.tab-counter-figma {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 1px 7px !important;
+    border-radius: 999px !important;
+    background: #16233A !important;
+    color: #A6B5CA !important;
+    border: 1px solid #29374E !important;
+}
+.tab-counter-figma.counter-amber {
+    background: #3A2E1D !important;
+    color: #F5C268 !important;
+    border-color: rgba(245, 194, 104, 0.3) !important;
+}
+.dock-tab-underline.active .tab-counter-figma.counter-amber {
+    background: #3A2E1D !important;
+    color: #F5C268 !important;
+}
+
+/* 13. Row Selection Highlight Figma */
+.cockpit-table tbody tr.row-selected-figma td {
+    background: rgba(37, 99, 235, 0.08) !important;
+}
