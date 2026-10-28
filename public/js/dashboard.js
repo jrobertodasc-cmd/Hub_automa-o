@@ -1,4 +1,4 @@
-﻿
+
 function filtrarPorUf360(uf) {
     if (window.cockpit360UfFiltro === uf) {
         window.cockpit360UfFiltro = null;
@@ -5043,7 +5043,7 @@ window.executarEmissaoSefazLote = executarEmissaoSefazLote;
 
 // Inicia por padrão no Portal de Cards-Menu (Primeira Tela)
 document.addEventListener('DOMContentLoaded', () => {
-    navegarAbaPrincipal('hub');
+    navegarAbaPrincipal('cargas');
 });
 
 
