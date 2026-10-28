@@ -1765,131 +1765,130 @@
         </div>
 
         <div id="secao-view-ecommerce" class="main-view-section" style="display: none;">
-            <!-- Botão Voltar ao Menu Principal -->
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>Voltar aos Módulos</span>
-            </button>
+            <!-- BREADCRUMBS FIGMA -->
+            <div class="breadcrumbs-figma">
+                <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Início</span>
+                </a>
+                <span style="color: #65758E;">›</span>
+                <span class="current">E-commerce 360°</span>
+            </div>
 
-            <!-- Cabeçalho Exclusivo do E-commerce 360° -->
-            <div class="ecom-hero-header">
+            <!-- CABEÇALHO DA OPERAÇÃO 360° FIGMA -->
+            <div class="ecom-hero-header" style="background: linear-gradient(135deg, #111B2E 0%, #0F172A 100%); border: 1px solid #29374E; border-radius: 12px; padding: 22px 26px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
                 <div>
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                        <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0; letter-spacing: -0.02em;">E-commerce 360°</h1>
-                        <span class="badge-vnda-live">VNDA + LINX LIVE</span>
+                        <h1 style="font-size: 24px; font-weight: 800; color: #F1F5FC; margin: 0; letter-spacing: -0.01em;">E-commerce 360° · BOAH</h1>
+                        <span class="badge-figma badge-figma-online" style="font-size: 10.5px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #66DBAC; display: inline-block;"></span>
+                            VNDA + LINX LIVE
+                        </span>
                     </div>
-                    <p style="font-size: 13.5px; color: #94A3B8; margin: 0;">
-                        Gestão integrada de vendas www.boah.com.br · Fotos em alta resolução · Multi-peças por pedido e proteção DIFAL
+                    <p style="font-size: 13px; color: #A6B5CA; margin: 0;">
+                        Pedidos, peças e DIFAL em uma única visão. Da venda à liberação fiscal.
                     </p>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button type="button" class="btn-sync-vnda" onclick="exportarRelatorio360Csv()" title="Exportar dados fiscais e logísticos para Excel/CSV" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <span>Exportar Excel (CSV)</span>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn-secondary-figma" onclick="exportarRelatorio360Csv()" title="Exportar dados fiscais e logísticos para Excel/CSV">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>Exportar Excel</span>
                     </button>
-                    <button type="button" class="btn-sync-vnda" onclick="carregarCockpit360(true)" title="Sincronizar com Vnda e Linx">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+                    <button type="button" class="btn-primary-figma" onclick="carregarCockpit360(true)" title="Sincronizar com Vnda e Linx">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
                         <span>Sincronizar VNDA</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Grade de KPIs Exclusivos do E-commerce 360° -->
-            <div class="ecom-kpi-grid">
-                <div class="ecom-kpi-card">
-                    <span class="ecom-kpi-label">Faturamento E-commerce</span>
-                    <span class="ecom-kpi-value font-mono text-emerald" id="kpi-360-faturamento">R$ 57.527,75</span>
-                    <span class="ecom-kpi-sub">Total faturado no catálogo Boah</span>
+            <!-- GRADE DE 5 INDICADORES DO RECORTE (FIGMA KPI CARDS) -->
+            <div class="ecom-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                <div class="hud-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 10px; padding: 16px 18px;">
+                    <div class="hud-card-top" style="color: #A6B5CA; font-size: 12px; font-weight: 600;">Faturamento</div>
+                    <div class="hud-value mono" id="kpi-360-faturamento" style="color: #F1F5FC; font-size: 24px; font-weight: 800; margin-top: 6px;">R$ 3.222,60</div>
+                    <div class="hud-subtext" style="color: #8597B1; font-size: 11px; margin-top: 4px;">Vendas do recorte selecionado</div>
                 </div>
-                <div class="ecom-kpi-card">
-                    <span class="ecom-kpi-label">Total DIFAL Itaú</span>
-                    <span class="ecom-kpi-value font-mono text-cyan" id="kpi-360-difal">R$ 4.020,42</span>
-                    <span class="ecom-kpi-sub">Imposto interestadual agendado</span>
+                <div class="hud-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 10px; padding: 16px 18px;">
+                    <div class="hud-card-top" style="color: #A6B5CA; font-size: 12px; font-weight: 600;">Total DIFAL</div>
+                    <div class="hud-value mono" id="kpi-360-difal" style="color: #60A5FA; font-size: 24px; font-weight: 800; margin-top: 6px;">R$ 403,36</div>
+                    <div class="hud-subtext" style="color: #F5C268; font-size: 11px; margin-top: 4px;">5 guias pendentes de emissão</div>
                 </div>
-                <div class="ecom-kpi-card">
-                    <span class="ecom-kpi-label">Pedidos Faturados</span>
-                    <span class="ecom-kpi-value font-mono" id="kpi-360-vendas">91</span>
-                    <span class="ecom-kpi-sub">Notas fiscais sincronizadas</span>
+                <div class="hud-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 10px; padding: 16px 18px;">
+                    <div class="hud-card-top" style="color: #A6B5CA; font-size: 12px; font-weight: 600;">Pedidos faturados</div>
+                    <div class="hud-value mono" id="kpi-360-vendas" style="color: #F1F5FC; font-size: 24px; font-weight: 800; margin-top: 6px;">9</div>
+                    <div class="hud-subtext" style="color: #8597B1; font-size: 11px; margin-top: 4px;">Entrada na operação em set/2026</div>
                 </div>
-                <div class="ecom-kpi-card">
-                    <span class="ecom-kpi-label">Peças Vendidas</span>
-                    <span class="ecom-kpi-value font-mono text-purple" id="kpi-360-pecas">162</span>
-                    <span class="ecom-kpi-sub">Média de 1.8 peças por pedido</span>
+                <div class="hud-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 10px; padding: 16px 18px;">
+                    <div class="hud-card-top" style="color: #A6B5CA; font-size: 12px; font-weight: 600;">Peças vendidas</div>
+                    <div class="hud-value mono" id="kpi-360-pecas" style="color: #F1F5FC; font-size: 24px; font-weight: 800; margin-top: 6px;">11</div>
+                    <div class="hud-subtext" style="color: #8597B1; font-size: 11px; margin-top: 4px;">2 pedidos com múltiplas peças</div>
                 </div>
-                <div class="ecom-kpi-card">
-                    <span class="ecom-kpi-label">Radar de Devoluções</span>
-                    <span class="ecom-kpi-value font-mono text-ok" id="kpi-360-devolucoes">0</span>
-                    <span class="ecom-kpi-sub">Zero bitributação identificada</span>
+                <div class="hud-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 10px; padding: 16px 18px;">
+                    <div class="hud-card-top" style="color: #A6B5CA; font-size: 12px; font-weight: 600;">Radar de devoluções</div>
+                    <div class="hud-value mono" id="kpi-360-devolucoes" style="color: #66DBAC; font-size: 24px; font-weight: 800; margin-top: 6px;">0</div>
+                    <div class="hud-subtext" style="color: #66DBAC; font-size: 11px; margin-top: 4px;">Nenhuma pendência no recorte</div>
                 </div>
             </div>
 
-            <!-- Barra de Filtros e Busca em Tempo Real -->
-            <div class="ecom-toolbar" style="flex-direction: column; gap: 12px; align-items: stretch;">
-                <!-- Linha 1: Seletor de Período (Mês Atual x Histórico) e Situação da DIFAL -->
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <!-- Seletor de Período -->
-                    <div class="dock-tabs-group" style="margin: 0; padding: 0; border-bottom: none; gap: 6px;">
-                        <button type="button" class="dock-tab-btn active" id="btn-periodo-360-atual" onclick="filtrarCockpit360PorPeriodo('atual', this)" title="Exibir apenas emissões de Outubro/2026">
-                            <span>Mês Atual (Out/26)</span>
-                            <span class="tab-counter-badge" id="cnt-360-atual" style="background: rgba(37,99,235,0.25); color: #60A5FA; border: 1px solid rgba(37,99,235,0.5);">0</span>
-                        </button>
-                        <button type="button" class="dock-tab-btn" id="btn-periodo-360-set" onclick="filtrarCockpit360PorPeriodo('2026-09', this)" title="Exibir emissões de Setembro/2026">
-                            <span>Set/2026</span>
-                            <span class="tab-counter-badge" id="cnt-360-set">0</span>
-                        </button>
-                        <button type="button" class="dock-tab-btn" id="btn-periodo-360-todas" onclick="filtrarCockpit360PorPeriodo('todas', this)" title="Exibir todo o histórico (Julho, Setembro, Outubro)">
-                            <span>Histórico Completo</span>
-                            <span class="tab-counter-badge" id="cnt-360-todas">0</span>
-                        </button>
+            <!-- FILTROS E CONTROLES FIGMA -->
+            <div style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Linha 1: Período, Situação, Busca, Agrupamento -->
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <!-- Segmented Control de Período -->
+                    <div class="segmented-control-figma">
+                        <button type="button" class="segmented-option-figma active" id="btn-periodo-360-atual" onclick="filtrarCockpit360PorPeriodo('atual', this)">Mês atual</button>
+                        <button type="button" class="segmented-option-figma" id="btn-periodo-360-set" onclick="filtrarCockpit360PorPeriodo('2026-09', this)">Set/2026</button>
+                        <button type="button" class="segmented-option-figma" id="btn-periodo-360-todas" onclick="filtrarCockpit360PorPeriodo('todas', this)">Histórico</button>
                     </div>
 
-                    <!-- Filtro Operacional de Situação da DIFAL -->
-                    <div class="dock-tabs-group" style="margin: 0; padding: 0; border-bottom: none; gap: 6px;">
-                        <button type="button" class="dock-tab-btn active" id="btn-situacao-360-todas" onclick="filtrarCockpit360PorSituacao('TODAS', this)">
-                            <span>Todas as DIFALs</span>
-                        </button>
-                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-pagas" onclick="filtrarCockpit360PorSituacao('PAGAS', this)">
-                            <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Pagas</span>
-                            <span class="tab-counter-badge counter-green" id="cnt-360-pagas">0</span>
-                        </button>
-                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-pendentes" onclick="filtrarCockpit360PorSituacao('PENDENTES', this)">
-                            <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> A Pagar</span>
-                            <span class="tab-counter-badge counter-yellow" id="cnt-360-pendentes">0</span>
-                        </button>
-                        <button type="button" class="dock-tab-btn" id="btn-situacao-360-nao-pagas" onclick="filtrarCockpit360PorSituacao('NAO_PAGAS', this)">
-                            <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Não Pagas / Retidas</span>
-                            <span class="tab-counter-badge counter-red" id="cnt-360-nao-pagas">0</span>
-                        </button>
+                    <!-- Segmented Control de Agrupamento -->
+                    <div class="segmented-control-figma">
+                        <button type="button" class="segmented-option-figma active" id="btn-view-by-orders" onclick="alternarAgrupamento360('pedidos')">Por pedido/NF-e</button>
+                        <button type="button" class="segmented-option-figma" id="btn-view-by-clients" onclick="alternarAgrupamento360('clientes')">Agrupado por cliente</button>
+                    </div>
+
+                    <!-- Input de Busca Figma -->
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="input-busca-360" class="input-busca-figma" placeholder="Buscar NF-e, pedido ou cliente" onkeyup="filtrarCockpit360(this.value)">
+                    </div>
+
+                    <!-- Segmented Control de Visualização (Grade / Lista) -->
+                    <div class="segmented-control-figma">
+                        <button type="button" class="segmented-option-figma active" id="btn-view-grade" onclick="alternarLayoutGradeLista('grade', this)">Grade</button>
+                        <button type="button" class="segmented-option-figma" id="btn-view-lista" onclick="alternarLayoutGradeLista('lista', this)">Lista</button>
                     </div>
                 </div>
 
-                <!-- Linha 2: Agrupamento e Busca Rápida -->
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div class="view-mode-pill-group">
-                        <button type="button" id="btn-view-by-orders" class="btn-view-toggle active" onclick="alternarAgrupamento360('pedidos')">
-                            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Por Pedidos / NF-e</span>
-                        </button>
-                        <button type="button" id="btn-view-by-clients" class="btn-view-toggle" onclick="alternarAgrupamento360('clientes')">
-                            <span>Agrupado por Cliente</span>
-                        </button>
+                <!-- Linha 2: Chips de Destino e Situação da DIFAL -->
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(41, 55, 78, 0.5);">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 11.5px; color: #8597B1; font-weight: 600;">Destinos:</span>
+                        <div id="bar-uf-chips-list" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button type="button" class="chip-filtro-figma active" onclick="filtrarCockpit360PorUf(null, this)">Todos</button>
+                            <button type="button" class="chip-filtro-figma" onclick="filtrarCockpit360PorUf('RJ', this)">RJ</button>
+                            <button type="button" class="chip-filtro-figma" onclick="filtrarCockpit360PorUf('MG', this)">MG</button>
+                            <button type="button" class="chip-filtro-figma" onclick="filtrarCockpit360PorUf('SP', this)">SP</button>
+                            <button type="button" class="chip-filtro-figma" onclick="filtrarCockpit360PorUf('AL', this)">AL</button>
+                        </div>
                     </div>
 
-                    <div class="ecom-search-box" style="flex: 1; max-width: 480px;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="input-busca-360" placeholder="Buscar por cliente, cidade, UF, pedido, NF-e ou peça..." onkeyup="filtrarCockpit360(this.value)">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 11.5px; color: #8597B1; font-weight: 600;">DIFAL:</span>
+                        <button type="button" class="chip-filtro-figma active" id="btn-situacao-360-todas" onclick="filtrarCockpit360PorSituacao('TODAS', this)">Todas</button>
+                        <button type="button" class="chip-filtro-figma" id="btn-situacao-360-pagas" onclick="filtrarCockpit360PorSituacao('PAGAS', this)">Pagas</button>
+                        <button type="button" class="chip-filtro-figma" id="btn-situacao-360-pendentes" onclick="filtrarCockpit360PorSituacao('PENDENTES', this)">A pagar</button>
+                        <button type="button" class="chip-filtro-figma" id="btn-situacao-360-nao-pagas" onclick="filtrarCockpit360PorSituacao('NAO_PAGAS', this)">Não pagas</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Linha 3: Resumo Geográfico / Filtro Rápido por Estados (UF) -->
-                <div id="bar-uf-chips-wrap" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 12px;">
-                    <span style="color: #64748B; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        Destinos:
-                    </span>
-                    <div id="bar-uf-chips-list" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
-                </div>
+            <!-- CONTAGEM E ESCOPO FIGMA -->
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #8597B1; margin-bottom: 12px; padding: 0 4px;">
+                <span id="escopo-contagem-pedidos" style="font-weight: 700; color: #F1F5FC;">9 pedidos encontrados · 11 peças</span>
+                <span>Período por entrada na operação · NF-e pode ter emissão anterior · Sync 09:42</span>
             </div>
             
-            <!-- Grade de Pedidos e Peças Reais do E-commerce (100% Largura, Sem Sidebar) -->
             <div id="cockpit-360-cards-grid" class="cockpit-360-grid">
                 <!-- Cards renderizados dinamicamente via JS com fotos reais e modal de pagamento -->
             </div>
@@ -2064,183 +2063,179 @@
         <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
         <!-- ========================================== -->
         <div id="secao-view-cargas" class="main-view-section" style="display: none;">
-            <!-- COCKPIT HERO: INTELIGÊNCIA FISCAL & FATURAMENTO LINX MICROVIX -->
-            <div class="cockpit-today-hero" style="background: linear-gradient(135deg, #111B2E 0%, #0F172A 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 22px 26px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
-                <div style="display: flex; align-items: center; gap: 18px;">
-                    <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.35); display: grid; place-items: center; font-size: 26px;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <!-- BREADCRUMBS FIGMA -->
+            <div class="breadcrumbs-figma">
+                <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Início</span>
+                </a>
+                <span style="color: #65758E;">›</span>
+                <span class="current">Expedição & SEFAZ</span>
+            </div>
+
+            <!-- COCKPIT HERO: FIGMA DESIGN SYSTEM -->
+            <div class="cockpit-today-hero" style="background: linear-gradient(135deg, #111B2E 0%, #0F172A 100%); border: 1px solid #29374E; border-radius: 12px; padding: 22px 26px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); display: grid; place-items: center; font-size: 22px; color: #60A5FA;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     </div>
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <span style="font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">Fila de Emissão Fiscal & Expedição do Dia</span>
-                            <span style="font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.35); padding: 3px 10px; border-radius: 999px;">Linx Microvix Online</span>
-                            <span id="tag-total-sync" style="font-size: 11px; font-weight: 700; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;" title="Sincronização full-time com API oficial da Total Express">
-                                <span style="width: 7px; height: 7px; border-radius: 50%; background: #38BDF8; display: inline-block;"></span>
+                            <span style="font-size: 18px; font-weight: 800; color: #F1F5FC; letter-spacing: -0.01em;">Fila de Emissão Fiscal & Expedição do Dia</span>
+                            <span class="badge-figma badge-figma-online" style="font-size: 10.5px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #66DBAC; display: inline-block;"></span>
+                                Operação ao vivo
+                            </span>
+                            <span id="tag-total-sync" class="badge-figma badge-figma-emrota" style="font-size: 10.5px;" title="Sincronização full-time com API oficial da Total Express">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #93BCFF; display: inline-block;"></span>
                                 <span id="label-total-sync">Total Express: Tempo Real</span>
                             </span>
                         </div>
-                        <div style="font-size: 13.5px; color: #94A3B8; margin-top: 5px;">
-                            <span id="hero-pendentes-texto"><strong id="hero-qtd-pendentes" style="color: #F87171;">9 guias GNRE pendentes de emissão na SEFAZ</strong> (Total: R$ 403,36)</span> · <span id="hero-qtd-conciliadas" style="color: #34D399;">87 cargas liberadas no Itaú</span>
+                        <div style="font-size: 13px; color: #A6B5CA; margin-top: 5px;">
+                            <span id="hero-pendentes-texto"><strong id="hero-qtd-pendentes" style="color: #FF929B;">5 guias GNRE pendentes</strong> (R$ 403,36)</span> · <span id="hero-qtd-conciliadas" style="color: #66DBAC;">0 cargas liberadas · 2 ocorrências exigem atenção</span>
+                        </div>
+                        <div style="font-size: 11.5px; color: #8597B1; margin-top: 3px;">
+                            Linx · Total Express · última atualização · Fila ativa entrada em set/2026
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <button type="button" class="btn primary" onclick="abrirModalEmitirSefazLote()" style="background: #2563EB; color: #FFFFFF; border: none; font-weight: 700; font-size: 13.5px; padding: 11px 20px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45); transition: all 0.15s;">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn-primary-figma" onclick="abrirModalEmitirSefazLote()" title="Emitir todas as pendentes na SEFAZ">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                         <span>Emitir Todas na SEFAZ</span>
                     </button>
-                    <button type="button" class="btn outline" id="btn-sync-total-realtime" onclick="sincronizarRastreioTotalDoca(false)" style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700; font-size: 13px; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;" title="Sincronizar status de coleta e entrega de todas as cargas agora">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <button type="button" class="btn-secondary-figma" id="btn-sync-total-realtime" onclick="sincronizarRastreioTotalDoca(false)" title="Sincronizar rastreio Total Express">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                         <span id="btn-sync-total-label">Sync Total Express</span>
                     </button>
-                    <button type="button" class="btn outline" onclick="abrirModalMicrovix()" style="background: rgba(255,255,255,0.06); color: #E2E8F0; border: 1px solid rgba(255,255,255,0.15); font-weight: 600; font-size: 13px; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                    <button type="button" class="btn-secondary-figma" onclick="abrirModalMicrovix()" title="Sincronizar com Linx">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                         <span>Sincronizar Linx</span>
                     </button>
-                    <button type="button" class="btn outline" onclick="navegarAbaPrincipal('dashboard')" style="background: rgba(16, 185, 129, 0.12); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.35); font-weight: 700; font-size: 13px; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <span>Ir para Remessa Itaú →</span>
+                    <button type="button" class="btn-secondary-figma" onclick="navegarAbaPrincipal('dashboard')" title="Ir para Remessa Itaú">
+                        <span>Ir para Remessa Itaú</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
                     </button>
                 </div>
             </div>
 
-            <!-- ZONA 3: TERMINAL DE CONFERÊNCIA FISCAL & LEITURA ÓPTICA -->
-        <div class="laser-station-card" id="laser-station-box">
-            <div class="laser-station-header">
-                <div class="laser-station-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"></path></svg>
-                    <span>Terminal de Conferência Óptica & Liberação de Saída</span>
-                    <span class="laser-live-tag">● LEITURA ÓPTICA ATIVA</span>
-                </div>
-                <div style="font-size: 12px; color: var(--text-secondary);">
-                    Foco contínuo · Validação automática de chaves e Danfe
-                </div>
-            </div>
+            <!-- TERMINAL DE CONFERÊNCIA ÓPTICA (FIGMA SPLIT 2-COLUMN LAYOUT) -->
+            <div class="laser-station-split" id="laser-station-box">
+                <!-- Coluna Esquerda: Leitor (68%) -->
+                <div class="laser-main-box">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>
+                            <span style="font-size: 15px; font-weight: 700; color: #F1F5FC;">Conferência óptica de NF-e</span>
+                        </div>
+                        <span class="badge-figma badge-figma-online" style="font-size: 10.5px; padding: 2px 8px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #66DBAC; display: inline-block;"></span>
+                            LEITOR PRONTO
+                        </span>
+                    </div>
 
-            <div class="laser-input-wrapper">
-                <div class="laser-input-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </div>
-                <input type="text" id="filter-search" class="laser-barcode-input" placeholder="Bipar código de barras de 44 dígitos da NF-e ou digitar número da nota..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
-                <div class="laser-input-hint-badge">LEITOR ÓPTICO / ENTER</div>
-            </div>
+                    <div style="position: relative; display: flex; align-items: center; margin-bottom: 10px;">
+                        <div style="position: absolute; left: 14px; color: #3B82F6; pointer-events: none; display: flex; align-items: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <input type="text" id="filter-search" class="laser-input-figma" placeholder="Leia a chave de 44 dígitos ou número da nota..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus>
+                        <div style="position: absolute; right: 10px; background: #16233A; color: #A6B5CA; border: 1px solid #29374E; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; pointer-events: none;">
+                            ↵ Enter
+                        </div>
+                    </div>
 
-            <!-- FITA DE AUDITORIA CONTÍNUA -->
-            <div class="scanned-ribbon-wrap">
-                <div class="scanned-ribbon-label">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                    <span>Auditoria Recente de Cargas na Esteira:</span>
-                </div>
-                <div class="scanned-items-list" id="scanned-ribbon-items">
-                    <div style="font-size: 12px; color: var(--text-secondary); padding: 4px 8px;">
-                        Aguardando leitura do primeiro volume pelo leitor óptico...
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #8597B1; margin-bottom: 12px;">
+                        <span>Foco automático ativo · bipe ou digite a chave e pressione Enter.</span>
+                        <span style="color: #65758E; font-family: 'JetBrains Mono', monospace;">F2 · focar leitor</span>
+                    </div>
+
+                    <div id="laser-feedback-box" style="display: flex; align-items: center; gap: 8px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #93BCFF;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span id="laser-feedback-text">Pronto para conferência de esteira na doca BOAH.</span>
                     </div>
                 </div>
-            </div>
-        </div>
 
-            <!-- ZONA 5: COCKPIT DE AUDITORIA FISCAL & FILTROS INTEGRADOS -->
-        <div id="dock-table-container" class="dock-table-container">
-            
-            <!-- Barra de Abas e Filtros Integrada -->
-            <div class="dock-tabs-header">
-                <!-- Abas Rápidas de Situação -->
-                <!-- Seletor de Modo de Visualização (Fiscal vs E-commerce 360° vs Devoluções) -->
-                <div class="view-mode-pill-group" style="display: none;">
-                    <button type="button" id="btn-toggle-fiscal" class="btn-view-toggle active" onclick="alternarModoVisualizacao('fiscal')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>Tabela Fiscal</span>
-                    </button>
-                    <button type="button" id="btn-toggle-ecommerce" class="btn-view-toggle" onclick="alternarModoVisualizacao('ecommerce')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        <span>E-commerce 360°</span>
-                        <span class="badge-vnda-live">VNDA LIVE</span>
-                    </button>
-                    <button type="button" id="btn-toggle-devolucoes" class="btn-view-toggle" onclick="alternarModoVisualizacao('devolucoes')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                        <span>Devoluções</span>
-                        <span class="badge-ret-live" id="badge-radar-devolucoes">0</span>
-                    </button>
-                </div>
-
-                <div class="dock-nav-tabs" id="dock-status-tabs">
-                    <button type="button" class="dock-tab-btn" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Cargas que ainda precisam de emissão fiscal da guia">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 🚨 Não Emitidas / Retidas</span>
-                        <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
-                    </button>
-                    <button type="button" class="dock-tab-btn active" id="tab-btn-emitidas" onclick="filtrarPorSituacaoTab('PENDENTES', this)" title="Guias autorizadas pela SEFAZ com código de barras aguardando pagamento">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> ⚡ Emitidas (A Pagar)</span>
-                        <span class="tab-counter-badge counter-amber" id="tab-cnt-pendentes" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);">0</span>
-                    </button>
-                    <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)" title="Cargas liberadas pelo banco aguardando coleta física do transportador">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> 🟢 Prontas para Coleta (Pagas)</span>
-                        <span class="tab-counter-badge counter-green" id="tab-cnt-pagas" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4);">0</span>
-                    </button>
-                    <button type="button" class="dock-tab-btn" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)" title="Visualizar todo o lote da doca">
-                        <span>📦 Todas as Cargas</span>
-                        <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
-                    </button>
-                    <!-- Contadores legados para retrocompatibilidade -->
-                    <span id="tab-cnt-pendentes" style="display:none;">0</span>
-                    <!-- Contadores legados para retrocompatibilidade -->
-                    <span id="tab-cnt-bloqueadas" style="display:none;">0</span>
-                    <span id="tab-cnt-liberadas" style="display:none;">0</span>
-                    <span id="tab-cnt-isentas" style="display:none;">0</span>
-                </div>
-
-                <!-- Controles Compactos à Direita -->
-                <div class="dock-filter-controls-group">
-                    <select id="select-filter-data" style="display: none;" onchange="filtrarPorDataEmissao(this.value, null)" class="dock-select-input" title="Filtrar por data de faturamento">
-                        <option value="TODAS" selected>Todas as Datas de Emissão</option>
-                        <option value="HOJE">Emissões Recentes</option>
-                    </select>
-
-                    <select id="select-filter-transp" onchange="filtrarPorTransportadora(this.value, null)" class="dock-select-input" title="Filtrar por transportadora">
-                        <option value="TODAS" selected>Todos os Operadores Logísticos</option>
-                        <option value="Total Express">Total Express</option>
-                        <option value="Correios">Correios</option>
-                    </select>
-
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8393A7" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" class="dock-inline-search" placeholder="Buscar por NF, cliente, chave...">
+                <!-- Coluna Direita: Histórico de Leituras / Agora (32%) -->
+                <div class="laser-history-box">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #29374E;">
+                        <span style="font-size: 13px; font-weight: 700; color: #F1F5FC;">Últimas leituras</span>
+                        <span style="font-size: 11px; color: #8597B1; font-weight: 600;">Agora</span>
+                    </div>
+                    <div id="scanned-ribbon-items" style="display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 140px;">
+                        <div style="font-size: 12px; color: #8597B1; padding: 12px 0;">
+                            Aguardando leitura do primeiro volume pelo leitor óptico...
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Barra Flutuante de Ação em Lote (Aparece ao selecionar checkboxes) -->
-            <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none; background: #111B2E !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; border-radius: 12px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; color: #FFFFFF !important;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-weight: 700;" id="bulk-selected-count">0</span>
-                    <span>cargas selecionadas na doca</span>
-                </div>
-                <div class="bulk-actions-wrap">
-                    <button type="button" onclick="imprimirDanfesLoteSelecionado()" class="btn-bulk-action">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>Imprimir DANFEs</span>
-                    </button>
-                    <button type="button" onclick="imprimirGnresLoteSelecionado()" class="btn-bulk-action" style="background: #312E81; border-color: #4338CA;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        <span>Imprimir Guias GNRE</span>
-                    </button>
-                    <button type="button" onclick="baixarXmlLoteSpComData(event, true)" class="btn-bulk-action" style="background: #0F766E; border-color: #14B8A6;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <span>XML Lote SP (c/ Data)</span>
-                    </button>
-                    <button type="button" onclick="abrirModalEmitirSefazLote(true)" class="btn-bulk-action" style="background: #15803D; border-color: #22C55E;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        <span>Emitir SEFAZ (c/ Data)</span>
-                    </button>
-                    <button type="button" onclick="solicitarLiberacaoLoteSelecionado()" class="btn-bulk-action" style="background: #2563EB; border-color: #3B82F6;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                        <span>Solicitar Liberação à Diretoria</span>
-                    </button>
-                    <button type="button" onclick="desmarcarTodasLinhas()" class="btn-bulk-action" style="background: none; border-color: transparent; text-decoration: underline;">
-                        Desmarcar Todas
-                    </button>
-                </div>
-            </div>
+            <!-- FILA DE CARGAS & TABELA DE EXPEDIÇÃO FIGMA -->
+            <div id="dock-table-container" class="dock-table-container" style="background: transparent; border: none; box-shadow: none;">
+                <!-- Abas e Filtros Integrada -->
+                <div class="dock-tabs-header" style="background: transparent; border-bottom: 1px solid #29374E; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                    <!-- Abas Rápidas de Situação -->
+                    <div class="dock-nav-tabs" id="dock-status-tabs" style="border-bottom: none; gap: 8px;">
+                        <button type="button" class="dock-tab-btn" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Cargas que ainda precisam de emissão fiscal da guia">
+                            <span>🚨 Não Emitidas / Retidas</span>
+                            <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn active" id="tab-btn-emitidas" onclick="filtrarPorSituacaoTab('PENDENTES', this)" title="Guias autorizadas pela SEFAZ com código de barras aguardando pagamento">
+                            <span>⚡ Emitidas (A Pagar)</span>
+                            <span class="tab-counter-badge counter-amber" id="tab-cnt-pendentes">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)" title="Cargas liberadas pelo banco aguardando coleta física do transportador">
+                            <span>🟢 Prontas para Coleta (Pagas)</span>
+                            <span class="tab-counter-badge counter-green" id="tab-cnt-pagas">0</span>
+                        </button>
+                        <button type="button" class="dock-tab-btn" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)" title="Visualizar todo o lote da doca">
+                            <span>📦 Todas as Cargas</span>
+                            <span class="tab-counter-badge" id="tab-cnt-todas">0</span>
+                        </button>
+                    </div>
 
-            <!-- CONTAINER 1: MODO TABELA FISCAL -->
+                    <!-- Controles Compactos à Direita -->
+                    <div class="dock-filter-controls-group" style="gap: 10px; display: flex; align-items: center;">
+                        <select id="select-filter-transp" onchange="filtrarPorTransportadora(this.value, null)" class="dock-select-input" style="background: #0B1220; border: 1px solid #29374E; color: #F1F5FC; border-radius: 8px; font-size: 12px; padding: 6px 12px;" title="Filtrar por transportadora">
+                            <option value="TODAS" selected>Todas as Transportadoras</option>
+                            <option value="Total Express">Total Express</option>
+                            <option value="Correios">Correios</option>
+                        </select>
+
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" class="input-busca-figma" placeholder="Buscar por NF, cliente, chave..." style="width: 220px; font-size: 12px; padding-left: 30px;">
+                        </div>
+                        
+                        <span id="label-totais-cargas-resumo" style="font-size: 12px; color: #8597B1; font-weight: 600;">5 cargas · ordenadas por emissão</span>
+                    </div>
+                </div>
+
+                <!-- Barra Flutuante de Ação em Lote (Aparece ao selecionar checkboxes) -->
+                <div id="dock-bulk-bar" class="dock-bulk-bar" style="display: none; background: #16233A !important; border: 1px solid #29374E !important; border-radius: 10px !important; box-shadow: 0 8px 30px rgba(0,0,0,0.5) !important; color: #F1F5FC !important; padding: 10px 18px !important;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-weight: 700;" id="bulk-selected-count">0</span>
+                        <span>cargas selecionadas na doca</span>
+                    </div>
+                    <div class="bulk-actions-wrap" style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" onclick="imprimirDanfesLoteSelecionado()" class="btn-secondary-figma" style="font-size: 12px; padding: 5px 12px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span>Imprimir DANFEs</span>
+                        </button>
+                        <button type="button" onclick="imprimirGnresLoteSelecionado()" class="btn-secondary-figma" style="font-size: 12px; padding: 5px 12px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span>Imprimir Guias GNRE</span>
+                        </button>
+                        <button type="button" onclick="baixarXmlLoteSpComData(event, true)" class="btn-secondary-figma" style="font-size: 12px; padding: 5px 12px;">
+                            <span>XML Lote SP</span>
+                        </button>
+                        <button type="button" onclick="abrirModalEmitirSefazLote(true)" class="btn-primary-figma" style="font-size: 12px; padding: 5px 14px;">
+                            <span>Emitir SEFAZ</span>
+                        </button>
+                        <button type="button" onclick="desmarcarTodasLinhas()" class="btn-secondary-figma" style="font-size: 12px; padding: 5px 10px; background: none; border-color: transparent;">
+                            Desmarcar
+                        </button>
+                    </div>
+                </div>
             <div id="container-view-fiscal">
             <!-- Tabela de Cargas com Dados Ricos de Moda E-commerce -->
             <table class="cockpit-table">
@@ -2277,6 +2272,16 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- TOTAIS DA FILA FIGMA -->
+            <div class="table-totais-figma" id="table-totais-container">
+                <div class="table-totais-left" id="table-totais-left-text">
+                    5 pendentes · 7 peças · valores do recorte exibido
+                </div>
+                <div class="table-totais-right" id="table-totais-right-text">
+                    Venda R$ 2.098,60  /  DIFAL R$ 403,36
+                </div>
+            </div>
 
             <!-- Barra de Paginação & Rodapé de Ações -->
             <div class="dock-pagination-bar">

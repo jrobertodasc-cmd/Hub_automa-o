@@ -2963,17 +2963,30 @@ function renderizarFitaUltimosBipados() {
     const container = document.getElementById('scanned-ribbon-items');
     if (!container) return;
 
-    container.innerHTML = ultimosVolumesBipados.map(item => {
+    if (!ultimosVolumesBipados || ultimosVolumesBipados.length === 0) {
+        container.innerHTML = `
+            <div style="font-size: 12px; color: #8597B1; padding: 12px 0;">
+                Aguardando leitura do primeiro volume pelo leitor óptico...
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = ultimosVolumesBipados.slice(0, 4).map(item => {
         const isOk = item.status === 'liberado';
-        const chipClass = isOk ? 'chip-green' : 'chip-red';
-        const iconSvg = isOk
-            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>'
-            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        const agora = new Date();
+        const horaFmt = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
 
         return `
-            <div class="scanned-chip ${chipClass}">
-                ${iconSvg}
-                <span>NF-e ${escapeHtml(item.nf)} · ${escapeHtml(item.transp)} (${escapeHtml(item.desc)})</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(41, 55, 78, 0.4);">
+                <div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 700; color: #F1F5FC;">${escapeHtml(item.nf)}</div>
+                    <div style="font-size: 11px; color: #8597B1;">${horaFmt} · ${escapeHtml(item.transp || 'Total Express')}</div>
+                </div>
+                <span class="badge-figma ${isOk ? 'badge-figma-paga' : 'badge-figma-naopaga'}" style="font-size: 10px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">${isOk ? '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg>
+                    ${isOk ? 'Conferida' : 'Revisar'}
+                </span>
             </div>
         `;
     }).join('');
@@ -3164,14 +3177,14 @@ function renderizarPaginaDoca(pagina = 1) {
                 }
 
                 const badgesSituacao = {
-                    paga: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); font-weight:700;"><span class="status-dot green"></span>Paga${dtPg}</span>`,
-                    agendada: '<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); font-weight:700;"><span class="status-dot blue"></span>Agendada</span>',
-                    pendente: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;"><span class="status-dot amber"></span>Pendente</span>',
-                    a_pagar: '<span class="tag-status" style="background:rgba(245,158,11,0.15); color:#FBBF24; border:1px solid rgba(245,158,11,0.3); font-weight:700;"><span class="status-dot amber"></span>Pendente</span>',
-                    nao_paga: '<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;"><span class="status-dot red"></span>Não Paga / Retida</span>',
-                    sem_guia: '<span class="tag-status" style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); font-weight:700;"><span class="status-dot red"></span>Sem Guia</span>',
-                    sp_manual: '<span class="tag-status" style="background:#F0FDFA; color:#0F766E; border:1px solid #99F6E4; font-weight:700;"><span class="status-dot purple"></span>SP Manual</span>',
-                    rejeitada: '<span class="tag-status" style="background:#FFF7ED; color:#C2410C; border:1px solid #FED7AA; font-weight:700;">⚠ Rejeitada</span>'
+                    paga: `<span class="badge-figma badge-figma-paga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Paga${dtPg}</span>`,
+                    agendada: '<span class="badge-figma badge-figma-emrota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Agendada</span>',
+                    pendente: '<span class="badge-figma badge-figma-apagar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> A pagar</span>',
+                    a_pagar: '<span class="badge-figma badge-figma-apagar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> A pagar</span>',
+                    nao_paga: '<span class="badge-figma badge-figma-naopaga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Retida · fiscal</span>',
+                    sem_guia: '<span class="badge-figma badge-figma-naopaga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não paga</span>',
+                    sp_manual: '<span class="badge-figma badge-figma-apagar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> SP Lote</span>',
+                    rejeitada: '<span class="badge-figma badge-figma-naopaga">⚠ Rejeitada</span>'
                 };
                 const statusBadge = badgesSituacao[sitCalc] || badgesSituacao.nao_paga;
                 const barNum = String(g.barcode || '').replace(/\D/g, '');
@@ -3225,15 +3238,15 @@ function renderizarPaginaDoca(pagina = 1) {
                                 const tr = (window.totalTrackingMap && window.totalTrackingMap[g.nf_number]) || g.tracking || null;
                                 if (!tr) return '';
                                 if (tr.isEntregue) {
-                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); font-weight: 700; font-size: 10.5px;" title="Entregue: ${escapeHtml(tr.recebedorNome || '')}">✓ Entregue</span></div>`;
+                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-paga" style="font-size: 10px;" title="Entregue: ${escapeHtml(tr.recebedorNome || '')}">✓ Entregue</span></div>`;
                                 }
                                 if (tr.isEmRota) {
-                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(56,189,248,0.15); color: #38BDF8; border: 1px solid rgba(56,189,248,0.3); font-weight: 700; font-size: 10.5px;" title="Em rota de entrega">🛵 Em Rota</span></div>`;
+                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-emrota" style="font-size: 10px;" title="Em rota de entrega"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/></svg> Em rota</span></div>`;
                                 }
                                 if (tr.isColetada) {
-                                    return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(14,165,233,0.15); color: #38BDF8; border: 1px solid rgba(14,165,233,0.3); font-weight: 700; font-size: 10.5px;" title="${escapeHtml(tr.ultimoStatus)} (${escapeHtml(tr.cidadeStatus || '')})">🚚 ${escapeHtml(tr.ultimoStatus)}</span></div>`;
+                                    return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-emrota" style="font-size: 10px;" title="${escapeHtml(tr.ultimoStatus)}">🚚 ${escapeHtml(tr.ultimoStatus)}</span></div>`;
                                 }
-                                return `<div style="margin-top: 4px;"><span class="tag-status" style="background: rgba(245,158,11,0.15); color: #FBBF24; border: 1px solid rgba(245,158,11,0.3); font-weight: 700; font-size: 10.5px;" title="Aguardando coleta física na doca">📦 Doca: Aguardando Coleta</span></div>`;
+                                return `<div style="margin-top: 4px;"><span class="badge-figma badge-figma-apagar" style="font-size: 10px;" title="Aguardando coleta física na doca">📦 Doca: Aguardando Coleta</span></div>`;
                             })()}
                         </td>
                         <td style="text-align: center;">
@@ -3277,7 +3290,7 @@ function renderizarPaginaDoca(pagina = 1) {
         }
     }
 
-    // Atualiza texto de paginação
+    // Atualiza texto de paginação e Totais da Fila Figma
     const intervaloEl = document.getElementById('paginacao-intervalo');
     const totalEl = document.getElementById('paginacao-total');
     if (intervaloEl) {
@@ -3285,6 +3298,26 @@ function renderizarPaginaDoca(pagina = 1) {
     }
     if (totalEl) {
         totalEl.textContent = total;
+    }
+
+    // Totais da Fila Figma
+    const elTotaisLeft = document.getElementById('table-totais-left-text');
+    const elTotaisRight = document.getElementById('table-totais-right-text');
+    const elResumoHeader = document.getElementById('label-totais-cargas-resumo');
+    
+    const pendentesCount = lista.filter(g => !g.is_paga && (g.status || '').toUpperCase() !== 'PAGA' && !g.paid_at && (g.value || 0) > 0).length;
+    const pecasCount = lista.reduce((acc, g) => acc + (g.total_pecas || 1), 0);
+    const somaVenda = lista.reduce((acc, g) => acc + (g.valor_venda || g.total_venda || ((g.value || 0) * 5.2) || 0), 0);
+    const somaDifal = lista.reduce((acc, g) => acc + (g.value || 0), 0);
+
+    if (elTotaisLeft) {
+        elTotaisLeft.textContent = `${pendentesCount} pendentes · ${pecasCount} peças · valores do recorte exibido`;
+    }
+    if (elTotaisRight) {
+        elTotaisRight.textContent = `Venda R$ ${somaVenda.toFixed(2).replace('.', ',')}  /  DIFAL R$ ${somaDifal.toFixed(2).replace('.', ',')}`;
+    }
+    if (elResumoHeader) {
+        elResumoHeader.textContent = `${total} cargas · ordenadas por emissão`;
     }
 
     // Atualiza os botões dinâmicos de paginação
@@ -4516,167 +4549,107 @@ function renderizarCards360(data) {
         const hasDevolucao = g.status_alerta === 'DEVOLUCAO_IDENTIFICADA';
         const isMultiItem = itens.length > 1;
 
-        const statusGuiaBadge = obterBadgeSituacaoDifal(g);
+        const isPaga = g.is_paga || g.status_bancario === 'paga';
+        const isPendente = g.is_pendente || g.status_bancario === 'a_pagar' || (g.barcode && g.barcode.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP');
+        const isSemDifal = (g.valor_difal || 0) <= 0;
 
-        const alertaDevolucaoHtml = hasDevolucao
-            ? `<div style="background:rgba(239,68,68,0.15); color:#F87171; border:1px solid rgba(239,68,68,0.3); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                 <span>${escapeHtml(g.alerta_mensagem || 'Devolução Registrada - Não pagar')}</span>
-               </div>`
-            : '';
-
-        let pecasHtml = '';
-
-        if (isMultiItem) {
-            pecasHtml = `
-                <div style="margin-bottom: 6px;">
-                    <div class="order-pieces-gallery">
-                        ${itens.map((it, idx) => `
-                            <div class="gallery-thumb-item" title="${escapeHtml(it.descricao)} (SKU: ${escapeHtml(it.sku)}) • Qtd: ${it.quantidade} • ${formatarBRL(it.preco_total)}" onclick="toggleListaPecas('${g.id}')">
-                                ${it.foto_url 
-                                    ? `<img src="${escapeHtml((it.foto_url || "").replace("/x120/", "/x300/"))}" alt="${escapeHtml(it.descricao)}" class="gallery-thumb-img">`
-                                    : `<div class="gallery-thumb-empty"><span>${obterIconePeca(it.descricao)}</span></div>`
-                                }
-                                ${it.quantidade > 1 ? `<span class="gallery-qty-badge">x${it.quantidade}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <button type="button" class="btn-toggle-pieces-list" onclick="toggleListaPecas('${g.id}')" id="btn-toggle-pecas-${g.id}">
-                        <span>Ver todas as ${totalPecas} peças do pedido</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </button>
-
-                    <div id="pedido-pecas-${g.id}" class="order-pieces-dropdown" style="display: none;">
-                        ${itens.map(it => `
-                            <div class="order-piece-row">
-                                ${it.foto_url
-                                    ? `<img src="${escapeHtml(it.foto_url)}" class="order-piece-row-thumb">`
-                                    : `<div class="order-piece-row-thumb" style="display:flex;align-items:center;justify-content:center;font-size:18px;">${obterIconePeca(it.descricao)}</div>`
-                                }
-                                <div class="order-piece-row-info">
-                                    <div class="order-piece-row-title" title="${escapeHtml(it.descricao)}">${escapeHtml(it.descricao || 'Peça Boah')}</div>
-                                    <div class="order-piece-row-sub">
-                                        <span>SKU: ${escapeHtml(it.sku)} • Qtd: ${it.quantidade}</span>
-                                        <strong>${formatarBRL(it.preco_total)}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        } else {
-            const thumbHtml = fotoUrl
-                ? `<img src="${escapeHtml(fotoUrl)}" alt="${escapeHtml(peca.descricao || 'Peça')}" class="piece-thumb-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" title="Foto oficial www.boah.com.br">
-                   <div class="piece-thumb-empty" style="display:none;"><span>${obterIconePeca(peca.descricao)}</span></div>`
-                : `<div class="piece-thumb-empty" title="Foto não vinculada na Vnda"><span>${obterIconePeca(peca.descricao)}</span></div>`;
-
-            pecasHtml = `
-                <div class="card-360-top">
-                    <div class="piece-thumb-wrap" title="Peça: ${escapeHtml(peca.descricao || 'Boah')}">
-                        ${thumbHtml}
-                    </div>
-                    <div class="sale-info-main">
-                        <span class="sale-sku-tag">SKU: ${escapeHtml(peca.sku || 'N/D')}</span>
-                        <div class="sale-piece-title" title="${escapeHtml(peca.descricao || 'Peça Boah')}">
-                            ${escapeHtml(peca.descricao || 'Peça da Coleção Boah')}
-                        </div>
-                        <div style="font-size: 11.5px; color: #64748B; margin-top: 2px;">
-                            Qtd: ${peca.quantidade || 1} • ${formatarBRL(peca.preco_total || g.valor_venda)}
-                        </div>
-                    </div>
-                </div>
-            `;
+        let badgeFigma = '<span class="badge-figma badge-figma-naopaga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não paga</span>';
+        if (isPaga) {
+            badgeFigma = '<span class="badge-figma badge-figma-paga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Paga</span>';
+        } else if (isPendente) {
+            badgeFigma = '<span class="badge-figma badge-figma-apagar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> A pagar</span>';
+        } else if (isSemDifal) {
+            badgeFigma = '<span class="badge-figma badge-figma-semdifal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/></svg> Sem DIFAL</span>';
         }
 
-        const dataExibir = g.data_emissao ? formatarDataBR(g.data_emissao) : formatarDataBR(g.data_venda);
-        const corDifal = (g.is_paga || g.status_bancario === 'paga') ? '#34D399' : (g.is_pendente ? '#FBBF24' : '#F87171');
+        const dataExibir = g.data_emissao ? formatarDataCurta(g.data_emissao) : (g.data_venda ? formatarDataCurta(g.data_venda) : 'Hoje');
+        const orderNum = g.order_number ? (String(g.order_number).startsWith('BH-') ? g.order_number : `BH-${g.order_number}`) : `BH-${g.nf_number}`;
+        const nfNumFmt = `NF ${String(g.nf_number || '').padStart(6, '0')}`;
+        const transpNome = g.carrier_name || 'Total Express';
+        const isTotal = transpNome.toLowerCase().includes('total');
+
+        const thumbsHtml = isMultiItem
+            ? itens.slice(0, 3).map(it => `
+                <img src="${escapeHtml((it.foto_url || '').replace('/x120/', '/x300/') || 'https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg')}" alt="${escapeHtml(it.descricao)}" class="card-360-thumb-img" onerror="this.src='https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg';">
+            `).join('')
+            : `<img src="${escapeHtml((fotoUrl || '').replace('/x120/', '/x300/') || 'https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg')}" alt="${escapeHtml(peca.descricao)}" class="card-360-thumb-img" onerror="this.src='https://cdn.vnda.com.br/x300/boah/2026/03/20/13_38_37_76_img_5226-5b1-5d-13038080.jpg';">`;
 
         return `
-            <div class="card-sale-360 ${hasDevolucao ? 'has-devolucao' : ''}" onclick="abrirModalPagamento360('${g.id}')" style="cursor: pointer;" title="Clique para ver detalhes do pagamento, parcelas e DIFAL">
-                <div>
-                    ${alertaDevolucaoHtml}
-                    
-                    <!-- Cabeçalho do Pedido e Destinatário -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                        <div>
-                            <div class="sale-customer-line" title="${escapeHtml(g.customer_name)}" style="font-size: 13.5px; margin-bottom: 2px;">
-                                <span> ${escapeHtml(g.customer_name)}</span>
-                            </div>
-                            <div class="sale-dest-pill" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
-                                <span>📍 ${escapeHtml(g.cidade)}</span>
-                                <span class="badge-uf-dest">${escapeHtml(g.uf)}</span>
-                                <span style="color: rgba(255,255,255,0.2);">•</span>
-                                ${(() => {
-                                    const tr = (window.totalTrackingMap && window.totalTrackingMap[g.nf_number]) || g.tracking || null;
-                                    if (tr) {
-                                        if (tr.isEntregue) {
-                                            return `<span style="font-size: 11px; font-weight: 700; color: #34D399; display: inline-flex; align-items: center; gap: 3px;" title="Entregue: ${escapeHtml(tr.recebedorNome || 'Destinatário')}">✓ Entregue (${escapeHtml(tr.cidadeStatus || '')})</span>`;
-                                        }
-                                        if (tr.isEmRota) {
-                                            return `<span style="font-size: 11px; font-weight: 700; color: #38BDF8; display: inline-flex; align-items: center; gap: 3px;" title="Em rota de entrega ao cliente">🛵 Em Rota</span>`;
-                                        }
-                                        if (tr.isColetada) {
-                                            return `<span style="font-size: 11px; font-weight: 700; color: #38BDF8; display: inline-flex; align-items: center; gap: 3px;" title="${escapeHtml(tr.ultimoStatus)} (${escapeHtml(tr.cidadeStatus || '')})">🚚 ${escapeHtml(tr.ultimoStatus)}</span>`;
-                                        }
-                                        return `<span style="font-size: 11px; font-weight: 700; color: #FBBF24; display: inline-flex; align-items: center; gap: 3px;" title="Etiquetada, aguardando coleta do caminhão">📦 Aguardando Coleta Total</span>`;
-                                    }
-                                    return `<span style="font-size: 11px; color: #38BDF8; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">🚚 ${escapeHtml(g.carrier_name || 'Total Express')}</span>`;
-                                })()}
-                                <span style="color: rgba(255,255,255,0.2);">•</span>
-                                <span style="font-size: 11px; color: #94A3B8;">${dataExibir}</span>
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <span class="badge-pieces-count">
-                                 ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças'}
-                            </span>
-                            <div style="font-size: 11px; font-weight: 700; color: #2563EB; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
-                                Pedido #${escapeHtml(g.order_number)}
-                            </div>
-                            <div style="font-size: 10.5px; color: #64748B; font-family: 'JetBrains Mono', monospace;">
-                                NF ${escapeHtml(g.nf_number)}
-                            </div>
-                        </div>
+            <div class="card-sale-360-figma" onclick="abrirModalPagamento360('${g.id}')" style="cursor: pointer;" title="Clique para ver detalhes do pedido e pagamento">
+                <!-- 1. Cliente e Status -->
+                <div class="card-360-top">
+                    <div>
+                        <div class="card-360-customer-name">${escapeHtml(g.customer_name || 'Consumidor Final')}</div>
+                        <div class="card-360-customer-loc">${escapeHtml(g.cidade || 'São Paulo')} · ${escapeHtml(g.uf || 'SP')}</div>
                     </div>
+                    <div>
+                        ${badgeFigma}
+                    </div>
+                </div>
 
-                    <!-- Peças do Pedido -->
-                    ${pecasHtml}
+                <!-- 2. Identificadores (Pedido, NF, Transportadora, Emissão) -->
+                <div class="card-360-identifiers">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #F1F5FC;">${escapeHtml(orderNum)}</span>
+                        <span style="color: #65758E;">·</span>
+                        <span style="font-family: 'JetBrains Mono', monospace; color: #A6B5CA;">${escapeHtml(nfNumFmt)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; color: #8597B1;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            ${isTotal 
+                                ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/></svg>' 
+                                : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
+                            }
+                            <span>${escapeHtml(transpNome)}</span>
+                        </span>
+                        <span style="color: #65758E;">·</span>
+                        <span>Emissão ${escapeHtml(dataExibir)}</span>
+                    </div>
+                </div>
 
-                    <div class="sale-metrics-box">
-                        <div class="metric-col-venda">
-                            <div>Valor do Pedido</div>
-                            <div class="metric-val-venda">${formatarBRL(g.valor_venda)}</div>
-                        </div>
-                        <div class="metric-col-difal">
-                            <div>DIFAL ${g.is_sp ? '(SP DARE)' : '(GNRE)'}</div>
-                            <div class="metric-val-difal" style="color: ${corDifal}; font-weight: 800;">
-                                ${formatarBRL(g.valor_difal)}
-                            </div>
+                <!-- 3. Peças do Pedido -->
+                <div class="card-360-pieces-row">
+                    <div class="card-360-thumbs">
+                        ${thumbsHtml}
+                    </div>
+                    <div class="card-360-prod-info">
+                        <div class="card-360-prod-title" title="${escapeHtml(peca.descricao || 'Peça Boah')}">${escapeHtml(peca.descricao || 'Vestido midi linho natural')}</div>
+                        <div class="card-360-prod-sku">${escapeHtml(peca.sku || 'BO-VE-2041-M')}</div>
+                        <div style="font-size: 11px; color: #93BCFF; margin-top: 3px; font-weight: 600; cursor: pointer;">
+                            ${totalPecas} ${totalPecas === 1 ? 'peça' : 'peças · ver itens ▾'}
                         </div>
                     </div>
                 </div>
 
-                <div class="card-360-footer">
+                <!-- 4. Totais (Venda e DIFAL) -->
+                <div class="card-360-totals">
                     <div>
-                        ${statusGuiaBadge}
+                        <div style="font-size: 11px; color: #8597B1; font-weight: 600;">Venda</div>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; color: #F1F5FC;">${formatarBRL(g.valor_venda)}</div>
                     </div>
-                    <div class="card-actions-group" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                        ${(!g.is_paga && g.status_bancario !== 'paga') 
-                            ? `<button type="button" class="btn-card-action" style="background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})" title="Emitir Guia Oficial na SEFAZ com data">⚡ Emitir SEFAZ</button>` 
-                            : `<span style="font-size: 11px; font-weight: 700; color: #34D399; display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Liberada</span>`
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; color: #8597B1; font-weight: 600;">DIFAL</div>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 800; color: ${isPaga ? '#66DBAC' : (isPendente ? '#F5C268' : '#FF929B')};">
+                            ${formatarBRL(g.valor_difal)}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Ações do Pedido -->
+                <div class="card-360-actions">
+                    <div style="font-size: 11.5px; color: #8597B1;">
+                        ${isPaga ? 'Guia liquidada no Itaú' : (isPendente ? 'Guia emitida · aguarda pgto' : (isSemDifal ? 'Operação sem incidência' : 'GNRE aguardando emissão'))}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        ${(!isPaga && !isSemDifal)
+                            ? `<button type="button" class="btn-primary-figma" style="font-size: 11.5px; padding: 6px 12px;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})" title="Emitir Guia Oficial na SEFAZ">
+                                 Emitir SEFAZ
+                               </button>`
+                            : `<a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-secondary-figma" style="font-size: 11.5px; padding: 6px 12px;" onclick="event.stopPropagation();">Documentos</a>`
                         }
-                        <button type="button" class="btn-card-action" style="background: rgba(14, 165, 233, 0.12); color: #38BDF8; border: 1px solid rgba(14, 165, 233, 0.3); font-weight: 600;" onclick="event.stopPropagation(); rastrearTotalExpress('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.return_nf_reference || '')}')" title="Rastrear Entrega e Ocorrências em tempo real na Total Express">
-                            📍 Rastreio
+                        <button type="button" class="btn-secondary-figma" style="padding: 6px 8px; font-size: 12px;" onclick="event.stopPropagation(); rastrearTotalExpress('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.return_nf_reference || '')}')" title="Rastrear Total Express">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                         </button>
-                        <a href="/api/total-express/etiqueta/${escapeHtml(g.id)}" target="_blank" class="btn-card-action" style="background: rgba(2, 132, 199, 0.12); color: #38BDF8; border: 1px solid rgba(2, 132, 199, 0.3); font-weight: 600;" onclick="event.stopPropagation();" title="Imprimir Etiqueta Térmica 10x15cm Total Express com AWB e Rota">
-                            🏷️ Etiqueta 10x15
-                        </a>
-                        <a href="${escapeHtml(g.danfe_url)}" target="_blank" class="btn-card-action" style="background: rgba(255, 255, 255, 0.05); color: #E2E8F0; border: 1px solid rgba(255, 255, 255, 0.1);" onclick="event.stopPropagation();" title="Visualizar DANFE Oficial">
-                            📄 DANFE
-                        </a>
-                        ${g.barcode && g.barcode.length >= 44 ? `<a href="/api/guide/download/${escapeHtml(g.id)}" target="_blank" class="btn-card-action" style="background: rgba(99, 102, 241, 0.12); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3);" onclick="event.stopPropagation();" title="Baixar Espelho da Guia Oficial">🏛️ Guia</a>` : ''}
                     </div>
                 </div>
             </div>

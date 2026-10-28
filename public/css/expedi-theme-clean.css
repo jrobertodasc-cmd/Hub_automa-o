@@ -2775,3 +2775,456 @@ h1, h2, h3, h4,
     transform: translateY(-1px) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
 }
+
+/* ==========================================================================
+   FIGMA DESIGN SYSTEM · EXPEDI HUB (PIXEL-PERFECT)
+   Arquivo: Sem-título (MXOo80UTpyfCmDo6EF9Nr0)
+   Nodes: 2:10864 (Status e filtros), 2:10037 (Expedição Desktop), 2:9639 (360), 2:10654 (Biblioteca visual)
+   ========================================================================== */
+
+/* 1. Variáveis Globais de Cores e Tokens Oficiais do Figma */
+:root {
+    --figma-bg-main: #0B1220;
+    --figma-bg-card: #111B2E;
+    --figma-bg-elevated: #16233A;
+    --figma-bg-input: #0B1220;
+    --figma-border: #29374E;
+    --figma-border-subtle: rgba(41, 55, 78, 0.6);
+    --figma-border-active: #3B82F6;
+    
+    --figma-text-white: #F1F5FC;
+    --figma-text-sub: #A6B5CA;
+    --figma-text-muted: #8597B1;
+    --figma-text-dim: #65758E;
+    
+    --figma-blue: #3B82F6;
+    --figma-blue-btn: #2563EB;
+    --figma-blue-hover: #1D4ED8;
+    --figma-blue-light: #93BCFF;
+    
+    /* Badges Semânticos Oficiais do Figma */
+    --badge-paga-bg: #12362F;
+    --badge-paga-text: #66DBAC;
+    --badge-paga-border: rgba(102, 219, 172, 0.3);
+    
+    --badge-apagar-bg: #3A2E1D;
+    --badge-apagar-text: #F5C268;
+    --badge-apagar-border: rgba(245, 194, 104, 0.35);
+    
+    --badge-naopaga-bg: #3F2430;
+    --badge-naopaga-text: #FF929B;
+    --badge-naopaga-border: rgba(255, 146, 155, 0.35);
+    
+    --badge-emrota-bg: #172F54;
+    --badge-emrota-text: #93BCFF;
+    --badge-emrota-border: rgba(147, 188, 255, 0.35);
+    
+    --badge-info-bg: #16233A;
+    --badge-info-text: #A6B5CA;
+    --badge-info-border: rgba(166, 181, 202, 0.25);
+}
+
+/* 2. Badges Semânticos (Sem aparência de botão) */
+.badge-figma {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    text-transform: none !important;
+}
+
+.badge-figma svg {
+    width: 12px !important;
+    height: 12px !important;
+    stroke-width: 2.2 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Paga / Online */
+.badge-figma-paga, .badge-figma-online {
+    background: var(--badge-paga-bg) !important;
+    color: var(--badge-paga-text) !important;
+    border: 1px solid var(--badge-paga-border) !important;
+}
+
+/* A pagar / Pendente */
+.badge-figma-apagar, .badge-figma-pendente {
+    background: var(--badge-apagar-bg) !important;
+    color: var(--badge-apagar-text) !important;
+    border: 1px solid var(--badge-apagar-border) !important;
+}
+
+/* Não paga / Retida fiscal / 33 dias */
+.badge-figma-naopaga, .badge-figma-retida {
+    background: var(--badge-naopaga-bg) !important;
+    color: var(--badge-naopaga-text) !important;
+    border: 1px solid var(--badge-naopaga-border) !important;
+}
+
+/* Em rota / Coletada */
+.badge-figma-emrota {
+    background: var(--badge-emrota-bg) !important;
+    color: var(--badge-emrota-text) !important;
+    border: 1px solid var(--badge-emrota-border) !important;
+}
+
+/* Sem DIFAL / Informativo */
+.badge-figma-semdifal, .badge-figma-info {
+    background: var(--badge-info-bg) !important;
+    color: var(--badge-info-text) !important;
+    border: 1px solid var(--badge-info-border) !important;
+}
+
+/* 3. Segmented Control Oficial do Figma */
+.segmented-control-figma {
+    display: inline-flex !important;
+    background: #0B1220 !important;
+    border: 1px solid #29374E !important;
+    border-radius: 8px !important;
+    padding: 3px !important;
+    gap: 3px !important;
+}
+
+.segmented-option-figma {
+    padding: 5px 12px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #A6B5CA !important;
+    border-radius: 6px !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+.segmented-option-figma:hover {
+    color: #F1F5FC !important;
+}
+
+.segmented-option-figma.active {
+    background: #16233A !important;
+    color: #F1F5FC !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 4. Chips de Filtro Geográfico */
+.chip-filtro-figma {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    background: transparent !important;
+    border: 1px solid #29374E !important;
+    color: #A6B5CA !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.chip-filtro-figma:hover {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #F1F5FC !important;
+}
+
+.chip-filtro-figma.active {
+    background: #16233A !important;
+    border-color: #3B82F6 !important;
+    color: #93BCFF !important;
+}
+
+/* 5. Input de Busca com Foco de 2px do Figma */
+.input-busca-figma {
+    background: #0B1220 !important;
+    border: 1px solid #29374E !important;
+    border-radius: 8px !important;
+    color: #F1F5FC !important;
+    font-size: 12.5px !important;
+    padding: 7px 12px 7px 34px !important;
+    width: 260px !important;
+    transition: all 0.15s ease !important;
+}
+
+.input-busca-figma:focus {
+    outline: none !important;
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* 6. Breadcrumbs do Figma */
+.breadcrumbs-figma {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 12.5px !important;
+    color: #8597B1 !important;
+    margin-bottom: 16px !important;
+}
+
+.breadcrumbs-figma a {
+    color: #A6B5CA !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    transition: color 0.15s ease !important;
+}
+
+.breadcrumbs-figma a:hover {
+    color: #F1F5FC !important;
+}
+
+.breadcrumbs-figma .current {
+    color: #F1F5FC !important;
+    font-weight: 600 !important;
+}
+
+/* 7. Terminal de Conferência Óptica (Figma Split 2-Column Layout) */
+.laser-station-split {
+    display: grid !important;
+    grid-template-columns: 1fr 340px !important;
+    gap: 0 !important;
+    background: #111B2E !important;
+    border: 1px solid #29374E !important;
+    border-radius: 12px !important;
+    margin-bottom: 22px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+@media (max-width: 1024px) {
+    .laser-station-split {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.laser-main-box {
+    padding: 20px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    border-right: 1px solid #29374E !important;
+}
+
+.laser-history-box {
+    background: #0B1220 !important;
+    padding: 18px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.laser-input-figma {
+    width: 100% !important;
+    height: 48px !important;
+    background: #0B1220 !important;
+    border: 1px solid #29374E !important;
+    border-radius: 8px !important;
+    padding: 0 16px 0 44px !important;
+    color: #F1F5FC !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    letter-spacing: 0.02em !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.2s ease !important;
+}
+
+.laser-input-figma:focus {
+    outline: none !important;
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* 8. Cards de Pedido do E-commerce 360° (Padrão BOAH Figma) */
+.cockpit-360-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 16px !important;
+}
+
+.card-sale-360-figma {
+    background: #111B2E !important;
+    border: 1px solid #29374E !important;
+    border-radius: 12px !important;
+    padding: 18px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.card-sale-360-figma:hover {
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.card-360-top {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+}
+
+.card-360-customer-name {
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: #F1F5FC !important;
+    line-height: 1.25 !important;
+}
+
+.card-360-customer-loc {
+    font-size: 12px !important;
+    color: #8597B1 !important;
+    margin-top: 2px !important;
+}
+
+.card-360-identifiers {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    font-size: 12px !important;
+    padding: 8px 0 !important;
+    border-top: 1px solid rgba(41, 55, 78, 0.5) !important;
+    border-bottom: 1px solid rgba(41, 55, 78, 0.5) !important;
+}
+
+.card-360-pieces-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.card-360-thumbs {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.card-360-thumb-img {
+    width: 44px !important;
+    height: 54px !important;
+    border-radius: 6px !important;
+    object-fit: cover !important;
+    background: #0B1220 !important;
+    border: 1px solid #29374E !important;
+}
+
+.card-360-prod-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.card-360-prod-title {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #F1F5FC !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.card-360-prod-sku {
+    font-size: 11px !important;
+    color: #8597B1 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    margin-top: 2px !important;
+}
+
+.card-360-totals {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #0B1220 !important;
+    border: 1px solid #29374E !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+}
+
+.card-360-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-top: 2px !important;
+}
+
+/* 9. Tabela de Expedição & Totais da Fila */
+.table-totais-figma {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #0B1220 !important;
+    border-top: 1px solid #29374E !important;
+    padding: 12px 18px !important;
+    border-radius: 0 0 10px 10px !important;
+    font-size: 12px !important;
+}
+
+.table-totais-left {
+    color: #8597B1 !important;
+    font-weight: 500 !important;
+}
+
+.table-totais-right {
+    color: #F1F5FC !important;
+    font-weight: 700 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* 10. Botões do Figma */
+.btn-primary-figma {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+    transition: all 0.15s ease !important;
+}
+
+.btn-primary-figma:hover {
+    background: #1D4ED8 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5) !important;
+}
+
+.btn-secondary-figma {
+    background: #16233A !important;
+    color: #F1F5FC !important;
+    border: 1px solid #29374E !important;
+    font-weight: 600 !important;
+    font-size: 12.5px !important;
+    padding: 7px 14px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.15s ease !important;
+}
+
+.btn-secondary-figma:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #FFFFFF !important;
+}
