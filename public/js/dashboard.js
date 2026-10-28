@@ -3182,7 +3182,7 @@ function renderizarPaginaDoca(pagina = 1) {
                 return `
                     <tr>
                         <td style="text-align: center;">
-                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" ${isChecked} onchange="toggleSelectRowGuide('${escapeHtml(g.id)}', this.checked)">
+                            <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" ${isChecked} onchange="toggleSelectRowGuide('${escapeHtml(g.id)}', this.checked, event)" onclick="event.stopPropagation()">
                         </td>
                         <td>
                             <div class="cell-mono">${escapeHtml(g.nf_number)}</div>
@@ -3416,7 +3416,8 @@ function alterarItensPorPagina(qtd) {
 }
 window.alterarItensPorPagina = alterarItensPorPagina;
 
-function toggleSelectRowGuide(id, checked) {
+function toggleSelectRowGuide(id, checked, ev) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
     if (!window.selectedGuideIds) window.selectedGuideIds = new Set();
     if (checked) {
         window.selectedGuideIds.add(id);
@@ -5446,8 +5447,9 @@ async function sincronizarRastreioTotalDoca(silencioso = false) {
         if (data.success && data.trackingMap) {
             window.totalTrackingMap = Object.assign(window.totalTrackingMap || {}, data.trackingMap);
             
-            // Re-renderiza a página da doca mantendo a posição e seleção
-            if (typeof renderizarPaginaDoca === 'function' && window.cargasFiltradasDoca) {
+            // Só re-renderiza se o usuário NÃO estiver interagindo ou selecionando caixinhas no momento
+            const temSelecaoAtiva = window.selectedGuideIds && window.selectedGuideIds.size > 0;
+            if (!temSelecaoAtiva && typeof renderizarPaginaDoca === 'function' && window.cargasFiltradasDoca) {
                 renderizarPaginaDoca(window.paginaAtualDoca || 1);
             }
 

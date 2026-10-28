@@ -2163,9 +2163,13 @@
                 </div>
 
                 <div class="dock-nav-tabs" id="dock-status-tabs">
-                    <button type="button" class="dock-tab-btn active" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Cargas que exigem emissão ou liquidação da guia">
-                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 🚨 Pendentes & Retidas</span>
+                    <button type="button" class="dock-tab-btn" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Cargas que ainda precisam de emissão fiscal da guia">
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 🚨 Não Emitidas / Retidas</span>
                         <span class="tab-counter-badge counter-red" id="tab-cnt-nao-pagas" style="background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
+                    </button>
+                    <button type="button" class="dock-tab-btn active" id="tab-btn-emitidas" onclick="filtrarPorSituacaoTab('PENDENTES', this)" title="Guias autorizadas pela SEFAZ com código de barras aguardando pagamento">
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> ⚡ Emitidas (A Pagar)</span>
+                        <span class="tab-counter-badge counter-amber" id="tab-cnt-pendentes" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);">0</span>
                     </button>
                     <button type="button" class="dock-tab-btn" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)" title="Cargas liberadas pelo banco aguardando coleta física do transportador">
                         <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> 🟢 Prontas para Coleta (Pagas)</span>
