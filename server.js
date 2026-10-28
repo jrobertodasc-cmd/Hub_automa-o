@@ -4058,12 +4058,18 @@ app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) =>
         const remoteLabelPath = `${req.tenant.id}/etiquetas/etiqueta_NF_${guide.nf_number}.pdf`;
         let buffer = null;
 
-        try {
-            const { data } = await supabase.storage
-                .from('tenant-storage')
-                .download(remoteLabelPath);
-            if (data) buffer = Buffer.from(await data.arrayBuffer());
-        } catch(e) {}
+        // Se já tiver AWB oficial registrada (ex: TXAQ...) e não for forçado regerar, tenta ler do storage
+        const temAwbOficial = guide.return_nf_reference && guide.return_nf_reference.startsWith('TXAQ');
+        const forcar = req.query.force === 'true' || req.query.regerar === 'true';
+
+        if (temAwbOficial && !forcar) {
+            try {
+                const { data } = await supabase.storage
+                    .from('tenant-storage')
+                    .download(remoteLabelPath);
+                if (data) buffer = Buffer.from(await data.arrayBuffer());
+            } catch(e) {}
+        }
 
         if (!buffer) {
             let xmlContent = null;
@@ -4072,16 +4078,62 @@ app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) =>
                 if (xData) xmlContent = await xData.text();
             }
             if (!xmlContent) {
-                return res.status(400).send("Etiqueta da Total Express ainda não foi gerada para esta nota.");
+                return res.status(400).send("XML da NF-e não encontrado para gerar etiqueta da Total Express.");
             }
             const dadosNfe = parserService.extrairDadosNfeXML(xmlContent);
+
+            const totalConfig = {
+                environment: req.tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
+                user: req.tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
+                password: req.tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
+                remetenteId: req.tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276,
+                cnpj: req.tenant.cnpj || '10436619000105',
+                servicoTipo: req.tenant.total_express_servico || 1
+            };
+
+            let awb = guide.return_nf_reference;
+            let rota = null;
+
+            // Se ainda não tiver AWB oficial (TXAQ...), registra na API da Total Express agora
+            if (!temAwbOficial) {
+                try {
+                    const retornoSmartLabel = await totalExpressService.registrarEncomendaSmartLabel(dadosNfe, totalConfig);
+                    awb = retornoSmartLabel.awb;
+                    rota = retornoSmartLabel.rota;
+
+                    await supabase
+                        .from('guides')
+                        .update({
+                            carrier_name: 'Total Express',
+                            carrier_cnpj: '73939449000156',
+                            return_nf_reference: awb
+                        })
+                        .eq('id', guide.id)
+                        .eq('tenant_id', req.tenant.id);
+                } catch (regErr) {
+                    console.warn(`[SmartLabel] Aviso ao registrar NF ${guide.nf_number} na Total Express:`, regErr.message);
+                    awb = awb || `TX${guide.nf_number}BR`;
+                    rota = '(A)99-SAO-L-TZO-[999]';
+                }
+            }
+
             buffer = await totalExpressService.gerarEtiquetaTermicaPdfBuffer({
-                awb: guide.return_nf_reference || `TX${guide.nf_number}BR`,
-                rota: '(A)99-SAO-L-TZO-[999]',
-                servico: 'STD - STANDARD',
+                awb: awb,
+                rota: rota || '(A)99-SAO-L-TZO-[999]',
+                servico: totalConfig.servicoTipo === 7 ? 'EXP - EXPRESSO' : 'STD - STANDARD',
                 dadosNfe,
                 empresa: req.tenant
             });
+
+            // Salva PDF oficial gerado no Storage
+            try {
+                await supabase.storage
+                    .from('tenant-storage')
+                    .upload(remoteLabelPath, buffer, {
+                        contentType: 'application/pdf',
+                        upsert: true
+                    });
+            } catch(e) {}
         }
 
         res.setHeader('Content-Type', 'application/pdf');

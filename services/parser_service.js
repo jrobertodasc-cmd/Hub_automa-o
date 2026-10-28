@@ -84,13 +84,20 @@ function extrairDadosNfeXML(xml) {
         const emitMunicipio = extrairTag(enderEmitBlock, 'cMun') || '';
         const emitCep = (extrairTag(enderEmitBlock, 'CEP') || '').replace(/\D/g, '');
 
-        // 4. Destinatário: extrai UF estritamente de <dest>/<enderDest>/<UF>
+        // 4. Destinatário: extrai dados completos de identificação e endereço
         const enderDestBlock = extrairTag(destBlock, 'enderDest');
         if (!enderDestBlock) {
             throw new Error("Bloco de endereço do destinatário (<enderDest>) ausente no XML da NF-e.");
         }
         const ufDestinatario = (extrairTag(enderDestBlock, 'UF') || '').toUpperCase();
         const destMun = extrairTag(enderDestBlock, 'cMun');
+        const destMunNome = decodificarEntidadesXml(extrairTag(enderDestBlock, 'xMun') || '');
+        const destLogradouro = decodificarEntidadesXml(extrairTag(enderDestBlock, 'xLgr') || '');
+        const destNumero = decodificarEntidadesXml(extrairTag(enderDestBlock, 'nro') || 'S/N');
+        const destComplemento = decodificarEntidadesXml(extrairTag(enderDestBlock, 'xCpl') || '');
+        const destBairro = decodificarEntidadesXml(extrairTag(enderDestBlock, 'xBairro') || '');
+        const destCep = (extrairTag(enderDestBlock, 'CEP') || '').replace(/\D/g, '');
+        const destTelefone = (extrairTag(enderDestBlock, 'fone') || '').replace(/\D/g, '');
 
         const destCnpj = extrairTag(destBlock, 'CNPJ');
         const destCpf = extrairTag(destBlock, 'CPF');
@@ -98,6 +105,8 @@ function extrairDadosNfeXML(xml) {
         const destTipoIdentificacao = destCnpj ? 'CNPJ' : (destCpf ? 'CPF' : null);
         const destNome = decodificarEntidadesXml(extrairTag(destBlock, 'xNome'));
         const indIEDest = extrairTag(destBlock, 'indIEDest');
+        const destIE = extrairTag(destBlock, 'IE') || 'ISENTO';
+        const destEmail = extrairTag(destBlock, 'email') || null;
 
         // 5. Local de Entrega (<entrega>): verifica divergência entre UF do destinatário e UF de entrega física
         let ufEntrega = null;
@@ -166,6 +175,24 @@ function extrairDadosNfeXML(xml) {
             carrierDisplay = 'CORREIOS';
         }
 
+        // Dados de volumes e peso
+        let pesoBruto = 0.45;
+        let qtdVolumes = 1;
+        if (transpBlock) {
+            const volBlock = extrairTag(transpBlock, 'vol');
+            if (volBlock) {
+                const qVol = extrairTag(volBlock, 'qVol');
+                const pesoB = extrairTag(volBlock, 'pesoB');
+                if (qVol) qtdVolumes = parseInt(qVol, 10) || 1;
+                if (pesoB) pesoBruto = parseFloat(pesoB) || 0.45;
+            }
+        }
+
+        // Série e Totais da NF-e
+        const serieNota = extrairTag(ideBlock, 'serie') || '1';
+        const vNfStr = extrairTag(icmsTotBlock, 'vNF') || '0';
+        const vProdStr = extrairTag(icmsTotBlock, 'vProd') || vNfStr;
+
         const valorDifalNum = parseFloat(vIcmsUfDestStr) || 0;
         const valorFcpNum = parseFloat(vFcpUfDestStr) || 0;
 
@@ -193,6 +220,22 @@ function extrairDadosNfeXML(xml) {
             destTipoIdentificacao,
             destNome,
             destMun: munEntrega || destMun,
+            destMunicipio: destMunNome || null,
+            destLogradouro: destLogradouro || null,
+            destNumero: destNumero || 'S/N',
+            destComplemento: destComplemento || null,
+            destBairro: destBairro || null,
+            destCep: destCep || null,
+            destUF: ufDestinatario,
+            destTelefone: destTelefone || null,
+            destEmail: destEmail || null,
+            destIE: destIE || 'ISENTO',
+            serie: serieNota,
+            dataEmissaoIso: dhEmi.split('T')[0],
+            valorTotalNota: parseFloat(vNfStr) || 0,
+            valorProdutos: parseFloat(vProdStr) || 0,
+            pesoBruto: pesoBruto,
+            volumes: qtdVolumes,
             anoApuracao: anoApur,
             mesApuracao: mesApur,
             dataEmissaoRJ: dataEmissaoFormatadaRJ,
