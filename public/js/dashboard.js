@@ -228,6 +228,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1.2 Inicia escuta em tempo real da Doca (SSE)
     iniciarSSEAtualizacaoDoca();
 
+    // 1.3 Ativa a visualização principal do Figma (Expedição & SEFAZ) por padrão
+    const urlParams = new URLSearchParams(window.location.search);
+    const abaAlvo = urlParams.get('aba') || (window.location.hash ? window.location.hash.replace('#', '') : 'cargas');
+    if (typeof navegarAbaPrincipal === 'function') {
+        navegarAbaPrincipal(abaAlvo);
+    }
+
     // 2. Carrega histórico de lotes
     await carregarHistoricoLotes();
 

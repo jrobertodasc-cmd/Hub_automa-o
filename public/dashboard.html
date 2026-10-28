@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/expedi.css">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css">
+    <link rel="stylesheet" href="css/expedi.css?v=20261028_1515">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261028_1515">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1366,10 +1366,10 @@
             <!-- Conexão Fiscal Online -->
                         <!-- PIPELINE LINEAR DO DIA: 3 PASSOS OPERACIONAIS DIRETOS -->
                         <div class="hub-pipeline-nav" id="hub-pipeline-nav">
-                <button type="button" class="hub-pipeline-btn active" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')" title="Portal de Módulos (6 Cards)">
+                <button type="button" class="hub-pipeline-btn" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')" title="Portal de Módulos (6 Cards)">
                     <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Início</span>
                 </button>
-                <button type="button" class="hub-pipeline-btn" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
+                <button type="button" class="hub-pipeline-btn active" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Fila de Expedição, Bipagem e Emissão SEFAZ">
                     <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Expedição & SEFAZ</span>
                     <span class="hub-pipeline-badge" id="nav-badge-pendentes">9</span>
                 </button>
@@ -1415,7 +1415,7 @@
         <!-- ============================================================== -->
         <!-- PRIMEIRA TELA: PORTAL DE CARDS-MENU (HUB PRINCIPAL DE ENTRADA) -->
         <!-- ============================================================== -->
-        <div id="secao-view-hub" class="main-view-section">
+        <div id="secao-view-hub" class="main-view-section" style="display: none;">
             <!-- Header do Portal Hub (Image 1) -->
             <div class="hub-portal-header">
                 <h1 class="hub-portal-title">Módulos Operacionais</h1>
@@ -2062,7 +2062,7 @@
         <!-- ========================================== -->
         <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
         <!-- ========================================== -->
-        <div id="secao-view-cargas" class="main-view-section" style="display: none;">
+        <div id="secao-view-cargas" class="main-view-section" style="display: block;">
             <!-- BREADCRUMBS FIGMA -->
             <div class="breadcrumbs-figma">
                 <a href="javascript:void(0)" onclick="navegarAbaPrincipal('hub')">
@@ -3010,7 +3010,7 @@
         </div>
     </div>
 
-    <script src="/js/auth.js?v=6"></script>
-    <script src="/js/dashboard.js?v=15"></script>
+    <script src="/js/auth.js?v=20261028_1515"></script>
+    <script src="/js/dashboard.js?v=20261028_1515"></script>
 </body>
 </html>
