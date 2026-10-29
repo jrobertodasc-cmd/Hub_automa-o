@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261029_1000">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1030">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1045">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -2579,111 +2579,121 @@
             
         </main>
 
-    <!-- MODAL DOSSIÊ DE PAGAMENTO & DIFAL 360° -->
-    <div id="modal-pagamento-360" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 16px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); box-sizing: border-box; position: relative;">
+    <!-- MODAL DOSSIÊ DE PAGAMENTO & DIFAL 360° (DARK FASHION ATELIER) -->
+    <div id="modal-pagamento-360" style="display: none; position: fixed; inset: 0; background: rgba(9, 13, 26, 0.85); backdrop-filter: blur(10px); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-dossie-dark">
             
             <!-- Botão Fechar -->
-            <button onclick="fecharModalPagamento360()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; color: #64748B; cursor: pointer; padding: 4px 8px; border-radius: 6px;">✕</button>
+            <button type="button" onclick="fecharModalPagamento360()" style="position: absolute; top: 18px; right: 18px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 16px; color: #94A3B8; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; transition: all 0.15s ease;">✕</button>
 
             <!-- Topo do Modal -->
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <div style="width: 44px; height: 44px; border-radius: 10px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 22px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(195, 172, 255, 0.12); border: 1px solid rgba(195, 172, 255, 0.25); display: flex; align-items: center; justify-content: center; color: #C3ACFF; flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                 </div>
                 <div>
-                    <h2 id="modal-pag-titulo" style="margin: 0; font-size: 18px; font-weight: 800; color: #0F172A;">
-                        Dossiê de Pagamento & DIFAL
-                    </h2>
-                    <div id="modal-pag-subtitulo" style="font-size: 12.5px; color: #64748B; margin-top: 2px;">
-                        Pedido #50032363 • NF-e 51598
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <h2 id="modal-pag-titulo" style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">
+                            Dossiê de Pagamento &amp; DIFAL
+                        </h2>
+                        <span style="background: rgba(195, 172, 255, 0.12); border: 1px solid rgba(195, 172, 255, 0.28); color: #C3ACFF; font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase;">BOAH 360°</span>
+                    </div>
+                    <div id="modal-pag-subtitulo" style="font-size: 12.5px; color: #94A3B8; margin-top: 3px; font-family: 'JetBrains Mono', monospace;">
+                        Pedido #50032635 &middot; NF-e 000.054.012
                     </div>
                 </div>
             </div>
 
-            <!-- Identificação do Cliente -->
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <!-- Identificação do Pedido, Cliente, NF e Etiqueta -->
+            <div class="dossie-info-grid">
                 <div>
-                    <div style="font-size: 11px; color: #64748B; font-weight: 600;">Cliente:</div>
-                    <div id="modal-pag-cliente" style="font-size: 13.5px; font-weight: 700; color: #0F172A;">Carolina Sousa</div>
+                    <div style="font-size: 10.5px; color: #8597B1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Cliente</div>
+                    <div id="modal-pag-cliente" style="font-size: 14px; font-weight: 700; color: #FFFFFF; margin-top: 2px;">Cleusa Marques Braga Nogueira</div>
                 </div>
                 <div>
-                    <div style="font-size: 11px; color: #64748B; font-weight: 600;">Destino:</div>
-                    <div id="modal-pag-destino" style="font-size: 13.5px; font-weight: 700; color: #0F172A;">Tibau do Sul / RN</div>
+                    <div style="font-size: 10.5px; color: #8597B1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Destino</div>
+                    <div id="modal-pag-destino" style="font-size: 13.5px; font-weight: 700; color: #38BDF8; margin-top: 2px;">CONTAGEM / MG</div>
                 </div>
                 <div>
-                    <div style="font-size: 11px; color: #64748B; font-weight: 600;">Data da Venda:</div>
-                    <div id="modal-pag-data" style="font-size: 13px; font-weight: 600; color: #0F172A;">14/09/2026</div>
+                    <div style="font-size: 10.5px; color: #8597B1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Data da Venda &middot; Linx</div>
+                    <div id="modal-pag-data" style="font-size: 13px; font-weight: 600; color: #E2E8F0; margin-top: 2px;">30/09/2026</div>
                 </div>
                 <div>
-                    <div style="font-size: 11px; color: #64748B; font-weight: 600;">Transportadora:</div>
-                    <div id="modal-pag-transp" style="font-size: 13px; font-weight: 600; color: #0F172A;">Total Express</div>
+                    <div style="font-size: 10.5px; color: #8597B1; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Transportadora &middot; Rastreio</div>
+                    <div id="modal-pag-transp" style="font-size: 13px; font-weight: 700; color: #60A5FA; margin-top: 2px;">Total Express &middot; EXP-54012BR</div>
                 </div>
             </div>
 
-            <!-- Bloco 1: Pagamento da Cliente (E-commerce) -->
-            <div style="border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; background: #FFFFFF;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-size: 13.5px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 6px;">
-                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Pagamento do Pedido no E-commerce</span>
+            <!-- Bloco 1: Pagamento da Cliente (E-commerce VNDA) -->
+            <div class="dossie-card-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #F1F5FC; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C3ACFF" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <span>Pagamento do Pedido no E-commerce</span>
                     </div>
-                    <span id="modal-pag-forma-tag" class="tag-status" style="background: #EFF6FF; color: #1D4ED8; font-weight: 700;">
+                    <span id="modal-pag-forma-tag" class="badge-figma badge-figma-vnda" style="font-size: 11px; padding: 3px 8px;">
                         Cartão de Crédito
                     </span>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
-                    <span style="font-size: 12.5px; color: #64748B;">Valor Total do Pedido:</span>
-                    <strong id="modal-pag-valor-total" style="font-size: 18px; font-weight: 800; color: #0F172A; font-family: 'JetBrains Mono', monospace;">R$ 677,39</strong>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                    <span style="font-size: 12px; color: #8597B1;">Valor Total do Pedido:</span>
+                    <strong id="modal-pag-valor-total" style="font-size: 20px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">R$ 620,20</strong>
                 </div>
 
                 <!-- Parcelas detalhadas -->
-                <div id="modal-pag-parcelas-container" style="background: #F8FAFC; border: 1px solid #EEF2F6; border-radius: 8px; padding: 10px 12px;">
-                    <!-- Inserido dinamicamente via JS -->
+                <div id="modal-pag-parcelas-container">
+                    <!-- Inserido dinamicamente via JS com dark theme -->
                 </div>
             </div>
 
-            <!-- Bloco 2: Situação Bancária da DIFAL (Itaú SISPAG) -->
-            <div style="border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; background: #FFFFFF;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-size: 13.5px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 6px;">
-                        <span id="modal-pag-difal-tipo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Guia DIFAL (GNRE)</span>
+            <!-- Bloco 2: Guia DIFAL (SEFAZ & Itaú SISPAG) -->
+            <div class="dossie-card-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 13px; font-weight: 700; color: #F1F5FC; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F5C268" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span id="modal-pag-difal-tipo">Guia DIFAL (GNRE Partilha MG)</span>
                     </div>
                     <div id="modal-pag-status-badge">
-                        <span class="tag-status tag-liberado"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Paga no Itaú</span>
+                        <span class="badge-figma badge-figma-apagar">A Pagar</span>
                     </div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
-                    <span style="font-size: 12.5px; color: #64748B;">Valor da DIFAL Tributária:</span>
-                    <strong id="modal-pag-difal-valor" style="font-size: 18px; font-weight: 800; color: #2563EB; font-family: 'JetBrains Mono', monospace;">R$ 40,64</strong>
+                    <span style="font-size: 12px; color: #8597B1;">Valor da DIFAL Tributária:</span>
+                    <strong id="modal-pag-difal-valor" style="font-size: 20px; font-weight: 800; color: #F5C268; font-family: 'JetBrains Mono', monospace;">R$ 37,21</strong>
                 </div>
 
-                <div id="modal-pag-difal-detalhe-box" style="background: #F8FAFC; border: 1px solid #EEF2F6; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #334155; line-height: 1.5;">
+                <div id="modal-pag-difal-detalhe-box">
                     <!-- Detalhes do agendamento / pagamento Itaú -->
                 </div>
             </div>
 
             <!-- Bloco 3: Peças Compradas no Pedido -->
-            <div style="margin-bottom: 16px;">
-                <div style="font-size: 13px; font-weight: 800; color: #0F172A; margin-bottom: 8px;">
-                    Itens Inclusos no Pedido (<span id="modal-pag-qtd-pecas">1</span>)
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12.5px; font-weight: 700; color: #F1F5FC; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Itens Inclusos no Pedido (<span id="modal-pag-qtd-pecas">1</span>)</span>
+                    <span style="font-size: 11px; color: #8597B1; font-weight: 500;">Coleção BOAH Oficial</span>
                 </div>
-                <div id="modal-pag-pecas-lista" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+                <div id="modal-pag-pecas-lista" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
                     <!-- Inserido dinamicamente via JS -->
                 </div>
             </div>
 
             <!-- Ações -->
-            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
-                <a id="modal-pag-btn-danfe" href="#" target="_blank" class="btn sm" style="font-weight: 700;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Abrir DANFE
-                </a>
-                <a id="modal-pag-btn-guia" href="#" target="_blank" class="btn sm" style="font-weight: 700; color: #4338CA; border-color: #C7D2FE; background: #EEF2FF;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Abrir Guia Oficial
-                </a>
-                <button type="button" onclick="fecharModalPagamento360()" class="btn pri sm" style="font-weight: 700;">
-                    Fechar
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px;">
+                <div style="display: flex; gap: 8px;">
+                    <a id="modal-pag-btn-danfe" href="#" target="_blank" class="btn-secondary-figma" style="height: 36px; padding: 0 14px; font-size: 11.5px; font-weight: 600; text-decoration: none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>DANFE (PDF)</span>
+                    </a>
+                    <a id="modal-pag-btn-guia" href="#" target="_blank" class="btn-secondary-figma" style="height: 36px; padding: 0 14px; font-size: 11.5px; font-weight: 600; text-decoration: none; color: #C3ACFF; border-color: rgba(195, 172, 255, 0.3);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>Guia SEFAZ (PDF)</span>
+                    </a>
+                </div>
+                <button type="button" onclick="fecharModalPagamento360()" class="btn-primary-figma" style="height: 36px; padding: 0 20px; font-size: 12px; font-weight: 700;">
+                    Concluído
                 </button>
             </div>
         </div>
@@ -3228,6 +3238,6 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1030"></script>
+    <script src="/js/dashboard.js?v=20261029_1045"></script>
 </body>
 </html>

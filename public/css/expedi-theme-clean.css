@@ -3870,3 +3870,196 @@ h1, h2, h3, h4,
     letter-spacing: 0.03em !important;
     text-transform: uppercase !important;
 }
+
+/* ==============================================================
+   CARDS INTERNOS DE PEDIDOS 360° (BOAH FASHION ATELIER)
+   ============================================================== */
+.card-sale-360-figma.card-fashion-order {
+    background: #111B2E !important;
+    border: 1px solid #29374E !important;
+    border-radius: 14px !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease !important;
+    cursor: pointer !important;
+    position: relative !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3) !important;
+}
+
+.card-sale-360-figma.card-fashion-order:hover {
+    transform: translateY(-2px) !important;
+    border-color: #3B82F6 !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.3) !important;
+    background-color: #132037 !important;
+}
+
+/* Tarja de Meta Operacional: Pedido, NF, Etiqueta, Emissão */
+.card-order-meta-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    background: #0B1220 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 6px 8px !important;
+}
+
+.order-meta-pill {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+}
+
+.order-meta-pill .meta-label {
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+.order-meta-pill .meta-val {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #F1F5FC !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.order-meta-pill .meta-val.mono {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Peça BOAH do Pedido */
+.card-fashion-item-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.card-fashion-thumb-wrap {
+    position: relative !important;
+    width: 44px !important;
+    height: 58px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: #090D1A !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.card-fashion-thumb-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.card-fashion-item-count {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    background: #1E2D44 !important;
+    color: #F1F5FC !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.card-fashion-item-title {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #F1F5FC !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.card-fashion-sku-pill {
+    background: #16243D !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #93BCFF !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    padding: 1px 6px !important;
+    border-radius: 4px !important;
+}
+
+/* Box de Métricas Financeiras */
+.card-fashion-metrics-box {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #090D1A !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+}
+
+.card-fashion-metrics-box .meta-label {
+    font-size: 9.5px !important;
+    font-weight: 700 !important;
+    color: #8597B1 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+}
+
+.card-fashion-metrics-box .metric-val {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+/* ==============================================================
+   MODAL DOSSIÊ DE PAGAMENTO & DIFAL (DARK FASHION ATELIER)
+   ============================================================== */
+.modal-dossie-dark {
+    background: #0E1626 !important;
+    border: 1px solid #29374E !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 26px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85) !important;
+    box-sizing: border-box !important;
+    color: #F1F5FC !important;
+    position: relative !important;
+}
+
+.dossie-info-grid {
+    background: #142037 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+}
+
+.dossie-card-section {
+    background: #111B2E !important;
+    border: 1px solid #1E2D44 !important;
+    border-radius: 12px !important;
+    padding: 16px 18px !important;
+    margin-bottom: 16px !important;
+}
+
+.dossie-item-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 8px 12px !important;
+    background: #142037 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+}

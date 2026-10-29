@@ -4017,23 +4017,23 @@ function abrirModalPagamento360(guideId) {
         const parcelas = g.parcelas || [];
         if (parcelas.length > 1) {
             parcelasCont.innerHTML = `
-                <div style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; margin-bottom: 8px;">
                     Plano de Pagamento: ${parcelas.length} parcelas no ${escapeHtml(g.forma_pagamento)}
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
                     ${parcelas.map((p, idx) => `
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 4px 6px; background: #FFFFFF; border-radius: 4px; border: 1px solid #E2E8F0;">
-                            <span><strong>${idx + 1}ª Parcela</strong> ${p.vencimento ? `(Venc: ${formatarDataBR(p.vencimento)})` : ''}</span>
-                            <strong style="font-family: JetBrains Mono, monospace; color: #FFFFFF;">${formatarBRL(p.valor)}</strong>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 8px 12px; background: #0B1220; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); color: #F1F5FC;">
+                            <span><strong>${idx + 1}ª Parcela</strong> ${p.vencimento ? `<span style="color: #8597B1;">(Venc: ${formatarDataBR(p.vencimento)})</span>` : ''}</span>
+                            <strong style="font-family: JetBrains Mono, monospace; color: #60A5FA;">${formatarBRL(p.valor)}</strong>
                         </div>
                     `).join('')}
                 </div>
             `;
         } else {
             parcelasCont.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
-                    <span style="color: #475569;">Condição: <strong>1x à vista</strong> (${escapeHtml(g.forma_pagamento)})</span>
-                    <strong style="color: #FFFFFF; font-family: JetBrains Mono, monospace;">${formatarBRL(g.valor_venda)}</strong>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 10px 14px; background: #0B1220; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <span style="color: #94A3B8;">Condição: <strong style="color: #FFFFFF;">1x à vista</strong> (${escapeHtml(g.forma_pagamento)})</span>
+                    <strong style="color: #34D399; font-family: JetBrains Mono, monospace; font-size: 14px;">${formatarBRL(g.valor_venda)}</strong>
                 </div>
             `;
         }
@@ -4059,28 +4059,37 @@ function abrirModalPagamento360(guideId) {
         let statusDetalhe = '';
         if (g.status_bancario === 'paga') {
             statusDetalhe = `
-                <div style="color: #15803D; font-weight: 700; margin-bottom: 4px;">✓ Pagamento Confirmado & Liquidado</div>
-                <div>Guia tributária paga com sucesso na conta corrente da Lalua Modas. Carga livre de barreiras fiscais.</div>
+                <div style="color: #34D399; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Pagamento Confirmado & Liquidado</span>
+                </div>
+                <div style="font-size: 11.5px; color: #94A3B8;">Guia tributária paga com sucesso na conta corrente da BOAH. Carga liberada para despacho imediato.</div>
             `;
         } else if (g.status_bancario === 'agendada') {
             statusDetalhe = `
-                <div style="color: #1D4ED8; font-weight: 700; margin-bottom: 4px;">✓ Agendamento CNAB 240 Confirmado</div>
-                <div>Lote transmitido no arquivo de remessa <code>REM2610.txt</code> e acatado pelo Banco com ocorrência <strong>BD ("Pagamento Agendado")</strong>. Débito programado para 26/10/2026.</div>
+                <div style="color: #60A5FA; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                    <span>Agendamento CNAB 240 Confirmado no Itaú</span>
+                </div>
+                <div style="font-size: 11.5px; color: #94A3B8;">Lote transmitido no arquivo de remessa <code>REM2610.txt</code> e acatado pelo Itaú SISPAG com ocorrência <strong>BD ("Pagamento Agendado")</strong>.</div>
             `;
         } else {
             statusDetalhe = `
-                <div style="color: #DC2626; font-weight: 700; margin-bottom: 4px;">⚠ Aguardando Autorização Bancária</div>
-                <div>Guia emitida na SEFAZ e pronta para transmissão bancária na remessa CNAB 240.</div>
+                <div style="color: #F5C268; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Aguardando Emissão Fiscal & Transmissão</span>
+                </div>
+                <div style="font-size: 11.5px; color: #94A3B8;">Guia DIFAL gerada a partir da NF-e e pronta para emissão oficial na SEFAZ de destino.</div>
             `;
         }
 
         if (g.barcode) {
             statusDetalhe += `
-                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #CBD5E1; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                    <div style="font-family: JetBrains Mono, monospace; font-size: 11px; word-break: break-all; color: #475569;">
+                <div style="margin-top: 10px; padding: 10px 12px; background: #0B1220; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <div style="font-family: JetBrains Mono, monospace; font-size: 11px; word-break: break-all; color: #38BDF8;">
                         ${escapeHtml(g.barcode)}
                     </div>
-                    <button type="button" class="btn sm" onclick="navigator.clipboard.writeText('${escapeHtml(g.barcode)}'); showToast('Código de barras copiado!', 'success');" style="flex-shrink: 0;">
+                    <button type="button" class="btn-secondary-figma" onclick="navigator.clipboard.writeText('${escapeHtml(g.barcode)}'); showToast('Código de barras copiado!', 'success');" style="flex-shrink: 0; height: 28px; padding: 0 10px; font-size: 11px; font-weight: 600;">
                         Copiar
                     </button>
                 </div>
@@ -4097,17 +4106,19 @@ function abrirModalPagamento360(guideId) {
     const pecasLista = document.getElementById('modal-pag-pecas-lista');
     if (pecasLista) {
         pecasLista.innerHTML = itens.map(it => `
-            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">
+            <div class="dossie-item-card">
                 ${it.foto_url 
-                    ? `<img src="${escapeHtml(it.foto_url)}" style="width: 36px; height: 46px; border-radius: 4px; object-fit: cover;">`
-                    : `<div style="width: 36px; height: 46px; border-radius: 4px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 16px;"></div>`
+                    ? `<img src="${escapeHtml(it.foto_url)}" style="width: 40px; height: 54px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;">`
+                    : `<div style="width: 40px; height: 54px; border-radius: 6px; background: #0B1220; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">👗</div>`
                 }
                 <div style="flex: 1; min-width: 0;">
-                    <div style="font-size: 12px; font-weight: 700; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${escapeHtml(it.descricao || 'Peça Boah')}
+                    <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${escapeHtml(it.descricao || 'Peça BOAH')}
                     </div>
-                    <div style="font-size: 11px; color: #64748B;">
-                        SKU: ${escapeHtml(it.sku)} • Qtd: ${it.quantidade} • <strong>${formatarBRL(it.preco_total)}</strong>
+                    <div style="font-size: 11px; color: #8597B1; margin-top: 2px; display: flex; align-items: center; gap: 8px;">
+                        <span style="background: #16243D; color: #93BCFF; padding: 1px 6px; border-radius: 4px; font-family: JetBrains Mono, monospace; font-size: 10px;">SKU: ${escapeHtml(it.sku || 'BOAH-001')}</span>
+                        <span>Qtd: ${it.quantidade || 1}</span>
+                        <strong style="color: #F1F5FC; font-family: JetBrains Mono, monospace;">${formatarBRL(it.preco_total || g.valor_venda)}</strong>
                     </div>
                 </div>
             </div>
@@ -4581,85 +4592,90 @@ function renderizarCards360(data) {
         const vendaFmt = formatarBRL(g.valor_venda || (idx === 0 ? 459.90 : (idx === 1 ? 389.90 : (idx === 2 ? 529.90 : (idx === 3 ? 299.90 : (idx === 4 ? 419.00 : 279.90))))));
         const difalFmt = formatarBRL(g.valor_difal !== undefined ? g.valor_difal : (idx === 0 ? 86.22 : (idx === 1 ? 69.18 : (idx === 2 ? 104.76 : (idx === 3 ? 58.40 : (idx === 4 ? 84.80 : 0.00))))));
 
+        const orderNumShort = String(orderNum).replace('BH-', '');
+        const nfNumAbrev = `NF ${String(g.nf_number || (48921 - idx)).padStart(6, '0')}`;
+        const rastreioCod = g.tracking_code || (isCorreios ? `BR782${idx}18` : `EXP-${String(g.nf_number || (48921 - idx)).slice(-5)}`);
+
         return `
-            <div class="card-sale-360-figma" onclick="abrirModalPagamento360('${g.id}')" style="cursor: pointer;">
-                <!-- 1. Cliente e Status -->
-                <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <div class="card-sale-360-figma card-fashion-order" onclick="abrirModalPagamento360('${g.id}')">
+                <!-- 1. Header do Cliente & Status -->
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
                     <div>
                         <div class="card-360-customer-name">${escapeHtml(clienteNome)}</div>
-                        <div class="card-360-customer-loc">${escapeHtml(clienteLoc)}</div>
+                        <div class="card-360-customer-loc">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2.2" style="vertical-align: -1px; margin-right: 3px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            ${escapeHtml(clienteLoc)}
+                        </div>
                     </div>
                     <div>
                         ${badgeFigma}
                     </div>
                 </div>
 
-                <!-- 2. Identificadores (Pedido, NF, Transportadora, Emissão) -->
-                <div class="card-360-identifiers">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-family: JetBrains Mono, monospace; font-size: 11px; color: #F1F5FC;">${escapeHtml(orderNum)}</span>
-                        <span style="font-family: JetBrains Mono, monospace; font-size: 11px; color: #A6B5CA;">${escapeHtml(nfNumFmt)}</span>
+                <!-- 2. Metadados Operacionais (Pedido, NF, Etiqueta, Emissão) -->
+                <div class="card-order-meta-strip">
+                    <div class="order-meta-pill">
+                        <span class="meta-label">PEDIDO</span>
+                        <span class="meta-val mono" style="color: #C3ACFF;">#${escapeHtml(orderNumShort)}</span>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; color: #A6B5CA;">
-                        <span style="display: inline-flex; align-items: center; gap: 5px; font-family: Inter, sans-serif;">
-                            ${isCorreios
-                                ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
-                                : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>'
-                            }
-                            <span>${escapeHtml(transpNome)}</span>
-                        </span>
-                        <span style="font-size: 10px; color: #8597B1; font-family: Inter, sans-serif;">Emissão ${escapeHtml(dataExibir)}</span>
+                    <div class="order-meta-pill">
+                        <span class="meta-label">NF-E</span>
+                        <span class="meta-val mono" style="color: #F1F5FC;">${escapeHtml(nfNumAbrev)}</span>
+                    </div>
+                    <div class="order-meta-pill">
+                        <span class="meta-label">ETIQUETA</span>
+                        <span class="meta-val" style="color: #60A5FA;">${escapeHtml(rastreioCod)}</span>
+                    </div>
+                    <div class="order-meta-pill">
+                        <span class="meta-label">EMISSÃO</span>
+                        <span class="meta-val">${escapeHtml(dataExibir)}</span>
                     </div>
                 </div>
 
-                <div style="height: 1px; background: #29374E;"></div>
-
-                <!-- 3. Peças do Pedido -->
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        ${thumbsHtml}
+                <!-- 3. Peça BOAH & Lookbook Preview -->
+                <div class="card-fashion-item-row">
+                    <div class="card-fashion-thumb-wrap">
+                        <img src="${chosenThumbs[0]}" alt="Peça BOAH" class="card-fashion-thumb-img" onerror="this.src='/images/figma_1bd19832dc.png';">
+                        ${chosenThumbs.length > 1 ? `<span class="card-fashion-item-count">+${chosenThumbs.length - 1}</span>` : ''}
                     </div>
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 12px; font-weight: 400; color: #F1F5FC; font-family: Inter, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${escapeHtml(tituloExibir)}
-                        </div>
-                        <div style="font-family: JetBrains Mono, monospace; font-size: 10px; color: #8597B1; margin-top: 2px;">
-                            ${escapeHtml(skuExibir)}
-                        </div>
-                        <div style="font-size: 10px; color: ${chosenThumbs.length > 1 ? '#93BCFF' : '#A6B5CA'}; font-family: Inter, sans-serif; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
-                            <span>${chosenThumbs.length > 1 ? `${chosenThumbs.length} peças · ver itens ⌄` : '1 peça'}</span>
+                        <div class="card-fashion-item-title">${escapeHtml(tituloExibir)}</div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                            <span class="card-fashion-sku-pill">${escapeHtml(skuExibir)}</span>
+                            <span style="font-size: 11px; color: #8597B1;">${chosenThumbs.length > 1 ? `${chosenThumbs.length} peças no pedido` : '1 peça'}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 4. Totais (Venda e DIFAL) -->
-                <div class="card-360-totals">
+                <!-- 4. Valores: Venda & DIFAL -->
+                <div class="card-fashion-metrics-box">
                     <div>
-                        <div class="total-label">Venda</div>
-                        <div class="total-val-venda">${vendaFmt}</div>
+                        <div class="meta-label">VALOR DA VENDA</div>
+                        <div class="metric-val mono" style="color: #FFFFFF;">${vendaFmt}</div>
                     </div>
                     <div style="text-align: right;">
-                        <div class="total-label">DIFAL</div>
-                        <div class="total-val-difal" style="color: ${isSemDifal ? '#A6B5CA' : '#F5C268'};">${difalFmt}</div>
+                        <div class="meta-label">${isSemDifal ? 'SEM DIFAL' : 'GUIA DIFAL'}</div>
+                        <div class="metric-val mono" style="color: ${isSemDifal ? '#8597B1' : (isPaga ? '#66DBAC' : '#F5C268')};">${difalFmt}</div>
                     </div>
                 </div>
 
-                <!-- 5. Ações do Pedido -->
+                <!-- 5. Rodapé Operacional & Ações -->
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                    <div style="font-size: 10px; color: #8597B1; font-family: Inter, sans-serif;">
-                        ${isSemDifal ? 'Operação sem incidência' : (isPaga ? 'Guia liquidada no Itaú' : 'GNRE aguardando emissão')}
+                    <div style="font-size: 11px; color: #8597B1; display: flex; align-items: center; gap: 5px;">
+                        <span class="status-dot ${isPaga ? 'green' : (isSemDifal ? 'grey' : 'amber')}"></span>
+                        <span>${isSemDifal ? 'Sem DIFAL' : (isPaga ? 'Guia Liquidada Itaú' : 'GNRE pendente')}</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
                         ${(!isPaga && !isSemDifal)
-                            ? `<button type="button" class="btn-primary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})">
-                                 <span>Emitir SEFAZ</span>
+                            ? `<button type="button" class="btn-primary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})">
+                                 Emitir SEFAZ
                                </button>`
-                            : `<button type="button" class="btn-secondary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); window.open('${escapeHtml(g.danfe_url || '#')}', '_blank');">
-                                 <span>Documentos</span>
+                            : `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); window.open('${escapeHtml(g.danfe_url || '#')}', '_blank');">
+                                 DANFE
                                </button>`
                         }
-                        <button type="button" class="btn-secondary-figma" style="width: 32px; height: 32px; padding: 0; justify-content: center; background: transparent; border-color: transparent;" onclick="event.stopPropagation();">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        <button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); abrirModalPagamento360('${g.id}')">
+                            Dossiê ↗
                         </button>
                     </div>
                 </div>
