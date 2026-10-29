@@ -4112,3 +4112,297 @@ h1, h2, h3, h4,
 .modal-dossie-dark::-webkit-scrollbar-thumb:hover {
     background: #38BDF8 !important;
 }
+
+
+/* ==============================================================
+   MÓDULO E-COMMERCE 360° · BOAH FASHION ATELIER MODERN REDESIGN
+   ============================================================== */
+
+.badge-vnda-live {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: rgba(167, 139, 250, 0.12) !important;
+    border: 1px solid rgba(167, 139, 250, 0.28) !important;
+    color: #C4B5FD !important;
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+}
+
+.badge-pulse-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: #A78BFA !important;
+    box-shadow: 0 0 8px #A78BFA !important;
+    animation: pulseGlow 2s infinite ease-in-out !important;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.5; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
+.badge-boah-luxury {
+    display: inline-flex !important;
+    align-items: center !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    background: linear-gradient(135deg, rgba(245, 194, 104, 0.15) 0%, rgba(200, 140, 60, 0.15) 100%) !important;
+    border: 1px solid rgba(245, 194, 104, 0.3) !important;
+    color: #FCD34D !important;
+}
+
+.btn-fashion-action {
+    height: 36px !important;
+    padding: 0 14px !important;
+    background: #111A2B !important;
+    border: 1px solid #28374E !important;
+    border-radius: 8px !important;
+    color: #E2E8F0 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    transition: all 0.16s ease !important;
+}
+
+.btn-fashion-action:hover {
+    background: #18243A !important;
+    border-color: #38BDF8 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-sync-highlight {
+    background: rgba(59, 130, 246, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    color: #93C5FD !important;
+}
+
+.btn-sync-highlight:hover {
+    background: rgba(59, 130, 246, 0.25) !important;
+    border-color: #60A5FA !important;
+    color: #FFFFFF !important;
+}
+
+/* KPI Cards Executivos */
+.ecom-kpi-row-figma {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 14px !important;
+    margin-bottom: 22px !important;
+}
+
+@media (max-width: 1280px) {
+    .ecom-kpi-row-figma { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+@media (max-width: 768px) {
+    .ecom-kpi-row-figma { grid-template-columns: 1fr !important; }
+}
+
+.ecom-kpi-card-figma {
+    background: linear-gradient(180deg, #10192A 0%, #0B111E 100%) !important;
+    border: 1px solid #223249 !important;
+    border-radius: 12px !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+.ecom-kpi-card-figma:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(96, 165, 250, 0.5) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ecom-kpi-card-figma::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 2.5px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.kpi-card-accent-blue::before { background: linear-gradient(90deg, #2563EB, #60A5FA) !important; }
+.kpi-card-accent-amber::before { background: linear-gradient(90deg, #D97706, #FBBF24) !important; }
+.kpi-card-accent-purple::before { background: linear-gradient(90deg, #7C3AED, #C084FC) !important; }
+.kpi-card-accent-emerald::before { background: linear-gradient(90deg, #059669, #34D399) !important; }
+.kpi-card-accent-cyan::before { background: linear-gradient(90deg, #0891B2, #38BDF8) !important; }
+
+.kpi-header-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.ecom-kpi-card-figma .kpi-label {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #8597B1 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+.kpi-tag-pill {
+    font-size: 9.5px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    padding: 1.5px 6px !important;
+    border-radius: 4px !important;
+}
+
+.tag-blue { background: rgba(59, 130, 246, 0.15) !important; color: #93C5FD !important; border: 1px solid rgba(59, 130, 246, 0.3) !important; }
+.tag-amber { background: rgba(245, 158, 11, 0.15) !important; color: #FCD34D !important; border: 1px solid rgba(245, 158, 11, 0.3) !important; }
+.tag-purple { background: rgba(139, 92, 246, 0.15) !important; color: #DDD6FE !important; border: 1px solid rgba(139, 92, 246, 0.3) !important; }
+.tag-emerald { background: rgba(16, 185, 129, 0.15) !important; color: #6EE7B7 !important; border: 1px solid rgba(16, 185, 129, 0.3) !important; }
+.tag-cyan { background: rgba(6, 182, 212, 0.15) !important; color: #67E8F9 !important; border: 1px solid rgba(6, 182, 212, 0.3) !important; }
+
+.ecom-kpi-card-figma .kpi-val {
+    font-size: 23px !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    color: #FFFFFF !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.ecom-kpi-card-figma .kpi-sub {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #8597B1 !important;
+}
+
+/* Filtros e Segmentados Modernos */
+.filter-segmented-group {
+    background: #080D17 !important;
+    border: 1px solid #202D42 !important;
+    border-radius: 9px !important;
+    padding: 3px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+}
+
+.segmented-option-figma {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 5px 11px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #8597B1 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.15s ease !important;
+}
+
+.segmented-option-figma:hover {
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.segmented-option-figma.active {
+    background: #17263E !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.pill-badge-cnt {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    padding: 1px 6px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #94A3B8 !important;
+}
+
+.segmented-option-figma.active .pill-badge-cnt {
+    background: rgba(59, 130, 246, 0.25) !important;
+    color: #93C5FD !important;
+}
+
+.status-indicator-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+}
+
+.dot-green { background: #34D399 !important; box-shadow: 0 0 5px rgba(52, 211, 153, 0.5) !important; }
+.dot-amber { background: #FBBF24 !important; box-shadow: 0 0 5px rgba(251, 191, 36, 0.5) !important; }
+.dot-red { background: #F87171 !important; box-shadow: 0 0 5px rgba(248, 113, 113, 0.5) !important; }
+.dot-grey { background: #8597B1 !important; }
+
+/* Busca Moderna */
+.search-box-modern {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    flex: 1 !important;
+    min-width: 250px !important;
+    max-width: 440px !important;
+}
+
+.search-box-modern input {
+    width: 100% !important;
+    height: 35px !important;
+    background: #080D17 !important;
+    border: 1px solid #202D42 !important;
+    border-radius: 8px !important;
+    padding-left: 36px !important;
+    padding-right: 46px !important;
+    color: #FFFFFF !important;
+    font-size: 12px !important;
+    outline: none !important;
+    transition: all 0.16s ease !important;
+}
+
+.search-box-modern input:focus {
+    border-color: #3B82F6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+    background: #0B1220 !important;
+}
+
+.search-icon {
+    position: absolute !important;
+    left: 12px !important;
+    pointer-events: none !important;
+}
+
+.search-kbd-hint {
+    position: absolute !important;
+    right: 8px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #64748B !important;
+    background: #111A29 !important;
+    border: 1px solid #223249 !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    pointer-events: none !important;
+}

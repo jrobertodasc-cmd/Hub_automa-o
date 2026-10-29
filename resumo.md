@@ -61,7 +61,24 @@
 ### I. Simplificação Minimalista do Card de Pedidos
 - **Remoção do Botão "Dossiê ↗":** Como o card possui área de clique integral com efeito de hover suave (`cursor: pointer`), o botão explícito "Dossiê ↗" foi retirado do rodapé.
 - **Foco Operacional:** O rodapé do card agora exibe de forma limpa apenas o status da GNRE e o botão prioritário `Emitir SEFAZ` (ou `DANFE`), eliminando ruído visual.
-- **Cache-Buster:** Atualizado para `v=20261029_1110`.
+
+### J. Modernização Executiva do Cockpit E-commerce 360° (BOAH Fashion Atelier)
+- **Identidade e Nomes Específicos de Moda & Fiscal (Fim dos Nomes Genéricos):**
+  - **Cabeçalho:** Subtítulo refinado para *"Conciliação omnichannel em tempo real: catálogo de moda, checkout e liquidação fiscal de DIFAL"*, acompanhado das tags pulsantes `VNDA · LINX OMNICHANNEL` e `BOAH ATELIER`.
+  - **Ações:** `Exportar Relatório (.csv)` e `Sincronizar VNDA & Linx` com efeito visual de destaque luminoso.
+  - **5 Cards de Indicadores (KPIs Executivos):**
+    1. *Faturamento* ➔ `FATURAMENTO BRUTO · GMV` [VNDA LIVE] com friso superior azul elétrico.
+    2. *Total DIFAL* ➔ `PARTILHA FISCAL · DIFAL` [SEFAZ] com friso superior âmbar/ouro.
+    3. *Pedidos faturados* ➔ `PEDIDOS CONCILIADOS` [EXPEDIÇÃO] com friso superior lavanda.
+    4. *Peças vendidas* ➔ `VOLUME DE PEÇAS` [ATELIER] com friso superior esmeralda.
+    5. *Radar de devoluções* ➔ `LOGÍSTICA REVERSA · SAC` [100% REGULAR] com friso superior ciano.
+  - **Filtros e Controles Segmentados:**
+    - Períodos: `Mês Vigente (Out/26)`, `Coleção Set/26`, `Arquivo Geral`.
+    - Situação DIFAL: `Visão Global`, `• Liquidadas`, `• A Pagar`, `• Pendências Fiscais`, `• Isentas / Sem DIFAL` com contadores em pílulas dinâmicas.
+    - Busca moderna com atalho `⌘K` e placeholder de busca especializado em moda/fiscal.
+    - Agrupamento visual: `Por Pedido` e `Por Cliente` com ícones vetoriais.
+  - **Integridade da Marca:** Logo `expedi HUB` e marca principal estritamente preservadas sem alterações.
+- **Cache-Buster:** Atualizado para `v=20261029_1130` em scripts e folhas de estilo.
 
 ---
 

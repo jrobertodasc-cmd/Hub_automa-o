@@ -4340,11 +4340,15 @@ function renderizarCards360(data) {
     // Métricas executivas refinadas: Ticket Médio e Impacto DIFAL
     const ticketMedio = guiasDoPeriodo.length > 0 ? (totalFatPeriodo / guiasDoPeriodo.length) : 0;
     const subFat = elFat ? elFat.nextElementSibling : null;
-    if (subFat) subFat.textContent = `Ticket Médio: ${formatarBRL(ticketMedio)} · Catálogo Boah`;
+    if (subFat) subFat.textContent = `Ticket Médio: ${formatarBRL(ticketMedio)} · Catálogo BOAH`;
 
     const pctDifal = totalFatPeriodo > 0 ? ((totalDifalPeriodo / totalFatPeriodo) * 100).toFixed(1) : '0.0';
     const subDifal = elDifal ? elDifal.nextElementSibling : null;
-    if (subDifal) subDifal.textContent = `Carga média: ${pctDifal}% sobre o faturamento`;
+    if (subDifal) subDifal.textContent = `Carga média: ${pctDifal}% sobre faturamento`;
+
+    const countSemDifal = guiasDoPeriodo.filter(g => (g.valor_difal || 0) <= 0).length;
+    const elCntSemDifal = document.getElementById('cnt-360-semdifal');
+    if (elCntSemDifal) elCntSemDifal.textContent = countSemDifal;
 
     // Resumo Geográfico por UF
     const ufContagem = {};
