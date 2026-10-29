@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261029_1000">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1000">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1020">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1479,7 +1479,7 @@
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
 
                 <!-- Card 1: E-commerce 360° -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('ecommerce')">
                     <div>
                         <!-- Top Identificação -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
@@ -1487,7 +1487,7 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">E-commerce 360&deg;</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <!-- Métrica e Visualização -->
@@ -1518,20 +1518,20 @@
                     <!-- Rodapé do Card -->
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('ecommerce')">Acessar pedidos &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Acessar pedidos &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">VNDA + Linx &middot; todos os per&iacute;odos</div>
                     </div>
                 </div>
 
                 <!-- Card 2: Dashboard & Métricas -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('dashboard')">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Dashboard &amp; M&eacute;tricas</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1558,20 +1558,20 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('dashboard')">Ver indicadores &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver indicadores &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Todos os canais &middot; consolidado di&aacute;rio</div>
                     </div>
                 </div>
 
                 <!-- Card 3: Central de Relatórios -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('relatorios')">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Central de Relat&oacute;rios</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1605,20 +1605,20 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('relatorios')">Abrir relat&oacute;rios &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir relat&oacute;rios &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">&Uacute;ltima gera&ccedil;&atilde;o hoje, &agrave;s 09:38</div>
                     </div>
                 </div>
 
                 <!-- Card 4: Expedição Operacional -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('cargas')">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Expedi&ccedil;&atilde;o Operacional</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1649,20 +1649,20 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('cargas')">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">0 cargas liberadas neste recorte</div>
                     </div>
                 </div>
 
                 <!-- Card 5: Tesouraria -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 6 12 3 19 6"/><line x1="4" y1="10" x2="4" y2="21"/><line x1="20" y1="10" x2="20" y2="21"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Tesouraria</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1689,20 +1689,20 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">Ver remessa Ita&uacute; &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver remessa Ita&uacute; &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Arquivo de retorno processado</div>
                     </div>
                 </div>
 
                 <!-- Card 6: Radar de Devoluções -->
-                <div class="figma-module-card" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px;">
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('ecommerce')">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/></svg>
                                 <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Radar de Devolu&ccedil;&otilde;es</span>
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1729,7 +1729,7 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="font-size: 12.5px; font-weight: 600; color: #38BDF8; cursor: pointer;" onclick="navegarAbaPrincipal('ecommerce')">Consultar devolu&ccedil;&otilde;es &rarr;</div>
+                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Consultar devolu&ccedil;&otilde;es &rarr;</div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Monitoramento VNDA &middot; em tempo real</div>
                     </div>
                 </div>
@@ -3209,6 +3209,6 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1000"></script>
+    <script src="/js/dashboard.js?v=20261029_1020"></script>
 </body>
 </html>
