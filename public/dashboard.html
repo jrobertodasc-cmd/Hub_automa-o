@@ -1738,7 +1738,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <div id="hub-kpi-vnda-fatura" style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #C084FC; line-height: 1;">R$ 1.098,20</div>
-                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">Fatura Prevista &middot; Out/2026</div>
+                                <div id="hub-kpi-vnda-subtitulo" style="font-size: 12px; color: #94A3B8; margin-top: 5px;">Fatura Prevista &middot; Out/2026</div>
                             </div>
                             <div style="text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
                                 <div style="color: #60A5FA;">Site: R$ 62,1k</div>
@@ -1749,7 +1749,7 @@
                         <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Projeção Outubro (até 29/10): Fixa (R$ 299) + 1% variável dos canais</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                            <span id="hub-kpi-vnda-badge" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
                                 Em Aberto &middot; Emissão 04/11
                             </span>
@@ -3405,7 +3405,7 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1600"></script>
+    <script src="/js/dashboard.js?v=20261029_1625"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
@@ -3524,11 +3524,11 @@
             <div style="background: #0A101D; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">Competência:</span>
-                    <button type="button" id="btn-comp-10-2026" onclick="selecionarCompetenciaVnda('10/2026')" style="background: #1E293B; border: 1px solid rgba(245, 158, 11, 0.4); color: #F59E0B; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <button type="button" id="btn-comp-atual" onclick="selecionarCompetenciaVnda('10/2026')" style="background: #1E293B; border: 1px solid rgba(245, 158, 11, 0.4); color: #F59E0B; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
                         <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
                         <span>Outubro/2026 (Atual · Em Andamento)</span>
                     </button>
-                    <button type="button" id="btn-comp-09-2026" onclick="selecionarCompetenciaVnda('09/2026')" style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <button type="button" id="btn-comp-anterior" onclick="selecionarCompetenciaVnda('09/2026')" style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
                         <span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981;"></span>
                         <span>Setembro/2026 (Fechada · NFS-e 2237)</span>
                     </button>

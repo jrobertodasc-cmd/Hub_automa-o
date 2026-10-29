@@ -6122,15 +6122,17 @@ window.exportarCsvRelatorioDifal = exportarCsvRelatorioDifal;
 
 
 // ----------------------------------------------------------------------------
-// 4. MODAL: AUDITORIA DE FATURA & CUSTOS VNDA (GRUPO OLIST) COM SELETOR DE MÊS
+// 4. MODAL: AUDITORIA DE FATURA & CUSTOS VNDA (CALENDÁRIO 100% DINÂMICO)
 // ----------------------------------------------------------------------------
-window._competenciaVndaAtiva = '10/2026';
+window._competenciaVndaAtiva = null;
+window._competenciaVndaMesAtual = null;
+window._competenciaVndaMesAnterior = null;
 
 function abrirModalAuditoriaVnda() {
     const modal = document.getElementById('modal-auditoria-vnda');
     if (modal) {
         modal.style.display = 'flex';
-        carregarAuditoriaVnda(window._competenciaVndaAtiva || '10/2026');
+        carregarAuditoriaVnda(window._competenciaVndaAtiva || window._competenciaVndaMesAtual);
     }
 }
 window.abrirModalAuditoriaVnda = abrirModalAuditoriaVnda;
@@ -6144,34 +6146,35 @@ window.fecharModalAuditoriaVnda = fecharModalAuditoriaVnda;
 function selecionarCompetenciaVnda(comp) {
     window._competenciaVndaAtiva = comp;
 
-    const btn10 = document.getElementById('btn-comp-10-2026');
-    const btn09 = document.getElementById('btn-comp-09-2026');
+    const btnAtual = document.getElementById('btn-comp-atual');
+    const btnAnt = document.getElementById('btn-comp-anterior');
+    const isAtual = (comp === window._competenciaVndaMesAtual);
 
-    if (comp === '10/2026') {
-        if (btn10) {
-            btn10.style.background = '#1E293B';
-            btn10.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-            btn10.style.color = '#F59E0B';
-            btn10.style.fontWeight = '700';
+    if (isAtual) {
+        if (btnAtual) {
+            btnAtual.style.background = '#1E293B';
+            btnAtual.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            btnAtual.style.color = '#F59E0B';
+            btnAtual.style.fontWeight = '700';
         }
-        if (btn09) {
-            btn09.style.background = 'transparent';
-            btn09.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            btn09.style.color = '#94A3B8';
-            btn09.style.fontWeight = '600';
+        if (btnAnt) {
+            btnAnt.style.background = 'transparent';
+            btnAnt.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            btnAnt.style.color = '#94A3B8';
+            btnAnt.style.fontWeight = '600';
         }
     } else {
-        if (btn09) {
-            btn09.style.background = '#1E293B';
-            btn09.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-            btn09.style.color = '#34D399';
-            btn09.style.fontWeight = '700';
+        if (btnAnt) {
+            btnAnt.style.background = '#1E293B';
+            btnAnt.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            btnAnt.style.color = '#34D399';
+            btnAnt.style.fontWeight = '700';
         }
-        if (btn10) {
-            btn10.style.background = 'transparent';
-            btn10.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            btn10.style.color = '#94A3B8';
-            btn10.style.fontWeight = '600';
+        if (btnAtual) {
+            btnAtual.style.background = 'transparent';
+            btnAtual.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            btnAtual.style.color = '#94A3B8';
+            btnAtual.style.fontWeight = '600';
         }
     }
 
@@ -6184,20 +6187,58 @@ function selecionarCompetenciaVnda(comp) {
 }
 window.selecionarCompetenciaVnda = selecionarCompetenciaVnda;
 
-async function carregarAuditoriaVnda(comp = '10/2026') {
+async function carregarAuditoriaVnda(comp = null) {
     try {
         const token = localStorage.getItem('token');
         const headers = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const res = await fetch(`/api/vnda/auditoria-custos?competencia=${encodeURIComponent(comp)}`, { headers });
+        const url = comp ? `/api/vnda/auditoria-custos?competencia=${encodeURIComponent(comp)}` : '/api/vnda/auditoria-custos';
+        const res = await fetch(url, { headers });
         if (!res.ok) return;
         const data = await res.json();
         window._dadosAuditoriaVndaCache = data;
 
-        const compAtiva = data.dados || data.todasCompetencias?.[comp];
+        const cal = data.calendario || {};
+        window._competenciaVndaMesAtual = cal.mesAtual;
+        window._competenciaVndaMesAnterior = cal.mesAnterior;
+        if (!window._competenciaVndaAtiva) {
+            window._competenciaVndaAtiva = cal.mesAtual;
+        }
+
+        // 1. Atualiza dinamicamente os botões de competência com os meses atuais
+        const btnAtual = document.getElementById('btn-comp-atual');
+        const btnAnt = document.getElementById('btn-comp-anterior');
+        if (btnAtual && cal.nomeMesAtual) {
+            btnAtual.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span><span>${cal.nomeMesAtual}/${cal.anoAtual} (Atual · Em Andamento)</span>`;
+            btnAtual.onclick = () => selecionarCompetenciaVnda(cal.mesAtual);
+        }
+        if (btnAnt && cal.nomeMesAnterior) {
+            btnAnt.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981;"></span><span>${cal.nomeMesAnterior} (Fechada · NFS-e Auditada)</span>`;
+            btnAnt.onclick = () => selecionarCompetenciaVnda(cal.mesAnterior);
+        }
+
+        // 2. Atualiza Card 6 no Hub dinamicamente
+        const compAtualDados = data.todasCompetencias?.[cal.mesAtual] || data.dados;
+        const kpiFatura = document.getElementById('hub-kpi-vnda-fatura');
+        const kpiSub = document.getElementById('hub-kpi-vnda-subtitulo');
+        const kpiBadge = document.getElementById('hub-kpi-vnda-badge');
+
+        if (kpiFatura && compAtualDados?.totais?.totalFatura) {
+            kpiFatura.textContent = formatarMoedaBRL(compAtualDados.totais.totalFatura);
+        }
+        if (kpiSub && cal.nomeMesAtualCurto) {
+            kpiSub.textContent = `Fatura Prevista · ${cal.nomeMesAtualCurto}/${cal.anoAtual}`;
+        }
+        if (kpiBadge && cal.diaFechamentoPrevisto) {
+            kpiBadge.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span> Em Aberto · Emissão ${cal.diaFechamentoPrevisto.slice(0, 5)}`;
+        }
+
+        // 3. Renderiza dados da competência selecionada
+        const compQuery = comp || window._competenciaVndaAtiva || cal.mesAtual;
+        const compAtiva = data.todasCompetencias?.[compQuery] || data.dados;
         if (compAtiva) {
-            renderizarDadosModalVnda(compAtiva, comp);
+            renderizarDadosModalVnda(compAtiva, compQuery);
         }
     } catch (err) {
         console.warn('[Auditoria VNDA] Aviso ao carregar dados:', err.message);
@@ -6206,9 +6247,8 @@ async function carregarAuditoriaVnda(comp = '10/2026') {
 window.carregarAuditoriaVnda = carregarAuditoriaVnda;
 
 function renderizarDadosModalVnda(d, compKey) {
-    const isOutubro = (compKey === '10/2026');
+    const isAtual = (d.status === 'em_andamento');
 
-    // Título e valor
     const elTitulo = document.getElementById('vnda-modal-titulo-card');
     const elValor = document.getElementById('vnda-modal-valor-fatura');
     const elSub = document.getElementById('vnda-modal-subtitulo-fatura');
@@ -6216,12 +6256,12 @@ function renderizarDadosModalVnda(d, compKey) {
     const elNfsInfo = document.getElementById('vnda-modal-nfs-info');
     const elDataRef = document.getElementById('vnda-modal-data-ref');
 
-    if (elTitulo) elTitulo.textContent = isOutubro ? 'Fatura Prevista de Outubro (Emissão em 04/11)' : 'Valor Total da NFS-e Nº 2237 (Liquidada)';
+    if (elTitulo) elTitulo.textContent = isAtual ? `Fatura Prevista de ${d.nomeMes || 'Mês Atual'} (Emissão em ${d.fechamentoPrevisto || '04/11'})` : `Valor Total da NFS-e Nº ${d.nfseNumero || '2237'} (Liquidada)`;
     if (elValor) elValor.textContent = formatarMoedaBRL(d.totais?.totalFatura || 0);
     if (elSub) elSub.innerHTML = `Mensalidade Fixa: <strong style="color: #CBD5E1;">R$ 299,00</strong> + Comissão (1%): <strong style="color: #CBD5E1;">${formatarMoedaBRL(d.totais?.totalComissao || 0)}</strong>`;
     
     if (elStatus) {
-        if (isOutubro) {
+        if (isAtual) {
             elStatus.textContent = 'PROJEÇÃO EM ABERTO';
             elStatus.style.background = 'rgba(245, 158, 11, 0.15)';
             elStatus.style.borderColor = 'rgba(245, 158, 11, 0.35)';
@@ -6234,7 +6274,7 @@ function renderizarDadosModalVnda(d, compKey) {
         }
     }
 
-    if (elNfsInfo) elNfsInfo.innerHTML = isOutubro ? 'Previsão de Emissão: <strong>04/11/2026</strong>' : 'NFS-e Nº 2237 &middot; <strong>Emitida em 04/09/2026</strong>';
+    if (elNfsInfo) elNfsInfo.innerHTML = isAtual ? `Previsão de Emissão: <strong>${d.fechamentoPrevisto || '04/11/2026'}</strong>` : `NFS-e Nº ${d.nfseNumero || '2237'} &middot; <strong>${d.fechamentoPrevisto || 'Emitida em 04/09/2026'}</strong>`;
     if (elDataRef) elDataRef.textContent = d.dataReferencia || '';
 
     // Canais
@@ -6261,14 +6301,13 @@ function renderizarDadosModalVnda(d, compKey) {
     if (elC2Canc) elC2Canc.textContent = `- ${formatarMoedaBRL(c2.cancelados || 0)}`;
     if (elC2Liq) elC2Liq.textContent = formatarMoedaBRL(c2.liquido || 0);
 
-    // Cancelados
     const elCancTit = document.getElementById('vnda-modal-canc-titulo');
     const elCancDesc = document.getElementById('vnda-modal-canc-desc');
     const totalCanc = d.totais?.totalCanceladosAbatidos || 0;
     if (elCancTit) elCancTit.textContent = `Cancelamentos Abatidos Corretamente: ${formatarMoedaBRL(totalCanc)}`;
     if (elCancDesc) {
-        if (isOutubro) {
-            elCancDesc.innerHTML = `Vendas canceladas até 29/10 deduzidas da base de comissão. Nenhuma comissão indevida cobrada e nenhum DIFAL desperdiçado na doca.`;
+        if (isAtual) {
+            elCancDesc.innerHTML = `Vendas canceladas deduzidas da base de comissão. Nenhuma comissão indevida cobrada e nenhum DIFAL desperdiçado na doca.`;
         } else {
             elCancDesc.innerHTML = `A VNDA deduziu R$ 454,73 do site e R$ 1.015,20 do Direct antes de cobrar o take rate. Economia gerada: <strong>R$ 14,70 em comissão</strong> + <strong>~ R$ 114,65 em DIFAL</strong>.`;
         }
@@ -6276,8 +6315,8 @@ function renderizarDadosModalVnda(d, compKey) {
 
     const elObsFinal = document.getElementById('vnda-modal-obs-final');
     if (elObsFinal) {
-        if (isOutubro) {
-            elObsFinal.innerHTML = `Status: <span style="color: #F59E0B; font-weight: 700;">Valores acumulados até 29/10/2026. Fechamento oficial em 31/10 e emissão da NFS-e pela Olist em 04/11/2026.</span>`;
+        if (isAtual) {
+            elObsFinal.innerHTML = `Status: <span style="color: #F59E0B; font-weight: 700;">${d.auditoria?.mensagem || 'Valores acumulando em tempo real.'}</span>`;
         } else {
             elObsFinal.innerHTML = `Chave de Acesso: <span style="font-family: 'JetBrains Mono', monospace; color: #64748B;">35344011212803527000133000000000223726096609187458</span>`;
         }
@@ -6285,7 +6324,7 @@ function renderizarDadosModalVnda(d, compKey) {
 }
 
 function exportarAuditoriaVndaCsv() {
-    const compKey = window._competenciaVndaAtiva || '10/2026';
+    const compKey = window._competenciaVndaAtiva || window._competenciaVndaMesAtual || '10/2026';
     const compData = window._dadosAuditoriaVndaCache?.todasCompetencias?.[compKey] || window._dadosAuditoriaVndaCache?.dados;
     const canais = compData?.canais || [];
 
@@ -6314,3 +6353,10 @@ function exportarAuditoriaVndaCsv() {
     document.body.removeChild(link);
 }
 window.exportarAuditoriaVndaCsv = exportarAuditoriaVndaCsv;
+
+// Carrega automaticamente os dados dinâmicos da VNDA no início
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { carregarAuditoriaVnda(); });
+} else {
+    setTimeout(carregarAuditoriaVnda, 1000);
+}
