@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261029_1000">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1020">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1030">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1478,48 +1478,67 @@
             <!-- GRADE DE MÓDULOS (3 Colunas x 2 Linhas: 6 Cards Figma 1:1) -->
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
 
-                <!-- Card 1: E-commerce 360° -->
-                <div class="figma-module-card" onclick="navegarAbaPrincipal('ecommerce')">
+                <!-- Card 1: E-commerce 360° (BOAH Atelier & Omnichannel) -->
+                <div class="figma-module-card card-fashion-atelier" onclick="navegarAbaPrincipal('ecommerce')">
                     <div>
-                        <!-- Top Identificação -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <!-- Top Identificação Fashion -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">E-commerce 360&deg;</span>
+                                <div style="width: 24px; height: 24px; border-radius: 6px; background: rgba(195, 172, 255, 0.12); border: 1px solid rgba(195, 172, 255, 0.25); display: grid; place-items: center; color: #C3ACFF;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                </div>
+                                <span style="font-size: 14px; font-weight: 700; color: #F1F5FC; letter-spacing: -0.01em;">E-commerce 360&deg;</span>
+                                <span style="background: rgba(195, 172, 255, 0.12); border: 1px solid rgba(195, 172, 255, 0.28); color: #C3ACFF; font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase;">BOAH</span>
                             </div>
-                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C3ACFF" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
-                        <!-- Métrica e Visualização -->
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <!-- Métrica e Lookbook Editorial -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div>
                                 <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">87</div>
-                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">pedidos na carteira</div>
+                                <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">pedidos na carteira</div>
+                                <div style="font-size: 13.5px; font-weight: 700; color: #F1F5FC; margin-top: 10px; font-family: 'JetBrains Mono', monospace;">R$ 51.480,00 <span style="font-size: 11px; font-weight: 500; color: #A6B5CA; font-family: 'Inter', sans-serif;">integrados</span></div>
                             </div>
-                            <!-- Thumbnails de produtos reais BOAH da Figma -->
-                            <div style="display: flex; gap: 6px;">
-                                <img src="/images/figma_4f23d3eede.png" alt="Vestido linho" style="width: 48px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #29374E;">
-                                <img src="/images/figma_f2994db22c.png" alt="Blazer alfaiataria" style="width: 48px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #29374E;">
+                            <!-- Mini Lookbook Editorial BOAH: 3 peças -->
+                            <div class="fashion-lookbook-stack">
+                                <div class="fashion-thumb-box" title="Vestido Linho BOAH">
+                                    <img src="/images/figma_1bd19832dc.png" alt="Vestido Linho" class="fashion-thumb-img">
+                                    <span class="fashion-thumb-tag">Linho</span>
+                                </div>
+                                <div class="fashion-thumb-box" title="Blazer Alfaiataria BOAH" style="box-shadow: 0 6px 18px rgba(0,0,0,0.6);">
+                                    <img src="/images/figma_721344a914.png" alt="Blazer Alfaiataria" class="fashion-thumb-img">
+                                    <span class="fashion-thumb-tag">Blazer</span>
+                                </div>
+                                <div class="fashion-thumb-box" title="Coleção Resort BOAH">
+                                    <img src="/images/figma_b04782ea5e.png" alt="Vestido Terracota" class="fashion-thumb-img">
+                                    <span class="fashion-thumb-tag">Resort</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">R$ 51.480,00 em vendas integradas</div>
-
                         <!-- Badge de Status e Horário -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
                             <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
                                 Sincronizado
                             </span>
-                            <span style="font-size: 10.5px; color: #8597B1;">09:42</span>
+                            <span style="font-size: 11px; color: #8597B1;">Linx &middot; 09:42</span>
                         </div>
                     </div>
 
-                    <!-- Rodapé do Card -->
+                    <!-- Rodapé do Card (Sem 'Acessar', Clean Fashion Tech) -->
                     <div>
-                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Acessar pedidos &rarr;</div>
-                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">VNDA + Linx &middot; todos os per&iacute;odos</div>
+                        <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 16px 0 10px 0;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; font-weight: 600; color: #C3ACFF; display: flex; align-items: center; gap: 6px;">
+                                Grade de Pedidos &amp; Faturamento
+                            </span>
+                            <span class="card-footer-action" style="font-size: 11px; font-weight: 600; color: #8597B1; display: flex; align-items: center; gap: 4px;">
+                                VNDA &middot; Linx
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -3209,6 +3228,6 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1020"></script>
+    <script src="/js/dashboard.js?v=20261029_1030"></script>
 </body>
 </html>

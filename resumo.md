@@ -34,12 +34,17 @@
   - Badges de situação fiscal e expedição (`A pagar`, `Não paga`, `Sem DIFAL`).
 
 ### D. Performance e Cache
-- Cache-busters de scripts e folhas de estilo atualizados para `v=20261029_1020` em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html).
+- Cache-busters de scripts e folhas de estilo atualizados para `v=20261029_1030` em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html).
 
 ### E. Refinamento de Usabilidade dos Cards (`Node 2:9415`)
 - Os 6 cards operacionais agora são **100% clicáveis em toda a sua área**.
 - Adicionado efeito de hover com elevação suave (`transform: translateY(-3px)`), borda de destaque azul (`#3B82F6`), sombra aprimorada e animação na seta superior `↗` e no texto de ação.
 - Elimina a necessidade de mirar estritamente no pequeno link do rodapé.
+
+### F. Redesign Fashion Atelier do Card E-commerce 360°
+- **Remoção de "Acessar":** Substituído o link antigo "Acessar pedidos →" por uma barra editorial refinada com o título `Grade de Pedidos & Faturamento` e status `VNDA · Linx →`.
+- **Lookbook Editorial BOAH:** Exibição elegante em galeria de 3 peças reais da coleção BOAH (Vestido Linho, Blazer Alfaiataria e Resort Terracota) com badges minimalistas translúcidos e hover micro-interativo.
+- **Identidade Fashion:** Gradiente sutil em tons champanhe/lavanda sobre o navy operacional, badge editorial `BOAH` e métricas integradas em destaque tipográfico.
 
 ---
 

@@ -3802,3 +3802,71 @@ h1, h2, h3, h4,
 .figma-module-card:hover .card-footer-action {
     color: #60A5FA !important;
 }
+
+/* ==============================================================
+   CARD FASHION ATELIER (E-commerce 360° BOAH)
+   ============================================================== */
+.figma-module-card.card-fashion-atelier {
+    background: radial-gradient(130% 120% at 90% 0%, rgba(195, 172, 255, 0.09) 0%, rgba(245, 194, 104, 0.04) 40%, #111B2E 75%) !important;
+    border: 1px solid rgba(195, 172, 255, 0.18) !important;
+}
+
+.figma-module-card.card-fashion-atelier:hover {
+    border-color: #C3ACFF !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(195, 172, 255, 0.35) !important;
+    background: radial-gradient(130% 120% at 90% 0%, rgba(195, 172, 255, 0.14) 0%, rgba(245, 194, 104, 0.06) 40%, #142037 75%) !important;
+}
+
+.figma-module-card.card-fashion-atelier:hover .card-arrow-icon {
+    stroke: #C3ACFF !important;
+    transform: translate(2px, -2px) !important;
+}
+
+.fashion-lookbook-stack {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.fashion-thumb-box {
+    position: relative !important;
+    width: 44px !important;
+    height: 62px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+    background: #0D1524 !important;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+
+.fashion-thumb-box:hover {
+    transform: translateY(-4px) scale(1.06) !important;
+    border-color: #C3ACFF !important;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6) !important;
+    z-index: 5 !important;
+}
+
+.fashion-thumb-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.fashion-thumb-tag {
+    position: absolute !important;
+    bottom: 2px !important;
+    left: 2px !important;
+    right: 2px !important;
+    background: rgba(11, 18, 32, 0.8) !important;
+    backdrop-filter: blur(4px) !important;
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    color: #F1F5FC !important;
+    text-align: center !important;
+    border-radius: 3px !important;
+    padding: 1px 0 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+}
