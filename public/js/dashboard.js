@@ -3999,7 +3999,19 @@ function abrirModalPagamento360(guideId) {
     const elCli = document.getElementById('modal-pag-cliente');
     if (elCli) elCli.textContent = g.customer_name || 'Cliente Boah';
     const elDest = document.getElementById('modal-pag-destino');
-    if (elDest) elDest.textContent = `${g.cidade} / ${g.uf}`;
+    if (elDest) {
+        const cid = (g.cidade && g.cidade !== 'ND' && g.cidade !== 'Não informado') ? g.cidade : '';
+        const uf = (g.uf && g.uf !== 'ND') ? g.uf : '';
+        if (cid && uf) {
+            elDest.textContent = `${cid} / ${uf}`;
+        } else if (uf) {
+            elDest.textContent = uf;
+        } else if (cid) {
+            elDest.textContent = cid;
+        } else {
+            elDest.textContent = 'Não informado (Consumidor Final)';
+        }
+    }
     const elData = document.getElementById('modal-pag-data');
     if (elData) elData.textContent = formatarDataBR(g.data_venda);
     const elTransp = document.getElementById('modal-pag-transp');
@@ -4628,7 +4640,11 @@ function renderizarCards360(data) {
         const clientes = ['Camila Andrade', 'Juliana Martins', 'Renata Oliveira', 'Fernanda Lima', 'Beatriz Santos', 'Consumidor Final'];
         
         const clienteNome = g.customer_name || clientes[idx % clientes.length];
-        const clienteLoc = (g.cidade && g.uf) ? `${g.cidade} · ${g.uf}` : cidades[idx % cidades.length];
+        const isNd = !g.uf || g.uf === 'ND';
+        const cidVal = (g.cidade && g.cidade !== 'ND' && g.cidade !== 'Não informado') ? g.cidade : '';
+        const clienteLoc = isNd
+            ? 'Destino não informado'
+            : (cidVal ? `${cidVal} · ${g.uf}` : g.uf);
 
         const vendaFmt = formatarBRL(g.valor_venda || (idx === 0 ? 459.90 : (idx === 1 ? 389.90 : (idx === 2 ? 529.90 : (idx === 3 ? 299.90 : (idx === 4 ? 419.00 : 279.90))))));
         const difalFmt = formatarBRL(g.valor_difal !== undefined ? g.valor_difal : (idx === 0 ? 86.22 : (idx === 1 ? 69.18 : (idx === 2 ? 104.76 : (idx === 3 ? 58.40 : (idx === 4 ? 84.80 : 0.00))))));

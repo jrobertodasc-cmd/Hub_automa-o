@@ -100,6 +100,14 @@
   - Todos os cartões continuam 100% clicáveis em sua área integral, com suporte à propagação controlada nos botões de atalho (`event.stopPropagation()`).
 - **Cache-Buster:** Atualizado para `v=20261029_1150`.
 
+### M. Tratamento e Humanização de Destinos "ND / ND" (Não Definido)
+- **Origem e Significado:** No banco de dados, `ND` representa **"Não Definido / Não Disponível"**. Ocorre em notas fiscais emitidas para Consumidor Final (venda presencial de balcão) ou cadastradas sem o XML da NF-e vinculado (sem as tags `<dest><enderDest><xMun>` e `<UF>`).
+- **Tratamento no Front-end:** Em vez de exibir a sigla técnica crua `ND / ND`, o sistema agora formata elegantemente como:
+  - No Dossiê/Pop-up: `"Não informado (Consumidor Final)"` quando cidade e UF estiverem ausentes.
+  - Nos Cards de Pedido: `"Destino não informado"`.
+  - Se apenas a UF for conhecida, exibe a UF limpa sem duplicidade.
+- **Cache-Buster:** Atualizado para `v=20261029_1200`.
+
 ---
 
 ## 2. Status do Deploy
