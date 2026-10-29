@@ -212,3 +212,72 @@
    - Botão para exportação em planilha `.CSV`.
 3. **Backend (`server.js`):**
    - Endpoint `GET /api/vnda/auditoria-custos` com agregação dos canais e dados da NFS-e.
+
+
+---
+
+## Seção 42: Dinâmica Temporal do Card 6: Acompanhamento Mensal Automático VNDA (Out/26 em Aberto vs Set/26 Liquidada)
+
+### 1. Entendimento da Regra Contratual e Ciclo Mensal
+- **Como a VNDA fatura:**
+  - O faturamento da VNDA ocorre a mês vencido: o mês fecha no último dia civil (ex: 31/10) e a NFS-e oficial é emitida no 4º dia do mês seguinte (ex: 04/11).
+  - A base de cálculo é o **GMV Líquido** (Vendas Aprovadas menos Devoluções/Cancelamentos) dos canais E-commerce (Site) e Direct (WhatsApp).
+- **Inteligência do EXPEDI HUB no dia a dia do operador:**
+  - O operador não precisa fazer cálculos manuais nem esperar o fim do mês: o HUB acumula as vendas e cancelamentos da competência em aberto dia a dia em tempo real.
+  - No dia 29/10/2026, o card exibe o **Acumulado Parcial de Outubro/2026** com o badge `Em Aberto · Emissão 04/11`.
+  - No modal de auditoria, o operador pode auditar tanto a **Competência Atual (Out/26 em Aberto)** para provisionamento de fluxo de caixa quanto a **Competência Anterior (Set/26 - NFS-e 2237)** já liquidada.
+  - **Virada Automática:** Na virada do mês (01/11), a competência de Outubro torna-se "Fechada para Auditoria" e, no dia 04/11, compara 1:1 o valor da NFS-e recebida com a base do HUB. Se bater, o sistema marca `100% Conciliado`. Se houver divergência, acusa cobrança indevida.
+
+---
+
+## Seção 43: Hospedagem Local do Chart.js e Eliminação de Alertas de Privacidade (Edge Tracking Prevention)
+
+### 1. Diagnóstico do Navegador
+- Nos navegadores modernos baseados em Chromium (Microsoft Edge e Google Chrome com proteção de rastreamento estrita), carregar bibliotecas externas via CDN pública (`https://cdn.jsdelivr.net/...`) gerava advertências no console:
+  `Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js`
+
+### 2. Solução Implementada
+- O arquivo minificado UMD oficial do **Chart.js v4.4.1** foi baixado e armazenado localmente em [`public/vendor/chart.umd.min.js`](file:///c:/Users/Roberto/Desktop/Web_Services/public/vendor/chart.umd.min.js).
+- Em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html), a importação foi apontada para o caminho interno:
+  ```html
+  <script src="/vendor/chart.umd.min.js"></script>
+  ```
+- O carregamento tornou-se 100% autônomo, sem requisições a terceiros, com latência zero e console limpo.
+
+---
+
+## Seção 44: Correção Estrutural do DOM e Restauração da Tela Inicial do Hub
+
+### 1. Diagnóstico da Tela Escura (Blank Layout)
+- Ao abrir o Hub, a área principal sob a barra de navegação ficava sem renderizar conteúdo visual.
+- A auditoria estrutural profunda identificou:
+  - Faltavam 2 tags `</div>` logo após o Card 6 (linha 1767): uma para fechar o container `<div style="display: grid; grid-template-columns: repeat(3, 1fr); ...">` e outra para fechar `<div id="secao-view-hub">`.
+  - Como resultado, todas as seções subsequentes (`secao-view-dashboard`, `secao-view-ecommerce`, `secao-view-relatorios` e `secao-view-cargas`) tornaram-se filhas aninhadas dentro da grade do Hub.
+  - Ao alternar abas, a instrução `display: none` em seções filhas corrompia o rendering do container pai.
+  - Havia também uma tag `</div>` excedente no encerramento de `secao-view-cargas`, fechando antecipadamente o `<main>`.
+
+### 2. Ações Corretivas e Auditoria Matemática
+- Inseridas as 2 tags de fechamento `</div></div>` após o Card 6.
+- Removida a tag `</div>` excedente antes de `</main>`.
+- **Conferência de Integridade do Documento:**
+  - Total de `<div`: **612** | Total de `</div>`: **612** (Diferença = 0).
+  - Cada uma das 5 seções principais (`hub`, `dashboard`, `ecommerce`, `relatorios`, `cargas`) agora possui contagem perfeitamente balanceada e é filha direta de `<main>`.
+- Cache-buster atualizado para `v=20261029_1730` em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html).
+- Commit e push efetuados para `origin main` (`e903384`).
+
+---
+
+## Seção 45: Prioridades e Próximos Passos para Amanhã (30/10/2026)
+
+### 1. Checklist Operacional Imediato
+1. **Conferência do Hub em Produção:**
+   - Validar em tela cheia na URL `https://expedihub.onrender.com/dashboard.html` com cache limpo (`Ctrl + F5`).
+   - Testar o clique no Card 6 para conferir o pop-up de Auditoria VNDA com valores acumulados.
+2. **Total Express (Reativação Segura):**
+   - Confirmar com a equipe se as coletas físicas estão alinhadas.
+   - Quando autorizado, reativar a variável `TOTAL_EXPRESS_ENABLED=true` nas configurações do Render.
+3. **GNRE e Guias Pendentes (Lote SP):**
+   - Verificar as 5 guias no Módulo de Expedição (R$ 403,36).
+   - Testar a geração da remessa bancária no Modal Itaú CNAB 240 (`REM2610.txt`).
+4. **Fechamento de Outubro VNDA (31/10):**
+   - No sábado (31/10), o GMV de outubro fecha oficialmente para posterior emissão da NFS-e em 04/11.
