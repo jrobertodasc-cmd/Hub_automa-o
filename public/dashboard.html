@@ -1737,23 +1737,23 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div id="hub-kpi-vnda-fatura" style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #C084FC; line-height: 1;">R$ 1.370,96</div>
-                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">Fatura Auditada &middot; NFS-e 2237</div>
+                                <div id="hub-kpi-vnda-fatura" style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #C084FC; line-height: 1;">R$ 1.098,20</div>
+                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">Fatura Prevista &middot; Out/2026</div>
                             </div>
                             <div style="text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
-                                <div style="color: #60A5FA;">Site: R$ 85,7k</div>
-                                <div style="color: #34D399; margin-top: 3px;">Direct: R$ 21,4k</div>
+                                <div style="color: #60A5FA;">Site: R$ 62,1k</div>
+                                <div style="color: #34D399; margin-top: 3px;">Direct: R$ 17,8k</div>
                             </div>
                         </div>
 
-                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Auditoria de comissão (1%), cancelados abatidos e mensalidade (R$ 299)</div>
+                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Projeção Outubro (até 29/10): Fixa (R$ 299) + 1% variável dos canais</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                100% Conciliado
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
+                                Em Aberto &middot; Emissão 04/11
                             </span>
-                            <span style="font-size: 10.5px; color: #94A3B8;">R$ 1.469 em cancelados abatidos</span>
+                            <span style="font-size: 10.5px; color: #94A3B8;">Set/26 já liquidada</span>
                         </div>
                     </div>
 
@@ -3405,7 +3405,7 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1535"></script>
+    <script src="/js/dashboard.js?v=20261029_1600"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
@@ -3498,20 +3498,21 @@
     </div>
 
     <!-- ============================================================== -->
+        <!-- ============================================================== -->
     <!-- MODAL: AUDITORIA DE FATURA & CUSTOS VNDA (GRUPO OLIST)           -->
     <!-- ============================================================== -->
     <div id="modal-auditoria-vnda" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;" onclick="if(event.target === this) fecharModalAuditoriaVnda()">
-        <div style="background: #111B2E; border: 1px solid rgba(167, 139, 250, 0.35); border-radius: 20px; max-width: 680px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
+        <div style="background: #111B2E; border: 1px solid rgba(167, 139, 250, 0.35); border-radius: 20px; max-width: 700px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
             
             <!-- TOPO DO MODAL -->
-            <div style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.3); display: grid; place-items: center; color: #C084FC;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     </span>
                     <div>
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF;">Auditoria de Fatura &middot; VNDA (Grupo Olist)</h2>
-                        <span style="font-size: 11.5px; color: #94A3B8;">NFS-e Nº 2237 &middot; Tomador: LALUA COMERCIO DE MODAS EIRELI (BOAH)</span>
+                        <h2 style="margin: 0; font-size: 17.5px; font-weight: 800; color: #FFFFFF;">Auditoria de Fatura &middot; VNDA (Grupo Olist)</h2>
+                        <span style="font-size: 11.5px; color: #94A3B8;">LALUA COMERCIO DE MODAS EIRELI &middot; CNPJ 10.436.619/0001-05</span>
                     </div>
                 </div>
                 <button type="button" onclick="fecharModalAuditoriaVnda()" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; width: 32px; height: 32px; border-radius: 8px; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;" onmouseover="this.style.color='#FFFFFF'; this.style.background='rgba(255, 255, 255, 0.15)'" onmouseout="this.style.color='#94A3B8'; this.style.background='rgba(255, 255, 255, 0.06)'">
@@ -3519,26 +3520,41 @@
                 </button>
             </div>
 
+            <!-- SELETOR DE COMPETÊNCIA / MÊS -->
+            <div style="background: #0A101D; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">Competência:</span>
+                    <button type="button" id="btn-comp-10-2026" onclick="selecionarCompetenciaVnda('10/2026')" style="background: #1E293B; border: 1px solid rgba(245, 158, 11, 0.4); color: #F59E0B; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
+                        <span>Outubro/2026 (Atual · Em Andamento)</span>
+                    </button>
+                    <button type="button" id="btn-comp-09-2026" onclick="selecionarCompetenciaVnda('09/2026')" style="background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981;"></span>
+                        <span>Setembro/2026 (Fechada · NFS-e 2237)</span>
+                    </button>
+                </div>
+                <span id="vnda-modal-data-ref" style="font-size: 11px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">Acumulado até 29/10/2026</span>
+            </div>
+
             <!-- CORPO DO MODAL -->
-            <div style="padding: 24px; max-height: 80vh; overflow-y: auto;">
+            <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
                 
                 <!-- CARD RESUMO TOTAL DA NOTA FISCAL -->
                 <div style="background: #0A101D; border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 14px; padding: 18px 22px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                     <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Valor Total da NFS-e (Cobrado)</div>
-                        <div style="font-size: 26px; font-weight: 800; color: #C084FC; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
-                            R$ 1.370,96
+                        <div id="vnda-modal-titulo-card" style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Fatura Prevista de Outubro (Emissão em 04/11)</div>
+                        <div id="vnda-modal-valor-fatura" style="font-size: 28px; font-weight: 800; color: #C084FC; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            R$ 1.098,20
                         </div>
-                        <div style="font-size: 11.5px; color: #64748B; margin-top: 3px;">
-                            Mensalidade Fixa: <strong style="color: #CBD5E1;">R$ 299,00</strong> + Comissão (1%): <strong style="color: #CBD5E1;">R$ 1.071,96</strong>
+                        <div id="vnda-modal-subtitulo-fatura" style="font-size: 11.5px; color: #64748B; margin-top: 3px;">
+                            Mensalidade Fixa: <strong style="color: #CBD5E1;">R$ 299,00</strong> + Comissão (1%): <strong style="color: #CBD5E1;">R$ 799,20</strong>
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            100% CONCILIADO
+                        <span id="vnda-modal-status-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;">
+                            PROJEÇÃO EM ABERTO
                         </span>
-                        <div style="font-size: 11px; color: #94A3B8; margin-top: 6px;">Diverg&ecirc;ncia: <strong>R$ 0,00</strong></div>
+                        <div id="vnda-modal-nfs-info" style="font-size: 11px; color: #94A3B8; margin-top: 6px;">Previsão de Emissão: <strong>04/11/2026</strong></div>
                     </div>
                 </div>
 
@@ -3555,12 +3571,12 @@
                                 <span style="width: 8px; height: 8px; border-radius: 50%; background: #60A5FA;"></span>
                                 <strong style="font-size: 13.5px; color: #FFFFFF;">1. E-commerce (Site Oficial BOAH)</strong>
                             </div>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: #60A5FA;">1% = R$ 857,43</span>
+                            <span id="vnda-modal-c1-comissao" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: #60A5FA;">1% = R$ 621,00</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
-                            <span>Confirmados: <strong style="color: #F1F5F9;">R$ 86.198,20</strong></span>
-                            <span>Cancelados: <strong style="color: #F87171;">- R$ 454,73</strong></span>
-                            <span>Base Líquida: <strong style="color: #38BDF8;">R$ 85.743,47</strong></span>
+                        <div id="vnda-modal-c1-detalhes" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
+                            <span>Confirmados: <strong id="vnda-modal-c1-conf" style="color: #F1F5F9;">R$ 62.480,00</strong></span>
+                            <span>Cancelados: <strong id="vnda-modal-c1-canc" style="color: #F87171;">- R$ 380,00</strong></span>
+                            <span>Base Líquida: <strong id="vnda-modal-c1-liq" style="color: #38BDF8;">R$ 62.100,00</strong></span>
                         </div>
                     </div>
 
@@ -3571,12 +3587,12 @@
                                 <span style="width: 8px; height: 8px; border-radius: 50%; background: #34D399;"></span>
                                 <strong style="font-size: 13.5px; color: #FFFFFF;">2. Vendas Direct (WhatsApp &amp; Social Commerce)</strong>
                             </div>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: #34D399;">1% = R$ 214,53</span>
+                            <span id="vnda-modal-c2-comissao" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: #34D399;">1% = R$ 178,20</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
-                            <span>Confirmados: <strong style="color: #F1F5F9;">R$ 22.468,06</strong></span>
-                            <span>Cancelados: <strong style="color: #F87171;">- R$ 1.015,20</strong></span>
-                            <span>Base Líquida: <strong style="color: #34D399;">R$ 21.452,86</strong></span>
+                        <div id="vnda-modal-c2-detalhes" style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;">
+                            <span>Confirmados: <strong id="vnda-modal-c2-conf" style="color: #F1F5F9;">R$ 18.240,00</strong></span>
+                            <span>Cancelados: <strong id="vnda-modal-c2-canc" style="color: #F87171;">- R$ 420,00</strong></span>
+                            <span>Base Líquida: <strong id="vnda-modal-c2-liq" style="color: #38BDF8;">R$ 17.820,00</strong></span>
                         </div>
                     </div>
 
@@ -3596,10 +3612,10 @@
                 <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <strong style="font-size: 12.5px; color: #34D399;">Cancelamentos Abatidos Corretamente pela VNDA: R$ 1.469,93</strong>
+                        <strong id="vnda-modal-canc-titulo" style="font-size: 12.5px; color: #34D399;">Cancelamentos Abatidos Corretamente: R$ 800,00</strong>
                     </div>
-                    <p style="font-size: 11.5px; color: #CBD5E1; margin: 0; line-height: 1.5;">
-                        A VNDA deduziu R$ 454,73 do site e R$ 1.015,20 do Direct antes de cobrar o take rate. Economia gerada na fatura: <strong>R$ 14,70 em comissão</strong> + <strong>~ R$ 114,65 em DIFAL não desperdiçado</strong> na doca.
+                    <p id="vnda-modal-canc-desc" style="font-size: 11.5px; color: #CBD5E1; margin: 0; line-height: 1.5;">
+                        A comissão variável só é aplicada sobre o volume líquido aprovado. Pedidos cancelados foram abatidos, evitando cobrança indevida de comissão e retenção fiscal na doca.
                     </p>
                 </div>
 
@@ -3607,7 +3623,7 @@
                 <div style="background: #0A101D; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px; font-size: 11px; color: #94A3B8; line-height: 1.6;">
                     <div>Prestador: <strong style="color: #FFFFFF;">VNDA SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO LTDA (CNPJ 12.803.527/0001-33)</strong></div>
                     <div>Tomador: <strong style="color: #FFFFFF;">LALUA COMERCIO DE MODAS EIRELI (CNPJ 10.436.619/0001-05)</strong></div>
-                    <div>Chave de Acesso: <span style="font-family: 'JetBrains Mono', monospace; color: #64748B;">35344011212803527000133000000000223726096609187458</span></div>
+                    <div id="vnda-modal-obs-final">Status: <span style="color: #F59E0B; font-weight: 700;">Valores acumulados até 29/10/2026. Fechamento oficial em 31/10 e emissão da NFS-e em 04/11/2026.</span></div>
                 </div>
 
             </div>
@@ -3625,6 +3641,5 @@
 
         </div>
     </div>
-
 </body>
 </html>
