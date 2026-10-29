@@ -4125,17 +4125,34 @@ function abrirModalPagamento360(guideId) {
         `).join('');
     }
 
-    // Botões
+    // Salva guia ativa para uso dos botões de ação rápida
+    window.guiaDossieModalAtiva = g;
+
+    // Botões de Ação
+    const btnEtiqueta = document.getElementById('modal-pag-btn-etiqueta');
+    const txtEtiqueta = document.getElementById('modal-pag-etiqueta-text');
+    if (btnEtiqueta) {
+        const isTotal = !(g.carrier_name || '').toLowerCase().includes('correios');
+        if (txtEtiqueta) {
+            txtEtiqueta.textContent = isTotal ? 'Imprimir Etiqueta Total' : 'Imprimir Etiqueta Correios';
+        }
+        btnEtiqueta.href = `/api/total-express/etiqueta/${g.id}`;
+        btnEtiqueta.onclick = (e) => {
+            e.preventDefault();
+            imprimirEtiquetaModalAtual();
+        };
+    }
+
     const btnDanfe = document.getElementById('modal-pag-btn-danfe');
-    if (btnDanfe) btnDanfe.href = g.danfe_url;
+    if (btnDanfe) {
+        btnDanfe.href = g.danfe_url || `/api/guide/danfe/${g.id}`;
+        btnDanfe.style.display = 'inline-flex';
+    }
+
     const btnGuia = document.getElementById('modal-pag-btn-guia');
     if (btnGuia) {
-        if (g.gnre_url) {
-            btnGuia.href = g.gnre_url;
-            btnGuia.style.display = 'inline-flex';
-        } else {
-            btnGuia.style.display = 'none';
-        }
+        btnGuia.href = g.gnre_url || `/api/guide/download/${g.id}`;
+        btnGuia.style.display = 'inline-flex';
     }
 
     modal.style.display = 'flex';

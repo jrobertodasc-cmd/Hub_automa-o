@@ -4063,3 +4063,52 @@ h1, h2, h3, h4,
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 8px !important;
 }
+
+/* ==============================================================
+   BARRA DE ROLAGEM SLIM DARK LUXURY (FIM DA SCROLLBAR CINZA NATIVA)
+   ============================================================== */
+::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #243552 !important;
+    border-radius: 999px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #38BDF8 !important;
+}
+
+* {
+    scrollbar-width: thin !important;
+    scrollbar-color: #243552 transparent !important;
+}
+
+.modal-dossie-dark {
+    scrollbar-width: thin !important;
+    scrollbar-color: #243552 transparent !important;
+}
+
+.modal-dossie-dark::-webkit-scrollbar {
+    width: 5px !important;
+}
+
+.modal-dossie-dark::-webkit-scrollbar-track {
+    background: transparent !important;
+    margin: 12px 0 !important;
+}
+
+.modal-dossie-dark::-webkit-scrollbar-thumb {
+    background: #243552 !important;
+    border-radius: 999px !important;
+}
+
+.modal-dossie-dark::-webkit-scrollbar-thumb:hover {
+    background: #38BDF8 !important;
+}

@@ -51,6 +51,14 @@
 - **Botões e Ações:** Eliminado o botão quebrado `[ . ]` com ponto cinza. Substituído por botão nítido `Dossiê ↗` ao lado de `Emitir SEFAZ`.
 - **Modal Dossiê Dark Fashion Luxury:** O pop-up que era branco foi 100% convertido para o design dark da BOAH (`#0E1626`), com cards internos `#142037`, tipografia `JetBrains Mono` dourada/verde para valores, código de barras com botão `Copiar` e botões de ação para DANFE e Guia SEFAZ.
 
+### H. Barra de Rolagem Slim Dark e Impressão de Etiqueta Total Express
+- **Barra de Rolagem Customizada Ultra-Fina:** Eliminada a barra de rolagem cinza grossa nativa do Windows (16px com setas). Implementada scrollbar slim dark luxury de 5px (`::-webkit-scrollbar` e `scrollbar-width: thin`), trilha transparente e polegar `#243552` com hover em azul `#38BDF8`, harmonizada perfeitamente no pop-up `#modal-pagamento-360` e em toda a aplicação.
+- **Botão de Impressão de Etiqueta Total Express:**
+  - Adicionado botão dedicado de destaque `Imprimir Etiqueta Total` no rodapé do modal 360°, com ícone de impressora e abertura direta da etiqueta térmica da Total Express via `/api/total-express/etiqueta/:guideId`.
+  - Adicionado botão de atalho rápido `Imprimir` ao lado do código de rastreio na caixa de Transportadora do dossiê.
+  - Implementada função de suporte `imprimirEtiquetaModalAtual()` no JS com verificação de transportadora (Total Express / Correios).
+- **Cache-Buster:** Atualizado para `v=20261029_1100` em scripts e folhas de estilo.
+
 ---
 
 ## 2. Status do Deploy
