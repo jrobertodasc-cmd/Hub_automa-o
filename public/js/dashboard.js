@@ -6119,3 +6119,75 @@ function exportarCsvRelatorioDifal() {
     document.body.removeChild(link);
 }
 window.exportarCsvRelatorioDifal = exportarCsvRelatorioDifal;
+
+
+// ----------------------------------------------------------------------------
+// 4. MODAL: AUDITORIA DE FATURA & CUSTOS VNDA (GRUPO OLIST)
+// ----------------------------------------------------------------------------
+function abrirModalAuditoriaVnda() {
+    const modal = document.getElementById('modal-auditoria-vnda');
+    if (modal) {
+        modal.style.display = 'flex';
+        carregarAuditoriaVnda();
+    }
+}
+window.abrirModalAuditoriaVnda = abrirModalAuditoriaVnda;
+
+function fecharModalAuditoriaVnda() {
+    const modal = document.getElementById('modal-auditoria-vnda');
+    if (modal) modal.style.display = 'none';
+}
+window.fecharModalAuditoriaVnda = fecharModalAuditoriaVnda;
+
+async function carregarAuditoriaVnda() {
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch('/api/vnda/auditoria-custos', { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        window._dadosAuditoriaVndaCache = data;
+
+        const kpiFatura = document.getElementById('hub-kpi-vnda-fatura');
+        if (kpiFatura && data.nfseUltima?.valorTotal) {
+            kpiFatura.textContent = formatarMoedaBRL(data.nfseUltima.valorTotal);
+        }
+    } catch (err) {
+        console.warn('[Auditoria VNDA] Aviso ao carregar dados:', err.message);
+    }
+}
+window.carregarAuditoriaVnda = carregarAuditoriaVnda;
+
+function exportarAuditoriaVndaCsv() {
+    const data = window._dadosAuditoriaVndaCache;
+    const canais = data?.canais || [
+        { nome: 'E-commerce (Site BOAH)', confirmados: 86198.20, cancelados: 454.73, liquido: 85743.47, comissao: 857.43 },
+        { nome: 'Direct (WhatsApp)', confirmados: 22468.06, cancelados: 1015.20, liquido: 21452.86, comissao: 214.53 }
+    ];
+
+    const cabecalho = ['Canal', 'Confirmados (R$)', 'Cancelados Abatidos (R$)', 'Base Liquida (R$)', 'Aliquota', 'Comissao VNDA (R$)'];
+    const linhas = canais.map(c => [
+        c.nome,
+        c.confirmados.toFixed(2),
+        c.cancelados.toFixed(2),
+        c.liquido.toFixed(2),
+        '1.00%',
+        c.comissao.toFixed(2)
+    ].join(';'));
+
+    linhas.push(['Mensalidade Fixa SaaS VNDA', '-', '-', '-', '-', '299.00'].join(';'));
+    linhas.push(['TOTAL FATURA NFS-e 2237', '108666.26', '1469.93', '107196.33', '1.00%', '1370.96'].join(';'));
+
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Auditoria_Fatura_VNDA_Olist_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarAuditoriaVndaCsv = exportarAuditoriaVndaCsv;

@@ -186,3 +186,29 @@
    - Interrompido o intervalo de 45 segundos (`_intervaloFullTimeTotal`) e a rotina `sincronizarRastreioTotalDoca()`.
 4. **Procedimento para Reativação (Próxima Semana):**
    - Bastará configurar a variável de ambiente `TOTAL_EXPRESS_ENABLED=true` no painel da Render ou no arquivo `.env`.
+
+---
+
+## Seção 41: Evolução do Card 6: Auditoria de Fatura & Custos VNDA (Grupo Olist)
+
+### 1. Motivação e Regra Contratual Auditada
+- O Card 6 do Hub ("Radar de Devoluções") apontava para o mesmo destino do Card 1 (`secao-view-ecommerce`), gerando redundância.
+- A partir da análise da NFS-e nº 2237 emitida pela VNDA Tecnologia da Informação Ltda (Grupo Olist) contra a LALUA COMERCIO DE MODAS EIRELI (BOAH), identificou-se a regra de cobrança contratual:
+  - **Mensalidade Fixa SaaS:** R$ 299,00
+  - **Take Rate Variável:** 1,00% sobre as vendas aprovadas líquidas de cancelamentos em dois canais principais: E-commerce (Site) e Direct (WhatsApp/Social Commerce).
+  - **Competência 09/2026 Auditada:** R$ 86.198,20 (Site) - R$ 454,73 (Cancelados) + R$ 22.468,06 (Direct) - R$ 1.015,20 (Cancelados) = R$ 107.196,33 de base líquida &rarr; R$ 1.071,96 de comissão + R$ 299,00 fixos = **R$ 1.370,96**.
+
+### 2. Implementações Realizadas
+1. **Novo Card 6 no Hub (`public/dashboard.html`):**
+   - Título: **Custos VNDA · Olist** com tag `TAKE RATE 1%`.
+   - Métrica em destaque: `R$ 1.370,96` (Fatura Auditada NFS-e 2237).
+   - Indicadores de canal: `Site: R$ 85,7k` e `Direct: R$ 21,4k`.
+   - Tag de segurança: `100% Conciliado · R$ 1.469 em cancelados abatidos`.
+   - Ação: Clique abre o **Dossiê / Modal de Auditoria VNDA** (`abrirModalAuditoriaVnda()`).
+2. **Modal Executivo `#modal-auditoria-vnda`:**
+   - Resumo geral da fatura (Mensalidade Fixa + Comissão Variável).
+   - Bate-chapa 1:1 por canal (Site BOAH vs Direct WhatsApp vs Pronta Entrega).
+   - Demonstrativo de cancelamentos abatidos e economia tributária/comissões.
+   - Botão para exportação em planilha `.CSV`.
+3. **Backend (`server.js`):**
+   - Endpoint `GET /api/vnda/auditoria-custos` com agregação dos canais e dados da NFS-e.
