@@ -4165,6 +4165,26 @@ function fecharModalPagamento360() {
 }
 window.fecharModalPagamento360 = fecharModalPagamento360;
 
+function imprimirEtiquetaModalAtual() {
+    const g = window.guiaDossieModalAtiva;
+    if (!g) {
+        if (typeof showToast === 'function') {
+            showToast("Nenhum pedido selecionado para impressão de etiqueta.", "warning");
+        }
+        return;
+    }
+    const isCorreios = (g.carrier_name || '').toLowerCase().includes('correios');
+    const url = isCorreios
+        ? (g.tracking_code ? `https://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(g.tracking_code)}` : `/api/total-express/etiqueta/${g.id}`)
+        : `/api/total-express/etiqueta/${g.id}`;
+
+    if (typeof showToast === 'function') {
+        showToast(`Abrindo etiqueta de envio (${isCorreios ? 'Correios' : 'Total Express 10x15cm'})...`, "info");
+    }
+    window.open(url, '_blank');
+}
+window.imprimirEtiquetaModalAtual = imprimirEtiquetaModalAtual;
+
 function alternarModoVisualizacao(modo) {
     const btnFiscal = document.getElementById('btn-toggle-fiscal');
     const btnEcom = document.getElementById('btn-toggle-ecommerce');

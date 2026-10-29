@@ -80,6 +80,15 @@
   - **Integridade da Marca:** Logo `expedi HUB` e marca principal estritamente preservadas sem alterações.
 - **Cache-Buster:** Atualizado para `v=20261029_1130` em scripts e folhas de estilo.
 
+### K. Correção do Handler de Impressão de Etiqueta (`ReferenceError: imprimirEtiquetaModalAtual`)
+- **Problema diagnosticado:** O botão de impressão de etiqueta chamava `imprimirEtiquetaModalAtual()`, porém a declaração da função não havia sido registrada no escopo global de `dashboard.js`.
+- **Solução implementada:** Definida e exportada formalmente a função `imprimirEtiquetaModalAtual` em `window.imprimirEtiquetaModalAtual`:
+  - Recupera a guia ativa do dossiê (`window.guiaDossieModalAtiva`).
+  - Detecta a transportadora (Total Express vs Correios).
+  - Emite notificação toast ao operador e aciona `window.open` diretamente para o endpoint `/api/total-express/etiqueta/:guideId`.
+  - Testado via Playwright com 0 erros no console (`PAGE_ERRORS: []`).
+- **Cache-Buster:** Atualizado para `v=20261029_1140`.
+
 ---
 
 ## 2. Status do Deploy
