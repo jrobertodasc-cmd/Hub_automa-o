@@ -3960,6 +3960,19 @@ app.post('/api/total-express/despachar/:guideId', requireAuth, requireActiveSubs
     const tenant = req.tenant;
 
     try {
+        // TRAVA OPERACIONAL: API Total Express suspensa temporariamente
+        if (process.env.TOTAL_EXPRESS_ENABLED !== 'true') {
+            console.warn(`[TOTAL EXPRESS PAUSADA] Despacho interceptado para guia ${req.params.guideId}. Nenhuma coleta solicitada.`);
+            return res.status(200).json({
+                success: true,
+                modoSimulado: true,
+                message: "API da Total Express pausada temporariamente a pedido da operação para evitar coletas na loja/CD. Nenhuma coleta física foi solicitada.",
+                awb: `SIM_${req.params.guideId}`,
+                rota: `(A)01-SAO-L-TZO-[SIM]`,
+                etiquetaUrl: `/api/total-express/etiqueta/${req.params.guideId}`
+            });
+        }
+
         const { data: guide, error: gErr } = await supabase
             .from('guides')
             .select('*')
@@ -4155,6 +4168,10 @@ app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) =>
  */
 app.post('/api/total-express/tracking', requireAuth, async (req, res) => {
     try {
+        if (process.env.TOTAL_EXPRESS_ENABLED !== 'true') {
+            return res.json({ success: true, data: [], message: "API da Total Express pausada temporariamente." });
+        }
+
         const tenant = req.tenant;
         const { guideId, nf_number, awb, notasFiscais, awbs, pedidos } = req.body;
 
@@ -4208,6 +4225,10 @@ app.post('/api/total-express/tracking', requireAuth, async (req, res) => {
  */
 app.post('/api/total-express/sync-tracking-batch', requireAuth, async (req, res) => {
     try {
+        if (process.env.TOTAL_EXPRESS_ENABLED !== 'true') {
+            return res.json({ success: true, count: 0, trackingMap: {}, message: "API da Total Express pausada temporariamente a pedido da operação." });
+        }
+
         const tenant = req.tenant;
         let { nfs, force } = req.body;
 

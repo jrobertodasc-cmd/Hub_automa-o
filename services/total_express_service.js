@@ -6,6 +6,15 @@ const https = require('https');
 const PDFDocument = require('pdfkit');
 const bwipjs = require('bwip-js');
 
+// =========================================================================
+// TRAVA DE SEGURANÇA OPERACIONAL: API TOTAL EXPRESS TEMPORARIAMENTE PAUSADA
+// =========================================================================
+// Desabilitada para evitar o acionamento indevido de coletas físicas por van
+// na loja/CD durante os testes da plataforma.
+// Para reativar na próxima semana após reunião com a equipe do e-commerce,
+// basta definir a variável de ambiente: TOTAL_EXPRESS_ENABLED=true
+const TOTAL_EXPRESS_API_ENABLED = process.env.TOTAL_EXPRESS_ENABLED === 'true'; // Padrão: false (PAUSADA)
+
 const ENDPOINTS = {
     smartlabel: {
         producao: 'https://apis.totalexpress.com.br/ics-edi-lv/v1/coleta/smartlabel/registrar',
@@ -96,6 +105,20 @@ function montarPayloadSmartLabel(dadosNfe, config) {
  * Transmite o registro da encomenda para a API Smart Label da Total Express
  */
 async function registrarEncomendaSmartLabel(dadosNfe, config) {
+    if (!TOTAL_EXPRESS_API_ENABLED) {
+        const numNf = String(dadosNfe.documentoOrigem || dadosNfe.nfNumero || 'TESTE');
+        console.warn(`[TOTAL EXPRESS PAUSADA] Registro da NF ${numNf} interceptado. NENHUMA coleta real foi solicitada.`);
+        return {
+            sucesso: true,
+            modoSimulado: true,
+            aviso: "API Total Express desabilitada temporariamente a pedido da operação para evitar coletas presenciais.",
+            awb: `SIM_${numNf}`,
+            rota: `(A)01-SAO-L-TZO-[SIM]`,
+            codigoBarras: `SIM_${numNf}`,
+            raw: { status: "PAUSADO_OPERACAO", message: "Coleta real bloqueada por segurança." }
+        };
+    }
+
     const ambiente = (config.environment || 'producao').toLowerCase();
     const endpointUrl = ambiente === 'homologacao' ? ENDPOINTS.homologacao : ENDPOINTS.producao;
     const authHeader = getBasicAuthHeader(config.user, config.password);
@@ -335,6 +358,14 @@ async function gerarEtiquetaTermicaPdfBuffer({ awb, rota, servico, dadosNfe, emp
  * @param {Object} config - { user, password, environment }
  */
 async function consultarStatusEntrega(params, config = {}) {
+    if (!TOTAL_EXPRESS_API_ENABLED) {
+        return { 
+            data: [], 
+            totalExpressPausada: true,
+            message: 'API da Total Express pausada temporariamente para alinhamento com e-commerce.' 
+        };
+    }
+
     const ambiente = (config.environment || 'producao').toLowerCase();
     const endpointUrl = ambiente === 'homologacao' ? ENDPOINTS.tracking.homologacao : ENDPOINTS.tracking.producao;
     const user = config.user || process.env.TOTAL_EXPRESS_USER || 'clara50276';

@@ -164,3 +164,25 @@
 - `GET /api/relatorios/analitico-difal`: Consulta paginada/filtrada por UF e período para a tabela do relatório.
 
 ---
+
+---
+
+## Seção 40: Trava Operacional de Segurança: API da Total Express Temporariamente Pausada
+
+### 1. Motivação Operacional
+- Durante os testes de geração de etiquetas e despacho, o conector da Total Express (`/v1/coleta/smartlabel/registrar`) registrou pedidos em ambiente de produção, acionando a visita física de vans de coleta da Total Express na loja/CD.
+- A pedido do operador, a integração direta com a API da Total Express foi **temporariamente suspensa** para evitar qualquer chamada externa até o alinhamento com a equipe de e-commerce na próxima semana.
+
+### 2. Medidas de Bloqueio Implementadas
+1. **Trava no Conector (`services/total_express_service.js`):**
+   - Criada flag mestre `TOTAL_EXPRESS_API_ENABLED = process.env.TOTAL_EXPRESS_ENABLED === 'true'` (padrão: `false`).
+   - Interceptação de `registrarEncomendaSmartLabel`: qualquer tentativa de envio é bloqueada internamente com aviso no log do servidor e retorna simulação segura (`awb: SIM_...`, sem requisições HTTPS para a Total Express).
+   - Interceptação de `consultarStatusEntrega`: tracking externo desativado.
+2. **Guarda nas Rotas do Servidor (`server.js`):**
+   - `/api/total-express/despachar/:guideId`: intercepta e retorna status de modo simulado/pausado.
+   - `/api/total-express/sync-tracking-batch`: cancela o envio em lote sem chamadas de rede.
+   - `/api/total-express/tracking`: retorna lista vazia segura.
+3. **Desativação do Polling no Front-end (`public/js/dashboard.js`):**
+   - Interrompido o intervalo de 45 segundos (`_intervaloFullTimeTotal`) e a rotina `sincronizarRastreioTotalDoca()`.
+4. **Procedimento para Reativação (Próxima Semana):**
+   - Bastará configurar a variável de ambiente `TOTAL_EXPRESS_ENABLED=true` no painel da Render ou no arquivo `.env`.

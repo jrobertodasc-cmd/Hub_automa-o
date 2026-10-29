@@ -5481,6 +5481,8 @@ let _totalSyncEmAndamento = false;
 let _intervaloFullTimeTotal = null;
 
 async function sincronizarRastreioTotalDoca(silencioso = false) {
+    // API Total Express desabilitada temporariamente pela operação para evitar coletas
+    return;
     if (_totalSyncEmAndamento) return;
     _totalSyncEmAndamento = true;
 
@@ -5541,15 +5543,8 @@ async function sincronizarRastreioTotalDoca(silencioso = false) {
 
 function iniciarSincronizacaoFullTimeTotal() {
     if (_intervaloFullTimeTotal) clearInterval(_intervaloFullTimeTotal);
-    // Sincroniza imediatamente na primeira carga
-    setTimeout(() => { sincronizarRastreioTotalDoca(true); }, 2500);
-
-    // Repete a cada 45 segundos de forma invisível em background
-    _intervaloFullTimeTotal = setInterval(() => {
-        if (!document.hidden) {
-            sincronizarRastreioTotalDoca(true);
-        }
-    }, 45000);
+    // TRAVA: Polling de tracking da Total Express desativado enquanto a API estiver pausada
+    return;
 }
 
 // Inicia no carregamento do DOM
