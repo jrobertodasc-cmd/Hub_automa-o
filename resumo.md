@@ -34,7 +34,12 @@
   - Badges de situação fiscal e expedição (`A pagar`, `Não paga`, `Sem DIFAL`).
 
 ### D. Performance e Cache
-- Cache-busters de scripts e folhas de estilo atualizados para `v=20261029_1000` em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html).
+- Cache-busters de scripts e folhas de estilo atualizados para `v=20261029_1020` em [`public/dashboard.html`](file:///c:/Users/Roberto/Desktop/Web_Services/public/dashboard.html).
+
+### E. Refinamento de Usabilidade dos Cards (`Node 2:9415`)
+- Os 6 cards operacionais agora são **100% clicáveis em toda a sua área**.
+- Adicionado efeito de hover com elevação suave (`transform: translateY(-3px)`), borda de destaque azul (`#3B82F6`), sombra aprimorada e animação na seta superior `↗` e no texto de ação.
+- Elimina a necessidade de mirar estritamente no pequeno link do rodapé.
 
 ---
 
