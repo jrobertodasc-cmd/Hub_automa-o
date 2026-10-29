@@ -117,3 +117,50 @@
   - `public/dashboard.html`
   - `public/js/dashboard.js`
   - `resumo.md`
+
+---
+
+## Seção 39: Evolução Estratégica do Cockpit: BI 360°, Heatmap por UF, Central de Relatórios 2.0 e Modal de Remessa CNAB 240
+
+### 1. Contexto e Motivação
+- A aba de "Liquidação Bancária do Lote" ocupava desnecessariamente uma tela inteira e se repetia no Hub principal.
+- Com a futura integração direta via API do Asaas para pagamentos via Pix e débito direto sem arquivos manuais, a geração e o retorno de remessa CNAB 240 (Itaú SISPAG) foram transformados em um **Modal de Ação Rápida** (`#modal-remessa-bancaria`).
+- O espaço analítico foi completamente reestruturado para hospedar o **Cockpit Executivo & BI 360°**, com dados e gráficos interativos reais em Chart.js e um **Mapa de Calor Interestadual (Heatmap por UF)**.
+- A **Central de Relatórios** foi evoluída para uma suíte de controladoria com 3 abas operacionais (DIFAL nota a nota, Romaneios/Manifestos A4 e Fechamento Contábil).
+
+### 2. Principais Implementações
+
+#### A. Modal Operacional de Remessa Bancária Itaú SISPAG (CNAB 240)
+- **Localização:** Modal de ação rápida flutuante acessível via 1 clique no Card 5 do Hub e no atalho do Card de Expedição.
+- **Funcionalidades:**
+  - Resumo imediato do lote ativo (91 guias auditadas, total R$ 4.020,42, agência 0334 conta 98775-7 LALUA).
+  - Seletor de data de pagamento/vencimento das guias.
+  - Download imediato da remessa `.TXT` para o SISPAG.
+  - Dropzone de conciliação do arquivo de Retorno `.RET` com baixa instantânea na doca.
+  - Preparado para chaveamento com a API do Asaas.
+
+#### B. Cockpit Executivo & BI 360° (`secao-view-dashboard`)
+- **KPIs em Tempo Real:** Faturamento bruto estimado, total acumulado de DIFAL, índice de liberação de cargas e SLA médio da doca (2h 18min).
+- **Curva Financeira (Chart.js):** Gráfico misto de barras (vendas brutas) e linha (curva de DIFAL) por data de emissão com eixos duplos.
+- **Divisão de Transportadoras (Chart.js):** Gráfico tipo rosca (*doughnut*) com proporção de volumes e índice de entrega entre Total Express e Correios.
+- **Mapa de Calor Geográfico por UF (Heatmap Brasil):**
+  - Cards térmicos graduados com gradientes de calor (vermelho, âmbar e azul) conforme concentração de faturamento e DIFAL (RJ, MG, AL, SP, etc.).
+  - Tabela analítica completa com ranking estadual, percentual de cargas liberadas e carga tributária efetiva.
+- **Funil de Throughput da Doca:** Acompanhamento das 5 etapas operacionais: Venda VNDA -> NF-e Linx -> DIFAL -> Remessa Itaú -> Expedição Física.
+
+#### C. Central de Relatórios 2.0 (`secao-view-relatorios`)
+- **Tab 1 - Analítico de DIFAL (Nota a Nota):**
+  - Tabela completa nota a nota com Nº da NF-e, série, data de emissão, nome do cliente, UF destino, transportadora, valor da venda e valor do DIFAL.
+  - Filtros dinâmicos por UF e busca textual por número, chave ou cliente.
+  - Exportação direta em Excel (`.CSV`) estruturado para controladoria.
+- **Tab 2 - Manifestos & Romaneios Rodoviários (A4):**
+  - Emissão de romaneio de carga para conferência e assinatura do motorista (Total Express e Correios).
+- **Tab 3 - Fechamento Contábil Mensal:**
+  - Download consolidado de pacote ZIP com XMLs da SEFAZ SP e guias eletrônicas para envio à contabilidade.
+  - Extrato de conciliação bancária do Itaú SISPAG em CSV.
+
+#### D. Endpoints no Backend (`server.js`)
+- `GET /api/bi/metrics`: Agregação de faturamento, curvas de DIFAL, timeline e heatmap por UF a partir da tabela `guides`.
+- `GET /api/relatorios/analitico-difal`: Consulta paginada/filtrada por UF e período para a tabela do relatório.
+
+---

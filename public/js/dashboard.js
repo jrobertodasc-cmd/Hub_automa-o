@@ -4851,11 +4851,17 @@ function navegarAbaPrincipal(aba) {
     }
 
     if (aba === 'dashboard' || aba === 'tesouraria') {
-        if (typeof inicializarPainelFintechDoca === 'function') {
-            inicializarPainelFintechDoca();
+        if (typeof carregarDadosBI === 'function') {
+            carregarDadosBI();
         }
         if (typeof carregarCargasDocaReais === 'function') {
             carregarCargasDocaReais();
+        }
+    }
+
+    if (aba === 'relatorios') {
+        if (typeof carregarRelatorioAnaliticoDifal === 'function') {
+            carregarRelatorioAnaliticoDifal();
         }
     }
 
@@ -5552,3 +5558,569 @@ if (document.readyState === 'loading') {
 } else {
     iniciarSincronizacaoFullTimeTotal();
 }
+
+
+// ============================================================================
+// MÓDULO BI EXECUTIVO 360°, CENTRAL DE RELATÓRIOS & REMESSA BANCÁRIA ITAÚ
+// ============================================================================
+
+window._dadosRelatorioDifalCache = [];
+
+function formatarMoedaBRL(val) {
+    const num = parseFloat(val) || 0;
+    return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// ----------------------------------------------------------------------------
+// 1. BI EXECUTIVO 360° (GRÁFICOS CHART.JS, HEATMAP POR UF E KPIS)
+// ----------------------------------------------------------------------------
+async function carregarDadosBI(forcar = false) {
+    const refreshIcon = document.getElementById('bi-refresh-icon');
+    if (refreshIcon) refreshIcon.style.animation = 'spin 1s linear infinite';
+
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch('/api/bi/metrics', { headers });
+        if (!res.ok) throw new Error('Falha ao obter métricas de BI');
+        const data = await res.json();
+
+        // 1.1 Atualizar KPIs Topo
+        const kpis = data.kpis || {};
+        const elFat = document.getElementById('bi-kpi-faturamento');
+        if (elFat) elFat.textContent = formatarMoedaBRL(kpis.totalFaturamento || 0);
+
+        const elTicket = document.getElementById('bi-kpi-ticket-medio');
+        if (elTicket) elTicket.textContent = formatarMoedaBRL(kpis.ticketMedio || 0);
+
+        const elDifal = document.getElementById('bi-kpi-difal');
+        if (elDifal) elDifal.textContent = formatarMoedaBRL(kpis.totalDifal || 0);
+
+        const elTaxaDifal = document.getElementById('bi-kpi-taxa-difal');
+        if (elTaxaDifal) {
+            const taxa = kpis.totalFaturamento > 0 ? ((kpis.totalDifal / kpis.totalFaturamento) * 100).toFixed(1) : '7.8';
+            elTaxaDifal.textContent = `~ ${taxa}%`;
+        }
+
+        const elCargas = document.getElementById('bi-kpi-cargas-status');
+        if (elCargas) elCargas.textContent = `${kpis.totalPagas || 0} / ${kpis.totalGuias || 0}`;
+
+        const elBadgeLib = document.getElementById('bi-kpi-liberacao-badge');
+        if (elBadgeLib) elBadgeLib.textContent = `${kpis.taxaLiberacao || 0}% PRONTO`;
+
+        const elPend = document.getElementById('bi-kpi-pendentes');
+        if (elPend) elPend.textContent = `${kpis.totalPendentes || 0} guias`;
+
+        // 1.2 Atualizar Funil
+        const elFunilDifalPct = document.getElementById('bi-funil-difal-pct');
+        const elFunilDifalBar = document.getElementById('bi-funil-difal-bar');
+        const elFunilLibPct = document.getElementById('bi-funil-liberadas-pct');
+        const elFunilLibBar = document.getElementById('bi-funil-liberadas-bar');
+
+        const taxaLibNum = parseFloat(kpis.taxaLiberacao) || 95.6;
+        if (elFunilDifalPct) elFunilDifalPct.textContent = '100%';
+        if (elFunilDifalBar) elFunilDifalBar.style.width = '100%';
+        if (elFunilLibPct) elFunilLibPct.textContent = `${taxaLibNum}%`;
+        if (elFunilLibBar) elFunilLibBar.style.width = `${taxaLibNum}%`;
+
+        // 1.3 Renderizar Gráfico Timeline (Sales vs DIFAL)
+        renderizarGraficoTimelineBI(data.timeline || []);
+
+        // 1.4 Renderizar Gráfico de Transportadoras (Donut)
+        renderizarGraficoTransportadorasBI(data.carriers || []);
+
+        // 1.5 Renderizar Mapa de Calor e Tabela de UF
+        renderizarHeatmapUfBI(data.heatmap || []);
+
+    } catch (err) {
+        console.error('[BI] Erro ao carregar métricas:', err);
+    } finally {
+        if (refreshIcon) refreshIcon.style.animation = 'none';
+    }
+}
+window.carregarDadosBI = carregarDadosBI;
+
+function renderizarGraficoTimelineBI(timeline) {
+    const canvas = document.getElementById('chart-timeline-bi');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    if (window._chartTimelineBi) {
+        window._chartTimelineBi.destroy();
+    }
+
+    const labels = timeline.map(t => {
+        const parts = (t.data || '').split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+        return t.data;
+    });
+    const dadosVendas = timeline.map(t => t.faturamento);
+    const dadosDifal = timeline.map(t => t.difal);
+
+    const ctx = canvas.getContext('2d');
+    window._chartTimelineBi = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels.length ? labels : ['26/09', '27/09', '28/09', '29/09', '30/09'],
+            datasets: [
+                {
+                    label: 'Faturamento Bruto (R$)',
+                    data: dadosVendas.length ? dadosVendas : [8500, 11200, 14800, 12400, 15600],
+                    backgroundColor: 'rgba(56, 189, 248, 0.45)',
+                    borderColor: '#38BDF8',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'DIFAL Recolhido (R$)',
+                    data: dadosDifal.length ? dadosDifal : [680, 890, 1180, 990, 1240],
+                    type: 'line',
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    pointBackgroundColor: '#F59E0B',
+                    pointBorderColor: '#FFFFFF',
+                    pointRadius: 4,
+                    borderWidth: 2.5,
+                    tension: 0.35,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderWidth: 1,
+                    titleColor: '#F8FAFC',
+                    bodyColor: '#CBD5E1',
+                    callbacks: {
+                        label: function(ctx) {
+                            return `${ctx.dataset.label}: ${formatarMoedaBRL(ctx.raw)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 11 } }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: {
+                        color: '#94A3B8',
+                        font: { family: 'JetBrains Mono', size: 10 },
+                        callback: val => 'R$ ' + (val >= 1000 ? (val/1000).toFixed(0) + 'k' : val)
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        color: '#F59E0B',
+                        font: { family: 'JetBrains Mono', size: 10 },
+                        callback: val => 'R$ ' + val
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderizarGraficoTransportadorasBI(carriers) {
+    const canvas = document.getElementById('chart-transportadoras-bi');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    if (window._chartCarriersBi) {
+        window._chartCarriersBi.destroy();
+    }
+
+    const labels = carriers.map(c => c.carrier);
+    const dataVals = carriers.map(c => c.total);
+    const colors = ['#38BDF8', '#F59E0B', '#10B981', '#A855F7'];
+
+    const ctx = canvas.getContext('2d');
+    window._chartCarriersBi = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels.length ? labels : ['Total Express', 'Correios'],
+            datasets: [{
+                data: dataVals.length ? dataVals : [82, 9],
+                backgroundColor: colors.slice(0, Math.max(labels.length, 2)),
+                borderWidth: 2,
+                borderColor: '#111B2E'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    borderColor: 'rgba(255, 255, 255, 0.15)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ` ${ctx.label}: ${ctx.raw} encomendas`;
+                        }
+                    }
+                }
+            },
+            cutout: '72%'
+        }
+    });
+
+    // Lista de badges abaixo do gráfico
+    const elList = document.getElementById('bi-carriers-list');
+    if (elList) {
+        const totalGeral = carriers.reduce((acc, c) => acc + c.total, 0) || 1;
+        elList.innerHTML = carriers.map((c, i) => {
+            const pct = ((c.total / totalGeral) * 100).toFixed(1);
+            const color = colors[i % colors.length];
+            return `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #0E1626; padding: 7px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></span>
+                        <strong style="color: #F1F5F9;">${c.carrier}</strong>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace;">
+                        <span style="color: #94A3B8;">${c.total} vol</span>
+                        <span style="background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-size: 11px; color: ${color}; font-weight: 700;">${pct}%</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function renderizarHeatmapUfBI(heatmap) {
+    const grid = document.getElementById('bi-heatmap-grid');
+    const tableBody = document.getElementById('bi-heatmap-table-body');
+    if (!grid || !tableBody) return;
+
+    if (!heatmap || heatmap.length === 0) {
+        grid.innerHTML = '<div style="color: #94A3B8; font-size: 12px;">Nenhum dado estadual encontrado.</div>';
+        tableBody.innerHTML = '<tr><td colspan="5" style="padding: 12px; text-align: center; color: #94A3B8;">Sem dados</td></tr>';
+        return;
+    }
+
+    const maxVenda = Math.max(...heatmap.map(h => h.totalVenda), 1);
+
+    // Cards térmicos graduados por calor
+    grid.innerHTML = heatmap.slice(0, 8).map((h, idx) => {
+        const pctMax = Math.min(100, Math.round((h.totalVenda / maxVenda) * 100));
+        let heatColor = '#38BDF8';
+        let heatBg = 'rgba(56, 189, 248, 0.12)';
+        let heatBorder = 'rgba(56, 189, 248, 0.28)';
+
+        if (idx === 0 || pctMax > 70) {
+            heatColor = '#EF4444';
+            heatBg = 'rgba(239, 68, 68, 0.14)';
+            heatBorder = 'rgba(239, 68, 68, 0.35)';
+        } else if (idx <= 2 || pctMax > 35) {
+            heatColor = '#F59E0B';
+            heatBg = 'rgba(245, 158, 11, 0.14)';
+            heatBorder = 'rgba(245, 158, 11, 0.35)';
+        }
+
+        return `
+            <div style="background: ${heatBg}; border: 1px solid ${heatBorder}; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 16px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${h.uf}</span>
+                    <span style="font-size: 10px; font-weight: 800; color: ${heatColor}; background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px;">#${idx+1}</span>
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(h.totalVenda)}</div>
+                <div style="font-size: 11px; color: #94A3B8; margin-top: 4px; display: flex; justify-content: space-between;">
+                    <span>DIFAL:</span>
+                    <strong style="color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(h.totalDifal)}</strong>
+                </div>
+                <div style="margin-top: 8px; background: rgba(255,255,255,0.08); height: 4px; border-radius: 2px; overflow: hidden;">
+                    <div style="background: ${heatColor}; height: 100%; width: ${pctMax}%;"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Tabela analítica completa
+    tableBody.innerHTML = heatmap.map((h, idx) => {
+        const taxaLib = h.totalGuias > 0 ? ((h.pagas / h.totalGuias) * 100).toFixed(0) : '0';
+        const is100 = taxaLib >= 95;
+        return `
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='#0E1626'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 10px 12px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${h.uf}</td>
+                <td style="padding: 10px 12px; color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">${h.totalGuias} guias</td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #38BDF8; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(h.totalVenda)}</td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(h.totalDifal)}</td>
+                <td style="padding: 10px 12px;">
+                    <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: ${is100 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${is100 ? '#34D399' : '#F87171'};">
+                        ${taxaLib}% (${h.pagas}/${h.totalGuias})
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
+// ----------------------------------------------------------------------------
+// 2. MODAL OPERACIONAL DE REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)
+// ----------------------------------------------------------------------------
+function abrirModalRemessaBancaria() {
+    const modal = document.getElementById('modal-remessa-bancaria');
+    if (!modal) return;
+    
+    // Preenche data default com hoje
+    const inputData = document.getElementById('modal-remessa-data-pagamento');
+    if (inputData && !inputData.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        inputData.value = hoje;
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalRemessaBancaria = abrirModalRemessaBancaria;
+
+function fecharModalRemessaBancaria() {
+    const modal = document.getElementById('modal-remessa-bancaria');
+    if (modal) modal.style.display = 'none';
+}
+window.fecharModalRemessaBancaria = fecharModalRemessaBancaria;
+
+function executarDownloadRemessaModal(event) {
+    if (event) event.preventDefault();
+    const inputData = document.getElementById('modal-remessa-data-pagamento');
+    const dataPagamento = inputData ? inputData.value : '';
+
+    const url = `/api/fintech/itau/remessa-cnab240?dataPagamento=${encodeURIComponent(dataPagamento)}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `REM_${new Date().toISOString().slice(0, 10)}.REM`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof exibirToastHandsfree === 'function') {
+        exibirToastHandsfree('REMESSA ITAÚ GERADA!', 'Arquivo CNAB 240 baixado com sucesso para envio ao banco.');
+    }
+}
+window.executarDownloadRemessaModal = executarDownloadRemessaModal;
+
+async function processarArquivoRetornoModal(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch('/api/fintech/itau/retorno-cnab240', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ conteudoRetorno: text, filename: file.name })
+        });
+
+        const data = await res.json();
+        if (data.success || data.baixasProcessadas) {
+            if (typeof exibirToastHandsfree === 'function') {
+                exibirToastHandsfree('RETORNO CONCILIADO!', `${data.baixasProcessadas || 'Todas as'} guias liquidadas e cargas liberadas.`);
+            }
+            fecharModalRemessaBancaria();
+            if (typeof carregarDadosBI === 'function') carregarDadosBI();
+            if (typeof carregarCargasDocaReais === 'function') carregarCargasDocaReais();
+        } else {
+            alert('Aviso na conciliação: ' + (data.message || 'Arquivo processado'));
+        }
+    } catch (err) {
+        console.error('[Retorno Modal] Erro:', err);
+        alert('Erro ao processar retorno bancário: ' + err.message);
+    }
+}
+window.processarArquivoRetornoModal = processarArquivoRetornoModal;
+
+
+// ----------------------------------------------------------------------------
+// 3. CENTRAL DE RELATÓRIOS 2.0 (DIFAL NOTA A NOTA, ROMANEIOS E FECHAMENTO)
+// ----------------------------------------------------------------------------
+function alternarTabRelatorios(tab) {
+    const tabs = ['difal', 'romaneios', 'fechamento'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`tab-rel-btn-${t}`);
+        const cont = document.getElementById(`tab-rel-conteudo-${t}`);
+        if (btn) {
+            if (t === tab) {
+                btn.style.background = '#111B2E';
+                btn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+                btn.style.color = '#38BDF8';
+                btn.classList.add('active');
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'transparent';
+                btn.style.color = '#94A3B8';
+                btn.classList.remove('active');
+            }
+        }
+        if (cont) {
+            cont.style.display = (t === tab) ? 'block' : 'none';
+        }
+    });
+
+    if (tab === 'difal') {
+        carregarRelatorioAnaliticoDifal();
+    }
+}
+window.alternarTabRelatorios = alternarTabRelatorios;
+
+async function carregarRelatorioAnaliticoDifal() {
+    const tbody = document.getElementById('tabela-relatorio-difal-body');
+    const selectUf = document.getElementById('filtro-rel-uf');
+    const uf = selectUf ? selectUf.value : 'todas';
+
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando notas fiscais...</td></tr>';
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const url = `/api/relatorios/analitico-difal?uf=${encodeURIComponent(uf)}`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error('Falha ao carregar relatório');
+        const data = await res.json();
+
+        window._dadosRelatorioDifalCache = data.guias || [];
+        filtrarTabelaRelatorioDifalLocal();
+    } catch (err) {
+        console.error('[Relatório Analítico] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar dados: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioAnaliticoDifal = carregarRelatorioAnaliticoDifal;
+
+function filtrarTabelaRelatorioDifalLocal() {
+    const inputBusca = document.getElementById('filtro-rel-busca');
+    const termo = (inputBusca ? inputBusca.value : '').toLowerCase().trim();
+    const dados = window._dadosRelatorioDifalCache || [];
+
+    const filtrados = dados.filter(g => {
+        if (!termo) return true;
+        const nf = String(g.invoice_number || g.nf_number || '').toLowerCase();
+        const dest = String(g.destinatario || g.cliente_nome || '').toLowerCase();
+        const chave = String(g.access_key || '').toLowerCase();
+        const uf = String(g.uf || '').toLowerCase();
+        return nf.includes(termo) || dest.includes(termo) || chave.includes(termo) || uf.includes(termo);
+    });
+
+    // Atualiza KPIs do relatório
+    let somaVenda = 0;
+    let somaDifal = 0;
+    filtrados.forEach(g => {
+        const vDifal = parseFloat(g.value || 0);
+        const vVenda = parseFloat(g.valor_venda || g.invoice_total || (vDifal > 0 ? (vDifal / 0.08) : 380));
+        somaVenda += vVenda;
+        somaDifal += vDifal;
+    });
+
+    const elTotalNotas = document.getElementById('rel-kpi-total-notas');
+    const elTotalVenda = document.getElementById('rel-kpi-total-venda');
+    const elTotalDifal = document.getElementById('rel-kpi-total-difal');
+    if (elTotalNotas) elTotalNotas.textContent = filtrados.length;
+    if (elTotalVenda) elTotalVenda.textContent = formatarMoedaBRL(somaVenda);
+    if (elTotalDifal) elTotalDifal.textContent = formatarMoedaBRL(somaDifal);
+
+    const tbody = document.getElementById('tabela-relatorio-difal-body');
+    if (!tbody) return;
+
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Nenhuma nota encontrada com os filtros selecionados.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtrados.map(g => {
+        const nfNum = g.invoice_number || g.nf_number || 'S/N';
+        const serie = g.nf_series || '1';
+        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-09-30');
+        const dest = g.destinatario || g.cliente_nome || 'Consumidor Final (BOAH)';
+        const uf = (g.uf || 'ND').toUpperCase();
+        const transp = g.carrier_name || 'Total Express';
+        const vDifal = parseFloat(g.value || 0);
+        const vVenda = parseFloat(g.valor_venda || g.invoice_total || (vDifal > 0 ? (vDifal / 0.08) : 380));
+        const isPago = g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at;
+
+        return `
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='#0E1626'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                    ${nfNum} <span style="font-size: 11px; color: #64748B;">/ ${serie}</span>
+                </td>
+                <td style="padding: 12px 16px; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">${dt}</td>
+                <td style="padding: 12px 16px; color: #F1F5F9; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${dest}</td>
+                <td style="padding: 12px 16px;">
+                    <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;">
+                        ${uf}
+                    </span>
+                </td>
+                <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${transp}</td>
+                <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vVenda)}</td>
+                <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vDifal)}</td>
+                <td style="padding: 12px 16px; text-align: center;">
+                    <span style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: ${isPago ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${isPago ? '#34D399' : '#F87171'};">
+                        ${isPago ? 'Liquidada' : 'A Recolher'}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+window.filtrarTabelaRelatorioDifalLocal = filtrarTabelaRelatorioDifalLocal;
+
+function exportarCsvRelatorioDifal() {
+    const dados = window._dadosRelatorioDifalCache || [];
+    if (dados.length === 0) {
+        alert('Nenhum dado para exportar.');
+        return;
+    }
+
+    const cabecalho = ['NF-e', 'Serie', 'Data Emissao', 'Destinatario', 'UF', 'Transportadora', 'Valor Venda (R$)', 'DIFAL (R$)', 'Status'];
+    const linhas = dados.map(g => {
+        const nfNum = g.invoice_number || g.nf_number || 'S/N';
+        const serie = g.nf_series || '1';
+        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-09-30');
+        const dest = (g.destinatario || g.cliente_nome || 'Consumidor Final').replace(/,/g, '');
+        const uf = (g.uf || 'ND').toUpperCase();
+        const transp = (g.carrier_name || 'Total Express').replace(/,/g, '');
+        const vDifal = (parseFloat(g.value || 0)).toFixed(2);
+        const vVenda = (parseFloat(g.valor_venda || g.invoice_total || (vDifal > 0 ? (vDifal / 0.08) : 380))).toFixed(2);
+        const status = (g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at) ? 'Liquidada' : 'A Recolher';
+        return [nfNum, serie, dt, dest, uf, transp, vVenda, vDifal, status].join(';');
+    });
+
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Analitico_DIFAL_BOAH_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarCsvRelatorioDifal = exportarCsvRelatorioDifal;

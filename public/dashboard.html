@@ -1331,6 +1331,7 @@
         .status-dot.purple { background-color: #A855F7; box-shadow: 0 0 4px rgba(168, 85, 247, 0.5); }
 
     </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -1535,43 +1536,50 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Dashboard & Métricas -->
-                <div class="figma-module-card" onclick="navegarAbaPrincipal('dashboard')">
+                <!-- Card 2: Painel Executivo & BI 360° -->
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('dashboard')" style="background: linear-gradient(180deg, #121C30 0%, #0B1220 100%); border-color: rgba(56, 189, 248, 0.25);">
                     <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Dashboard &amp; M&eacute;tricas</span>
+                                <span style="display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                                </span>
+                                <span style="font-size: 14.5px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em;">Painel Executivo &amp; BI 360&deg;</span>
                             </div>
-                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <span style="font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; letter-spacing: 0.05em;">ANALYTICS</span>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: #F1F5FC; line-height: 1;">R$ 3.846,22</div>
-                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">DIFAL Ita&uacute; conciliado</div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 27px; font-weight: 800; color: #FFFFFF; line-height: 1;">R$ 74.920,80</div>
+                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">GMV Consolidado &middot; Set/Out</div>
                             </div>
-                            <!-- Sparkline Figma SVG -->
-                            <svg width="96" height="48" viewBox="0 0 96 48" fill="none">
-                                <path d="M2 38 L24 38 L40 24 L56 30 L72 16 L94 4" stroke="#66DBAC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                            <div style="width: 80px; height: 38px; display: flex; align-items: flex-end; gap: 4px;">
+                                <span style="flex: 1; height: 35%; background: rgba(56, 189, 248, 0.3); border-radius: 2px;"></span>
+                                <span style="flex: 1; height: 60%; background: rgba(56, 189, 248, 0.5); border-radius: 2px;"></span>
+                                <span style="flex: 1; height: 45%; background: rgba(56, 189, 248, 0.4); border-radius: 2px;"></span>
+                                <span style="flex: 1; height: 85%; background: rgba(56, 189, 248, 0.7); border-radius: 2px;"></span>
+                                <span style="flex: 1; height: 100%; background: #38BDF8; border-radius: 2px; box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);"></span>
+                            </div>
                         </div>
 
-                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">87 cargas liberadas no dia</div>
+                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Gráficos em tempo real, heatmap por UF e transportadoras</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
-                                Atualizado
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                94.8% Cargas no Prazo
                             </span>
-                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                            <span style="font-size: 10.5px; color: #94A3B8;">BI ao vivo</span>
                         </div>
                     </div>
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver indicadores &rarr;</div>
-                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Todos os canais &middot; consolidado di&aacute;rio</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 700; color: #38BDF8;">Abrir Cockpit de BI &rarr;</div>
+                            <span style="font-size: 11px; color: #94A3B8;">Gráficos &amp; Heatmap</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1663,7 +1671,7 @@
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
-                            <button type="button" onclick="event.stopPropagation(); navegarAbaPrincipal('dashboard')" title="Ir direto para a Remessa Itaú" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                            <button type="button" onclick="event.stopPropagation(); abrirModalRemessaBancaria()" title="Ir direto para a Remessa Itaú" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
                                 Remessa Itaú ↗
                             </button>
                         </div>
@@ -1671,48 +1679,46 @@
                     </div>
                 </div>
 
-                <!-- Card 5: Tesouraria -->
-                <div class="figma-module-card" onclick="navegarAbaPrincipal('dashboard'); setTimeout(() => { const el = document.getElementById('secao-fintech-itau'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
+                <!-- Card 5: Remessa Itaú CNAB 240 (Ação Rápida) -->
+                <div class="figma-module-card" onclick="abrirModalRemessaBancaria()" style="background: linear-gradient(180deg, #10192A 0%, #0B111E 100%); border-color: rgba(16, 185, 129, 0.25);">
                     <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 6 12 3 19 6"/><line x1="4" y1="10" x2="4" y2="21"/><line x1="20" y1="10" x2="20" y2="21"/><line x1="8" y1="14" x2="8" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="16" y1="14" x2="16" y2="17"/></svg>
-                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Tesouraria</span>
+                                <span style="display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; background: rgba(16, 185, 129, 0.15); color: #34D399;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                </span>
+                                <span style="font-size: 14.5px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em;">Remessa Ita&uacute; SISPAG</span>
                             </div>
-                            <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                            <span style="font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #34D399; letter-spacing: 0.05em;">CNAB 240</span>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; color: #F1F5FC; line-height: 1;">REM2610</div>
-                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">remessa Ita&uacute; confirmada</div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #34D399; line-height: 1;">REM2610</div>
+                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">91 guias &middot; R$ 4.020,42</div>
                             </div>
-                            <!-- Ícone Documento com Check -->
-                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="1.8">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/>
-                            </svg>
+                            <button type="button" class="btn-primary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalRemessaBancaria()">
+                                Baixar TXT
+                            </button>
                         </div>
 
-                        <div style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">Concilia&ccedil;&atilde;o conclu&iacute;da &agrave;s 09:35</div>
+                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Gera&ccedil;&atilde;o de remessa .TXT e concilia&ccedil;&atilde;o de retorno .RET</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(102, 219, 172, 0.12); border: 1px solid rgba(102, 219, 172, 0.25); color: #66DBAC; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/></svg>
-                                Confirmada
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                Ita&uacute; Autorizado
                             </span>
-                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                            <span style="font-size: 10.5px; color: #94A3B8;">Ag. 0334 C/C 98775-7</span>
                         </div>
                     </div>
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver remessa Ita&uacute; &rarr;</div>
-                            <button type="button" onclick="event.stopPropagation(); navegarAbaPrincipal('relatorios')" title="Ir direto para Relatórios" style="background: rgba(165, 180, 252, 0.12); border: 1px solid rgba(165, 180, 252, 0.3); color: #C7D2FE; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                                Relatórios ↗
-                            </button>
+                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 700; color: #34D399;">Abrir Painel de Remessa &rarr;</div>
+                            <span style="font-size: 11px; color: #8597B1;">Pronto p/ Asaas</span>
                         </div>
-                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Arquivo de retorno processado</div>
                     </div>
                 </div>
 
@@ -1787,226 +1793,251 @@
 
         </div>
 
-        <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1200px; margin: 0 auto; padding-top: 10px; padding-bottom: 60px;">
-            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
-                <div id="meta-batch-tag" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #34D399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                    <span style="width: 7px; height: 7px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></span>
-                    <span>Lote Ativo: 91 Guias (CNAB 240)</span>
+                <div id="secao-view-dashboard" class="main-view-section" style="display: none; max-width: 1360px; margin: 0 auto; padding-top: 10px; padding-bottom: 60px;">
+            
+            <!-- HEADER DA SEÇÃO DE BI -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        <span>&larr; In&iacute;cio &middot; M&oacute;dulos</span>
+                    </button>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0; letter-spacing: -0.02em;">Cockpit Executivo &amp; BI 360&deg;</h1>
+                            <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38BDF8; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; letter-spacing: 0.04em;">DASHBOARD AO VIVO</span>
+                        </div>
+                        <p style="font-size: 13px; color: #94A3B8; margin: 4px 0 0 0;">An&aacute;lise consolidada de faturamento, curvas fiscais de DIFAL por Estado e efici&ecirc;ncia de despacho da BOAH.</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" onclick="carregarDadosBI(true)" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
+                        <svg id="bi-refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        <span>Atualizar Dados</span>
+                    </button>
+                    <button type="button" onclick="abrirModalRemessaBancaria()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                        <span>Remessa Ita&uacute; (CNAB 240)</span>
+                    </button>
+                    <button type="button" onclick="navegarAbaPrincipal('relatorios')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38BDF8; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                        <span>Central de Relat&oacute;rios &rarr;</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- TÍTULO PRINCIPAL DIRETO AO PONTO -->
-            <div style="margin-bottom: 26px;">
-                <h1 style="font-size: 28px; font-weight: 800; color: #FFFFFF; margin: 0 0 6px 0; letter-spacing: -0.02em;">Liquidação Bancária do Lote</h1>
-                <p style="font-size: 14px; color: #94A3B8; margin: 0;">Gere a remessa bancária para pagamento das guias tributárias e liberação das cargas na expedição.</p>
-            </div>
-
-            <!-- RESUMO RÁPIDO DO LOTE (STRIP COMPACTA, SEM POLUIÇÃO) -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;">
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Volumes no Lote</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-volumes">91</div>
-                </div>
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+            <!-- STRIP DE 4 KPIS EXECUTIVOS -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+                <!-- KPI 1 -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Cargas Prontas</span>
-                        <span id="kpi-ready-badge" style="font-size: 10px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 2px 7px; border-radius: 999px;">96% Pronto</span>
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Faturamento Estimado</span>
+                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">CARTEIRA TOTAL</span>
                     </div>
-                    <div style="font-size: 24px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-ready-val">87</div>
+                    <div id="bi-kpi-faturamento" style="font-size: 27px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Ticket M&eacute;dio:</span>
+                        <strong id="bi-kpi-ticket-medio" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">R$ 0,00</strong>
+                    </div>
                 </div>
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px;">
+
+                <!-- KPI 2 -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pendências</span>
-                        <span id="kpi-blocked-badge" style="font-size: 10px; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #F87171; padding: 2px 7px; border-radius: 999px;">4 Retidas</span>
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">DIFAL Interestadual</span>
+                        <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">TRIBUTO TOTAL</span>
                     </div>
-                    <div style="font-size: 24px; font-weight: 800; color: #F87171; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-status">4</div>
-                </div>
-                <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), #111B2E); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 14px 18px;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #93C5FD; text-transform: uppercase;">Total a Recolher (DIFAL)</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #60A5FA; font-family: 'JetBrains Mono', monospace; margin-top: 4px;" id="kpi-difal">R$ 4.020,42</div>
-                </div>
-            </div>
-
-            <!-- CARD PRINCIPAL: PASSO A PASSO DA LIQUIDAÇÃO (FOCO TOTAL NA AÇÃO) -->
-            <section id="fintech-payment-panel" style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 18px; padding: 28px; margin-bottom: 28px; box-shadow: 0 10px 35px rgba(0,0,0,0.4);">
-                
-                <!-- Cabeçalho do Card de Ação -->
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
-                    <div>
-                        <div style="font-size: 18px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg></span>
-                            <span>Gerar Remessa CNAB 240</span>
-                        </div>
-                        <div id="fintech-batch-summary" style="font-size: 13px; color: #94A3B8; margin-top: 4px;">
-                            Lote Fiscal #REM2610 · 91 guias auditadas · Total DIFAL: R$ 4.020,42
-                        </div>
-                    </div>
-
-                    <div id="fintech-bank-info" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 8px 16px; font-size: 12.5px; color: #CBD5E1; display: flex; align-items: center; gap: 8px;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
-                        <span>Conta Autorizada: Ag. 0334 · C/C 98775-7 (LALUA)</span>
+                    <div id="bi-kpi-difal" style="font-size: 27px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Carga M&eacute;dia Tribut&aacute;ria:</span>
+                        <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 7.8%</strong>
                     </div>
                 </div>
 
-                <!-- Formulário com 2 Passos Claros -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-                    <div>
-                        <label for="doca-input-data-pagamento" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
-                            1. Data de Vencimento / Pagamento
-                        </label>
-                        <input type="date" id="doca-input-data-pagamento" value="2026-10-26" onchange="atualizarDataRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none;">
-                        <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px;">Data que constará no cabeçalho e registros do lote CNAB 240.</span>
+                <!-- KPI 3 -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Cargas &amp; Libera&ccedil;&atilde;o</span>
+                        <span id="bi-kpi-liberacao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">0% PRONTO</span>
                     </div>
-
-                    <div>
-                        <label for="doca-select-banco" style="display: block; font-size: 12px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">
-                            2. Layout Bancário Autorizado
-                        </label>
-                        <select id="doca-select-banco" onchange="atualizarBancoRemessaDoca(this.value)" style="width: 100%; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 13px 16px; color: #FFFFFF; font-size: 14px; font-weight: 600; outline: none; cursor: pointer;">
-                            <option value="itau" selected>Layout CNAB 240 - Segmento O (Tributos & DIFAL)</option>
-                            <option value="bradesco">Layout CNAB 240 - Tributos (Bradesco)</option>
-                            <option value="bb">Layout CNAB 240 - Tributos (Banco do Brasil)</option>
-                        </select>
-                        <span style="display: block; font-size: 11.5px; color: #64748B; margin-top: 6px;">Homologado para leitura automática de código de barras tributário.</span>
+                    <div id="bi-kpi-cargas-status" style="font-size: 27px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">0 / 0</div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Pend&ecirc;ncias Retidas:</span>
+                        <strong id="bi-kpi-pendentes" style="color: #F87171; font-family: 'JetBrains Mono', monospace;">0 guias</strong>
                     </div>
                 </div>
 
-                <!-- AÇÃO PRIMÁRIA INCONFUNDÍVEL -->
-                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-                    <div>
-                        <div style="font-size: 14px; font-weight: 700; color: #FFFFFF;">Pronto para baixar a remessa?</div>
-                        <div style="font-size: 12.5px; color: #94A3B8; margin-top: 2px;">O arquivo gerado deve ser transmitido no Internet Banking para efetivação do débito.</div>
+                <!-- KPI 4 -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Efici&ecirc;ncia da Doca</span>
+                        <span style="background: rgba(168, 85, 247, 0.15); color: #C084FC; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">SLA DOCA</span>
                     </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <!-- BOTAO UPLOAD RETORNO ITAU CNAB 240 -->
-                        <button type="button" id="btn-doca-upload-retorno" onclick="abrirModalUploadRetorno()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" title="Subir arquivo de retorno do Itaú SISPAG para conciliação automática das guias">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                            <span>Subir Retorno Itaú (.RET)</span>
-                        </button>
-                        <a id="btn-doca-baixar-remessa" href="#" onclick="executarDownloadRemessaDoca(event)" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-weight: 800; font-size: 14px; border-radius: 10px; padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45); cursor: pointer; transition: transform 0.15s ease;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            <span id="btn-doca-baixar-remessa-text">Baixar Arquivo de Remessa (.TXT)</span>
-                        </a>
-
-                        <button type="button" id="btn-doca-autorizar-lote" onclick="autorizarPagamentoLoteComData()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-weight: 700; font-size: 13.5px; border-radius: 10px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Confirmar Agendamento</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SEÇÃO DE APOIO EM 2 COLUNAS: DISTRIBUIÇÃO FISCAL + FERRAMENTAS COMPLEMENTARES -->
-            <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 28px;">
-                <!-- Coluna 1: Distribuição por Estado (UF) -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
-                            <span>Distribuição Tributária por Estado</span>
-                        </div>
-                        <span style="font-size: 12px; color: #64748B;">DIFAL / DARE por UF</span>
-                    </div>
-                    <div id="uf-distribution-grid" class="uf-cards-grid">
-                        <div style="color: #94A3B8; font-size: 13px;">Carregando dados das guias...</div>
-                    </div>
-                </div>
-
-                <!-- Coluna 2: Ações & Ferramentas Auxiliares -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                            <span>Ferramentas Auxiliares</span>
-                        </div>
-                        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px 0;">Emissões e downloads fiscais pontuais.</p>
-
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <button type="button" id="btn-doca-emitir-sefaz-data" onclick="abrirModalEmitirSefazLote(false)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Emitir SEFAZ em Lote (c/ Data)</span>
-                            </button>
-
-                            <a id="btn-doca-baixar-xml-sp" href="#" onclick="baixarXmlLoteSpComData(event)" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                                <span>Baixar XML em Lote (SP)</span>
-                            </a>
-
-
-                            <button type="button" id="btn-doca-importar-retorno-sp" onclick="document.getElementById('input-retorno-sp-zip').click()" style="background: #0E1626; border: 1px solid rgba(20, 184, 166, 0.4); color: #2DD4BF; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                                <span>📥 Importar Retorno SP (.zip)</span>
-                            </button>
-                            <input type="file" id="input-retorno-sp-zip" accept=".zip" style="display: none;" onchange="enviarRetornoSpZip(this)">
-
-                            <a id="btn-doca-baixar-guias" href="#" target="_blank" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); color: #E2E8F0; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                                <span>Baixar Pacote de Guias PDF</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
-                        <button type="button" onclick="navegarAbaPrincipal('ecommerce')" style="width: 100%; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); color: #60A5FA; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-                            <span>Ver Detalhes no E-commerce 360° →</span>
-                        </button>
+                    <div id="bi-kpi-sla" style="font-size: 27px; font-weight: 800; color: #C084FC; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">2h 18min</div>
+                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Venda &rarr; NF-e &rarr; Libera&ccedil;&atilde;o</span>
+                        <strong style="color: #34D399;">&bull; 95% SLA</strong>
                     </div>
                 </div>
             </div>
 
-            <!-- EMBARQUE & TRANSPORTADORAS (ORGANIZADO NA BASE) -->
-            <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px;">
-                <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    <span>Status de Liberação das Transportadoras</span>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <!-- Total Express -->
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Total Express</span>
-                            <span class="hud-badge hud-badge-red" id="carrier-total-badge" style="font-size: 11px;">91 Retidas</span>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.06); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px;">
-                            <div id="carrier-total-bar" style="width: 0%; height: 100%; background: #10B981; border-radius: 6px;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; margin-bottom: 12px;">
-                            <span>Liberadas: <strong id="carrier-total-liberadas" style="color: #10B981;">0</strong></span>
-                            <span>Pendentes: <strong id="carrier-total-retidas" style="color: #F87171;">91</strong></span>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="flex: 1; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Romaneio
-                            </a>
-                            <button type="button" onclick="confirmarColetaPorTransportadora('Total Express', 0)" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                                Liberar Embarque
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Correios -->
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-weight: 700; font-size: 14px; color: #FFFFFF;">Correios (Sedex / PAC)</span>
-                            <span id="carrier-correios-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; padding: 2px 8px; border-radius: 999px;">Pronto para Coleta</span>
-                        </div>
-                        <div style="background: rgba(255, 255, 255, 0.06); border-radius: 6px; height: 6px; overflow: hidden; margin-bottom: 10px;">
-                            <div style="width: 100%; height: 100%; background: #10B981; border-radius: 6px;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #94A3B8; margin-bottom: 12px;">
-                            <span>Expedição: <strong style="color: #FFFFFF;">Nacional</strong></span>
-                            <span>Status: <strong style="color: #10B981;">Liberado</strong></span>
-                        </div>
+            <!-- SEÇÃO DE GRÁFICOS PRINCIPAIS (TIMELINE + TRANSPORTADORAS) -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+                <!-- GRÁFICO 1: EVOLUÇÃO TEMPORAL (VENDAS vs DIFAL) -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                         <div>
-                            <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="width: 100%; background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #CBD5E1; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Romaneio Correios
-                            </a>
+                            <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                                <span>Curva Financeira: Vendas vs. DIFAL</span>
+                            </div>
+                            <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Volume faturado bruto vs. reten&ccedil;&atilde;o tribut&aacute;ria de DIFAL por data de emiss&atilde;o.</div>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 700;">
+                            <span style="display: inline-flex; align-items: center; gap: 6px; color: #38BDF8;">
+                                <span style="width: 10px; height: 10px; background: #38BDF8; border-radius: 2px;"></span>
+                                Faturamento (R$)
+                            </span>
+                            <span style="display: inline-flex; align-items: center; gap: 6px; color: #F59E0B;">
+                                <span style="width: 10px; height: 10px; background: #F59E0B; border-radius: 2px;"></span>
+                                DIFAL (R$)
+                            </span>
+                        </div>
+                    </div>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="chart-timeline-bi"></canvas>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO 2: PERFORMANCE POR TRANSPORTADORA -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                            <span>Divis&atilde;o por Transportadora</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Total Express vs. Correios</div>
+                    </div>
+                    <div style="height: 200px; position: relative; margin-bottom: 14px;">
+                        <canvas id="chart-transportadoras-bi"></canvas>
+                    </div>
+                    <div id="bi-carriers-list" style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <!-- Injetado dinamicamente -->
                     </div>
                 </div>
             </div>
+
+            <!-- SEÇÃO INFERIOR: MAPA DE CALOR POR UF & FUNIL OPERACIONAL -->
+            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 20px;">
+                
+                <!-- MAPA DE CALOR BRASIL POR ESTADO (HEATMAP UF) -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                                <span>Mapa de Calor por UF (Concentra&ccedil;&atilde;o Interestadual)</span>
+                            </div>
+                            <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Estados com maior densidade de pedidos, faturamento e impacto fiscal de DIFAL.</div>
+                        </div>
+                        <span style="font-size: 11px; color: #94A3B8; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: 6px;">Classifica&ccedil;&atilde;o T&eacute;rmica por GMV</span>
+                    </div>
+
+                    <!-- GRADE DE CARDS TÉRMICOS POR UF -->
+                    <div id="bi-heatmap-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <!-- Cards térmicos injetados dinamicamente via JS -->
+                    </div>
+
+                    <!-- TABELA DETALHADA DE ESTADOS -->
+                    <div style="overflow-x: auto; max-height: 240px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                                    <th style="padding: 10px 12px; font-weight: 700;">UF</th>
+                                    <th style="padding: 10px 12px; font-weight: 700;">Guias</th>
+                                    <th style="padding: 10px 12px; font-weight: 700;">Faturamento (GMV)</th>
+                                    <th style="padding: 10px 12px; font-weight: 700;">Total DIFAL</th>
+                                    <th style="padding: 10px 12px; font-weight: 700;">Status Libera&ccedil;&atilde;o</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bi-heatmap-table-body">
+                                <!-- Injetado dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- FUNIL DE EFICIÊNCIA OPERACIONAL & INTEGRAÇÕES -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            <span>Funil Operacional da Doca (BOAH)</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94A3B8; margin-bottom: 20px;">Throughput de pedidos desde a autoriza&ccedil;&atilde;o at&eacute; o embarque f&iacute;sico.</div>
+
+                        <!-- ETAPAS DO FUNIL -->
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <!-- Etapa 1 -->
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #C3ACFF;">1. Venda Aprovada (VNDA)</span>
+                                    <strong style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">100%</strong>
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div style="background: #C3ACFF; height: 100%; width: 100%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Etapa 2 -->
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #38BDF8;">2. NF-e Emitida (Linx ERP)</span>
+                                    <strong style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">100%</strong>
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div style="background: #38BDF8; height: 100%; width: 100%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Etapa 3 -->
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #F59E0B;">3. C&aacute;lculo Tribut&aacute;rio &amp; DIFAL</span>
+                                    <strong id="bi-funil-difal-pct" style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">96%</strong>
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div id="bi-funil-difal-bar" style="background: #F59E0B; height: 100%; width: 96%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Etapa 4 -->
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #10B981;">4. Remessa Ita&uacute; / Carga Liberada</span>
+                                    <strong id="bi-funil-liberadas-pct" style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">95.6%</strong>
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div id="bi-funil-liberadas-bar" style="background: #10B981; height: 100%; width: 95.6%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD ESTRATÉGICO DE INTEGRAÇÃO ASAAS -->
+                    <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.08)); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 16px; margin-top: 20px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 14px;">&bull;</span>
+                            <strong style="font-size: 12.5px; color: #60A5FA;">Roadmap Tecnol&oacute;gico: API Asaas</strong>
+                        </div>
+                        <p style="font-size: 11.5px; color: #94A3B8; margin: 0; line-height: 1.5;">
+                            A arquitetura atual com Remessa Ita&uacute; SISPAG (CNAB 240) est&aacute; preparada para conex&atilde;o direta via webhook Asaas, permitindo liquida&ccedil;&atilde;o Pix instant&acirc;nea sem troca manual de arquivos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div id="secao-view-ecommerce" class="main-view-section" style="display: none;">
@@ -2217,171 +2248,261 @@
         <!-- ========================================== -->
         <!-- ABA 3: RELATÓRIOS -->
         <!-- ========================================== -->
-        <div id="secao-view-relatorios" class="main-view-section" style="display: none;">
-            <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('cargas')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 10px 18px; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                <span>← Voltar para Fila de Expedição</span>
-            </button>
-
-            <div class="reports-section-header">
-                <div>
-                    <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #0F172A; display: flex; align-items: center; gap: 8px;">
-                        <span>Histórico de Romaneios, Manifestos & Fechamento Contábil</span>
-                    </h2>
-                    <p style="margin: 4px 0 0; font-size: 13px; color: #64748B;">
-                        Documentos oficiais de expedição, conciliação bancária Itaú SISPAG e arquivos para auditoria contábil.
-                    </p>
+                <div id="secao-view-relatorios" class="main-view-section" style="display: none; max-width: 1360px; margin: 0 auto; padding-top: 10px; padding-bottom: 60px;">
+            
+            <!-- HEADER DA CENTRAL DE RELATÓRIOS -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <button type="button" class="btn-voltar-hub" onclick="navegarAbaPrincipal('hub')" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.1); color: #F1F5F9; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        <span>&larr; In&iacute;cio &middot; M&oacute;dulos</span>
+                    </button>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h1 style="font-size: 26px; font-weight: 800; color: #FFFFFF; margin: 0; letter-spacing: -0.02em;">Central de Relat&oacute;rios &amp; Controladoria</h1>
+                            <span style="background: rgba(165, 180, 252, 0.15); border: 1px solid rgba(165, 180, 252, 0.35); color: #A5B4FC; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; letter-spacing: 0.04em;">DOCUMENTOS OFICIAIS</span>
+                        </div>
+                        <p style="font-size: 13px; color: #94A3B8; margin: 4px 0 0 0;">Demonstrativos fiscais nota a nota, manifestos de carga rodovi&aacute;ria e arquivos para concilia&ccedil;&atilde;o cont&aacute;bil mensal.</p>
+                    </div>
                 </div>
-                <div>
-                    <span class="hud-badge hud-badge-green" style="font-size: 12px; padding: 6px 12px;">
-                        <span class="status-dot green"></span> Lote REM2610 · 100% Conciliado
-                    </span>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" onclick="navegarAbaPrincipal('cargas')" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                        <span>Fila de Expedi&ccedil;&atilde;o &rarr;</span>
+                    </button>
+                    <button type="button" onclick="navegarAbaPrincipal('dashboard')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38BDF8; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                        <span>Painel Executivo &amp; BI &rarr;</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- GRID DOS 4 CARDS DE RELATÓRIOS -->
-            <div class="reports-grid">
-                <!-- CARD 1: ROMANEIO OFICIAL A4 -->
-                <div class="report-card">
-                    <div>
-                        <div class="report-card-top">
-                            <div class="report-card-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
-                            <div>
-                                <div class="report-card-title">Romaneio & Manifesto de Embarque (A4)</div>
-                                <div class="report-card-desc">Manifesto impresso oficial para conferência de carga, assinatura do motorista e fiscalização de trânsito em rodovias.</div>
-                            </div>
-                        </div>
-                        <div class="report-card-stats">
-                            <span>Cargas Prontas: <strong>87 Volumes</strong></span>
-                            <span>Valor Faturado: <strong>R$ 51.480,00</strong></span>
-                        </div>
-                    </div>
-                    <div class="report-card-actions">
-                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" class="btn sm primary" style="flex: 1; text-align: center; text-decoration: none;">
-                            Romaneio Total Express (PDF)
-                        </a>
-                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" class="btn sm outline" style="text-decoration: none;">
-                            Romaneio Correios
-                        </a>
-                    </div>
-                </div>
+            <!-- TABS DE NAVEGAÇÃO INTERNA DOS RELATÓRIOS -->
+            <div style="display: flex; border-bottom: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 24px; gap: 8px;">
+                <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); border-bottom: none; color: #38BDF8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>1. Anal&iacute;tico de DIFAL (Nota a Nota)</span>
+                </button>
+                <button type="button" id="tab-rel-btn-romaneios" class="tab-rel-btn" onclick="alternarTabRelatorios('romaneios')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    <span>2. Manifestos &amp; Romaneios (A4)</span>
+                </button>
+                <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    <span>3. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</span>
+                </button>
+            </div>
 
-                <!-- CARD 2: PACOTE FECHAMENTO FISCAL -->
-                <div class="report-card">
-                    <div>
-                        <div class="report-card-top">
-                            <div class="report-card-icon emerald"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></div>
-                            <div>
-                                <div class="report-card-title">Fechamento Diário Fiscal (Pacote ZIP)</div>
-                                <div class="report-card-desc">Download consolidado de todos os XMLs de notas fiscais faturadas, XMLs da SEFAZ SP formatados e PDFs das guias GNRE.</div>
-                            </div>
+            <!-- CONTEÚDO TAB 1: ANALÍTICO DE DIFAL -->
+            <div id="tab-rel-conteudo-difal" class="tab-rel-conteudo" style="display: block;">
+                <!-- BARRA DE FILTROS & AÇÕES -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div>
+                            <label style="display: block; font-size: 11px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase;">Estado (UF Destino)</label>
+                            <select id="filtro-rel-uf" onchange="carregarRelatorioAnaliticoDifal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 140px;">
+                                <option value="todas">Todas as UFs</option>
+                                <option value="RJ">RJ &middot; Rio de Janeiro</option>
+                                <option value="MG">MG &middot; Minas Gerais</option>
+                                <option value="AL">AL &middot; Alagoas</option>
+                                <option value="SP">SP &middot; S&atilde;o Paulo</option>
+                                <option value="BA">BA &middot; Bahia</option>
+                                <option value="PR">PR &middot; Paran&aacute;</option>
+                                <option value="RS">RS &middot; Rio Grande do Sul</option>
+                                <option value="SC">SC &middot; Santa Catarina</option>
+                                <option value="PE">PE &middot; Pernambuco</option>
+                                <option value="CE">CE &middot; Cear&aacute;</option>
+                            </select>
                         </div>
-                        <div class="report-card-stats">
-                            <span>Documentos: <strong>87 NF-e + 87 Guias</strong></span>
-                            <span>Destino: <strong>Contabilidade / Arquivo</strong></span>
-                        </div>
-                    </div>
-                    <div class="report-card-actions">
-                        <a href="#" class="btn sm primary" onclick="baixarXmlLoteSpComData(event)" style="flex: 1; text-align: center; text-decoration: none;">
-                            Baixar XML Lote SP
-                        </a>
-                        <a id="btn-relatorio-baixar-guias" href="#" target="_blank" class="btn sm outline" style="text-decoration: none;">
-                            Baixar Guias GNRE (PDF)
-                        </a>
-                    </div>
-                </div>
 
-                <!-- CARD 3: CONCILIAÇÃO BANCÁRIA ITAÚ SISPAG -->
-                <div class="report-card">
-                    <div>
-                        <div class="report-card-top">
-                            <div class="report-card-icon purple"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
-                            <div>
-                                <div class="report-card-title">Conciliação Bancária Itaú (CNAB 240)</div>
-                                <div class="report-card-desc">Extrato detalhado da remessa bancária com linha digitável, código de barras, alíquotas estaduais e confirmação de agendamento.</div>
-                            </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase;">Buscar Nota / Destinat&aacute;rio</label>
+                            <input type="text" id="filtro-rel-busca" placeholder="N&ordm; da NF, Chave ou Nome..." onkeyup="filtrarTabelaRelatorioDifalLocal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 8px 12px; border-radius: 8px; outline: none; width: 220px;">
                         </div>
-                        <div class="report-card-stats">
-                            <span>DIFAL Agendado: <strong>R$ 3.846,22</strong></span>
-                            <span>Arquivo: <strong>REM2610.txt (Itaú)</strong></span>
+
+                        <div style="align-self: flex-end;">
+                            <button type="button" onclick="carregarRelatorioAnaliticoDifal()" style="background: #1E293B; border: 1px solid rgba(255, 255, 255, 0.12); color: #F1F5F9; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer;">
+                                Filtrar
+                            </button>
                         </div>
                     </div>
-                    <div class="report-card-actions">
-                        <a href="#" class="btn sm primary" onclick="executarDownloadRemessaDoca(event)" style="flex: 1; text-align: center; text-decoration: none;">
-                            Baixar Remessa Itaú (.TXT)
-                        </a>
-                        <button type="button" class="btn sm outline" onclick="exportarRelatorioConciliacaoCsv()">
-                            Exportar CSV
+
+                    <!-- BOTÕES DE EXPORTAÇÃO -->
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="exportarCsvRelatorioDifal()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Excel (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="window.print()" style="background: #1E293B; border: 1px solid rgba(255, 255, 255, 0.12); color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Imprimir / PDF</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- CARD 4: RADAR DE DEVOLUÇÕES & CRÉDITO DIFAL -->
-                <div class="report-card">
-                    <div>
-                        <div class="report-card-top">
-                            <div class="report-card-icon amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.8"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div>
-                            <div>
-                                <div class="report-card-title">Radar de Devoluções & Crédito DIFAL</div>
-                                <div class="report-card-desc">Auditoria contínua de devoluções e cancelamentos de pedidos para abatimento de impostos e recuperação de tributos pagos a maior.</div>
+                <!-- CARDS DE TOTALIZAÇÃO DO RELATÓRIO -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px;">
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Notas Listadas</span>
+                        <div id="rel-kpi-total-notas" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturamento Total (Base)</span>
+                        <div id="rel-kpi-total-venda" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL Interestadual Total</span>
+                        <div id="rel-kpi-total-difal" style="font-size: 22px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <!-- TABELA ANALÍTICA DE DIFAL -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                                    <th style="padding: 12px 16px; font-weight: 700;">NF-e / S&eacute;rie</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Data Emiss&atilde;o</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Destinat&aacute;rio</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">UF Destino</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Transportadora</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Valor da Venda</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">DIFAL Recolhido</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Status Guia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-relatorio-difal-body">
+                                <tr>
+                                    <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio anal&iacute;tico...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO TAB 2: MANIFESTOS & ROMANEIOS -->
+            <div id="tab-rel-conteudo-romaneios" class="tab-rel-conteudo" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- CARD MANIFESTO TOTAL EXPRESS -->
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: grid; place-items: center; color: #38BDF8;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    </span>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Romaneio de Cargas &middot; Total Express</h3>
+                                        <span style="font-size: 11px; color: #94A3B8;">Documento oficial para coleta rodovi&aacute;ria e fiscaliza&ccedil;&atilde;o</span>
+                                    </div>
+                                </div>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">PRONTO P/ IMPRESS&Atilde;O</span>
+                            </div>
+                            <p style="font-size: 12.5px; color: #CBD5E1; line-height: 1.5; margin: 0 0 16px 0;">
+                                Romaneio impresso em formato padrão A4 com relação completa de AWB, chave de acesso da NF-e, destinatário, endereço de entrega e campo para assinatura do motorista na doca.
+                            </p>
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #94A3B8;">
+                                <div>Ve&iacute;culo / Transportador: <strong style="color: #FFFFFF;">Total Express Coleta Di&aacute;ria</strong></div>
+                                <div style="margin-top: 4px;">Tipo de Emiss&atilde;o: <strong style="color: #FFFFFF;">A4 com C&oacute;digo de Barras Code 128</strong></div>
                             </div>
                         </div>
-                        <div class="report-card-stats">
-                            <span>Monitoramento: <strong>Tempo Real</strong></span>
-                            <span>Status: <strong>Zero Risco de Bitributação</strong></span>
-                        </div>
+                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#0369A1'" onmouseout="this.style.background='#0284C7'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Imprimir Romaneio Total Express (A4)</span>
+                        </a>
                     </div>
-                    <div class="report-card-actions">
-                        <button type="button" class="btn sm primary" style="width: 100%;" onclick="const d = document.getElementById('container-view-devolucoes'); if(d) d.style.display = (d.style.display==='none'?'block':'none'); carregarRadarDevolucoes();">
-                            Alternar Tabela de Devoluções
+
+                    <!-- CARD MANIFESTO CORREIOS -->
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: grid; place-items: center; color: #F59E0B;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    </span>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Romaneio de Postagem &middot; Correios</h3>
+                                        <span style="font-size: 11px; color: #94A3B8;">Lista de Postagem PLP para ag&ecirc;ncia ou coleta</span>
+                                    </div>
+                                </div>
+                                <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">SEDEX / PAC</span>
+                            </div>
+                            <p style="font-size: 12.5px; color: #CBD5E1; line-height: 1.5; margin: 0 0 16px 0;">
+                                Relação com códigos de rastreio Correios dos pacotes faturados e liberados, pesos aferidos e chaves de NF-e para conferência na unidade de triagem postal.
+                            </p>
+                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #94A3B8;">
+                                <div>Modalidade: <strong style="color: #FFFFFF;">Sedex &amp; PAC Comercial</strong></div>
+                                <div style="margin-top: 4px;">Tipo de Emiss&atilde;o: <strong style="color: #FFFFFF;">Formato A4 Padr&atilde;o Correios</strong></div>
+                            </div>
+                        </div>
+                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="background: #D97706; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#B45309'" onmouseout="this.style.background='#D97706'">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Imprimir Romaneio Correios (A4)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO TAB 3: FECHAMENTO CONTÁBIL -->
+            <div id="tab-rel-conteudo-fechamento" class="tab-rel-conteudo" style="display: none;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <!-- PACOTE ZIP XMLs -->
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: grid; place-items: center; color: #34D399; margin-bottom: 14px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                            </div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Pacote Fiscal Mensal (.ZIP)</h3>
+                            <p style="font-size: 12px; color: #94A3B8; line-height: 1.5; margin: 0 0 16px 0;">
+                                Arquivo compactado contendo todos os arquivos XML originais da SEFAZ das notas faturadas e as guias GNRE em formato eletr&ocirc;nico para o fechamento mensal da contabilidade.
+                            </p>
+                        </div>
+                        <button type="button" onclick="baixarXmlLoteSpComData(event)" style="background: #10B981; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Baixar Arquivo ZIP Fiscal</span>
+                        </button>
+                    </div>
+
+                    <!-- CONCILIAÇÃO BANCÁRIA ITAÚ -->
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: grid; place-items: center; color: #38BDF8; margin-bottom: 14px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Concilia&ccedil;&atilde;o Banc&aacute;ria (.CSV)</h3>
+                            <p style="font-size: 12px; color: #94A3B8; line-height: 1.5; margin: 0 0 16px 0;">
+                                Extrato de conciliação bancária do Itaú SISPAG cruzando o valor faturado das notas com as linhas digitáveis e comprovantes de liquidação para conferência financeira.
+                            </p>
+                        </div>
+                        <button type="button" onclick="exportarRelatorioConciliacaoCsv()" style="background: #0284C7; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Concilia&ccedil;&atilde;o CSV</span>
+                        </button>
+                    </div>
+
+                    <!-- REMESSA ITAÚ CNAB 240 ATALHO -->
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: grid; place-items: center; color: #C084FC; margin-bottom: 14px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                            </div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Painel de Remessa Ita&uacute;</h3>
+                            <p style="font-size: 12px; color: #94A3B8; line-height: 1.5; margin: 0 0 16px 0;">
+                                Abra o modal operacional para gerar o arquivo `.TXT` de remessa para envio ao Internet Banking do Itaú ou importar o retorno `.RET` para baixa automática.
+                            </p>
+                        </div>
+                        <button type="button" onclick="abrirModalRemessaBancaria()" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #C084FC; font-size: 12.5px; font-weight: 700; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>Abrir Modal de Remessa &rarr;</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- CONTAINER DETALHADO DO RADAR DE DEVOLUÇÕES DENTRO DE RELATÓRIOS -->
-            <!-- CONTAINER 3: MODO RADAR DE DEVOLUÇÕES & CRÉDITO DIFAL -->
-            <div id="container-view-devolucoes" style="display: none; padding: 20px;">
-                <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                    <div>
-                        <div style="font-size: 16px; font-weight: 800; color: #92400E; display: flex; align-items: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                            <span>Radar Fiscal de Devoluções & Proteção de Caixa</span>
-                        </div>
-                        <p style="font-size: 13px; color: #B45309; margin: 4px 0 0;">
-                            Identifica devoluções parciais ou totais antes da transmissão ao Itaú, evitando pagamento indevido de DIFAL e gerando créditos tributários.
-                        </p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 11px; color: #92400E; text-transform: uppercase; font-weight: 700;">Economia Fiscal Potencial</div>
-                        <div id="radar-economia-total" style="font-size: 22px; font-weight: 800; color: #15803D; font-family: 'JetBrains Mono', monospace;">R$ 0,00</div>
-                    </div>
-                </div>
-
-                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
-                    <table class="cockpit-table">
-                        <thead>
-                            <tr>
-                                <th>NF Devolução</th>
-                                <th>NF Origem (Venda)</th>
-                                <th>Cliente</th>
-                                <th>UF Destino</th>
-                                <th style="text-align: right;">Valor Devolução</th>
-                                <th style="text-align: center;">Status DIFAL</th>
-                                <th style="text-align: right;">Ação Fiscal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="radar-devolucoes-tbody">
-                            <!-- Inserido dinamicamente via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- ABA 4: DOCA & CARGAS OPERACIONAIS -->
-        <!-- ========================================== -->
         <div id="secao-view-cargas" class="main-view-section" style="display: none;">
             <!-- BREADCRUMBS FIGMA (Node 2:10037) -->
             <div class="breadcrumbs-figma" style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
@@ -3311,6 +3432,97 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1200"></script>
+    <script src="/js/dashboard.js?v=20261029_1400"></script>
+    <!-- ============================================================== -->
+    <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
+    <!-- ============================================================== -->
+    <div id="modal-remessa-bancaria" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;" onclick="if(event.target === this) fecharModalRemessaBancaria()">
+        <div style="background: #111B2E; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 20px; max-width: 640px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
+            
+            <!-- TOPO DO MODAL -->
+            <div style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); display: grid; place-items: center; color: #34D399;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    </span>
+                    <div>
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF;">Remessa Banc&aacute;ria Ita&uacute; SISPAG</h2>
+                        <span style="font-size: 11.5px; color: #94A3B8;">Padr&atilde;o Febraban CNAB 240 &middot; Tributos Estaduais (GNRE / DIFAL)</span>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalRemessaBancaria()" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; width: 32px; height: 32px; border-radius: 8px; font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: all 0.2s;" onmouseover="this.style.color='#FFFFFF'; this.style.background='rgba(255, 255, 255, 0.15)'" onmouseout="this.style.color='#94A3B8'; this.style.background='rgba(255, 255, 255, 0.06)'">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CORPO DO MODAL -->
+            <div style="padding: 24px;">
+                <!-- RESUMO DO LOTE ATIVO -->
+                <div style="background: #0A101D; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Lote Operacional Ativo</div>
+                        <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            REM2610 &middot; <span style="color: #38BDF8;">91 guias auditadas</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Total a Recolher (DIFAL)</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            R$ 4.020,42
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTA BANCÁRIA -->
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 20px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 8px 14px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
+                    <span>Conta Corrente Autorizada: <strong style="color: #FFFFFF;">Banco Ita&uacute; (341) &middot; Ag. 0334 &middot; C/C 98775-7 (LALUA)</strong></span>
+                </div>
+
+                <!-- FORMULÁRIO DE GERAÇÃO DA REMESSA -->
+                <div style="margin-bottom: 20px;">
+                    <label for="modal-remessa-data-pagamento" style="display: block; font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 6px;">
+                        Data de Pagamento / Vencimento das Guias
+                    </label>
+                    <input type="date" id="modal-remessa-data-pagamento" style="width: 100%; box-sizing: border-box; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 13.5px; font-family: 'JetBrains Mono', monospace; padding: 10px 14px; border-radius: 8px; outline: none;">
+                </div>
+
+                <!-- BOTÃO DE DOWNLOAD -->
+                <button type="button" onclick="executarDownloadRemessaModal(event)" style="width: 100%; background: #10B981; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 13px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Baixar Arquivo de Remessa (.TXT)</span>
+                </button>
+
+                <!-- DIVISOR COM DROPZONE DE RETORNO -->
+                <div style="margin: 24px 0 16px 0; border-top: 1px dashed rgba(255, 255, 255, 0.12); position: relative; text-align: center;">
+                    <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #111B2E; padding: 0 12px; font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">
+                        Ou Processar Retorno Banc&aacute;rio
+                    </span>
+                </div>
+
+                <div style="border: 2px dashed rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; background: #0A101D; transition: all 0.2s;" onclick="document.getElementById('modal-remessa-file-input').click()" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.12)'">
+                    <input type="file" id="modal-remessa-file-input" accept=".ret,.txt,.RET,.TXT" style="display: none;" onchange="processarArquivoRetornoModal(event)">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">Clique para selecionar ou arraste o arquivo de Retorno (.RET)</div>
+                    <div style="font-size: 11px; color: #64748B; margin-top: 2px;">Baixa autom&aacute;tica das guias e libera&ccedil;&atilde;o imediata das cargas na doca.</div>
+                </div>
+
+                <!-- ROADMAP ASAAS -->
+                <div style="margin-top: 18px; background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 14px; color: #38BDF8;">&bull;</span>
+                    <span style="font-size: 11.5px; color: #94A3B8;">Integra&ccedil;&atilde;o Futura Asaas: Em breve, liquida&ccedil;&atilde;o autom&aacute;tica via Pix e concilia&ccedil;&atilde;o em tempo real sem troca manual de arquivos.</span>
+                </div>
+            </div>
+
+            <!-- RODAPÉ DO MODAL -->
+            <div style="background: #0E1626; border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 24px; display: flex; justify-content: flex-end;">
+                <button type="button" onclick="fecharModalRemessaBancaria()" style="background: #1E293B; border: 1px solid rgba(255, 255, 255, 0.12); color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 18px; border-radius: 8px; cursor: pointer;">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
 </body>
 </html>
