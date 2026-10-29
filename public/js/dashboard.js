@@ -4691,9 +4691,6 @@ function renderizarCards360(data) {
                                  DANFE
                                </button>`
                         }
-                        <button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); abrirModalPagamento360('${g.id}')">
-                            Dossiê ↗
-                        </button>
                     </div>
                 </div>
             </div>

@@ -48,7 +48,7 @@
 
 ### G. Padronização Fashion dos Cards Internos e Modal Dossiê 360°
 - **Tarja de Metadados Operacionais nos Cards Internos:** Eliminada a colisão de textos entre NF e Pedido. Agora organizado em 4 colunas estéticas: `PEDIDO #` (lavanda), `NF-E`, `ETIQUETA` (azul) e `EMISSÃO`.
-- **Botões e Ações:** Eliminado o botão quebrado `[ . ]` com ponto cinza. Substituído por botão nítido `Dossiê ↗` ao lado de `Emitir SEFAZ`.
+- **Botões e Ações:** Eliminado o botão quebrado `[ . ]` com ponto cinza. O card agora é 100% clicável em toda a sua área para abrir o Dossiê 360°, mantendo no rodapé apenas a ação operacional direta (`Emitir SEFAZ` ou `DANFE`).
 - **Modal Dossiê Dark Fashion Luxury:** O pop-up que era branco foi 100% convertido para o design dark da BOAH (`#0E1626`), com cards internos `#142037`, tipografia `JetBrains Mono` dourada/verde para valores, código de barras com botão `Copiar` e botões de ação para DANFE e Guia SEFAZ.
 
 ### H. Barra de Rolagem Slim Dark e Impressão de Etiqueta Total Express
@@ -57,7 +57,11 @@
   - Adicionado botão dedicado de destaque `Imprimir Etiqueta Total` no rodapé do modal 360°, com ícone de impressora e abertura direta da etiqueta térmica da Total Express via `/api/total-express/etiqueta/:guideId`.
   - Adicionado botão de atalho rápido `Imprimir` ao lado do código de rastreio na caixa de Transportadora do dossiê.
   - Implementada função de suporte `imprimirEtiquetaModalAtual()` no JS com verificação de transportadora (Total Express / Correios).
-- **Cache-Buster:** Atualizado para `v=20261029_1100` em scripts e folhas de estilo.
+
+### I. Simplificação Minimalista do Card de Pedidos
+- **Remoção do Botão "Dossiê ↗":** Como o card possui área de clique integral com efeito de hover suave (`cursor: pointer`), o botão explícito "Dossiê ↗" foi retirado do rodapé.
+- **Foco Operacional:** O rodapé do card agora exibe de forma limpa apenas o status da GNRE e o botão prioritário `Emitir SEFAZ` (ou `DANFE`), eliminando ruído visual.
+- **Cache-Buster:** Atualizado para `v=20261029_1110`.
 
 ---
 
