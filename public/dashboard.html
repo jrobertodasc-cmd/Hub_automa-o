@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261029_1000">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1130">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261029_1150">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -1359,25 +1359,13 @@
             <div style="width: 1px; height: 20px; background: #29374E;"></div>
 
             <!-- Flat Navigation Links (Figma Node 2:10037) -->
-            <!-- Flat Navigation Links (Figma Node 2:9415 & 2:10037 1:1) -->
-            <div class="hub-nav-links-figma" style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" class="hub-nav-link-btn active" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')">
-                    In&iacute;cio
-                </button>
-                <button type="button" class="hub-nav-link-btn" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')">
-                    <span>Expedi&ccedil;&atilde;o &amp; SEFAZ</span>
-                    <span class="hub-nav-badge-amber" id="nav-badge-pendentes">5</span>
-                </button>
-                <button type="button" class="hub-nav-link-btn" id="nav-btn-ecommerce" onclick="navegarAbaPrincipal('ecommerce')">
-                    E-commerce 360&deg;
-                </button>
-                <button type="button" class="hub-nav-link-btn" id="nav-btn-dashboard" onclick="navegarAbaPrincipal('dashboard')">
-                    Remessa Ita&uacute;
-                </button>
-                <button type="button" class="hub-nav-link-btn" id="nav-btn-relatorios" onclick="navegarAbaPrincipal('relatorios')">
-                    Relat&oacute;rios
-                </button>
-            </div>
+            <!-- Botão Início (Acesso Central aos Cartões Operacionais) -->
+            <button type="button" class="hub-nav-link-btn active" id="nav-btn-hub" onclick="navegarAbaPrincipal('hub')" title="Acessar o painel central de cartões operacionais" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <span>In&iacute;cio &middot; M&oacute;dulos</span>
+            </button>
+        </div>
+
         <!-- Right: Online Fiscal Connection + User Profile MC (Figma) -->
         <div style="display: flex; align-items: center; gap: 18px;">
             <div class="badge-figma badge-figma-online" style="font-size: 11.5px; padding: 4px 10px;">
@@ -1534,10 +1522,15 @@
                             <span style="font-size: 12px; font-weight: 600; color: #C3ACFF; display: flex; align-items: center; gap: 6px;">
                                 Grade de Pedidos &amp; Faturamento
                             </span>
-                            <span class="card-footer-action" style="font-size: 11px; font-weight: 600; color: #8597B1; display: flex; align-items: center; gap: 4px;">
-                                VNDA &middot; Linx
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                            </span>
+                            <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                <button type="button" onclick="event.stopPropagation(); navegarAbaPrincipal('cargas')" title="Ir direto para a Expedição" style="background: rgba(245, 194, 104, 0.12); border: 1px solid rgba(245, 194, 104, 0.3); color: #FCD34D; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                                    Expedição (5) ↗
+                                </button>
+                                <span class="card-footer-action" style="font-size: 11px; font-weight: 600; color: #8597B1; display: flex; align-items: center; gap: 4px;">
+                                    VNDA &middot; Linx
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1668,7 +1661,12 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
+                            <button type="button" onclick="event.stopPropagation(); navegarAbaPrincipal('dashboard')" title="Ir direto para a Remessa Itaú" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                                Remessa Itaú ↗
+                            </button>
+                        </div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">0 cargas liberadas neste recorte</div>
                     </div>
                 </div>
@@ -1708,7 +1706,12 @@
 
                     <div>
                         <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver remessa Ita&uacute; &rarr;</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Ver remessa Ita&uacute; &rarr;</div>
+                            <button type="button" onclick="event.stopPropagation(); navegarAbaPrincipal('relatorios')" title="Ir direto para Relatórios" style="background: rgba(165, 180, 252, 0.12); border: 1px solid rgba(165, 180, 252, 0.3); color: #C7D2FE; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                                Relatórios ↗
+                            </button>
+                        </div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">Arquivo de retorno processado</div>
                     </div>
                 </div>
@@ -3308,6 +3311,6 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261029_1140"></script>
+    <script src="/js/dashboard.js?v=20261029_1150"></script>
 </body>
 </html>

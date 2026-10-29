@@ -89,6 +89,17 @@
   - Testado via Playwright com 0 erros no console (`PAGE_ERRORS: []`).
 - **Cache-Buster:** Atualizado para `v=20261029_1140`.
 
+### L. Desobstrução da Topbar & Navegação por Cartões com Atalhos Inteligentes
+- **Eliminação de Botões Redundantes no Cabeçalho:**
+  - Removidos da barra superior os 4 botões de módulos (`Expedição & SEFAZ 5`, `E-commerce 360°`, `Remessa Itaú`, `Relatórios`).
+  - A barra superior agora mantém apenas a identidade visual limpa: Logo `expedi HUB` + Empresa `BOAH ⌄` + Botão minimalista `Início · Módulos` à esquerda, e `Conexão Fiscal Online` + Perfil do Operador à direita.
+- **Atalhos Operacionais Cruzados Diretamente nos Cartões da Tela Inicial:**
+  - **No Cartão E-commerce 360°:** Inserido atalho direto `Expedição (5) ↗` no rodapé.
+  - **No Cartão Expedição Operacional:** Inserido atalho direto `Remessa Itaú ↗` no rodapé.
+  - **No Cartão Tesouraria Itaú:** Inserido atalho direto `Relatórios ↗` no rodapé.
+  - Todos os cartões continuam 100% clicáveis em sua área integral, com suporte à propagação controlada nos botões de atalho (`event.stopPropagation()`).
+- **Cache-Buster:** Atualizado para `v=20261029_1150`.
+
 ---
 
 ## 2. Status do Deploy
