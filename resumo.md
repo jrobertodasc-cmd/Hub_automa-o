@@ -1,6 +1,6 @@
 # Resumo do Projeto · EXPEDI HUB (BOAH)
 
-**Data de Atualização:** 29 de outubro de 2026  
+**Data de Atualização:** 30 de outubro de 2026  
 **Cliente:** BOAH (`10.436.619/0001-05`)  
 **Repositório:** `https://github.com/jrobertodasc-cmd/Hub_automa-o`  
 **Produção (Render):** `https://expedihub.onrender.com/dashboard.html`  
@@ -281,3 +281,24 @@
    - Testar a geração da remessa bancária no Modal Itaú CNAB 240 (`REM2610.txt`).
 4. **Fechamento de Outubro VNDA (31/10):**
    - No sábado (31/10), o GMV de outubro fecha oficialmente para posterior emissão da NFS-e em 04/11.
+
+
+---
+
+## Seção 46: Evolução Executiva do BI, Top Clientes VIP, Top Peças e Remessa Itaú (30/10/2026)
+
+### 1. Automação da Remessa Itaú SISPAG (CNAB 240)
+- Normalização algorítmica de códigos de barras (44 e 48 dígitos) para eliminar rejeições bancárias no Itaú.
+- Geração automatizada do arquivo `REM2610.txt` diretamente a partir das guias DIFAL/GNRE pendentes.
+
+### 2. Normalização de Transportadoras
+- Mapeamento definitivo de `TEX COURIER S.A.` como `Total Express`, consolidando relatórios de frete e rastreio.
+
+### 3. Redirecionamento Estratégico do Painel Executivo
+- Eliminação de botões e redundâncias bancárias da visão de BI executivo, focando 100% em indicadores de e-commerce e varejo digital omnichannel (Linx + VNDA).
+- Inclusão do Mix de Meios de Pagamento de Checkout (PIX, Cartão Parcelado, Boleto) e SLA de Lead Time de faturamento.
+
+### 4. Implementação de Top Clientes VIP (LTV) e Top Peças Best-Sellers (Curva ABC)
+- **Top Clientes VIP:** Identificação das 5 maiores compradoras da BOAH com ticket médio, volume de compras, UF e medalhas de fidelidade (VIP Ouro, Prata e Bronze).
+- **Top Peças Best-Sellers:** Ranking dos produtos de maior volume e receita na coleção BOAH com barras de progresso proporcionais ao share de vendas.
+- Commit e push efetuados para `main` (`481a67f`).
