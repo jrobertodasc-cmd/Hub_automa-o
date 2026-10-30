@@ -6052,6 +6052,26 @@ async function carregarDadosBI(forcar = false) {
         const elPend = document.getElementById('bi-kpi-pendentes');
         if (elPend) elPend.textContent = `${kpis.totalPendentes || 0} guias`;
 
+        // Indicadores ampliados Linx Microvix & Olist Vnda
+        const linx = data.linx || {};
+        const olist = data.olist || {};
+
+        const elLinxNfs = document.getElementById('bi-kpi-linx-nfs');
+        if (elLinxNfs) elLinxNfs.textContent = `${linx.totalNotasEmitidas || kpis.totalGuias || 0} NFs`;
+
+        const elLinxCli = document.getElementById('bi-kpi-linx-clientes');
+        if (elLinxCli) elLinxCli.textContent = `${linx.clientesAtendidos || 0} compradores`;
+
+        const elOlistPed = document.getElementById('bi-kpi-olist-pedidos');
+        if (elOlistPed) elOlistPed.textContent = `${olist.pedidosAprovados || 0} pedidos`;
+
+        const elOlistPecas = document.getElementById('bi-kpi-olist-pecas');
+        if (elOlistPecas) {
+            const pecas = olist.totalPecasOlist || 0;
+            const media = olist.pecasPorPedido || 1.3;
+            elOlistPecas.textContent = `${pecas} pe&ccedil;as (${media}/ped)`;
+        }
+
         // 1.2 Atualizar Funil
         const elFunilDifalPct = document.getElementById('bi-funil-difal-pct');
         const elFunilDifalBar = document.getElementById('bi-funil-difal-bar');
@@ -6236,7 +6256,10 @@ function renderizarGraficoTransportadorasBI(carriers) {
                 <div style="display: flex; justify-content: space-between; align-items: center; background: #0E1626; padding: 7px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></span>
-                        <strong style="color: #F1F5F9;">${c.carrier}</strong>
+                        <div>
+                            <strong style="color: #F1F5F9;">${c.carrier}</strong>
+                            ${c.carrier === 'Total Express' ? '<span style="font-size: 10.5px; color: #64748B; margin-left: 6px;">(inclui TEX Courier S.A)</span>' : ''}
+                        </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace;">
                         <span style="color: #94A3B8;">${c.total} vol</span>
