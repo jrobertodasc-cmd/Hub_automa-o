@@ -24,7 +24,7 @@ function exportarRelatorio360Csv() {
         paga: 'PAGA / LIBERADA',
         agendada: 'AGENDADA NO BANCO',
         a_pagar: 'A PAGAR (PENDENTE)',
-        sem_guia: 'NÃO PAGA / RETIDA',
+        sem_guia: 'A EMITIR (SEM GUIA SEFAZ)',
         rejeitada: 'REJEITADA NA SEFAZ',
         sp_manual: 'SP MANUAL'
     };
@@ -3241,7 +3241,7 @@ function renderizarPaginaDoca(pagina = 1) {
                             }
                         </td>
                         <td style="text-align: center; width: 120px;">
-                            <div style="font-size: 11px; color: #F1F5FC; font-family: Inter, sans-serif;">${sitCalc === 'paga' ? 'Emitida' : 'A emitir'}</div>
+                            <div style="font-size: 11px; color: #F1F5FC; font-family: Inter, sans-serif;">${sitCalc === 'paga' ? 'Emitida · Paga' : (sitCalc === 'pendente' ? 'Emitida · A pagar' : 'A emitir')}</div>
                             <div style="font-size: 10px; color: #8597B1; margin-top: 3px; font-family: Inter, sans-serif;">GNRE / DIFAL</div>
                         </td>
                         <td style="text-align: right; width: 160px;">
@@ -4062,9 +4062,11 @@ function abrirModalPagamento360(guideId) {
         paga: `<span class="tag-status tag-liberado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paga (Liquidada)</span>`,
         agendada: `<span class="tag-status" style="background:rgba(59,130,246,0.15); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Agendada no Banco</span>`,
         aguardando_pagamento: `<span class="tag-status tag-bloqueado" style="display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg> A Pagar</span>`,
+        a_pagar: `<span class="badge-figma badge-figma-apagar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F5C268" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> A Pagar</span>`,
+        sem_guia: `<span class="badge-figma badge-figma-naopaga"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF929B" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> A Emitir (SEFAZ)</span>`,
         emitida: `<span class="tag-status" style="background:rgba(16,185,129,0.15); color:#34D399; border:1px solid rgba(16,185,129,0.3); display:inline-flex; align-items:center; gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Emitida SEFAZ</span>`
     };
-    if (elStatusBadge) elStatusBadge.innerHTML = statusBadges[g.status_bancario] || statusBadges.agendada;
+    if (elStatusBadge) elStatusBadge.innerHTML = statusBadges[g.status_bancario] || statusBadges.sem_guia;
 
     const elDifalBox = document.getElementById('modal-pag-difal-detalhe-box');
     if (elDifalBox) {
@@ -4089,9 +4091,9 @@ function abrirModalPagamento360(guideId) {
             statusDetalhe = `
                 <div style="color: #F5C268; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <span>Aguardando Emissão Fiscal & Transmissão</span>
+                    <span>${g.status_bancario === 'a_pagar' ? 'Guia Emitida · Aguardando Pagamento' : 'Não Emitida · Aguardando Emissão na SEFAZ'}</span>
                 </div>
-                <div style="font-size: 11.5px; color: #94A3B8;">Guia DIFAL gerada a partir da NF-e e pronta para emissão oficial na SEFAZ de destino.</div>
+                <div style="font-size: 11.5px; color: #94A3B8;">${g.status_bancario === 'a_pagar' ? 'Guia SEFAZ já emitida com código de barras válido. Pronta para pagamento bancário na remessa Itaú.' : 'Guia DIFAL ainda não transmitida à SEFAZ. Emita a guia antes de enviar para pagamento.'}</div>
             `;
         }
 
@@ -4429,7 +4431,7 @@ function renderizarCards360(data) {
         if (g.status_bancario === 'rejeitada') {
             return `<span class="tag-status" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">⚠ Rejeitada / Divergência</span>`;
         }
-        return `<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;"><span class="status-dot red"></span>Não Paga / Retida</span>`;
+        return `<span class="tag-status tag-bloqueado" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;"><span class="status-dot red"></span>A Emitir (SEFAZ)</span>`;
     }
 
     // ==========================================
@@ -4585,7 +4587,7 @@ function renderizarCards360(data) {
         const isPendente = g.is_pendente || g.status_bancario === 'a_pagar' || (g.barcode && g.barcode.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP');
         const isSemDifal = (g.valor_difal || 0) <= 0;
 
-        let badgeFigma = '<span class="badge-figma badge-figma-naopaga"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF929B" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Não paga</span>';
+        let badgeFigma = '<span class="badge-figma badge-figma-naopaga"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF929B" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> A emitir</span>';
         if (isPaga) {
             badgeFigma = '<span class="badge-figma badge-figma-online"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Paga</span>';
         } else if (isPendente) {
@@ -4719,17 +4721,17 @@ function renderizarCards360(data) {
                 <!-- 5. Rodapé Operacional & Ações -->
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                     <div style="font-size: 11px; color: #8597B1; display: flex; align-items: center; gap: 5px;">
-                        <span class="status-dot ${isPaga ? 'green' : (isSemDifal ? 'grey' : 'amber')}"></span>
-                        <span>${isSemDifal ? 'Sem DIFAL' : (isPaga ? 'Guia Liquidada Itaú' : 'GNRE pendente')}</span>
+                        <span class="status-dot ${isPaga ? 'green' : (isSemDifal ? 'grey' : (isPendente ? 'amber' : 'red'))}"></span>
+                        <span>${isSemDifal ? 'Sem DIFAL' : (isPaga ? 'Guia Liquidada Itaú' : (isPendente ? 'Guia emitida · A pagar' : 'Guia não emitida'))}</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        ${(!isPaga && !isSemDifal)
-                            ? `<button type="button" class="btn-primary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})">
+                        ${(!isPaga && !isSemDifal && !isPendente)
+                            ? (`<button type="button" class="btn-primary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})">
                                  Emitir SEFAZ
-                               </button>`
-                            : `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); window.open('${escapeHtml(g.danfe_url || '#')}', '_blank');">
+                               </button>`)
+                            : (isPendente ? `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600; border-color: rgba(245, 194, 104, 0.35); color: #F5C268;" onclick="event.stopPropagation(); abrirModalPagamento360('${escapeHtml(g.id)}');">Ver Guia</button>` : `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); window.open('${escapeHtml(g.danfe_url || '#')}', '_blank');">
                                  DANFE
-                               </button>`
+                               </button>`)
                         }
                     </div>
                 </div>
@@ -5053,7 +5055,7 @@ function abrirModalEmitirSefazLote(apenasSelecionadas = false) {
 
     const pendEl = document.getElementById('sefaz-lote-qtd-pendentes');
     if (pendEl) {
-        pendEl.textContent = `${naoPagas.length} guia(s) não paga(s) — Total: R$ ${totalValorNaoPagas.toFixed(2).replace('.', ',')}`;
+        pendEl.textContent = `${naoPagas.length} guia(s) a emitir — Total: R$ ${totalValorNaoPagas.toFixed(2).replace('.', ',')}`;
     }
 
     const pagasEl = document.getElementById('sefaz-lote-qtd-pagas-bloqueadas');
@@ -5106,7 +5108,7 @@ async function executarEmissaoSefazLote() {
         feedback.style.background = 'rgba(59, 130, 246, 0.15)';
         feedback.style.color = '#93C5FD';
         feedback.style.border = '1px solid rgba(59, 130, 246, 0.3)';
-        feedback.innerHTML = ` <b>Transmissão em Lote Iniciada!</b> Transmitindo exclusivamente guias não pagas com vencimento ${paymentDate}. Acompanhe na fita de auditoria.`;
+        feedback.innerHTML = ` <b>Transmissão em Lote Iniciada!</b> Transmitindo exclusivamente guias a emitir com vencimento ${paymentDate}. Acompanhe na fita de auditoria.`;
     }
 
     if (btn) {
