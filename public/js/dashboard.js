@@ -2181,6 +2181,7 @@ async function carregarCargasDocaReais() {
         aplicarFiltrosRapidos();
         renderizarPaginaDoca(1);
 
+        atualizarBotaoHeroDoca();
         // 6. Atualiza Painel Fintech e Metadados do Lote com formato limpo
         if (data.batch) {
             const rawReceipt = data.batch.receipt || '';
@@ -3189,10 +3190,14 @@ function renderizarFitaUltimosBipados() {
     if (!container) return;
 
     if (!ultimosVolumesBipados || ultimosVolumesBipados.length === 0) {
-        container.innerHTML = `<span style="font-size: 11px; color: #64748B;">Leitor pronto (F2) · Bipe o volume na doca para validar liberação</span>`;
+        container.innerHTML = '';
+        const statusRowEmpty = document.getElementById('laser-status-row');
+        if (statusRowEmpty) statusRowEmpty.style.display = 'none';
         return;
     }
 
+    const statusRowActive = document.getElementById('laser-status-row');
+    if (statusRowActive) statusRowActive.style.display = 'flex';
     container.innerHTML = `<span style="font-size: 10.5px; color: #64748B; font-weight: 600;">Últimas:</span>` + ultimosVolumesBipados.slice(0, 3).map(item => {
         const isOk = item.status === 'liberado';
         return `
@@ -3627,6 +3632,70 @@ function filtrarPorSituacaoTab(situacao, btnEl) {
     }
     aplicarFiltrosRapidos();
 }
+function obterGuiasGnreOficiaisEmitidas(lista) {
+    return (lista || []).filter(g => {
+        const uf = (g.uf || '').toUpperCase().trim();
+        if (!uf || uf === 'SP' || uf === 'ND') return false;
+        const barClean = String(g.barcode || '').replace(/\D/g, '');
+        return barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+    });
+}
+
+function atualizarBotaoHeroDoca() {
+    const btnHero = document.getElementById('btn-hero-acao-lote');
+    if (!btnHero) return;
+    const resumo = window.currentResumoLote || {};
+    const qtdAEmitir = resumo.naoPagas || 0;
+    const todasEmitidasGnre = obterGuiasGnreOficiaisEmitidas(window.todasCargasDoca || []);
+    const emitidasAPagar = todasEmitidasGnre.filter(g => !g.is_paga && g.situacao_pagamento !== 'paga');
+
+    const mostrarImprimir = (
+        (filtroSituacaoAtivo === 'PENDENTES' && emitidasAPagar.length > 0) ||
+        (filtroSituacaoAtivo === 'PAGAS' && todasEmitidasGnre.length > 0 && qtdAEmitir === 0) ||
+        (qtdAEmitir === 0 && emitidasAPagar.length > 0)
+    );
+
+    if (mostrarImprimir) {
+        const alvo = filtroSituacaoAtivo === 'PAGAS' ? todasEmitidasGnre : emitidasAPagar;
+        btnHero.dataset.heroMode = 'PRINT_EMITIDAS';
+        btnHero.title = `Abrir PDF unificado para imprimir as ${alvo.length} guia(s) GNRE já emitida(s)`;
+        btnHero.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <span>Imprimir Emitidas (${alvo.length})</span>
+        `;
+    } else {
+        btnHero.dataset.heroMode = 'EMIT_ALL';
+        btnHero.title = 'Emitir todas as guias pendentes na SEFAZ';
+        btnHero.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+            <span>Emitir Todas na SEFAZ</span>
+        `;
+    }
+}
+window.atualizarBotaoHeroDoca = atualizarBotaoHeroDoca;
+
+function executarAcaoPrimariaDeckDoca() {
+    const btnHero = document.getElementById('btn-hero-acao-lote');
+    if (btnHero && btnHero.dataset.heroMode === 'PRINT_EMITIDAS') {
+        const todasEmitidasGnre = obterGuiasGnreOficiaisEmitidas(window.todasCargasDoca || []);
+        const emitidasAPagar = todasEmitidasGnre.filter(g => !g.is_paga && g.situacao_pagamento !== 'paga');
+        const alvo = (filtroSituacaoAtivo === 'PAGAS' || emitidasAPagar.length === 0) ? todasEmitidasGnre : emitidasAPagar;
+        imprimirGnresLoteSelecionado(alvo.map(g => g.id));
+        return;
+    }
+    abrirModalEmitirSefazLote(false);
+}
+window.executarAcaoPrimariaDeckDoca = executarAcaoPrimariaDeckDoca;
+
+const _filtrarPorSituacaoTabBase = filtrarPorSituacaoTab;
+filtrarPorSituacaoTab = function(situacao, btnEl) {
+    if (window.selectedGuideIds && window.selectedGuideIds.size > 0) {
+        window.selectedGuideIds.clear();
+    }
+    _filtrarPorSituacaoTabBase(situacao, btnEl);
+    atualizarBotaoHeroDoca();
+    atualizarContagemLote();
+};
 window.filtrarPorSituacaoTab = filtrarPorSituacaoTab;
 
 function aplicarFiltroTextoInline(val) {
@@ -3727,6 +3796,100 @@ function atualizarContagemLote() {
 }
 window.atualizarContagemLote = atualizarContagemLote;
 
+atualizarContagemLote = function() {
+    const idsSet = window.selectedGuideIds || new Set();
+    const totalSelecionadas = idsSet.size;
+    const bulkBar = document.getElementById('dock-bulk-bar');
+    const countEl = document.getElementById('bulk-selected-count');
+    const difalEl = document.getElementById('bulk-selected-difal');
+    const btnPrimary = document.getElementById('btn-bulk-primary-action');
+    const btnMixed = document.getElementById('btn-bulk-print-gnre-mixed');
+    const masterCb = document.getElementById('check-all-rows');
+    const lista = window.cargasFiltradasDoca || [];
+    const baseCompleta = (window.todasCargasDoca && window.todasCargasDoca.length > 0) ? window.todasCargasDoca : lista;
+
+    if (countEl) countEl.textContent = totalSelecionadas;
+    if (bulkBar) {
+        bulkBar.classList.toggle('is-open', totalSelecionadas > 0);
+        bulkBar.style.display = totalSelecionadas > 0 ? 'flex' : 'none';
+    }
+
+    if (totalSelecionadas > 0) {
+        const selecionadasObj = baseCompleta.filter(g => idsSet.has(g.id));
+        const somaDifal = selecionadasObj.reduce((acc, g) => acc + (parseFloat(g.value || g.valor || 0) || 0), 0);
+        if (difalEl) {
+            difalEl.textContent = `R$ ${somaDifal.toFixed(2).replace('.', ',')}`;
+        }
+
+        const selEmitidasGnre = obterGuiasGnreOficiaisEmitidas(selecionadasObj);
+        const selAEmitir = selecionadasObj.filter(g => {
+            const isPaga = Boolean(g.is_paga || g.situacao_pagamento === 'paga');
+            if (isPaga) return false;
+            const barClean = String(g.barcode || '').replace(/\D/g, '');
+            const temCodigoSefaz = barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+            return !temCodigoSefaz;
+        });
+
+        if (btnPrimary) {
+            if (selEmitidasGnre.length > 0 && selAEmitir.length === 0) {
+                btnPrimary.dataset.bulkAction = 'PRINT_GNRE';
+                const txtPrint = selEmitidasGnre.length > 1
+                    ? `Imprimir Todas (${selEmitidasGnre.length})`
+                    : 'Imprimir Guia';
+                btnPrimary.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    <span>${txtPrint}</span>
+                `;
+                if (btnMixed) btnMixed.style.display = 'none';
+            } else {
+                btnPrimary.dataset.bulkAction = 'EMIT_SEFAZ';
+                const qtdEmit = selAEmitir.length || totalSelecionadas;
+                const txtEmit = (selAEmitir.length > 0 && selEmitidasGnre.length > 0)
+                    ? `Emitir Pendentes (${selAEmitir.length})`
+                    : `Emitir Selecionadas (${qtdEmit})`;
+                btnPrimary.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>${txtEmit}</span>
+                `;
+                if (btnMixed) {
+                    if (selEmitidasGnre.length > 0) {
+                        btnMixed.style.display = 'inline-flex';
+                        btnMixed.innerHTML = `<span>Imprimir Emitidas (${selEmitidasGnre.length})</span>`;
+                    } else {
+                        btnMixed.style.display = 'none';
+                    }
+                }
+            }
+        }
+    } else if (difalEl) {
+        difalEl.textContent = 'R$ 0,00';
+    }
+
+    if (masterCb) {
+        if (lista.length > 0 && totalSelecionadas === lista.length) {
+            masterCb.checked = true;
+            masterCb.indeterminate = false;
+        } else if (totalSelecionadas > 0 && totalSelecionadas < lista.length) {
+            masterCb.checked = false;
+            masterCb.indeterminate = true;
+        } else {
+            masterCb.checked = false;
+            masterCb.indeterminate = false;
+        }
+    }
+};
+window.atualizarContagemLote = atualizarContagemLote;
+
+function executarAcaoPrimariaSelecaoDoca() {
+    const btnPrimary = document.getElementById('btn-bulk-primary-action');
+    if (btnPrimary && btnPrimary.dataset.bulkAction === 'PRINT_GNRE') {
+        imprimirGnresLoteSelecionado();
+        return;
+    }
+    abrirModalEmitirSefazLote(true);
+}
+window.executarAcaoPrimariaSelecaoDoca = executarAcaoPrimariaSelecaoDoca;
+
 function imprimirDanfesLoteSelecionado() {
     const ids = Array.from(window.selectedGuideIds || []);
     if (ids.length === 0) {
@@ -3747,6 +3910,34 @@ function imprimirGnresLoteSelecionado() {
     showToast(`Gerando PDF unificado de ${ids.length} Guia(s) GNRE...`, 'success');
     const dataPag = document.getElementById('doca-input-data-pagamento')?.value || new Date().toISOString().split('T')[0]; window.open(`/api/guide/gnre-selecionadas?ids=${ids.join(',')}&paymentDate=${encodeURIComponent(dataPag)}`, '_blank');
 }
+imprimirGnresLoteSelecionado = function(idsCustom) {
+    const idsBase = Array.isArray(idsCustom) ? idsCustom : Array.from(window.selectedGuideIds || []);
+    if (idsBase.length === 0) {
+        showToast("Selecione pelo menos uma guia emitida.", "warning");
+        return;
+    }
+    const baseCompleta = (window.todasCargasDoca && window.todasCargasDoca.length > 0)
+        ? window.todasCargasDoca
+        : (window.cargasFiltradasDoca || []);
+    const idSet = new Set(idsBase);
+    const selecionadasObj = baseCompleta.filter(g => idSet.has(g.id));
+    const emitidasGnre = selecionadasObj.length > 0 ? obterGuiasGnreOficiaisEmitidas(selecionadasObj) : [];
+    const idsParaImprimir = emitidasGnre.length > 0 ? emitidasGnre.map(g => g.id) : idsBase;
+
+    if (selecionadasObj.length > 0 && emitidasGnre.length === 0) {
+        showToast("As notas selecionadas ainda não possuem guia GNRE emitida (ou são DARE-SP). Emita na SEFAZ primeiro.", "warning");
+        return;
+    }
+
+    if (idsParaImprimir.length === 1) {
+        showToast("Abrindo guia oficial SEFAZ para impressão...", "success");
+        window.open(`/api/guide/download/${encodeURIComponent(idsParaImprimir[0])}`, '_blank');
+        return;
+    }
+
+    showToast(`Gerando PDF unificado para imprimir ${idsParaImprimir.length} guias GNRE oficiais...`, 'success');
+    window.open(`/api/guide/gnre-selecionadas?ids=${encodeURIComponent(idsParaImprimir.join(','))}`, '_blank');
+};
 window.imprimirGnresLoteSelecionado = imprimirGnresLoteSelecionado;
 
 function solicitarLiberacaoLoteSelecionado() {

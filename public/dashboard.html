@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/expedi.css?v=20261029_1000">
-    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261030_0845">
+    <link rel="stylesheet" href="css/expedi-theme-clean.css?v=20261030_0955">
     <style>
         :root {
             --bg-page: #090D1A;
@@ -2495,7 +2495,7 @@
                                 <span>Portão Fiscal Ativo</span>
                             </span>
                         </div>
-                        <p style="font-size: 12.5px; color: #8597B1; margin: 3px 0 0 0;">Emissão de guias DIFAL, conferência óptica de volumes e liberação de embarque.</p>
+
                     </div>
                 </div>
 
@@ -2505,11 +2505,11 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
                         <span>Sincronizar Linx</span>
                     </button>
-                    <button type="button" class="btn-secondary-figma" id="btn-sync-total-realtime" onclick="sincronizarRastreioTotalDoca(false)" title="Atualizar rastreio Total Express">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                        <span id="btn-sync-total-label">Sync Total Express</span>
+                    <button type="button" class="btn-secondary-figma" onclick="abrirModalConciliacao()" title="Conferir conciliação bancária e comprovantes">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                        <span>Conciliar</span>
                     </button>
-                    <button type="button" class="btn-secondary-figma" id="btn-top-lote-sp" onclick="toggleBarraLoteSp(true)" style="border-color: rgba(245, 194, 104, 0.35); color: #F5C268; background: rgba(245, 194, 104, 0.08);" title="Baixar XML do Lote de São Paulo (DARE-SP) ou importar retorno .ZIP">
+                    <button type="button" class="btn-secondary-figma" id="btn-top-lote-sp" onclick="toggleBarraLoteSp(true)" style="display: none; border-color: rgba(245, 194, 104, 0.35); color: #F5C268; background: rgba(245, 194, 104, 0.08);" title="Baixar XML do Lote de São Paulo (DARE-SP) ou importar retorno .ZIP">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span id="btn-top-lote-sp-label">Lote SP (XML)</span>
                     </button>
@@ -2537,7 +2537,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn-primary-figma" onclick="abrirModalEmitirSefazLote()" style="flex-shrink: 0; white-space: nowrap; height: 36px; padding: 0 14px;" title="Emitir todas as guias pendentes na SEFAZ">
+                    <button type="button" id="btn-hero-acao-lote" class="btn-primary-figma" onclick="executarAcaoPrimariaDeckDoca()" style="flex-shrink: 0; white-space: nowrap; height: 36px; padding: 0 14px;" title="Emitir todas as guias pendentes na SEFAZ">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
                         <span>Emitir Todas na SEFAZ</span>
                     </button>
@@ -2547,12 +2547,12 @@
                 <div id="laser-station-box" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 6px;">
                     <div style="position: relative; display: flex; align-items: center;">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" style="position: absolute; left: 12px; pointer-events: none;"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>
-                        <input type="text" id="filter-search" placeholder="Conferência óptica: bipe ou digite a chave de 44 dígitos da DANFE..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus style="width: 100%; height: 38px; background: #0B1220; border: 1.5px solid rgba(59, 130, 246, 0.55); border-radius: 8px; padding-left: 38px; padding-right: 68px; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; outline: none; box-sizing: border-box;">
+                        <input type="text" id="filter-search" placeholder="Bipe ou digite a chave de 44 dígitos da DANFE (F2)..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus style="width: 100%; height: 36px; background: #0B1220; border: 1.5px solid rgba(59, 130, 246, 0.55); border-radius: 8px; padding-left: 38px; padding-right: 68px; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; box-sizing: border-box;">
                         <span style="position: absolute; right: 8px; background: #16233A; border: 1px solid #29374E; border-radius: 5px; padding: 2px 7px; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #94A3B8; pointer-events: none;">Enter ↵</span>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 18px;">
+                    <div id="laser-status-row" style="display: none; align-items: center; justify-content: space-between; gap: 10px;">
                         <div id="scanned-ribbon-items" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; overflow: hidden;">
-                            <span style="font-size: 11px; color: #64748B;">Leitor pronto (F2) · Bipe o volume na doca para validar liberação</span>
+
                         </div>
                         <div id="laser-feedback-box" style="display: none; align-items: center; gap: 6px; font-size: 11px; color: #66DBAC;">
                             <span id="laser-feedback-text"></span>
@@ -2586,7 +2586,7 @@
             </div>
 
             <!-- 2.2 BARRA DEDICADA SÃO PAULO (LOTE XML DARE-SP + IMPORTAÇÃO DE RETORNO .ZIP) -->
-            <div id="sp-lote-bar" style="display: none; background: #111B2E; border: 1px solid rgba(245, 194, 104, 0.35); border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+            <div id="sp-lote-bar" style="display: none; background: #111B2E; border: 1px solid rgba(245, 194, 104, 0.35); border-radius: 10px; padding: 8px 14px; margin-bottom: 12px; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;" title="SP utiliza portal próprio DARE-SP: 1º Baixe o XML com a data desejada · 2º Gere no portal SEFAZ-SP · 3º Importe o .ZIP de retorno">
                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
                     <span style="background: rgba(245, 194, 104, 0.16); border: 1px solid rgba(245, 194, 104, 0.4); color: #F5C268; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0;">UF · SP</span>
                     <div style="min-width: 0;">
@@ -2594,7 +2594,7 @@
                             <span id="sp-bar-resumo">Notas de São Paulo (DARE-SP em Lote)</span>
                         </div>
                         <div style="font-size: 11px; color: #8597B1; margin-top: 1px;">
-                            SP não emite via GNRE nacional: <strong style="color: #CBD5E1;">1º Baixe o XML</strong> com a data desejada · <strong style="color: #CBD5E1;">2º Gere no portal SEFAZ-SP</strong> · <strong style="color: #CBD5E1;">3º Importe o .ZIP</strong> para liberar pagamento.
+
                         </div>
                     </div>
                 </div>
@@ -2625,21 +2625,21 @@
                         DIFAL <span id="bulk-selected-difal">R$ 0,00</span>
                     </div>
                 </div>
-                <div class="bulk-divider-figma"></div>
+                <div class="bulk-divider-figma" style="display: none;"></div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <button type="button" onclick="imprimirDanfesLoteSelecionado()" class="btn-secondary-figma">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         <span>DANFEs</span>
                     </button>
-                    <button type="button" onclick="abrirModalConciliacao()" class="btn-secondary-figma">
+                    <button type="button" id="btn-bulk-print-gnre-mixed" onclick="imprimirGnresLoteSelecionado()" class="btn-secondary-figma" style="display: none; border-color: rgba(56, 189, 248, 0.45); color: #7DD3FC;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
-                        <span>Conciliar Guias</span>
+                        <span>Imprimir Emitidas</span>
                     </button>
                     <button type="button" onclick="abrirModalFechamentoContabil()" class="btn-secondary-figma">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
                         <span>Pacote .ZIP</span>
                     </button>
-                    <button type="button" onclick="abrirModalEmitirSefazLote(true)" class="btn-primary-figma">
+                    <button type="button" id="btn-bulk-primary-action" onclick="executarAcaoPrimariaSelecaoDoca()" class="btn-primary-figma">
                         <span>Emitir Selecionadas</span>
                     </button>
                     <button type="button" onclick="desmarcarTodasLinhas()" class="btn-secondary-figma" style="background: transparent; border-color: transparent; color: #94A3B8;">
@@ -3423,7 +3423,7 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261030_0845"></script>
+    <script src="/js/dashboard.js?v=20261030_0955"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->

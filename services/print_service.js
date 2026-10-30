@@ -189,6 +189,14 @@ async function gerarGnrePdfBuffer(empresa, guia) {
 
             const rawRecibo = String(guia.batch_receipt || guia.recibo || '').trim();
             const temReciboLote = Boolean(rawRecibo && rawRecibo !== '-');
+            const rawControle = String(guia.numero_controle || guia.numeroControle || '').trim();
+            const temControleSefaz = Boolean(
+                rawControle &&
+                rawControle !== '-' &&
+                !rawControle.toUpperCase().includes('PORTAL') &&
+                !rawControle.toUpperCase().includes('SIMULAD') &&
+                !rawControle.toUpperCase().includes('VALIDA')
+            );
 
             // Borda do container principal
             doc.rect(x0, y0, wTotal, 410).lineWidth(2).stroke('#000000');
@@ -201,9 +209,14 @@ async function gerarGnrePdfBuffer(empresa, guia) {
                     x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
                 );
             } else {
-                const textoTopoPdf = temReciboLote
-                    ? `LOTE SEFAZ Nº ${rawRecibo}  |  WEBSERVICE OFICIAL GNRE SEFAZ v2.00`
-                    : 'GUIA AUTORIZADA — WEBSERVICE OFICIAL GNRE SEFAZ v2.00';
+                let textoTopoPdf = 'GUIA AUTORIZADA — WEBSERVICE OFICIAL GNRE SEFAZ v2.00';
+                if (temReciboLote && temControleSefaz) {
+                    textoTopoPdf = `LOTE SEFAZ Nº ${rawRecibo}  |  Nº DE CONTROLE SEFAZ: ${rawControle}`;
+                } else if (temReciboLote) {
+                    textoTopoPdf = `LOTE SEFAZ Nº ${rawRecibo}  |  WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+                } else if (temControleSefaz) {
+                    textoTopoPdf = `Nº DE CONTROLE SEFAZ: ${rawControle}  |  WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+                }
                 doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#f2f2f2', '#000000');
                 doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#000000').text(
                     textoTopoPdf,
@@ -260,18 +273,28 @@ async function gerarGnrePdfBuffer(empresa, guia) {
                 doc.font('Helvetica-Bold').fontSize(8.5).fillColor(isSimulado ? '#b91c1c' : '#000000').text(isSimulado ? 'SIMULADO' : 'PRODUÇÃO', tX + c1 + c2 + 4, tY2 + 16);
             }
 
-            // Linha 3: Chave NFe + Instruções e Valores
+            // Linha 3: Chave NFe + Nº Controle SEFAZ + Instruções e Valores
             const tY3 = tY2 + h2;
             const h3 = 84;
             const subH = 28;
             doc.rect(tX, tY3, c1, h3).stroke('#000000');
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('CHAVE DE ACESSO DA NF-E', tX + 4, tY3 + 4);
-            doc.font('Courier-Bold').fontSize(7.5).fillColor('#000000').text(chave, tX + 4, tY3 + 15);
-            doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('INSTRUÇÕES', tX + 4, tY3 + 32);
-            doc.font('Helvetica').fontSize(6.8).fillColor('#444444').text(
-                `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temReciboLote ? ` (Lote SEFAZ nº ${rawRecibo})` : ''}.\nDestinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.`,
-                tX + 4, tY3 + 42, { width: c1 - 8 }
-            );
+            doc.font('Courier-Bold').fontSize(7.5).fillColor('#000000').text(chave, tX + 4, tY3 + 14);
+            if (temControleSefaz && !isSimulado) {
+                doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text(`Nº DE CONTROLE SEFAZ: `, tX + 4, tY3 + 27, { continued: true });
+                doc.font('Courier-Bold').fontSize(7.5).fillColor('#000000').text(rawControle);
+                doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('INSTRUÇÕES', tX + 4, tY3 + 40);
+                doc.font('Helvetica').fontSize(6.5).fillColor('#444444').text(
+                    `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temReciboLote ? ` (Lote SEFAZ nº ${rawRecibo})` : ''}.\nDestinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.`,
+                    tX + 4, tY3 + 49, { width: c1 - 8 }
+                );
+            } else {
+                doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('INSTRUÇÕES', tX + 4, tY3 + 32);
+                doc.font('Helvetica').fontSize(6.8).fillColor('#444444').text(
+                    `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temReciboLote ? ` (Lote SEFAZ nº ${rawRecibo})` : ''}.\nDestinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.`,
+                    tX + 4, tY3 + 42, { width: c1 - 8 }
+                );
+            }
 
             doc.rect(tX + c1, tY3, c2, subH).fillAndStroke('#f2f2f2', '#000000');
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('VALOR PRINCIPAL', tX + c1 + 4, tY3 + 3);
@@ -507,19 +530,45 @@ async function enriquecerReciboGuias(guides, tenantId, supabaseClient) {
     try {
         const gnreSvc = require('./gnre_service');
         const batchIds = [...new Set(guides.map(g => g.batch_id).filter(Boolean))];
-        if (batchIds.length === 0) return;
-        const { data: batches } = await supabaseClient
-            .from('batches')
-            .select('id, receipt')
-            .eq('tenant_id', tenantId)
-            .in('id', batchIds);
-        const receiptMap = {};
-        (batches || []).forEach(b => { receiptMap[b.id] = b.receipt || ''; });
-        for (const g of guides) {
-            if (!g.batch_receipt && g.batch_id && receiptMap[g.batch_id]) {
-                const rec = gnreSvc.extrairReciboUfDoLote(receiptMap[g.batch_id], g.uf || g.ufFavorecida);
-                if (rec) g.batch_receipt = rec;
+        if (batchIds.length > 0) {
+            const { data: batches } = await supabaseClient
+                .from('batches')
+                .select('id, receipt')
+                .eq('tenant_id', tenantId)
+                .in('id', batchIds);
+            const receiptMap = {};
+            (batches || []).forEach(b => { receiptMap[b.id] = b.receipt || ''; });
+            for (const g of guides) {
+                if (!g.batch_receipt && g.batch_id && receiptMap[g.batch_id]) {
+                    const rec = gnreSvc.extrairReciboUfDoLote(receiptMap[g.batch_id], g.uf || g.ufFavorecida);
+                    if (rec) g.batch_receipt = rec;
+                }
             }
+        }
+
+        // Extrai Nº de Controle SEFAZ (e recibo, se faltar) do espelho HTML oficial salvo no Storage
+        const htmlGuides = guides.filter(g => g.storage_path && String(g.storage_path).toLowerCase().endsWith('.html') && (!g.numero_controle || !g.batch_receipt));
+        if (htmlGuides.length > 0) {
+            await Promise.all(htmlGuides.map(async (g) => {
+                try {
+                    const { data } = await supabaseClient.storage.from('tenant-storage').download(g.storage_path);
+                    if (!data) return;
+                    const htmlText = Buffer.from(await data.arrayBuffer()).toString('utf8');
+                    if (!g.numero_controle) {
+                        const ctrlMatch = htmlText.match(/N[uú]mero de Controle SEFAZ<\/div>\s*<div[^>]*>([^<]+)<\/div>/i);
+                        if (ctrlMatch && ctrlMatch[1] && ctrlMatch[1].trim() !== '-') {
+                            g.numero_controle = ctrlMatch[1].trim();
+                        }
+                    }
+                    if (!g.batch_receipt) {
+                        const recMatch = htmlText.match(/Recibo Lote SEFAZ<\/div>\s*<div[^>]*>([^<]+)<\/div>/i)
+                            || htmlText.match(/LOTE SEFAZ Nº\s*([0-9]+)/i);
+                        if (recMatch && recMatch[1] && recMatch[1].trim() !== '-') {
+                            g.batch_receipt = recMatch[1].trim();
+                        }
+                    }
+                } catch (errHtml) {}
+            }));
         }
     } catch (e) {}
 }

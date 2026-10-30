@@ -4426,7 +4426,7 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Nenhuma guia encontrada para os filtros fornecidos." });
         }
 
-        const guiasComGnre = guias
+        let guiasComGnre = guias
             .filter(g => g.uf && g.uf !== 'SP' && g.uf !== 'ND' && parseFloat(g.value || 0) > 0)
             .sort((a, b) => Number(a.nf_number || 0) - Number(b.nf_number || 0));
         if (guiasComGnre.length === 0) {
@@ -4435,6 +4435,15 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
 
         const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
         const pdfBuffers = [];
+        if (!isSimulado) {
+            guiasComGnre = guiasComGnre.filter(g => {
+                const barClean = String(g.barcode || '').replace(/\D/g, '');
+                return barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+            });
+            if (guiasComGnre.length === 0) {
+                return res.status(400).json({ error: "Nenhuma das guias selecionadas possui código de barras oficial SEFAZ. Emita as guias primeiro para poder imprimi-las." });
+            }
+        }
         await printService.enriquecerReciboGuias(guiasComGnre, req.tenant.id, supabase);
         for (const g of guiasComGnre) {
             if (paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(paymentDate)) {

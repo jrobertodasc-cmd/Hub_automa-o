@@ -3582,6 +3582,19 @@ h1, h2, h3, h4,
     box-shadow: 0 8px 30px rgba(0,0,0,0.45) !important;
 }
 
+.dock-bulk-bar-figma {
+    display: none !important;
+    padding: 10px 16px !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    margin-bottom: 12px !important;
+    border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
+.dock-bulk-bar-figma.is-open {
+    display: flex !important;
+}
+
 .bulk-divider-figma {
     width: 1px;
     height: 28px;
@@ -4412,8 +4425,8 @@ h1, h2, h3, h4,
 .cargas-deck-grid {
     display: grid !important;
     grid-template-columns: 1fr 1.25fr !important;
-    gap: 14px !important;
-    margin-bottom: 16px !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
 }
 
 @media (max-width: 1024px) {
