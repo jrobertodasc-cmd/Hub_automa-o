@@ -448,6 +448,8 @@ function atualizarPainelLiveSefaz({ visivel = true, status = 'processando', prog
     const pctEl = document.getElementById('sefaz-live-pct');
     const fill = document.getElementById('sefaz-live-progress-fill');
     const drawer = document.getElementById('sefaz-live-log-drawer');
+    const btnRemLive = document.getElementById('sefaz-live-remessa-btn');
+    const btnRemLiveTxt = document.getElementById('sefaz-live-remessa-btn-text');
 
     const pct = Math.max(5, Math.min(100, Number(progress) || 0));
     if (pctEl) pctEl.textContent = `${pct}%`;
@@ -473,12 +475,26 @@ function atualizarPainelLiveSefaz({ visivel = true, status = 'processando', prog
         }
         if (pctEl) pctEl.style.color = '#34D399';
         if (fill) fill.style.background = 'linear-gradient(90deg, #059669, #34D399)';
-        if (title) title.textContent = `✓ Emissão SEFAZ concluída (Vencimento ${dataFmt}) — confira a aba "Emitidas · A Pagar" e a barra UF · SP`;
+        const remViva = window.currentRemessaResumo;
+        if (btnRemLive) {
+            if (remViva && remViva.qtdGuias > 0) {
+                btnRemLive.style.display = 'inline-flex';
+                if (btnRemLiveTxt) btnRemLiveTxt.textContent = `⬇ Baixar ${remViva.filename} (${remViva.qtdGuias})`;
+            } else {
+                btnRemLive.style.display = 'none';
+            }
+        }
+        if (title) {
+            title.textContent = (remViva && remViva.qtdGuias > 0)
+                ? `✓ Emissão SEFAZ concluída (Venc. ${dataFmt}) · Remessa ${remViva.filename} gerada automaticamente!`
+                : `✓ Emissão SEFAZ concluída (Vencimento ${dataFmt}) — confira a aba "Emitidas · A Pagar" e a barra UF · SP`;
+        }
         if (lastLog) {
             lastLog.style.color = '#6EE7B7';
-            lastLog.textContent = ultimaLinha || 'Guias emitidas e atualizadas com sucesso!';
+            lastLog.textContent = ultimaLinha || 'Guias emitidas e remessa CNAB 240 sincronizada com sucesso!';
         }
     } else if (status === 'erro') {
+        if (btnRemLive) btnRemLive.style.display = 'none';
         bar.style.borderColor = 'rgba(239, 68, 68, 0.55)';
         if (dot) {
             dot.style.background = '#EF4444';
@@ -492,6 +508,7 @@ function atualizarPainelLiveSefaz({ visivel = true, status = 'processando', prog
             lastLog.textContent = errorMessage || ultimaLinha || 'O lote apresentou rejeição ou falha de comunicação.';
         }
     } else {
+        if (btnRemLive) btnRemLive.style.display = 'none';
         bar.style.borderColor = 'rgba(56, 189, 248, 0.45)';
         if (dot) {
             dot.style.background = '#38BDF8';
@@ -551,6 +568,10 @@ function iniciarPollingLote(batchId) {
 
             const data = await res.json();
 
+            if (data.remessa && typeof atualizarInterfaceRemessaViva === 'function') {
+                atualizarInterfaceRemessaViva(data.remessa, data);
+            }
+
             // 1. Atualiza barra de progresso legada + monitor ao vivo na tela de Expedição
             setProgresso(data.progress || 0);
             atualizarPainelLiveSefaz({
@@ -594,7 +615,11 @@ function iniciarPollingLote(batchId) {
                     if (typeof carregarCargasDocaReais === 'function') await carregarCargasDocaReais();
                     if (typeof carregarCockpit360 === 'function') carregarCockpit360(true);
                     if (typeof carregarHistoricoLotes === 'function') await carregarHistoricoLotes();
-                    showToast("✓ Emissão SEFAZ concluída! Guias disponíveis na aba 'Emitidas · A Pagar'.", 'success');
+                    const remInfo = window.currentRemessaResumo || data.remessa;
+                    const msgRem = (remInfo && remInfo.qtdGuias > 0)
+                        ? ` Remessa Itaú (${remInfo.filename} · ${remInfo.qtdGuias} guias) gerada automaticamente!`
+                        : '';
+                    showToast(`✓ Emissão SEFAZ concluída!${msgRem}`, 'success');
                 } else if (data.status === 'cancelado') {
                     showToast("Lote descartado pelo operador.");
                     if (typeof carregarCargasDocaReais === 'function') await carregarCargasDocaReais();
@@ -2182,21 +2207,27 @@ async function carregarCargasDocaReais() {
         renderizarPaginaDoca(1);
 
         atualizarBotaoHeroDoca();
-        // 6. Atualiza Painel Fintech e Metadados do Lote com formato limpo
+        if (typeof atualizarInterfaceRemessaViva === 'function') {
+            atualizarInterfaceRemessaViva(data.remessa, data.batch, resumo);
+        }
+
+        // 6. Atualiza Painel Fintech e Metadados do Lote com formato limpo e dados reais
         if (data.batch) {
-            const rawReceipt = data.batch.receipt || '';
-            const cleanReceipt = (rawReceipt && rawReceipt.length > 25) 
-                ? 'REM2610' 
-                : (rawReceipt || (data.batch.id ? data.batch.id.substring(0, 8) : 'REM2610'));
+            const cleanReceipt = (data.remessa && data.remessa.codigoRemessa)
+                ? data.remessa.codigoRemessa
+                : (data.batch.id ? data.batch.id.substring(0, 8).toUpperCase() : 'LOTE');
 
             const summaryEl = document.getElementById('fintech-batch-summary');
             if (summaryEl) {
-                summaryEl.textContent = `Lote Fiscal #${cleanReceipt} · ${resumo.total} guias auditadas · Total DIFAL: R$ ${resumo.valorTotal.toFixed(2).replace('.', ',')} · Status: 🟢 Agendamento Bancário Confirmado`;
+                const qtdRem = data.remessa ? data.remessa.qtdGuias : (resumo.pendentes || 0);
+                const valRem = data.remessa ? data.remessa.valorTotal : (resumo.valorPendentes || 0);
+                summaryEl.textContent = `Remessa #${cleanReceipt} · ${qtdRem} guia(s) na remessa (R$ ${valRem.toFixed(2).replace('.', ',')}) · Lote total: ${resumo.total} notas`;
             }
 
             const metaTag = document.getElementById('meta-batch-tag');
             if (metaTag) {
-                metaTag.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Lote Ativo #${cleanReceipt} · ${resumo.total} Guias (Remessa CNAB 240)`;
+                const qtdRem = data.remessa ? data.remessa.qtdGuias : (resumo.pendentes || 0);
+                metaTag.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Remessa #${cleanReceipt} · ${qtdRem} Guia(s) CNAB 240`;
             }
         }
 
@@ -2509,8 +2540,11 @@ async function enviarRetornoSpZip(inputEl) {
         }
 
         const qtd = data.resumo?.atualizadas ?? 0;
+        const infoRemSp = (data.remessa && data.remessa.qtdGuias > 0)
+            ? ` Remessa Itaú (${data.remessa.filename} · ${data.remessa.qtdGuias} guias) atualizada automaticamente!`
+            : '';
         const msg = qtd > 0
-            ? `✓ ${qtd} DARE(s) de SP vinculada(s) com código de barras! Status alterado para A Pagar.`
+            ? `✓ ${qtd} DARE(s) de SP vinculada(s)! Status alterado para A Pagar.${infoRemSp}`
             : (data.message || 'Nenhuma guia pendente de SP correspondente foi encontrada.');
         if (typeof showToast === 'function') {
             showToast(msg, qtd > 0 ? 'success' : 'warning');
@@ -6284,17 +6318,156 @@ function renderizarHeatmapUfBI(heatmap) {
 
 
 // ----------------------------------------------------------------------------
-// 2. MODAL OPERACIONAL DE REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)
+// 2. MODAL OPERACIONAL & SINCRONIZAÇÃO DE REMESSA ITAÚ SISPAG (CNAB 240)
 // ----------------------------------------------------------------------------
+function calcularCodigoRemessaPorIso(isoDate) {
+    if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return 'REMESSA';
+    const [, mes, dia] = isoDate.split('-');
+    return `REM${dia}${mes}`;
+}
+
+function construirResumoRemessaFallback() {
+    const todas = window.todasCargasDoca || [];
+    const prontas = todas.filter(g => {
+        if (g.is_paga) return false;
+        const bar = String(g.barcode || '').replace(/\D/g, '');
+        return (bar.length === 44 || bar.length === 48) && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+    });
+    const spPendentes = todas.filter(g => g.situacao_pagamento === 'sp_manual' || g.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+    const primeiraComData = prontas.find(g => g.due_date && /^\d{4}-\d{2}-\d{2}/.test(String(g.due_date)));
+    const paymentDate = primeiraComData ? String(primeiraComData.due_date).slice(0, 10) : obterDataSefazPreferida();
+    const codigoRemessa = calcularCodigoRemessaPorIso(paymentDate);
+    return {
+        batchId: window.activeBatchId || 'todos',
+        codigoRemessa,
+        filename: `${codigoRemessa}.txt`,
+        qtdGuias: prontas.length,
+        valorTotal: prontas.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0),
+        spAguardandoDare: spPendentes.length,
+        valorSpAguardando: spPendentes.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0),
+        paymentDate,
+        contaBancaria: 'Ag. 0334 C/C 98775-7'
+    };
+}
+
+function atualizarInterfaceRemessaViva(remessaApi) {
+    const rem = remessaApi || window.currentRemessaResumo || construirResumoRemessaFallback();
+    window.currentRemessaResumo = rem;
+
+    const valFmt = formatarBRL(rem.valorTotal || 0);
+    const qtd = Number(rem.qtdGuias || 0);
+    const spPend = Number(rem.spAguardandoDare || 0);
+    const codigo = rem.codigoRemessa || calcularCodigoRemessaPorIso(rem.paymentDate);
+
+    // 1. Card 5 do Hub Principal
+    const hubCod = document.getElementById('hub-remessa-codigo');
+    const hubRes = document.getElementById('hub-remessa-resumo');
+    const hubConta = document.getElementById('hub-remessa-conta');
+    const hubStatusTxt = document.getElementById('hub-remessa-status-text');
+    if (hubCod) hubCod.textContent = codigo;
+    if (hubRes) {
+        if (qtd > 0) {
+            hubRes.textContent = `${qtd} ${qtd === 1 ? 'guia pronta' : 'guias prontas'} · ${valFmt}` + (spPend > 0 ? ` (+${spPend} SP)` : '');
+        } else if (spPend > 0) {
+            hubRes.textContent = `Aguardando ${spPend} DARE(s) de SP`;
+        } else {
+            hubRes.textContent = 'Nenhuma guia pendente de pagamento';
+        }
+    }
+    if (hubConta && rem.contaBancaria) hubConta.textContent = rem.contaBancaria;
+    if (hubStatusTxt) {
+        hubStatusTxt.textContent = qtd > 0 ? `Pronta (${codigo}.txt)` : (spPend > 0 ? 'Aguardando SP' : 'Sem pendências');
+    }
+
+    // 2. Botão superior da tela de Expedição (secao-view-cargas)
+    const btnTopLabel = document.getElementById('btn-top-remessa-label');
+    if (btnTopLabel) {
+        btnTopLabel.textContent = qtd > 0 ? `Remessa Itaú (${qtd})` : 'Remessa Itaú';
+    }
+
+    // 3. Botão rápido na barra de conclusão SEFAZ
+    const btnLive = document.getElementById('sefaz-live-remessa-btn');
+    const btnLiveTxt = document.getElementById('sefaz-live-remessa-btn-text');
+    const liveBar = document.getElementById('sefaz-live-status-bar');
+    if (btnLive && liveBar && liveBar.style.display !== 'none') {
+        if (qtd > 0) {
+            btnLive.style.display = 'inline-flex';
+            if (btnLiveTxt) btnLiveTxt.textContent = `⬇ Baixar ${codigo}.txt (${qtd})`;
+        } else {
+            btnLive.style.display = 'none';
+        }
+    }
+
+    // 4. Campos internos do #modal-remessa-bancaria
+    const modCod = document.getElementById('modal-remessa-codigo');
+    const modQtd = document.getElementById('modal-remessa-qtd');
+    const modVal = document.getElementById('modal-remessa-valor');
+    const modSp = document.getElementById('modal-remessa-sp-aviso');
+    const modConta = document.getElementById('modal-remessa-conta');
+    const modInputData = document.getElementById('modal-remessa-data-pagamento');
+    const btnModal = document.getElementById('btn-modal-baixar-remessa');
+    const btnModalTxt = document.getElementById('btn-modal-baixar-remessa-text');
+
+    if (modCod) modCod.textContent = codigo;
+    if (modQtd) {
+        modQtd.textContent = qtd > 0
+            ? `${qtd} ${qtd === 1 ? 'guia emitida pronta' : 'guias emitidas prontas'}`
+            : '0 guias emitidas pendentes';
+    }
+    if (modVal) modVal.textContent = valFmt;
+    if (modConta && rem.contaBancaria) {
+        modConta.textContent = `Banco Itaú (341) · ${rem.contaBancaria} (LALUA)`;
+    }
+    if (modSp) {
+        if (spPend > 0) {
+            modSp.style.display = 'block';
+            modSp.innerHTML = `<strong>UF · SP:</strong> ${spPend} nota(s) de São Paulo (${formatarBRL(rem.valorSpAguardando || 0)}) estão aguardando o upload do arquivo <strong>.ZIP/.PDF</strong> do DARE-SP. Assim que você importar na barra de SP, elas entram automaticamente nesta remessa!`;
+        } else {
+            modSp.style.display = 'none';
+        }
+    }
+    if (modInputData && rem.paymentDate && !modInputData.dataset.userEdited) {
+        modInputData.value = rem.paymentDate;
+    }
+    if (btnModal) {
+        btnModal.disabled = qtd === 0;
+        btnModal.style.opacity = qtd === 0 ? '0.5' : '1';
+        btnModal.style.cursor = qtd === 0 ? 'not-allowed' : 'pointer';
+    }
+    if (btnModalTxt) {
+        btnModalTxt.textContent = qtd > 0
+            ? `Baixar Arquivo de Remessa (${codigo}.txt · ${qtd} ${qtd === 1 ? 'guia' : 'guias'})`
+            : 'Nenhuma guia emitida pendente para remessa';
+    }
+}
+window.atualizarInterfaceRemessaViva = atualizarInterfaceRemessaViva;
+
+function aoAlterarDataModalRemessa(novaData) {
+    const modInputData = document.getElementById('modal-remessa-data-pagamento');
+    if (modInputData) modInputData.dataset.userEdited = '1';
+    if (!novaData || !/^\d{4}-\d{2}-\d{2}$/.test(novaData)) return;
+    const novoCod = calcularCodigoRemessaPorIso(novaData);
+    const modCod = document.getElementById('modal-remessa-codigo');
+    const btnModalTxt = document.getElementById('btn-modal-baixar-remessa-text');
+    const qtd = Number(window.currentRemessaResumo?.qtdGuias || 0);
+    if (modCod) modCod.textContent = novoCod;
+    if (btnModalTxt && qtd > 0) {
+        btnModalTxt.textContent = `Baixar Arquivo de Remessa (${novoCod}.txt · ${qtd} ${qtd === 1 ? 'guia' : 'guias'})`;
+    }
+}
+window.aoAlterarDataModalRemessa = aoAlterarDataModalRemessa;
+
 function abrirModalRemessaBancaria() {
     const modal = document.getElementById('modal-remessa-bancaria');
     if (!modal) return;
-    
-    // Preenche data default com hoje
+
     const inputData = document.getElementById('modal-remessa-data-pagamento');
+    if (inputData) delete inputData.dataset.userEdited;
+
+    atualizarInterfaceRemessaViva(window.currentRemessaResumo);
+
     if (inputData && !inputData.value) {
-        const hoje = new Date().toISOString().split('T')[0];
-        inputData.value = hoje;
+        inputData.value = window.currentRemessaResumo?.paymentDate || obterDataSefazPreferida();
     }
 
     modal.style.display = 'flex';
@@ -6307,55 +6480,106 @@ function fecharModalRemessaBancaria() {
 }
 window.fecharModalRemessaBancaria = fecharModalRemessaBancaria;
 
-function executarDownloadRemessaModal(event) {
+async function baixarRemessaItauDireto(customDate) {
+    const rem = window.currentRemessaResumo || construirResumoRemessaFallback();
+    if (!rem || !(rem.qtdGuias > 0)) {
+        abrirModalRemessaBancaria();
+        if (typeof showToast === 'function') {
+            showToast('Ainda não há guias com código de barras pendentes para gerar remessa.', 'warning');
+        }
+        return;
+    }
+
+    const batchId = rem.batchId || window.activeBatchId || 'todos';
+    const dataPagamento = customDate || rem.paymentDate || obterDataSefazPreferida();
+    const codigo = calcularCodigoRemessaPorIso(dataPagamento);
+    const nomeArquivo = `${codigo}.txt`;
+
+    try {
+        const url = `/api/remessa/download/${encodeURIComponent(batchId)}?banco=itau&paymentDate=${encodeURIComponent(dataPagamento)}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+            let msgErro = 'Falha ao baixar arquivo de remessa.';
+            try {
+                const errJson = await res.json();
+                if (errJson && errJson.error) msgErro = errJson.error;
+            } catch (e) {}
+            throw new Error(msgErro);
+        }
+
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.setAttribute('download', nomeArquivo);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+
+        if (typeof showToast === 'function') {
+            showToast(`✓ Remessa Itaú ${nomeArquivo} baixada (${rem.qtdGuias} guia(s) · ${formatarBRL(rem.valorTotal)})!`, 'success');
+        } else if (typeof exibirToastHandsfree === 'function') {
+            exibirToastHandsfree('REMESSA ITAÚ BAIXADA!', `Arquivo ${nomeArquivo} pronto para envio no Itaú SISPAG.`);
+        }
+    } catch (err) {
+        if (typeof showToast === 'function') {
+            showToast(`✕ ${err.message}`, 'error');
+        } else {
+            alert(err.message);
+        }
+    }
+}
+window.baixarRemessaItauDireto = baixarRemessaItauDireto;
+
+async function executarDownloadRemessaModal(event) {
     if (event) event.preventDefault();
     const inputData = document.getElementById('modal-remessa-data-pagamento');
-    const dataPagamento = inputData ? inputData.value : '';
-
-    const url = `/api/fintech/itau/remessa-cnab240?dataPagamento=${encodeURIComponent(dataPagamento)}`;
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `REM_${new Date().toISOString().slice(0, 10)}.REM`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    if (typeof exibirToastHandsfree === 'function') {
-        exibirToastHandsfree('REMESSA ITAÚ GERADA!', 'Arquivo CNAB 240 baixado com sucesso para envio ao banco.');
-    }
+    const dataPagamento = inputData && inputData.value ? inputData.value : (window.currentRemessaResumo?.paymentDate || obterDataSefazPreferida());
+    await baixarRemessaItauDireto(dataPagamento);
 }
 window.executarDownloadRemessaModal = executarDownloadRemessaModal;
 
 async function processarArquivoRetornoModal(event) {
-    const file = event.target?.files?.[0];
+    const inputEl = event.target;
+    const file = inputEl?.files?.[0];
     if (!file) return;
 
     try {
-        const text = await file.text();
-        const token = localStorage.getItem('token');
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (typeof showToast === 'function') {
+            showToast('⏳ Processando arquivo de retorno bancário (.RET)...', 'info');
+        }
+        const fd = new FormData();
+        fd.append('retornoFile', file);
 
-        const res = await fetch('/api/fintech/itau/retorno-cnab240', {
+        const res = await fetch('/api/cnab/upload-retorno', {
             method: 'POST',
-            headers,
-            body: JSON.stringify({ conteudoRetorno: text, filename: file.name })
+            body: fd
         });
 
         const data = await res.json();
-        if (data.success || data.baixasProcessadas) {
-            if (typeof exibirToastHandsfree === 'function') {
-                exibirToastHandsfree('RETORNO CONCILIADO!', `${data.baixasProcessadas || 'Todas as'} guias liquidadas e cargas liberadas.`);
-            }
-            fecharModalRemessaBancaria();
-            if (typeof carregarDadosBI === 'function') carregarDadosBI();
-            if (typeof carregarCargasDocaReais === 'function') carregarCargasDocaReais();
-        } else {
-            alert('Aviso na conciliação: ' + (data.message || 'Arquivo processado'));
+        if (!res.ok) {
+            throw new Error(data.error || 'Falha ao processar retorno bancário.');
         }
+
+        const qtdConc = data.resumo?.conciliadasComSucesso ?? data.baixasProcessadas ?? 0;
+        if (typeof showToast === 'function') {
+            showToast(`✓ ${data.message || `${qtdConc} guia(s) conciliada(s) com sucesso!`}`, 'success');
+        } else if (typeof exibirToastHandsfree === 'function') {
+            exibirToastHandsfree('RETORNO CONCILIADO!', `${qtdConc} guia(s) liquidada(s) e cargas liberadas.`);
+        }
+        fecharModalRemessaBancaria();
+        if (typeof carregarDadosBI === 'function') carregarDadosBI();
+        if (typeof carregarCargasDocaReais === 'function') await carregarCargasDocaReais();
     } catch (err) {
         console.error('[Retorno Modal] Erro:', err);
-        alert('Erro ao processar retorno bancário: ' + err.message);
+        if (typeof showToast === 'function') {
+            showToast(`✕ ${err.message}`, 'error');
+        } else {
+            alert('Erro ao processar retorno bancário: ' + err.message);
+        }
+    } finally {
+        if (inputEl) inputEl.value = '';
     }
 }
 window.processarArquivoRetornoModal = processarArquivoRetornoModal;

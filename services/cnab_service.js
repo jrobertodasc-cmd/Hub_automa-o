@@ -25,6 +25,19 @@ const formatarDataCNAB = (dataStr) => {
 };
 
 /**
+ * Normaliza código de barras de tributos/concessionárias (FEBRABAN) para 44 dígitos puros.
+ * Converte automaticamente linha digitável de 48 dígitos (4 blocos de 11 + DV) para 44 dígitos.
+ */
+const normalizarCodigoBarras44 = (raw) => {
+    const limpo = String(raw || '').replace(/[^0-9]/g, '');
+    if (limpo.length === 44) return limpo;
+    if (limpo.length === 48) {
+        return limpo.slice(0, 11) + limpo.slice(12, 23) + limpo.slice(24, 35) + limpo.slice(36, 47);
+    }
+    return '';
+};
+
+/**
  * Gera o conteúdo de texto para remessa Itaú SISPAG CNAB 240
  * @param {Object} dadosEmpresa { cnpj, agencia, conta, dac, razaoSocial }
  * @param {Array} guiasExtraidas Lista de guias pagas com { codigoBarras, valor, dataVencimento, documentoOrigem }
@@ -35,13 +48,12 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         throw new Error("Dados da empresa inválidos ou ausentes para geração de remessa.");
     }
 
-    // Filtra para remover guias que não possuem um código de barras numérico válido
+    // Filtra para remover guias que não possuem um código de barras numérico válido de 44 dígitos
     // (por exemplo, guias pendentes do Estado de São Paulo que ficam com "IMPORTAR_NO_SEFAZ_SP")
     const guiasValidas = (guiasExtraidas || []).filter(g => {
-        if (!g.codigoBarras) return false;
-        const limpo = g.codigoBarras.replace(/[^0-9]/g, '');
-        // O código de barras de tributos/GNRE deve ter entre 44 e 48 dígitos numéricos
-        return limpo.length >= 40 && limpo === g.codigoBarras;
+        if (!g || !g.codigoBarras || String(g.codigoBarras).includes('IMPORTAR_NO_SEFAZ_SP')) return false;
+        const bar44 = normalizarCodigoBarras44(g.codigoBarras);
+        return bar44.length === 44;
     });
 
     if (guiasValidas.length === 0) {
@@ -54,7 +66,7 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
     // Formatação de data/hora atual local (do servidor ou ajustado)
     // Usar fuso local brasileiro se possível
     const dataHoje = agora.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, ''); // DDMMAAAA
-    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, ''); // HHMMSS
+    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false }).replace(/[^0-9]/g, '').padStart(6, '0').slice(0, 6); // HHMMSS
 
     let dataPagamentoFormatada = dataHoje;
     if (dataPagamentoPersonalizada) {
@@ -69,27 +81,27 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         }
     }
 
-    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout Oficial Ita? SISPAG CNAB 240 - Vers?o 080/085, P?g. 12)
+    // 1. REGISTRO 0: HEADER DE ARQUIVO (Layout Oficial Itaú SISPAG CNAB 240 - Versão 080/085, Pág. 12)
     let headerArquivo = '';
-    headerArquivo += padZero(341, 3);                              // 001-003: C?digo do Banco (341)
-    headerArquivo += padZero(0, 4);                                // 004-007: C?digo do Lote (0000)
+    headerArquivo += padZero(341, 3);                              // 001-003: Código do Banco (341)
+    headerArquivo += padZero(0, 4);                                // 004-007: Código do Lote (0000)
     headerArquivo += '0';                                          // 008-008: Tipo de Registro (0=Header Arquivo)
     headerArquivo += padSpace('', 6);                              // 009-014: Brancos Complemento X(06)
-    headerArquivo += padZero(80, 3);                               // 015-017: N? da Vers?o do Layout do Arquivo (080)
-    headerArquivo += '2';                                          // 018-018: Tipo Inscri??o da Empresa (2=CNPJ)
+    headerArquivo += padZero(80, 3);                               // 015-017: Nº da Versão do Layout do Arquivo (080)
+    headerArquivo += '2';                                          // 018-018: Tipo Inscrição da Empresa (2=CNPJ)
     headerArquivo += padZero(dadosEmpresa.cnpj.replace(/[^0-9]/g, ''), 14); // 019-032: CNPJ Empresa Debitada
     headerArquivo += padSpace('', 20);                             // 033-052: Brancos Complemento X(20)
-    headerArquivo += padZero(dadosEmpresa.agencia, 5);             // 053-057: Ag?ncia Debitada 9(05)
+    headerArquivo += padZero(dadosEmpresa.agencia, 5);             // 053-057: Agência Debitada 9(05)
     headerArquivo += padSpace('', 1);                              // 058-058: Branco X(01)
     headerArquivo += padZero(dadosEmpresa.conta, 12);              // 059-070: Conta Corrente Debitada 9(12)
     headerArquivo += padSpace('', 1);                              // 071-071: Branco X(01)
-    headerArquivo += padZero(dadosEmpresa.dac, 1);                 // 072-072: DAC da Ag?ncia/Conta 9(01)
+    headerArquivo += padZero(dadosEmpresa.dac, 1);                 // 072-072: DAC da Agência/Conta 9(01)
     headerArquivo += padSpace(limparTexto(dadosEmpresa.razaoSocial), 30); // 073-102: Nome da Empresa X(30)
     headerArquivo += padSpace("BANCO ITAU SA", 30);                // 103-132: Nome do Banco X(30)
     headerArquivo += padSpace('', 10);                             // 133-142: Brancos Complemento X(10)
-    headerArquivo += '1';                                          // 143-143: C?digo Remessa (1=Remessa)
-    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Gera??o (DDMMAAAA)
-    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);          // 152-157: Hora de Gera??o (HHMMSS)
+    headerArquivo += '1';                                          // 143-143: Código Remessa (1=Remessa)
+    headerArquivo += padZero(dataHoje, 8);                         // 144-151: Data de Geração (DDMMAAAA)
+    headerArquivo += padZero(horaHoje.padEnd(6, '0'), 6);          // 152-157: Hora de Geração (HHMMSS)
     headerArquivo += padZero(0, 9);                                // 158-166: Zeros Complemento de Registro 9(09)
     headerArquivo += padZero(0, 5);                                // 167-171: Unidade de Densidade 9(05) (00000)
     headerArquivo += padSpace('', 69);                             // 172-240: Brancos Complemento de Registro X(69)
@@ -140,10 +152,10 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         segO += padZero(seq, 5);                                   // 009-013: Sequencial no Lote
         segO += 'O';                                               // 014-014: Segmento (O)
         segO += padZero(0, 3);                                     // 015-017: Tipo Movimento (000=Inclusão)
-        segO += padSpace(guia.codigoBarras, 48);                   // 018-065: Código de Barras da Guia
+        segO += padSpace(normalizarCodigoBarras44(guia.codigoBarras), 48); // 018-065: Código de Barras 44 dígitos + 4 espaços
         const ufFav = (guia.uf || guia.ufFavorecida || '').toUpperCase();
         const nomeConcessionaria = ufFav === 'SP' ? "SEFAZ SP DARE ICMS" : (ufFav ? `SEFAZ ${ufFav} GNRE TRIBUTOS` : "SEFAZ GNRE TRIBUTOS");
-        segO += padSpace(nomeConcessionaria, 30);            // 066-095: Nome Concessionária/Órgão
+        segO += padSpace(nomeConcessionaria, 30);                  // 066-095: Nome Concessionária/Órgão
         
         // Garante que a data de vencimento não vá com zeros para evitar rejeição
         const dtVenc = formatarDataCNAB(guia.dataVencimento);
@@ -155,10 +167,10 @@ function gerarRemessaSispag(dadosEmpresa, guiasExtraidas, dataPagamentoPersonali
         // Valor sem pontos em centavos (Ex: 150.00 vira 15000)
         const valorEmCentavos = Math.round(parseFloat(guia.valor || 0) * 100);
         segO += padZero(valorEmCentavos, 15);                      // 122-136: Valor da Guia
-        segO += padZero(dataPagamentoFormatada, 8);                      // 137-144: Data de Pagamento (Agendado)
+        segO += padZero(dataPagamentoFormatada, 8);                // 137-144: Data de Pagamento (Agendado)
         segO += padZero(0, 15);                                    // 145-159: Valor Pago (Preenche com zeros na remessa)
         segO += padSpace('', 3);                                   // 160-162: Brancos
-        segO += padZero(0, 9);                                     // 163-171: Nota Fiscal 9(09) (Nota 33 Ita? SISPAG: zeros para demais tributos)
+        segO += padZero(0, 9);                                     // 163-171: Nota Fiscal 9(09) (Nota 33 Itaú SISPAG: zeros para demais tributos)
         segO += padSpace('', 3);                                   // 172-174: Brancos
         
         // Referência do documento de origem (ex: número da nota)
@@ -306,9 +318,8 @@ function gerarRemessaBradesco(dadosEmpresa, guiasExtraidas, dataPagamentoPersona
     }
 
     const guiasValidas = (guiasExtraidas || []).filter(g => {
-        if (!g.codigoBarras) return false;
-        const limpo = g.codigoBarras.replace(/[^0-9]/g, '');
-        return limpo.length >= 40 && limpo === g.codigoBarras;
+        if (!g || !g.codigoBarras || String(g.codigoBarras).includes('IMPORTAR_NO_SEFAZ_SP')) return false;
+        return normalizarCodigoBarras44(g.codigoBarras).length === 44;
     });
 
     if (guiasValidas.length === 0) {
@@ -318,7 +329,7 @@ function gerarRemessaBradesco(dadosEmpresa, guiasExtraidas, dataPagamentoPersona
     const linhas = [];
     const agora = new Date();
     const dataHoje = agora.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
-    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false }).replace(/[^0-9]/g, '').padStart(6, '0').slice(0, 6);
 
     let dataPagamentoFormatada = dataHoje;
     if (dataPagamentoPersonalizada) {
@@ -391,7 +402,7 @@ function gerarRemessaBradesco(dadosEmpresa, guiasExtraidas, dataPagamentoPersona
         segO += padZero(idx + 1, 5);                                  // 009-013: Sequencial
         segO += 'O';                                                  // 014-014: Segmento O
         segO += padZero(0, 3);                                        // 015-017: Movimento Inclusão
-        segO += padSpace(guia.codigoBarras, 48);                      // 018-065: Código de Barras
+        segO += padSpace(normalizarCodigoBarras44(guia.codigoBarras), 48); // 018-065: Código de Barras
         segO += padSpace("SEFAZ GNRE TRIBUTOS", 30);                  // 066-095: Órgão
         segO += padZero(formatarDataCNAB(guia.dataVencimento), 8);    // 096-103: Vencimento
         segO += 'BRL';                                                // 104-106: Moeda
@@ -445,9 +456,8 @@ function gerarRemessaBB(dadosEmpresa, guiasExtraidas, dataPagamentoPersonalizada
     }
 
     const guiasValidas = (guiasExtraidas || []).filter(g => {
-        if (!g.codigoBarras) return false;
-        const limpo = g.codigoBarras.replace(/[^0-9]/g, '');
-        return limpo.length >= 40 && limpo === g.codigoBarras;
+        if (!g || !g.codigoBarras || String(g.codigoBarras).includes('IMPORTAR_NO_SEFAZ_SP')) return false;
+        return normalizarCodigoBarras44(g.codigoBarras).length === 44;
     });
 
     if (guiasValidas.length === 0) {
@@ -457,7 +467,7 @@ function gerarRemessaBB(dadosEmpresa, guiasExtraidas, dataPagamentoPersonalizada
     const linhas = [];
     const agora = new Date();
     const dataHoje = agora.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
-    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/[^0-9]/g, '');
+    const horaHoje = agora.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false }).replace(/[^0-9]/g, '').padStart(6, '0').slice(0, 6);
 
     let dataPagamentoFormatada = dataHoje;
     if (dataPagamentoPersonalizada) {
@@ -530,7 +540,7 @@ function gerarRemessaBB(dadosEmpresa, guiasExtraidas, dataPagamentoPersonalizada
         segO += padZero(idx + 1, 5);
         segO += 'O';
         segO += padZero(0, 3);
-        segO += padSpace(guia.codigoBarras, 48);
+        segO += padSpace(normalizarCodigoBarras44(guia.codigoBarras), 48);
         segO += padSpace("SEFAZ GNRE TRIBUTOS", 30);
         segO += padZero(formatarDataCNAB(guia.dataVencimento), 8);
         segO += 'BRL';
@@ -579,5 +589,6 @@ module.exports = {
     gerarRemessaSispag,
     gerarRemessaBradesco,
     gerarRemessaBB,
-    processarRetornoSispag
+    processarRetornoSispag,
+    normalizarCodigoBarras44
 };

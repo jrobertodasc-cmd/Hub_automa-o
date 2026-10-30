@@ -1652,6 +1652,8 @@ app.get('/api/batch/status/:batchId', requireAuth, async (req, res) => {
 
         // Verifica se há XML de São Paulo gerado neste lote
         const hasSpXml = req.tenant.environment === 'producao' && batch.guides && batch.guides.some(g => g.uf === 'SP');
+        const remessaInfo = calcularResumoRemessaDeGuias(batch.guides || [], req.tenant, batch.id);
+        delete remessaInfo.validItauGuides;
 
         return res.status(200).json({
             id: batch.id,
@@ -1662,7 +1664,8 @@ app.get('/api/batch/status/:batchId', requireAuth, async (req, res) => {
             progress: taskInfo.progress,
             logs: taskInfo.logs,
             guides: batch.guides,
-            has_sp_xml: !!hasSpXml
+            has_sp_xml: !!hasSpXml,
+            remessa: remessaInfo
         });
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -1997,6 +2000,263 @@ app.get('/api/batch/history', requireAuth, async (req, res) => {
 // ==========================================
 // ROTAS DE DOWNLOAD DE ARQUIVOS E GUIA
 // ==========================================
+function obterDataHojeBrasilIso() {
+    try {
+        return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+    } catch (e) {
+        return new Date().toISOString().split('T')[0];
+    }
+}
+
+function extrairVencimentoGuiaReal(g) {
+    if (!g) return null;
+    if (g.due_date && /^\d{4}-\d{2}-\d{2}$/.test(String(g.due_date).slice(0, 10))) {
+        return String(g.due_date).slice(0, 10);
+    }
+    const vencBar = printService.extrairVencimentoDeBarcodeGnre(g.barcode);
+    if (vencBar && /^\d{4}-\d{2}-\d{2}$/.test(vencBar)) return vencBar;
+    const mSp = String(g.line_digitizable || '').match(/Venc\.\s*(\d{2})\/(\d{2})\/(\d{4})/);
+    if (mSp) return `${mSp[3]}-${mSp[2]}-${mSp[1]}`;
+    return null;
+}
+
+/**
+ * Calcula o resumo em tempo real da Remessa Itaú SISPAG CNAB 240 para o lote ativo.
+ */
+function calcularResumoRemessaDeGuias(guiasLista, tenant, batchId = 'todos', paymentDatePreferida = null, opcoes = {}) {
+    const isSimuladoCnab = ((tenant?.environment || '').toLowerCase() === 'simulado');
+    const ordenadas = [...(guiasLista || [])].sort((a, b) => (parseInt(a.nf_number, 10) || 0) - (parseInt(b.nf_number, 10) || 0));
+
+    let spAguardandoDare = 0;
+    let valorSpAguardando = 0;
+
+    const validItauGuides = ordenadas.filter(g => {
+        const sit = situacaoPagamentoGuia(g);
+        if (sit === 'sp_manual') {
+            spAguardandoDare++;
+            valorSpAguardando += parseFloat(g.value || 0);
+            return false;
+        }
+        if (sit === 'paga' && !opcoes.forcarPagas) return false;
+        if (sit !== 'a_pagar' && sit !== 'agendada' && !(sit === 'paga' && opcoes.forcarPagas)) return false;
+
+        if (!g.barcode || String(g.barcode).includes('IMPORTAR_NO_SEFAZ_SP')) return false;
+        const bar44 = cnabService.normalizarCodigoBarras44(g.barcode);
+        if (bar44.length !== 44) return false;
+        const isSynthetic = !isSimuladoCnab && printService.isCodigoBarrasSinteticoLocal(bar44);
+        return !isSynthetic;
+    });
+
+    let dataPagamentoEfetiva = (paymentDatePreferida && /^\d{4}-\d{2}-\d{2}$/.test(paymentDatePreferida))
+        ? paymentDatePreferida
+        : null;
+
+    if (!dataPagamentoEfetiva) {
+        for (const g of validItauGuides) {
+            const dt = extrairVencimentoGuiaReal(g);
+            if (dt) {
+                dataPagamentoEfetiva = dt;
+                break;
+            }
+        }
+    }
+    if (!dataPagamentoEfetiva) {
+        for (const g of ordenadas) {
+            const dt = extrairVencimentoGuiaReal(g);
+            if (dt) {
+                dataPagamentoEfetiva = dt;
+                break;
+            }
+        }
+    }
+    if (!dataPagamentoEfetiva) {
+        dataPagamentoEfetiva = obterDataHojeBrasilIso();
+    }
+
+    const [anoRem, mesRem, diaRem] = String(dataPagamentoEfetiva).split('-');
+    const codigoRemessa = (diaRem && mesRem) ? `REM${diaRem}${mesRem}` : 'REMESSA';
+    const filename = `${codigoRemessa}.txt`;
+    const valorTotal = parseFloat(validItauGuides.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0).toFixed(2));
+    const agencia = tenant?.bank_agency || '0334';
+    const conta = tenant?.bank_account || '98775';
+    const dac = tenant?.bank_dac || '7';
+    const batchRef = batchId || 'todos';
+
+    return {
+        batchId: batchRef,
+        codigoRemessa,
+        filename,
+        qtdGuias: validItauGuides.length,
+        valorTotal,
+        spAguardandoDare,
+        valorSpAguardando: parseFloat(valorSpAguardando.toFixed(2)),
+        paymentDate: dataPagamentoEfetiva,
+        contaBancaria: `Ag. ${agencia} C/C ${conta}-${dac}`,
+        downloadUrl: `/api/remessa/download/${batchRef}?banco=itau&paymentDate=${encodeURIComponent(dataPagamentoEfetiva)}`,
+        validItauGuides
+    };
+}
+
+/**
+ * Gera e persiste automaticamente o arquivo CNAB 240 Itaú SISPAG do lote no Supabase Storage.
+ */
+async function sincronizarRemessaAutomaticaLote(batchId, tenant, paymentDatePreferida = null) {
+    if (!tenant || !tenant.id) return null;
+    let batch = null;
+    if (!batchId || batchId === 'todos') {
+        const { data: batches } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('tenant_id', tenant.id)
+            .neq('status', 'cancelado')
+            .order('created_at', { ascending: false })
+            .limit(1);
+        batch = batches && batches.length > 0 ? batches[0] : null;
+    } else {
+        const { data: b } = await supabase
+            .from('batches')
+            .select('*')
+            .eq('id', batchId)
+            .eq('tenant_id', tenant.id)
+            .single();
+        batch = b;
+    }
+
+    if (!batch) return null;
+
+    const { data: batchGuides } = await supabase
+        .from('guides')
+        .select('*')
+        .eq('batch_id', batch.id)
+        .eq('tenant_id', tenant.id);
+
+    const resumoRem = calcularResumoRemessaDeGuias(batchGuides || [], tenant, batch.id, paymentDatePreferida);
+    const validas = resumoRem.validItauGuides || [];
+    delete resumoRem.validItauGuides;
+
+    if (validas.length === 0) {
+        return {
+            ...resumoRem,
+            gerada: false,
+            storagePath: null,
+            cnabText: null
+        };
+    }
+
+    const dadosBancarios = {
+        cnpj: tenant.cnpj,
+        razaoSocial: tenant.razao_social,
+        agencia: tenant.bank_agency || '0334',
+        conta: tenant.bank_account || '98775',
+        dac: tenant.bank_dac || '7',
+        convenio: tenant.bank_convenio || ''
+    };
+
+    const mapped = validas.map(g => ({
+        codigoBarras: cnabService.normalizarCodigoBarras44(g.barcode),
+        valor: g.value,
+        dataVencimento: extrairVencimentoGuiaReal(g) || resumoRem.paymentDate,
+        documentoOrigem: g.nf_number,
+        ufFavorecida: g.uf
+    }));
+
+    const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, resumoRem.paymentDate);
+    const remessaPath = `${tenant.id}/remessas/remessa_${batch.id}.txt`;
+
+    await supabase.storage
+        .from('tenant-storage')
+        .upload(remessaPath, Buffer.from(cnabText, 'latin1'), { contentType: 'text/plain', upsert: true })
+        .catch(e => console.warn('[Storage] Falha ao persistir remessa automática Itaú:', e.message));
+
+    return {
+        ...resumoRem,
+        gerada: true,
+        storagePath: remessaPath,
+        cnabText
+    };
+}
+
+async function conciliarConteudoRetornoCnab(conteudo, tenant) {
+    const resultadoParsing = cnabService.processarRetornoSispag(conteudo);
+    const atualizadas = [];
+    const naoLocalizadas = [];
+
+    const { data: todasGuiasTenant } = await supabase
+        .from('guides')
+        .select('id, nf_number, uf, value, status, barcode')
+        .eq('tenant_id', tenant.id);
+
+    const listaTenant = todasGuiasTenant || [];
+
+    for (const pag of resultadoParsing.pagamentos) {
+        const barRet44 = cnabService.normalizarCodigoBarras44(pag.codigoBarras);
+        let guiasEncontradas = [];
+
+        if (barRet44.length === 44) {
+            guiasEncontradas = listaTenant.filter(g => cnabService.normalizarCodigoBarras44(g.barcode) === barRet44);
+        } else if (pag.codigoBarras && pag.codigoBarras.length >= 40) {
+            guiasEncontradas = listaTenant.filter(g => String(g.barcode || '').trim() === pag.codigoBarras);
+        }
+
+        if (guiasEncontradas.length === 0 && pag.nfNumber) {
+            guiasEncontradas = listaTenant.filter(g => String(g.nf_number) === String(pag.nfNumber));
+        }
+
+        if (guiasEncontradas.length > 0) {
+            for (const g of guiasEncontradas) {
+                const updateData = {
+                    status: pag.status === 'PAGO' ? 'paga' : (pag.status === 'AGENDADO' ? 'agendada' : 'rejeitada')
+                };
+                if (pag.dataPagamento) updateData.paid_at = pag.dataPagamento;
+                if (pag.autenticacao) updateData.bank_authentication = pag.autenticacao;
+
+                await supabase.from('guides').update(updateData).eq('id', g.id).eq('tenant_id', tenant.id);
+                atualizadas.push({
+                    nf: g.nf_number,
+                    uf: g.uf,
+                    valor: pag.valorPago,
+                    status: updateData.status,
+                    autenticacao: pag.autenticacao
+                });
+            }
+        } else {
+            naoLocalizadas.push({
+                nf: pag.nfNumber || 'N/D',
+                codigoBarras: pag.codigoBarras,
+                valor: pag.valorPago,
+                status: pag.status
+            });
+        }
+    }
+
+    const remessaAtualizada = await sincronizarRemessaAutomaticaLote('todos', tenant).catch(() => null);
+    if (atualizadas.length > 0) {
+        broadcastDockEvent({
+            type: 'LOTE_ATUALIZADO',
+            message: `${atualizadas.length} guia(s) conciliada(s) via retorno CNAB 240!`,
+            remessa: remessaAtualizada ? { ...remessaAtualizada, cnabText: undefined } : null,
+            timestamp: new Date().toISOString()
+        }, tenant.id);
+    }
+
+    return {
+        success: true,
+        baixasProcessadas: atualizadas.length,
+        message: `Retorno processado com sucesso! ${atualizadas.length} guia(s) conciliada(s).`,
+        resumo: {
+            totalNoArquivo: resultadoParsing.totalProcessadas,
+            baixadas: resultadoParsing.baixadas,
+            agendadas: resultadoParsing.agendadas,
+            rejeitadas: resultadoParsing.rejeitadas,
+            conciliadasComSucesso: atualizadas.length,
+            naoLocalizadasNoBanco: naoLocalizadas.length
+        },
+        atualizadas,
+        naoLocalizadas,
+        remessa: remessaAtualizada ? { ...remessaAtualizada, cnabText: undefined } : null
+    };
+}
+
 app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
     try {
         let batch = null;
@@ -2034,6 +2294,13 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 .eq('batch_id', batch.id)
                 .eq('tenant_id', req.tenant.id);
 
+            const resumoBanco = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, batch.id, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
+            const validGuides = resumoBanco.validItauGuides || [];
+
+            if (validGuides.length === 0) {
+                return res.status(400).json({ error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram quitadas ou não possuem código de barras válido." });
+            }
+
             const dadosBancarios = {
                 cnpj: req.tenant.cnpj,
                 razaoSocial: req.tenant.razao_social,
@@ -2043,49 +2310,29 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 convenio: req.tenant.bank_convenio || ''
             };
 
-            const validGuides = (batchGuides || []).filter(g => {
-                // TRAVA ANTI-DUPLICIDADE RIGOROSA
-                const sit = situacaoPagamentoGuia(g);
-                if (sit === 'paga' && !req.query.forcarPagas) return false;
-
-                const bar = String(g.barcode || '').replace(/\D/g, '');
-                return bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && g.uf && g.uf !== 'SP';
-            });
-
-            if (validGuides.length === 0) {
-                return res.status(400).json({ error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram quitadas ou não possuem código de barras válido." });
-            }
-
             const mapped = validGuides.map(g => ({
-                codigoBarras: g.barcode,
+                codigoBarras: cnabService.normalizarCodigoBarras44(g.barcode),
                 valor: g.value,
-                dataVencimento: paymentDateChosen || g.due_date || printService.extrairVencimentoDeBarcodeGnre(g.barcode) || new Date().toISOString().split('T')[0],
+                dataVencimento: extrairVencimentoGuiaReal(g) || resumoBanco.paymentDate,
                 documentoOrigem: g.nf_number,
                 ufFavorecida: g.uf
             }));
 
-            let cnabText = '';
-            if (bankParam === 'bradesco') {
-                cnabText = cnabService.gerarRemessaBradesco(dadosBancarios, mapped, paymentDateChosen);
-            } else {
-                cnabText = cnabService.gerarRemessaBB(dadosBancarios, mapped, paymentDateChosen);
-            }
+            const cnabText = bankParam === 'bradesco'
+                ? cnabService.gerarRemessaBradesco(dadosBancarios, mapped, resumoBanco.paymentDate)
+                : cnabService.gerarRemessaBB(dadosBancarios, mapped, resumoBanco.paymentDate);
 
-            const [anoB, mesB, diaB] = (paymentDateChosen || new Date().toISOString().split('T')[0]).split('-');
-            const shortBankFilename = (diaB && mesB) ? `REM${diaB}${mesB}` : `REMESSA`;
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${shortBankFilename}.txt"`);
-            return res.send(cnabText);
+            res.setHeader('Content-Type', 'text/plain; charset=ISO-8859-1');
+            res.setHeader('Content-Disposition', `attachment; filename="${resumoBanco.filename}"`);
+            return res.send(Buffer.from(cnabText, 'latin1'));
         }
 
         // Caso padrão (Itaú SISPAG)
-        // Busca guias do lote no banco de dados e gera o CNAB 240 sempre atualizado
         let queryItau = supabase
             .from('guides')
             .select('*')
             .eq('batch_id', batch.id)
-            .eq('tenant_id', req.tenant.id)
-            .order('nf_number', { ascending: false });
+            .eq('tenant_id', req.tenant.id);
 
         if (req.query.ids) {
             const idList = String(req.query.ids).split(',').map(s => s.trim()).filter(Boolean);
@@ -2093,6 +2340,17 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         }
 
         const { data: batchGuides } = await queryItau;
+        const resumoRem = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, batch.id, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
+        const validItauGuides = resumoRem.validItauGuides || [];
+
+        if (validItauGuides.length === 0) {
+            const msgSp = resumoRem.spAguardandoDare > 0
+                ? ` As ${resumoRem.spAguardandoDare} nota(s) de SP aguardam a importação do arquivo .ZIP/.PDF de DAREs da SEFAZ-SP.`
+                : '';
+            return res.status(400).json({ 
+                error: `Nenhuma guia emitida pendente de pagamento encontrada neste lote.${msgSp}`
+            });
+        }
 
         const dadosBancarios = {
             cnpj: req.tenant.cnpj,
@@ -2103,38 +2361,15 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             convenio: req.tenant.bank_convenio || ''
         };
 
-        const dataPagamentoEfetiva = paymentDateChosen || new Date().toISOString().split('T')[0];
-
-        const isSimuladoCnab = (req.tenant.environment || '').toLowerCase() === 'simulado';
-        const validItauGuides = (batchGuides || []).filter(g => {
-            const bar = String(g.barcode || '').replace(/\D/g, '');
-            const isSynthetic = !isSimuladoCnab && printService.isCodigoBarrasSinteticoLocal(bar);
-
-            // TRAVA ANTI-DUPLICIDADE RIGOROSA
-            const sit = situacaoPagamentoGuia(g);
-            if (sit === 'paga' && !req.query.forcarPagas) {
-                return false; // Nunca exporta guias já quitadas
-            }
-
-            // Permite guias válidas com código de barras >= 44 dígitos (inclusive guias reais de SP)
-            return !isSynthetic && bar.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
-        });
-
-        if (validItauGuides.length === 0) {
-            return res.status(400).json({ 
-                error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram liquidadas anteriormente ou não possuem código de barras válido." 
-            });
-        }
-
         const mapped = validItauGuides.map(g => ({
-            codigoBarras: g.barcode,
+            codigoBarras: cnabService.normalizarCodigoBarras44(g.barcode),
             valor: g.value,
-            dataVencimento: g.due_date || printService.extrairVencimentoDeBarcodeGnre(g.barcode) || dataPagamentoEfetiva,
+            dataVencimento: extrairVencimentoGuiaReal(g) || resumoRem.paymentDate,
             documentoOrigem: g.nf_number,
             ufFavorecida: g.uf
         }));
 
-        const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, dataPagamentoEfetiva);
+        const cnabText = cnabService.gerarRemessaSispag(dadosBancarios, mapped, resumoRem.paymentDate);
 
         // Atualiza a cópia no Supabase Storage em background
         const remessaPath = `${req.tenant.id}/remessas/remessa_${batch.id}.txt`;
@@ -2143,12 +2378,30 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             .upload(remessaPath, Buffer.from(cnabText, 'latin1'), { contentType: 'text/plain', upsert: true })
             .catch(e => console.warn('[Storage] Falha ao persistir remessa Itaú:', e.message));
 
-        const [anoRem, mesRem, diaRem] = (dataPagamentoEfetiva || '').split('-');
-        const shortFilename = (diaRem && mesRem) ? `REM${diaRem}${mesRem}` : `REMESSA`; // Máx 7 caracteres (ex: REM2610) exigido pelo Itaú SISPAG
-
         res.setHeader('Content-Type', 'text/plain; charset=ISO-8859-1');
-        res.setHeader('Content-Disposition', `attachment; filename="${shortFilename}.txt"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${resumoRem.filename}"`);
         return res.send(Buffer.from(cnabText, 'latin1'));
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Rota complementar para download direto da Remessa Itaú CNAB 240 pelo modal fintech
+app.get('/api/fintech/itau/remessa-cnab240', requireAuth, async (req, res) => {
+    try {
+        const paymentDateChosen = req.query.dataPagamento || req.query.paymentDate || null;
+        const rem = await sincronizarRemessaAutomaticaLote('todos', req.tenant, paymentDateChosen);
+        if (!rem || !rem.gerada || !rem.cnabText) {
+            const msgSp = rem && rem.spAguardandoDare > 0
+                ? ` (${rem.spAguardandoDare} nota(s) de SP aguardando importação de DARE-SP)`
+                : '';
+            return res.status(400).json({
+                error: `Nenhuma guia emitida pendente de pagamento disponível para gerar remessa CNAB 240${msgSp}.`
+            });
+        }
+        res.setHeader('Content-Type', 'text/plain; charset=ISO-8859-1');
+        res.setHeader('Content-Disposition', `attachment; filename="${rem.filename}"`);
+        return res.send(Buffer.from(rem.cnabText, 'latin1'));
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -2167,74 +2420,25 @@ app.post('/api/cnab/upload-retorno', requireAuth, requireRole(['diretoria', 'fin
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ error: "Nenhum arquivo de retorno (.RET) foi enviado." });
         }
-
         const conteudo = req.file.buffer.toString('utf-8');
-        const resultadoParsing = cnabService.processarRetornoSispag(conteudo);
-
-        const atualizadas = [];
-        const naoLocalizadas = [];
-
-        for (const pag of resultadoParsing.pagamentos) {
-            // Localiza a guia correspondente no tenant
-            let query = supabase.from('guides').select('id, nf_number, uf, value, status').eq('tenant_id', req.tenant.id);
-            
-            if (pag.codigoBarras && pag.codigoBarras.length >= 40) {
-                // Tenta pelo código de barras
-                query = query.eq('barcode', pag.codigoBarras);
-            } else if (pag.nfNumber) {
-                // Fallback pelo número da NF
-                query = query.eq('nf_number', pag.nfNumber);
-            }
-
-            const { data: guiasEncontradas } = await query;
-
-            if (guiasEncontradas && guiasEncontradas.length > 0) {
-                for (const g of guiasEncontradas) {
-                    const updateData = {
-                        status: pag.status === 'PAGO' ? 'paga' : (pag.status === 'AGENDADO' ? 'agendada' : 'rejeitada')
-                    };
-                    if (pag.dataPagamento) {
-                        updateData.paid_at = pag.dataPagamento;
-                    }
-                    if (pag.autenticacao) {
-                        updateData.bank_authentication = pag.autenticacao;
-                    }
-
-                    await supabase.from('guides').update(updateData).eq('id', g.id).eq('tenant_id', req.tenant.id);
-                    atualizadas.push({
-                        nf: g.nf_number,
-                        uf: g.uf,
-                        valor: pag.valorPago,
-                        status: updateData.status,
-                        autenticacao: pag.autenticacao
-                    });
-                }
-            } else {
-                naoLocalizadas.push({
-                    nf: pag.nfNumber || 'N/D',
-                    codigoBarras: pag.codigoBarras,
-                    valor: pag.valorPago,
-                    status: pag.status
-                });
-            }
-        }
-
-        return res.json({
-            success: true,
-            message: `Retorno processado com sucesso! ${atualizadas.length} guia(s) conciliada(s).`,
-            resumo: {
-                totalNoArquivo: resultadoParsing.totalProcessadas,
-                baixadas: resultadoParsing.baixadas,
-                agendadas: resultadoParsing.agendadas,
-                rejeitadas: resultadoParsing.rejeitadas,
-                conciliadasComSucesso: atualizadas.length,
-                naoLocalizadasNoBanco: naoLocalizadas.length
-            },
-            atualizadas,
-            naoLocalizadas
-        });
+        const resultado = await conciliarConteudoRetornoCnab(conteudo, req.tenant);
+        return res.json(resultado);
     } catch (err) {
         console.error("Erro ao processar retorno CNAB 240:", err);
+        return res.status(500).json({ error: `Erro ao processar retorno bancário: ${err.message}` });
+    }
+});
+
+app.post('/api/fintech/itau/retorno-cnab240', requireAuth, requireRole(['diretoria', 'financeiro', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const conteudo = req.body?.conteudoRetorno || '';
+        if (!conteudo || typeof conteudo !== 'string') {
+            return res.status(400).json({ error: "Conteúdo do arquivo de retorno (.RET) não informado." });
+        }
+        const resultado = await conciliarConteudoRetornoCnab(conteudo, req.tenant);
+        return res.json(resultado);
+    } catch (err) {
+        console.error("Erro ao processar retorno CNAB 240 (JSON):", err);
         return res.status(500).json({ error: `Erro ao processar retorno bancário: ${err.message}` });
     }
 });
@@ -2265,11 +2469,19 @@ app.post('/api/sefaz-sp/upload-retorno-zip', requireAuth, requireRole(['diretori
         await fs.unlink(tempFilePath).catch(() => {});
         tempFilePath = null;
 
-        // Se atualizou guias, notifica a doca em tempo real e grava auditoria
+        // Se atualizou guias, regenera automaticamente a Remessa Itaú CNAB 240, notifica a doca e grava auditoria
+        let remessaSp = null;
         if (resultado.atualizadas > 0) {
+            const syncRem = await sincronizarRemessaAutomaticaLote('todos', req.tenant).catch(() => null);
+            if (syncRem) {
+                remessaSp = { ...syncRem };
+                delete remessaSp.cnabText;
+            }
+
             broadcastDockEvent({
                 type: 'LOTE_ATUALIZADO',
                 message: `${resultado.atualizadas} DAREs de SP importados com sucesso!`,
+                remessa: remessaSp,
                 timestamp: new Date().toISOString()
             }, req.tenant.id);
 
@@ -2281,7 +2493,9 @@ app.post('/api/sefaz-sp/upload-retorno-zip', requireAuth, requireRole(['diretori
                 details: {
                     atualizadas: resultado.atualizadas,
                     totalProcessados: resultado.totalProcessados,
-                    nomeArquivo: req.file.originalname
+                    nomeArquivo: req.file.originalname,
+                    remessaCodigo: remessaSp?.codigoRemessa || null,
+                    remessaQtdGuias: remessaSp?.qtdGuias || 0
                 }
             }).catch(() => {});
         }
@@ -2296,7 +2510,8 @@ app.post('/api/sefaz-sp/upload-retorno-zip', requireAuth, requireRole(['diretori
                 ignoradasJaPagas: resultado.ignoradasJaPagas,
                 naoLocalizadas: resultado.naoLocalizadas
             },
-            detalhes: resultado.detalhes
+            detalhes: resultado.detalhes,
+            remessa: remessaSp
         });
     } catch (err) {
         if (tempFilePath) {
@@ -2428,8 +2643,12 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
             live_logs: liveTask ? liveTask.logs : []
         } : null;
 
+        const remessaResumo = calcularResumoRemessaDeGuias(lista, tenant, activeBatch ? activeBatch.id : 'todos');
+        delete remessaResumo.validItauGuides;
+
         return res.json({
             batch: batchPayload,
+            remessa: remessaResumo,
             resumo: {
                 total,
                 pagas: countPagas,
@@ -2527,9 +2746,18 @@ app.post('/api/guide/marcar-paga', requireAuth, requireRole(['diretoria', 'finan
             .select('id, nf_number');
         if (error) throw error;
 
+        const syncRem = await sincronizarRemessaAutomaticaLote('todos', req.tenant).catch(() => null);
+        const remessaPayload = syncRem ? { ...syncRem, cnabText: undefined } : null;
+        broadcastDockEvent({
+            type: 'LOTE_ATUALIZADO',
+            remessa: remessaPayload,
+            timestamp: new Date().toISOString()
+        }, req.tenant.id);
+
         return res.json({
             success: true,
             atualizadas: (data || []).length,
+            remessa: remessaPayload,
             message: marcar
                 ? `${(data || []).length} guia(s) conciliada(s) como PAGA(S).`
                 : `${(data || []).length} guia(s) revertida(s) para aguardando pagamento.`
@@ -3803,12 +4031,22 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
                 .eq('id', guide.id)
                 .eq('tenant_id', tenant.id);
 
+            const syncRemEs = await sincronizarRemessaAutomaticaLote(guide.batch_id || 'todos', tenant, dataAlvo).catch(() => null);
+            const remessaEsPayload = syncRemEs ? { ...syncRemEs, cnabText: undefined } : null;
+            broadcastDockEvent({
+                type: 'LOTE_ATUALIZADO',
+                batchId: guide.batch_id,
+                remessa: remessaEsPayload,
+                timestamp: new Date().toISOString()
+            }, tenant.id);
+
             return res.status(200).json({
                 success: true,
                 uf: 'ES',
                 barcode: nBar,
                 lineDigitizable: nBar,
                 dueDate: dataAlvo,
+                remessa: remessaEsPayload,
                 message: `Guia DUA-ES emitida com sucesso na SEFAZ!`,
                 downloadUrl: `/api/guide/download/${guide.id}`
             });
@@ -3904,12 +4142,22 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
             throw new Error(`Falha ao gravar guia emitida no banco: ${errUpIndiv.message}`);
         }
 
+        const syncRemGnre = await sincronizarRemessaAutomaticaLote(guide.batch_id || 'todos', tenant, dataAlvo).catch(() => null);
+        const remessaGnrePayload = syncRemGnre ? { ...syncRemGnre, cnabText: undefined } : null;
+        broadcastDockEvent({
+            type: 'LOTE_ATUALIZADO',
+            batchId: guide.batch_id,
+            remessa: remessaGnrePayload,
+            timestamp: new Date().toISOString()
+        }, tenant.id);
+
         return res.status(200).json({
             success: true,
             uf,
             barcode: guiaEmitida.codigoBarras,
             lineDigitizable: guiaEmitida.linhaDigitavel || guiaEmitida.codigoBarras,
             dueDate: dataAlvo,
+            remessa: remessaGnrePayload,
             message: `Guia oficial autorizada e emitida com sucesso na SEFAZ ${uf}!`,
             downloadUrl: `/api/guide/download/${guide.id}`
         });
@@ -6319,6 +6567,12 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             if (notasFiscais.length === 0) {
                 if (guiasPagasIgnoradas > 0 || guiasJaEmitidasPreservadas > 0) {
                     log(`✔ Todas as guias elegíveis com XML deste lote já estão autorizadas na SEFAZ para ${dataAlvo.split('-').reverse().join('/')} (ou já quitadas).`);
+                    const syncRemPreserv = await sincronizarRemessaAutomaticaLote(batchId, tenant, dataAlvo).catch(() => null);
+                    const remPreservPayload = syncRemPreserv ? { ...syncRemPreserv, cnabText: undefined } : null;
+                    if (remPreservPayload && remPreservPayload.gerada) {
+                        log(`🏦 Remessa Itaú SISPAG (${remPreservPayload.filename}) gerada automaticamente: ${remPreservPayload.qtdGuias} guia(s) · R$ ${remPreservPayload.valorTotal.toFixed(2).replace('.', ',')}.`);
+                    }
+                    task.remessa = remPreservPayload;
                     task.progress = 100;
                     task.status = 'sucesso';
                     await supabase.from('batches').update({ status: 'sucesso', error_message: null }).eq('id', batchId);
@@ -6327,6 +6581,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                         batchId,
                         status: 'sucesso',
                         paymentDate: dataAlvo,
+                        remessa: remPreservPayload,
                         timestamp: new Date().toISOString()
                     }, tenant.id);
                     return;
@@ -6649,9 +6904,25 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 })
                 .eq('id', batchId);
 
+            const syncRemAuto = await sincronizarRemessaAutomaticaLote(batchId, tenant, dataAlvo).catch(e => {
+                console.warn('[CNAB Auto] Aviso ao sincronizar remessa automática:', e.message);
+                return null;
+            });
+            const remAutoPayload = syncRemAuto ? { ...syncRemAuto, cnabText: undefined } : null;
+            task.remessa = remAutoPayload;
+
             log(`\n==================================================`);
             log(`🎉 TODAS AS GUIAS FORAM EMITIDAS COM SUCESSO!`);
-            log(`💳 STATUS: Guias emitidas. Aguardando autorização de pagamento bancário.`);
+            if (remAutoPayload && remAutoPayload.gerada) {
+                const obsSp = remAutoPayload.spAguardandoDare > 0
+                    ? ` (${remAutoPayload.spAguardandoDare} nota(s) SP serão incluídas ao importar o DARE-SP)`
+                    : '';
+                log(`🏦 REMESSA ITAÚ SISPAG GERADA AUTOMATICAMENTE: ${remAutoPayload.filename} · ${remAutoPayload.qtdGuias} guia(s) · R$ ${remAutoPayload.valorTotal.toFixed(2).replace('.', ',')}${obsSp}`);
+            } else if (remAutoPayload && remAutoPayload.spAguardandoDare > 0) {
+                log(`ℹ Remessa Itaú aguardando importação do retorno DARE-SP (${remAutoPayload.spAguardandoDare} nota(s) de SP).`);
+            } else {
+                log(`💳 STATUS: Guias emitidas. Aguardando autorização de pagamento bancário.`);
+            }
             log(`==================================================`);
 
             task.progress = 100;
@@ -6662,6 +6933,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 batchId,
                 status: 'sucesso',
                 paymentDate: dataAlvo,
+                remessa: remAutoPayload,
                 timestamp: new Date().toISOString()
             }, tenant.id);
 

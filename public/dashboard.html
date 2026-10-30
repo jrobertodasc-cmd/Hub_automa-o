@@ -1694,22 +1694,22 @@
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #34D399; line-height: 1;">REM2610</div>
-                                <div style="font-size: 12px; color: #94A3B8; margin-top: 5px;">91 guias &middot; R$ 4.020,42</div>
+                                <div id="hub-remessa-codigo" style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 800; color: #34D399; line-height: 1;">REM----</div>
+                                <div id="hub-remessa-resumo" style="font-size: 12px; color: #94A3B8; margin-top: 5px;">Sincronizando guias emitidas...</div>
                             </div>
-                            <button type="button" class="btn-primary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalRemessaBancaria()">
+                            <button type="button" class="btn-primary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); baixarRemessaItauDireto()">
                                 Baixar TXT
                             </button>
                         </div>
 
-                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Gera&ccedil;&atilde;o de remessa .TXT e concilia&ccedil;&atilde;o de retorno .RET</div>
+                        <div style="font-size: 12px; color: #E2E8F0; margin-top: 12px;">Gera&ccedil;&atilde;o autom&aacute;tica CNAB 240 (.TXT) e retorno (.RET)</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
+                            <span id="hub-remessa-status-pill" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                Ita&uacute; Autorizado
+                                <span id="hub-remessa-status-text">Autom&aacute;tico Ativo</span>
                             </span>
-                            <span style="font-size: 10.5px; color: #94A3B8;">Ag. 0334 C/C 98775-7</span>
+                            <span id="hub-remessa-conta" style="font-size: 10.5px; color: #94A3B8;">Ag. 0334 C/C 98775-7</span>
                         </div>
                     </div>
 
@@ -2513,8 +2513,8 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span id="btn-top-lote-sp-label">Lote SP (XML)</span>
                     </button>
-                    <button type="button" class="btn-secondary-figma" onclick="abrirModalRemessaBancaria()" style="border-color: rgba(16, 185, 129, 0.35); color: #34D399; background: rgba(16, 185, 129, 0.1);" title="Abrir painel de Remessa Itaú CNAB 240">
-                        <span>Remessa Itaú</span>
+                    <button type="button" class="btn-secondary-figma" id="btn-top-remessa-itau" onclick="abrirModalRemessaBancaria()" style="border-color: rgba(16, 185, 129, 0.35); color: #34D399; background: rgba(16, 185, 129, 0.1);" title="Baixar Remessa Itaú SISPAG CNAB 240 gerada automaticamente ou enviar retorno .RET">
+                        <span id="btn-top-remessa-label">Remessa Itaú</span>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                     </button>
                 </div>
@@ -2573,6 +2573,9 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                         <span id="sefaz-live-pct" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #38BDF8; min-width: 38px; text-align: right;">0%</span>
+                        <button type="button" id="sefaz-live-remessa-btn" class="btn-primary-figma" onclick="baixarRemessaItauDireto()" style="display: none; height: 28px; padding: 0 11px; font-size: 11px; font-weight: 700; background: #10B981; border-color: #10B981;">
+                            <span id="sefaz-live-remessa-btn-text">⬇ Baixar Remessa (.TXT)</span>
+                        </button>
                         <button type="button" class="btn-secondary-figma" onclick="toggleLogLiveSefaz()" style="height: 28px; padding: 0 10px; font-size: 11px;">
                             <span id="sefaz-live-log-btn-text">Ver Log SEFAZ</span>
                         </button>
@@ -3423,7 +3426,7 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261030_1105"></script>
+    <script src="/js/dashboard.js?v=20261030_1135"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
@@ -3449,39 +3452,42 @@
             <!-- CORPO DO MODAL -->
             <div style="padding: 24px;">
                 <!-- RESUMO DO LOTE ATIVO -->
-                <div style="background: #0A101D; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="background: #0A101D; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div>
-                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Lote Operacional Ativo</div>
+                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Remessa CNAB 240 Ativa (Gerada Automaticamente)</div>
                         <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
-                            REM2610 &middot; <span style="color: #38BDF8;">91 guias auditadas</span>
+                            <span id="modal-remessa-codigo">REM----</span> &middot; <span id="modal-remessa-qtd" style="color: #38BDF8;">0 guias prontas</span>
                         </div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Total a Recolher (DIFAL)</div>
-                        <div style="font-size: 18px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
-                            R$ 4.020,42
+                        <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Total na Remessa Ita&uacute;</div>
+                        <div id="modal-remessa-valor" style="font-size: 18px; font-weight: 800; color: #10B981; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                            R$ 0,00
                         </div>
                     </div>
                 </div>
 
+                <!-- AVISO DINÂMICO DE NOTAS SP AGUARDANDO DARE -->
+                <div id="modal-remessa-sp-aviso" style="display: none; background: rgba(245, 194, 104, 0.09); border: 1px solid rgba(245, 194, 104, 0.32); border-radius: 8px; padding: 9px 13px; margin-bottom: 14px; font-size: 11.5px; color: #F5C268; line-height: 1.45;"></div>
+
                 <!-- CONTA BANCÁRIA -->
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 20px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 8px 14px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 18px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 8px 14px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l10 5H2l10-5z"></path></svg>
-                    <span>Conta Corrente Autorizada: <strong style="color: #FFFFFF;">Banco Ita&uacute; (341) &middot; Ag. 0334 &middot; C/C 98775-7 (LALUA)</strong></span>
+                    <span>Conta Corrente Autorizada: <strong id="modal-remessa-conta" style="color: #FFFFFF;">Banco Ita&uacute; (341) &middot; Ag. 0334 &middot; C/C 98775-7 (LALUA)</strong></span>
                 </div>
 
                 <!-- FORMULÁRIO DE GERAÇÃO DA REMESSA -->
-                <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 18px;">
                     <label for="modal-remessa-data-pagamento" style="display: block; font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 6px;">
-                        Data de Pagamento / Vencimento das Guias
+                        Data de Agendamento / Pagamento no Ita&uacute; SISPAG
                     </label>
-                    <input type="date" id="modal-remessa-data-pagamento" style="width: 100%; box-sizing: border-box; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 13.5px; font-family: 'JetBrains Mono', monospace; padding: 10px 14px; border-radius: 8px; outline: none;">
+                    <input type="date" id="modal-remessa-data-pagamento" onchange="aoAlterarDataModalRemessa(this.value)" style="width: 100%; box-sizing: border-box; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 13.5px; font-family: 'JetBrains Mono', monospace; padding: 10px 14px; border-radius: 8px; outline: none;">
                 </div>
 
                 <!-- BOTÃO DE DOWNLOAD -->
-                <button type="button" onclick="executarDownloadRemessaModal(event)" style="width: 100%; background: #10B981; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 13px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                <button type="button" id="btn-modal-baixar-remessa" onclick="executarDownloadRemessaModal(event)" style="width: 100%; background: #10B981; color: #FFFFFF; font-size: 14px; font-weight: 800; padding: 13px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); transition: all 0.2s;" onmouseover="if(!this.disabled) this.style.background='#059669'" onmouseout="if(!this.disabled) this.style.background='#10B981'">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>Baixar Arquivo de Remessa (.TXT)</span>
+                    <span id="btn-modal-baixar-remessa-text">Baixar Arquivo de Remessa (.TXT)</span>
                 </button>
 
                 <!-- DIVISOR COM DROPZONE DE RETORNO -->
