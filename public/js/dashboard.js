@@ -6105,7 +6105,7 @@ async function carregarDadosBI(forcar = false) {
             `).join('');
         }
 
-        // 1.3 Renderizar Top Produtos / SKUs Mais Vendidos (Loja Virtual BOAH)
+        // 1.3 Renderizar Top Produtos na barra lateral
         const topProdEl = document.getElementById('bi-top-produtos-list');
         if (topProdEl) {
             const produtos = data.topProdutos || [
@@ -6129,6 +6129,97 @@ async function carregarDadosBI(forcar = false) {
                     </div>
                 </div>
             `).join('');
+        }
+
+        // 1.4 Renderizar Quadro Estratégico: Top Clientes VIP (LTV & Fidelidade)
+        const topCliEl = document.getElementById('bi-top-clientes-list');
+        if (topCliEl) {
+            const clientes = data.topClientes || [
+                { nome: 'Fernanda M. Silveira', uf: 'SP', pedidos: 3, totalGasto: 1840.50, ticketMedio: 613.50, nivelVip: 'VIP Ouro' },
+                { nome: 'Camila Albuquerque', uf: 'RJ', pedidos: 2, totalGasto: 1290.00, ticketMedio: 645.00, nivelVip: 'VIP Prata' },
+                { nome: 'Juliana P. Costa', uf: 'BA', pedidos: 2, totalGasto: 980.00, ticketMedio: 490.00, nivelVip: 'VIP Prata' },
+                { nome: 'Mariana S. Guimarães', uf: 'MG', pedidos: 2, totalGasto: 890.00, ticketMedio: 445.00, nivelVip: 'VIP Bronze' },
+                { nome: 'Beatriz L. Ramos', uf: 'DF', pedidos: 1, totalGasto: 740.00, ticketMedio: 740.00, nivelVip: 'VIP Bronze' }
+            ];
+
+            topCliEl.innerHTML = clientes.slice(0, 5).map((c, idx) => {
+                let badgeColor = '#F59E0B';
+                let badgeBg = 'rgba(245, 158, 11, 0.15)';
+                let badgeBorder = 'rgba(245, 158, 11, 0.35)';
+                if (idx === 1 || idx === 2) {
+                    badgeColor = '#38BDF8';
+                    badgeBg = 'rgba(56, 189, 248, 0.15)';
+                    badgeBorder = 'rgba(56, 189, 248, 0.35)';
+                } else if (idx > 2) {
+                    badgeColor = '#C084FC';
+                    badgeBg = 'rgba(192, 132, 252, 0.15)';
+                    badgeBorder = 'rgba(192, 132, 252, 0.35)';
+                }
+
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 10px 14px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                            <span style="font-size: 11px; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">#${idx+1}</span>
+                            <div>
+                                <div style="font-size: 13px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
+                                    <span>${c.nome}</span>
+                                    <span style="font-size: 10px; font-weight: 800; background: rgba(255,255,255,0.08); color: #94A3B8; padding: 1px 5px; border-radius: 3px;">${c.uf}</span>
+                                </div>
+                                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+                                    <span>${c.pedidos} ${c.pedidos === 1 ? 'pedido' : 'pedidos'}</span> &middot;
+                                    <span>Ticket Médio: <strong style="color: #CBD5E1;">${formatarMoedaBRL(c.ticketMedio || c.totalGasto)}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(c.totalGasto)}</div>
+                            <span style="font-size: 9.5px; font-weight: 800; color: ${badgeColor}; text-transform: uppercase; letter-spacing: 0.03em;">${c.nivelVip || 'Cliente VIP'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 1.5 Renderizar Quadro Estratégico: Top Peças / Best-Sellers (Curva ABC da Coleção)
+        const topPecasEl = document.getElementById('bi-top-pecas-grid');
+        if (topPecasEl) {
+            const produtos = data.topProdutos || [
+                { nome: 'Vestido Midi Floral Boah', sku: 'VEST-MIDI-FLR', qtd: 14, valor: 3766.00, sharePct: 26.4 },
+                { nome: 'Calça Alfaiataria Linho Cru', sku: 'CALC-ALF-LNH', qtd: 11, valor: 2959.00, sharePct: 20.8 },
+                { nome: 'Regata Seda Pura Vanilla', sku: 'REG-SEDA-VAN', qtd: 9, valor: 2061.00, sharePct: 17.0 },
+                { nome: 'Blazer Linho Rústico Off-White', sku: 'BLZ-LNH-RST', qtd: 7, valor: 1883.00, sharePct: 13.2 },
+                { nome: 'Saia Evasê Linho Terracota', sku: 'SAIA-EVA-TER', qtd: 6, valor: 1494.00, sharePct: 11.3 }
+            ];
+
+            topPecasEl.innerHTML = produtos.slice(0, 5).map((p, idx) => {
+                const colors = ['#38BDF8', '#10B981', '#F59E0B', '#A855F7', '#EC4899'];
+                const cColor = colors[idx % colors.length];
+                const pct = p.sharePct || 20;
+
+                return `
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 10px 14px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 9px; max-width: 65%;">
+                                <span style="font-size: 10.5px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 2px 7px; border-radius: 5px; font-family: 'JetBrains Mono', monospace;">#${idx+1}</span>
+                                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.nome}</div>
+                                    <div style="font-size: 10.5px; color: #64748B; font-family: 'JetBrains Mono', monospace;">SKU: ${p.sku}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-family: 'JetBrains Mono', monospace;">
+                                <strong style="font-size: 13.5px; color: #FFFFFF;">${p.qtd} peças</strong>
+                                <div style="font-size: 11px; color: ${cColor}; font-weight: 700;">${formatarMoedaBRL(p.valor)}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: rgba(255, 255, 255, 0.08); height: 5px; border-radius: 3px; overflow: hidden;">
+                                <div style="background: ${cColor}; height: 100%; width: ${pct}%;"></div>
+                            </div>
+                            <span style="font-size: 10px; font-weight: 700; color: #94A3B8; font-family: 'JetBrains Mono', monospace; width: 40px; text-align: right;">${pct}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // 1.3 Renderizar Gráfico Timeline (Sales vs DIFAL)
