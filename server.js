@@ -1696,19 +1696,55 @@ app.get('/api/batch/download-xml/:batchId', requireAuth, async (req, res) => {
             query = query.eq('batch_id', batchId);
         }
 
-        const { data: spGuides } = await query;
+        const { data: spGuidesRaw } = await query;
+        const spGuides = (spGuidesRaw && !ids)
+            ? (spGuidesRaw.filter(g => situacaoPagamentoGuia(g) !== 'paga').length > 0
+                ? spGuidesRaw.filter(g => situacaoPagamentoGuia(g) !== 'paga')
+                : spGuidesRaw)
+            : (spGuidesRaw || []);
+
         if (spGuides && spGuides.length > 0) {
             const listaNotasSp = [];
+            const idsAtualizadosSp = [];
             for (const g of spGuides) {
+                let xmlText = null;
                 if (g.xml_storage_path) {
-                    const { data: xData } = await supabase.storage.from('tenant-storage').download(g.xml_storage_path);
-                    if (xData) {
-                        const nota = parserService.extrairDadosNfeXML(await xData.text());
-                        nota.dataVencimento = dataEscolhida;
-                        nota.dataPagamento = dataEscolhida;
-                        listaNotasSp.push(nota);
-                    }
+                    try {
+                        const { data: xData } = await supabase.storage.from('tenant-storage').download(g.xml_storage_path);
+                        if (xData) xmlText = await xData.text();
+                    } catch (e) {}
                 }
+                if (!xmlText && g.nf_number) {
+                    try {
+                        const { data: otherGuide } = await supabase
+                            .from('guides')
+                            .select('xml_storage_path')
+                            .eq('tenant_id', tenant.id)
+                            .eq('nf_number', g.nf_number)
+                            .not('xml_storage_path', 'is', null)
+                            .limit(1)
+                            .single();
+                        if (otherGuide && otherGuide.xml_storage_path) {
+                            const { data: xData } = await supabase.storage.from('tenant-storage').download(otherGuide.xml_storage_path);
+                            if (xData) xmlText = await xData.text();
+                        }
+                    } catch (e) {}
+                }
+                if (xmlText) {
+                    const nota = parserService.extrairDadosNfeXML(xmlText);
+                    nota.dataVencimento = dataEscolhida;
+                    nota.dataPagamento = dataEscolhida;
+                    listaNotasSp.push(nota);
+                    if (situacaoPagamentoGuia(g) !== 'paga') idsAtualizadosSp.push(g.id);
+                }
+            }
+
+            if (idsAtualizadosSp.length > 0) {
+                await supabase
+                    .from('guides')
+                    .update({ due_date: dataEscolhida })
+                    .in('id', idsAtualizadosSp)
+                    .eq('tenant_id', tenant.id);
             }
 
             if (listaNotasSp.length > 0) {
@@ -2231,11 +2267,11 @@ app.post('/api/sefaz-sp/upload-retorno-zip', requireAuth, requireRole(['diretori
 
         // Se atualizou guias, notifica a doca em tempo real e grava auditoria
         if (resultado.atualizadas > 0) {
-            broadcastDockEvent(req.tenant.id, {
+            broadcastDockEvent({
                 type: 'LOTE_ATUALIZADO',
                 message: `${resultado.atualizadas} DAREs de SP importados com sucesso!`,
                 timestamp: new Date().toISOString()
-            });
+            }, req.tenant.id);
 
             await auditService.logAudit({
                 supabase,
@@ -2384,8 +2420,16 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
             }
         });
 
+        const liveTask = (activeBatch && activeTasks[activeBatch.id]) ? activeTasks[activeBatch.id] : null;
+        const batchPayload = activeBatch ? {
+            ...activeBatch,
+            live_progress: liveTask ? liveTask.progress : (activeBatch.status === 'sucesso' ? 100 : 0),
+            live_status: liveTask ? liveTask.status : activeBatch.status,
+            live_logs: liveTask ? liveTask.logs : []
+        } : null;
+
         return res.json({
-            batch: activeBatch,
+            batch: batchPayload,
             resumo: {
                 total,
                 pagas: countPagas,
@@ -2423,6 +2467,8 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                     is_liberada: isPaga,
                     created_at: g.created_at,
                     emission_date: g.emission_date || g.nf_issue_date || g.created_at || null,
+                    due_date: g.due_date || null,
+                    storage_path: g.storage_path || null,
                     barcode: g.barcode || null,
                     line_digitizable: g.line_digitizable || null,
                     paid_at: g.paid_at || null,
@@ -6181,6 +6227,22 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                         if (xData) content = await xData.text();
                     } catch (e) {}
                 }
+                if (!content && g.nf_number) {
+                    try {
+                        const { data: otherG } = await supabase
+                            .from('guides')
+                            .select('xml_storage_path')
+                            .eq('tenant_id', tenant.id)
+                            .eq('nf_number', g.nf_number)
+                            .not('xml_storage_path', 'is', null)
+                            .limit(1)
+                            .single();
+                        if (otherG && otherG.xml_storage_path) {
+                            const { data: xData } = await supabase.storage.from('tenant-storage').download(otherG.xml_storage_path);
+                            if (xData) content = await xData.text();
+                        }
+                    } catch (e) {}
+                }
                 if (content) {
                     const dadosNfe = parserService.extrairDadosNfeXML(content);
                     dadosNfe.guide_id = g.id;
@@ -6302,6 +6364,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                             await supabase
                                 .from('guides')
                                 .update({
+                                    due_date: dataAlvo,
                                     barcode: 'IMPORTAR_NO_SEFAZ_SP',
                                     line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
                                     status: 'requer_dare_sp'
@@ -6476,6 +6539,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                     .from('guides')
                     .update({
                         uf: ufRetornada || ufEsperada,
+                        due_date: dataAlvo,
                         barcode: guia.codigoBarras,
                         line_digitizable: guia.linhaDigitavel,
                         storage_path: remotePath,
@@ -6503,6 +6567,14 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             task.progress = 100;
             task.status = 'sucesso';
 
+            broadcastDockEvent({
+                type: 'LOTE_ATUALIZADO',
+                batchId,
+                status: 'sucesso',
+                paymentDate: dataAlvo,
+                timestamp: new Date().toISOString()
+            }, tenant.id);
+
         } catch (err) {
             log(`❌ Erro na transmissão: ${err.message}`);
             task.status = 'erro';
@@ -6511,6 +6583,14 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 .from('batches')
                 .update({ status: 'erro', error_message: err.message })
                 .eq('id', batchId);
+
+            broadcastDockEvent({
+                type: 'LOTE_ATUALIZADO',
+                batchId,
+                status: 'erro',
+                error: err.message,
+                timestamp: new Date().toISOString()
+            }, tenant.id);
         }
     });
 }
