@@ -187,15 +187,29 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             const y0 = 30;
             const wTotal = 535;
 
+            const rawRecibo = String(guia.batch_receipt || guia.recibo || '').trim();
+            const temReciboLote = Boolean(rawRecibo && rawRecibo !== '-');
+
             // Borda do container principal
             doc.rect(x0, y0, wTotal, 410).lineWidth(2).stroke('#000000');
 
-            // Cabeçalho oficial de autorização SEFAZ
-            doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#dcfce7', '#16a34a');
-            doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#166534').text(
-                'GUIA EMITIDA E AUTORIZADA VIA WEBSERVICE SEFAZ GNRE v2.00 — APTA PARA PAGAMENTO',
-                x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
-            );
+            // Cabeçalho oficial com Número do Lote SEFAZ (ou aviso em modo simulado)
+            if (isSimulado) {
+                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#fee2e2', '#dc2626');
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#991b1b').text(
+                    'AMBIENTE SIMULADO / HOMOLOGAÇÃO — PRÉVIA SEM VALOR FISCAL — NÃO PAGAR',
+                    x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
+                );
+            } else {
+                const textoTopoPdf = temReciboLote
+                    ? `LOTE SEFAZ Nº ${rawRecibo}  |  WEBSERVICE OFICIAL GNRE SEFAZ v2.00`
+                    : 'GUIA AUTORIZADA — WEBSERVICE OFICIAL GNRE SEFAZ v2.00';
+                doc.rect(x0 + 6, y0 + 6, wTotal - 12, 18).fillAndStroke('#f2f2f2', '#000000');
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#000000').text(
+                    textoTopoPdf,
+                    x0 + 10, y0 + 11, { align: 'center', width: wTotal - 20 }
+                );
+            }
 
             // Título da Guia
             doc.font('Helvetica-Bold').fontSize(11).fillColor('#000000').text(
@@ -226,7 +240,7 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('CÓDIGO DA RECEITA', tX + c1 + c2 + 4, tY + 4);
             doc.font('Helvetica-Bold').fontSize(13).fillColor('#000000').text(guia.receita_code || '100102', tX + c1 + c2, tY + 18, { align: 'center', width: c3 });
 
-            // Linha 2: Documento de Origem, Data de Vencimento, Status no Sistema
+            // Linha 2: Documento de Origem, Data de Vencimento, Recibo Lote SEFAZ / Ambiente
             const tY2 = tY + h1;
             const h2 = 32;
             doc.rect(tX, tY2, c1, h2).stroke('#000000');
@@ -238,8 +252,13 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#000000').text(vencimentoFmt, tX + c1 + 4, tY2 + 16);
 
             doc.rect(tX + c1 + c2, tY2, c3, h2).stroke('#000000');
-            doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('AMBIENTE', tX + c1 + c2 + 4, tY2 + 4);
-            doc.font('Helvetica-Bold').fontSize(8.5).fillColor(isSimulado ? '#b91c1c' : '#000000').text(isSimulado ? 'SIMULADO' : 'PRODUÇÃO', tX + c1 + c2 + 4, tY2 + 16);
+            if (temReciboLote && !isSimulado) {
+                doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('RECIBO LOTE SEFAZ', tX + c1 + c2 + 4, tY2 + 4);
+                doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000').text(rawRecibo, tX + c1 + c2 + 4, tY2 + 16);
+            } else {
+                doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('AMBIENTE', tX + c1 + c2 + 4, tY2 + 4);
+                doc.font('Helvetica-Bold').fontSize(8.5).fillColor(isSimulado ? '#b91c1c' : '#000000').text(isSimulado ? 'SIMULADO' : 'PRODUÇÃO', tX + c1 + c2 + 4, tY2 + 16);
+            }
 
             // Linha 3: Chave NFe + Instruções e Valores
             const tY3 = tY2 + h2;
@@ -248,9 +267,9 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             doc.rect(tX, tY3, c1, h3).stroke('#000000');
             doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('CHAVE DE ACESSO DA NF-E', tX + 4, tY3 + 4);
             doc.font('Courier-Bold').fontSize(7.5).fillColor('#000000').text(chave, tX + 4, tY3 + 15);
-            doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('AVISO IMPORTANTE', tX + 4, tY3 + 32);
-            doc.font('Helvetica').fontSize(6.5).fillColor('#555555').text(
-                'Espelho gerado localmente a partir do retorno Webservice GNRE v2.00.\nConsulte a autenticidade pelo código de barras no Portal GNRE Oficial antes da liquidação.',
+            doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#444444').text('INSTRUÇÕES', tX + 4, tY3 + 32);
+            doc.font('Helvetica').fontSize(6.8).fillColor('#444444').text(
+                `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temReciboLote ? ` (Lote SEFAZ nº ${rawRecibo})` : ''}.\nDestinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.`,
                 tX + 4, tY3 + 42, { width: c1 - 8 }
             );
 
@@ -298,10 +317,10 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             const yAut = yBar + 58;
             doc.moveTo(x0 + 10, yAut).lineTo(x0 + wTotal - 10, yAut).dash(2, { space: 2 }).stroke('#888888');
             doc.undash();
-            const footerAuth = isPreviaSemValor
+            const footerAuth = isSimulado
                 ? `DOCUMENTO DE PRÉVIA / SIMULAÇÃO — NÃO UTILIZAR PARA PAGAMENTO BANCÁRIO`
-                : `Espelho Interno expedi HUB — UF Favorecida: ${uf} — Status: ${guia.status || 'N/A'}`;
-            doc.font('Helvetica').fontSize(7).fillColor(isPreviaSemValor ? '#b91c1c' : '#666666').text(footerAuth, x0 + 10, yAut + 5, { align: 'right', width: wTotal - 20 });
+                : `Guia GNRE Autorizada via Webservice Oficial SEFAZ v2.00${temReciboLote ? ` — Lote SEFAZ Nº ${rawRecibo}` : ''} — UF: ${uf}`;
+            doc.font('Helvetica').fontSize(7).fillColor(isSimulado ? '#b91c1c' : '#666666').text(footerAuth, x0 + 10, yAut + 5, { align: 'right', width: wTotal - 20 });
 
             doc.end();
         } catch (e) {
@@ -483,10 +502,33 @@ async function gerarRomaneioPdfBuffer(empresa, guias = [], options = {}) {
     });
 }
 
+async function enriquecerReciboGuias(guides, tenantId, supabaseClient) {
+    if (!supabaseClient || !Array.isArray(guides) || guides.length === 0) return;
+    try {
+        const gnreSvc = require('./gnre_service');
+        const batchIds = [...new Set(guides.map(g => g.batch_id).filter(Boolean))];
+        if (batchIds.length === 0) return;
+        const { data: batches } = await supabaseClient
+            .from('batches')
+            .select('id, receipt')
+            .eq('tenant_id', tenantId)
+            .in('id', batchIds);
+        const receiptMap = {};
+        (batches || []).forEach(b => { receiptMap[b.id] = b.receipt || ''; });
+        for (const g of guides) {
+            if (!g.batch_receipt && g.batch_id && receiptMap[g.batch_id]) {
+                const rec = gnreSvc.extrairReciboUfDoLote(receiptMap[g.batch_id], g.uf || g.ufFavorecida);
+                if (rec) g.batch_receipt = rec;
+            }
+        }
+    } catch (e) {}
+}
+
 /**
  * Mescla todos os DANFEs e Espelhos de Guias GNRE em um único PDF sequencial intercalado
  */
 async function gerarLoteIntercaladoPdf(tenant, guides, supabaseClient) {
+    await enriquecerReciboGuias(guides, tenant.id, supabaseClient);
     const mergedPdf = await PDFLibDocument.create();
 
     for (const guide of guides) {
@@ -564,6 +606,7 @@ async function gerarLoteIntercaladoPdf(tenant, guides, supabaseClient) {
  * ETAPA 3: COMBO COMPLETO DE EXPEDIÇÃO
  */
 async function gerarComboExpedicaoPdf(tenant, guides, supabaseClient, options = {}) {
+    await enriquecerReciboGuias(guides, tenant.id, supabaseClient);
     const asaasService = require('./asaas_service');
     const mergedPdf = await PDFLibDocument.create();
 
@@ -710,6 +753,7 @@ module.exports = {
     gerarLoteIntercaladoPdf,
     gerarComboExpedicaoPdf,
     gerarCodigoBarrasELinhaDigitavelGNRE,
+    enriquecerReciboGuias,
     isGuiaLiberada,
     isCodigoBarrasSinteticoLocal
 };

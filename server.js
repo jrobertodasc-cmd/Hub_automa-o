@@ -1887,6 +1887,7 @@ app.post('/api/batch/query-receipt', requireAuth, async (req, res) => {
 
         const guiasDb = [];
         for (const guia of dadosGuias) {
+            if (!guia.recibo) guia.recibo = receipt;
             // Prepara uma nota simulada para o renderizador HTML da guia
             const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guia, {
                 cnpjEmitente: tenant.cnpj,
@@ -3872,6 +3873,7 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
             dac: tenant.bank_dac
         };
 
+        if (!guiaEmitida.recibo) guiaEmitida.recibo = recibo;
         const htmlGuia = gnreService.exportarGuiaHtml(dadosBancarios, guiaEmitida, dadosNfe);
         const remotePath = `${tenant.id}/guias/guia_NF_${guide.nf_number}.html`;
         await supabase.storage
@@ -3962,14 +3964,19 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
             guide.due_date = req.query.paymentDate;
         }
 
-        // Se o storage_path for HTML (espelho oficial retornado pelo WebService GNRE)
+        await printService.enriquecerReciboGuias([guide], req.tenant.id, supabase);
+        // Se o storage_path for HTML (guia oficial retornada pelo WebService GNRE)
         if (guide.storage_path && guide.storage_path.toLowerCase().endsWith('.html')) {
             try {
                 const { data: hData } = await supabase.storage
                     .from('tenant-storage')
                     .download(guide.storage_path);
                 if (hData) {
-                    const htmlText = await hData.text();
+                    const rawHtml = await hData.text();
+                    const htmlText = gnreService.atualizarCabecalhoGuiaHtmlLegada(rawHtml, guide.batch_receipt || '');
+                    if (htmlText !== rawHtml) {
+                        supabase.storage.from('tenant-storage').upload(guide.storage_path, Buffer.from(htmlText, 'utf-8'), { contentType: 'text/html', upsert: true }).catch(() => {});
+                    }
                     res.setHeader('Content-Type', 'text/html; charset=utf-8');
                     return res.send(htmlText);
                 }
@@ -3991,7 +3998,7 @@ app.get('/api/guide/download/:guideId', requireAuth, async (req, res) => {
         }
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="espelho_GNRE_NF_${guide.nf_number}.pdf"`);
+        res.setHeader('Content-Disposition', `inline; filename="GNRE_NF_${guide.nf_number}.pdf"`);
         return res.send(buffer);
     } catch (err) {
         return res.status(500).json({ error: err.message });
@@ -4428,6 +4435,7 @@ app.get('/api/guide/gnre-selecionadas', requireAuth, async (req, res) => {
 
         const isSimulado = (req.tenant.environment || '').toLowerCase() === 'simulado';
         const pdfBuffers = [];
+        await printService.enriquecerReciboGuias(guiasComGnre, req.tenant.id, supabase);
         for (const g of guiasComGnre) {
             if (paymentDate && /^\d{4}-\d{2}-\d{2}$/.test(paymentDate)) {
                 g.due_date = paymentDate;
@@ -4586,6 +4594,7 @@ app.get('/api/guide/download-all/:batchId', requireAuth, async (req, res) => {
         const AdmZip = require('adm-zip');
         const zip = new AdmZip();
 
+        await printService.enriquecerReciboGuias(guides, req.tenant.id, supabase);
         // Faz o download de todos os arquivos (Guia GNRE, DANFE em PDF e XML da NF-e) para cada nota
         await Promise.all(guides.map(async (guide) => {
             const folder = `NF_${guide.nf_number}`;
@@ -4601,7 +4610,8 @@ app.get('/api/guide/download-all/:batchId', requireAuth, async (req, res) => {
                         const buffer = Buffer.from(await data.arrayBuffer());
                         const isPdf = guide.storage_path.toLowerCase().endsWith('.pdf');
                         const ext = isPdf ? 'pdf' : 'html';
-                        zip.addFile(`${folder}/guia_GNRE_${guide.uf}.${ext}`, buffer);
+                        const finalBuf = isPdf ? buffer : Buffer.from(gnreService.atualizarCabecalhoGuiaHtmlLegada(buffer.toString('utf-8'), guide.batch_receipt || ''), 'utf-8');
+                        zip.addFile(`${folder}/guia_GNRE_${guide.uf}.${ext}`, finalBuf);
                     }
                 } catch (err) {
                     console.error(`Erro ao incluir guia ${guide.nf_number} no zip:`, err.message);

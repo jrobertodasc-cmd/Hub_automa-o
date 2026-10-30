@@ -539,8 +539,12 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
     const codigoReceita = escapeHtml(dadosGuia?.codigoReceita || dadosNfeExtraidos?.codigoReceita || "100102");
     const numeroNota = escapeHtml(dadosGuia?.documentoOrigem || dadosNfeExtraidos?.documentoOrigem || "SEM_NUMERO");
     const chaveAcessoNfe = escapeHtml(dadosNfeExtraidos?.chaveAcessoNfe || dadosGuia?.chaveAcessoNfe || "NÃO INFORMADA");
-    const numeroControle = escapeHtml(dadosGuia?.numeroControle || "CONSULTE PELO RECIBO/CÓDIGO DE BARRAS NO PORTAL GNRE");
-    const reciboLote = escapeHtml(dadosGuia?.recibo || "-");
+    const rawControle = String(dadosGuia?.numeroControle || "").trim();
+    const temControleNumerico = /^\d{6,}$/.test(rawControle);
+    const numeroControle = escapeHtml(rawControle || "AUTORIZADO VIA LOTE SEFAZ");
+    const rawRecibo = String(dadosGuia?.recibo || "").trim();
+    const temReciboValido = Boolean(rawRecibo && rawRecibo !== "-");
+    const reciboLote = escapeHtml(temReciboValido ? rawRecibo : "-");
     const isSimulado = !!dadosGuia?.simulado;
 
     const dataVencimentoFormatada = escapeHtml(formatarDataVisual(dadosGuia.dataVencimento || dadosNfeExtraidos?.dataVencimento));
@@ -563,19 +567,39 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
         ? cnpjEmitente.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
         : cnpjEmitente;
 
-    const bannerSimulado = isSimulado
+    let textoLoteTopo = 'GUIA AUTORIZADA — WEBSERVICE OFICIAL GNRE SEFAZ v2.00';
+    if (temReciboValido && temControleNumerico) {
+        textoLoteTopo = `LOTE SEFAZ Nº ${reciboLote} &nbsp;|&nbsp; Nº DE CONTROLE SEFAZ: ${numeroControle}`;
+    } else if (temReciboValido) {
+        textoLoteTopo = `LOTE SEFAZ Nº ${reciboLote} &nbsp;|&nbsp; WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+    } else if (temControleNumerico) {
+        textoLoteTopo = `Nº DE CONTROLE SEFAZ: ${numeroControle} &nbsp;|&nbsp; WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+    }
+
+    const bannerTopo = isSimulado
         ? `<div style="background:#fee2e2;color:#991b1b;border:2px solid #dc2626;padding:8px;text-align:center;font-weight:bold;font-size:12px;margin-bottom:10px;">
             AMBIENTE SIMULADO / HOMOLOGAÇÃO — PRÉVIA SEM VALOR FISCAL — NÃO PAGAR
            </div>`
-        : `<div style="background:#fef3c7;color:#92400e;border:1px solid #f59e0b;padding:6px;text-align:center;font-weight:bold;font-size:10px;margin-bottom:8px;">
-            ESPELHO DE CONFERÊNCIA INTERNA (WEBSERVICE SEFAZ) — CONFIRA NO PORTAL GNRE OFICIAL ANTES DE PAGAR
+        : `<div class="sefaz-lote-banner" style="background:#f2f2f2;color:#000000;border:1px solid #000000;padding:6px 10px;text-align:center;font-weight:bold;font-size:11px;margin-bottom:8px;letter-spacing:0.3px;">
+            ${textoLoteTopo}
            </div>`;
+
+    const viaTitulo = isSimulado ? 'Prévia de Homologação — Sem Valor Fiscal' : 'Via Contribuinte';
+    const tituloDocumento = isSimulado
+        ? 'PRÉVIA DE TESTE GNRE (HOMOLOGAÇÃO SEFAZ v2.00)'
+        : 'GUIA NACIONAL DE RECOLHIMENTO DE TRIBUTOS ESTADUAIS — GNRE';
+    const textoInstrucaoPrincipal = isSimulado
+        ? 'Documento emitido em ambiente de homologação/teste SEFAZ.'
+        : `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temReciboValido ? ` (Lote SEFAZ nº ${reciboLote})` : ''}.`;
+    const rodapeAutenticacao = isSimulado
+        ? `Ambiente de Homologação — Sem Valor Fiscal — UF: ${escapeHtml(ufFavorecida)}`
+        : `Guia GNRE Autorizada via Webservice Oficial SEFAZ v2.00 — Lote SEFAZ Nº ${reciboLote} — UF: ${escapeHtml(ufFavorecida)}`;
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Espelho GNRE - Nota Fiscal ${numeroNota}</title>
+    <title>Guia GNRE - NF-e ${numeroNota}${temReciboValido ? ` - Lote SEFAZ ${reciboLote}` : ''}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 11px; color: #000; margin: 20px; }
         .guia-container { width: 680px; border: 2px solid #000; padding: 10px; margin-bottom: 20px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -598,9 +622,9 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
 <body>
 
     <div class="guia-container">
-        ${bannerSimulado}
-        <div class="via-titulo">Espelho de Conferência — Via Contribuinte</div>
-        <div class="titulo-guia">ESPELHO DE DADOS GNRE (WEBSERVICE SEFAZ v2.00)</div>
+        ${bannerTopo}
+        <div class="via-titulo">${viaTitulo}</div>
+        <div class="titulo-guia">${tituloDocumento}</div>
         
         <table class="table-guia">
             <tr>
@@ -642,7 +666,7 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
                     <span class="valor" style="font-family: monospace; font-size: 10px;">${numeroControle}</span>
                     <br><br>
                     <span class="label">Instruções</span>
-                    <span style="font-size: 9px; color: #555;">Espelho gerado a partir do retorno do Webservice GNRE v2.00.<br>Destinado ao recolhimento de DIFAL - Consumidor Final não contribuinte.${instrucoesAdicionais}</span>
+                    <span style="font-size: 9px; color: #555;">${textoInstrucaoPrincipal}<br>Destinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.${instrucoesAdicionais}</span>
                 </td>
                 <td class="destaque">
                     <span class="label">Valor Principal</span>
@@ -681,11 +705,115 @@ function exportarGuiaHtml(dadosEmpresa, dadosGuia, dadosNfeExtraidos) {
             ${svgBarcode}
         </div>
         
-        <div class="autenticacao">Espelho Interno expedi HUB — Recibo SEFAZ: ${reciboLote} — UF: ${escapeHtml(ufFavorecida)}</div>
+        <div class="autenticacao">${rodapeAutenticacao}</div>
     </div>
 
 </body>
 </html>`.trim();
+}
+
+/**
+ * Atualiza em tempo real HTMLs de guias de produção emitidas anteriormente (salvas no Storage)
+ * substituindo o antigo aviso amarelo "ESPELHO DE CONFERÊNCIA INTERNA" pelo cabeçalho institucional com o Nº do Lote SEFAZ.
+ */
+function atualizarCabecalhoGuiaHtmlLegada(htmlText, fallbackRecibo = '') {
+    if (!htmlText || typeof htmlText !== 'string') return htmlText;
+    // Preserva avisos de ambiente simulado/homologação intactos
+    if (/AMBIENTE SIMULADO/i.test(htmlText) || /<span class="valor">SIMULADO<\/span>/i.test(htmlText)) {
+        return htmlText;
+    }
+    if (!/ESPELHO DE CONFER[ÊE]NCIA INTERNA|ESPELHO DE DADOS GNRE|Espelho Interno expedi HUB/i.test(htmlText)) {
+        return htmlText;
+    }
+
+    const matchReciboCell = htmlText.match(/Recibo Lote SEFAZ<\/span>\s*<span class="valor">([^<]+)<\/span>/i);
+    const matchReciboFooter = htmlText.match(/Recibo SEFAZ:\s*([0-9A-Za-z_-]+)/i);
+    let rawRecibo = (matchReciboCell && matchReciboCell[1] ? matchReciboCell[1].trim() : '') ||
+                    (matchReciboFooter && matchReciboFooter[1] ? matchReciboFooter[1].trim() : '');
+    if ((!rawRecibo || rawRecibo === '-') && fallbackRecibo) {
+        rawRecibo = String(fallbackRecibo).trim();
+    }
+    const temRecibo = Boolean(rawRecibo && rawRecibo !== '-');
+    const reciboEsc = escapeHtml(temRecibo ? rawRecibo : '-');
+
+    const matchControle = htmlText.match(/N[úu]mero de Controle SEFAZ<\/span>\s*<span class="valor"[^>]*>([^<]+)<\/span>/i);
+    const rawControle = matchControle && matchControle[1] ? matchControle[1].trim() : '';
+    const temControle = /^\d{6,}$/.test(rawControle);
+    const controleEsc = escapeHtml(rawControle);
+
+    const matchUf = htmlText.match(/UF Favorecida<\/span>\s*<span class="valor"[^>]*>([A-Z]{2})<\/span>/i) ||
+                    htmlText.match(/UF:\s*([A-Z]{2})<\/div>/i);
+    const ufEsc = escapeHtml(matchUf && matchUf[1] ? matchUf[1].trim() : '');
+
+    let textoLoteTopo = 'GUIA AUTORIZADA — WEBSERVICE OFICIAL GNRE SEFAZ v2.00';
+    if (temRecibo && temControle) {
+        textoLoteTopo = `LOTE SEFAZ Nº ${reciboEsc} &nbsp;|&nbsp; Nº DE CONTROLE SEFAZ: ${controleEsc}`;
+    } else if (temRecibo) {
+        textoLoteTopo = `LOTE SEFAZ Nº ${reciboEsc} &nbsp;|&nbsp; WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+    } else if (temControle) {
+        textoLoteTopo = `Nº DE CONTROLE SEFAZ: ${controleEsc} &nbsp;|&nbsp; WEBSERVICE OFICIAL GNRE SEFAZ v2.00`;
+    }
+
+    const novoBanner = `<div class="sefaz-lote-banner" style="background:#f2f2f2;color:#000000;border:1px solid #000000;padding:6px 10px;text-align:center;font-weight:bold;font-size:11px;margin-bottom:8px;letter-spacing:0.3px;">\n            ${textoLoteTopo}\n           </div>`;
+
+    let atualizado = htmlText
+        .replace(
+            /<title>Espelho GNRE - Nota Fiscal ([^<]+)<\/title>/i,
+            `<title>Guia GNRE - NF-e $1${temRecibo ? ` - Lote SEFAZ ${reciboEsc}` : ''}</title>`
+        )
+        .replace(
+            /<div style="background:#fef3c7;[\s\S]*?ESPELHO DE CONFER[ÊE]NCIA INTERNA[\s\S]*?<\/div>/i,
+            novoBanner
+        )
+        .replace(
+            /<div class="via-titulo">[\s\S]*?<\/div>/i,
+            '<div class="via-titulo">Via Contribuinte</div>'
+        )
+        .replace(
+            /<div class="titulo-guia">ESPELHO DE DADOS GNRE \(WEBSERVICE SEFAZ v2\.00\)<\/div>/i,
+            '<div class="titulo-guia">GUIA NACIONAL DE RECOLHIMENTO DE TRIBUTOS ESTADUAIS — GNRE</div>'
+        )
+        .replace(
+            /Espelho gerado a partir do retorno do Webservice GNRE v2\.00\.<br>Destinado ao recolhimento de DIFAL - Consumidor Final n[ãa]o contribuinte\./i,
+            `Guia emitida e autorizada via Webservice Oficial GNRE SEFAZ v2.00${temRecibo ? ` (Lote SEFAZ nº ${reciboEsc})` : ''}.<br>Destinada ao recolhimento de DIFAL - Consumidor Final não contribuinte.`
+        )
+        .replace(
+            /<div class="autenticacao">Espelho Interno expedi HUB[\s\S]*?<\/div>/i,
+            `<div class="autenticacao">Guia GNRE Autorizada via Webservice Oficial SEFAZ v2.00 — Lote SEFAZ Nº ${reciboEsc}${ufEsc ? ` — UF: ${ufEsc}` : ''}</div>`
+        );
+
+    if (temRecibo) {
+        atualizado = atualizado.replace(
+            /(Recibo Lote SEFAZ<\/span>\s*<span class="valor">)\s*-\s*(<\/span>)/i,
+            `$1${reciboEsc}$2`
+        );
+    }
+
+    return atualizado;
+}
+
+/**
+ * Extrai o número do recibo SEFAZ correspondente à UF a partir do campo `batches.receipt`
+ * (ex: "MG:26000530363516, BA:26000530363599" -> "26000530363516").
+ */
+function extrairReciboUfDoLote(batchReceipt, uf) {
+    if (!batchReceipt) return '';
+    const ufUpper = String(uf || '').toUpperCase().trim();
+    const partes = String(batchReceipt).split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+    if (ufUpper) {
+        for (const p of partes) {
+            const idx = p.indexOf(':');
+            if (idx > 0) {
+                const k = p.slice(0, idx).trim().toUpperCase();
+                const v = p.slice(idx + 1).trim();
+                if (k === ufUpper && v && !v.startsWith('DARE_SP')) return v;
+            }
+        }
+    }
+    if (partes.length === 1 && !partes[0].includes(':') && /^\d+$/.test(partes[0])) {
+        return partes[0];
+    }
+    return '';
 }
 
 module.exports = {
@@ -693,6 +821,8 @@ module.exports = {
     enviarLote,
     consultarLote,
     exportarGuiaHtml,
+    atualizarCabecalhoGuiaHtmlLegada,
+    extrairReciboUfDoLote,
     gerarSvgI25,
     formatarLinhaDigitavelVisual,
     formatarDataVisual,
