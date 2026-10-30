@@ -154,16 +154,22 @@ function extrairVencimentoDeBarcodeGnre(barcode) {
     const ymd20 = parseYmdCandidate(bar.slice(20, 28));
     if (ymd20) return ymd20;
 
+    // DARE-SP (órgão FEBRABAN 0185): grava YYYYMMDD nos 8 dígitos finais (36..44)
+    const ymd36 = parseYmdCandidate(bar.slice(36, 44));
+    if (ymd36) return ymd36;
+
     // Portal Nacional GNRE (PE): campo livre inicia com YYDDD (ano 2 dígitos + dia juliano 001..366)
-    const yyStr = bar.slice(19, 21);
-    const dddStr = bar.slice(21, 24);
-    if (/^\d{2}$/.test(yyStr) && /^\d{3}$/.test(dddStr)) {
-        const yy = parseInt(yyStr, 10);
-        const ddd = parseInt(dddStr, 10);
-        const isLeap = ((2000 + yy) % 4 === 0 && (2000 + yy) % 100 !== 0) || ((2000 + yy) % 400 === 0);
-        if (yy >= 24 && yy <= 39 && ddd >= 1 && ddd <= (isLeap ? 366 : 365)) {
-            const dt = new Date(Date.UTC(2000 + yy, 0, ddd));
-            return dt.toISOString().slice(0, 10);
+    if (bar.slice(15, 19) !== '0185') {
+        const yyStr = bar.slice(19, 21);
+        const dddStr = bar.slice(21, 24);
+        if (/^\d{2}$/.test(yyStr) && /^\d{3}$/.test(dddStr)) {
+            const yy = parseInt(yyStr, 10);
+            const ddd = parseInt(dddStr, 10);
+            const isLeap = ((2000 + yy) % 4 === 0 && (2000 + yy) % 100 !== 0) || ((2000 + yy) % 400 === 0);
+            if (yy >= 24 && yy <= 39 && ddd >= 1 && ddd <= (isLeap ? 366 : 365)) {
+                const dt = new Date(Date.UTC(2000 + yy, 0, ddd));
+                return dt.toISOString().slice(0, 10);
+            }
         }
     }
 
@@ -675,7 +681,8 @@ async function gerarLoteIntercaladoPdf(tenant, guides, supabaseClient) {
             }
         }
 
-        if (isSp) {
+        const isSpSemDareImportada = isSp && (!guide.storage_path || !guide.storage_path.toLowerCase().endsWith('.pdf') || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+        if (isSpSemDareImportada) {
             continue;
         }
 
@@ -773,7 +780,8 @@ async function gerarComboExpedicaoPdf(tenant, guides, supabaseClient, options = 
             }
         }
 
-        if (isSp) {
+        const isSpSemDareImportada = isSp && (!guide.storage_path || !guide.storage_path.toLowerCase().endsWith('.pdf') || guide.barcode === 'IMPORTAR_NO_SEFAZ_SP');
+        if (isSpSemDareImportada) {
             continue;
         }
 

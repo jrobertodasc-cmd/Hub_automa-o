@@ -2479,18 +2479,19 @@ async function enviarRetornoSpZip(inputEl) {
     const file = inputEl?.files?.[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.zip')) {
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith('.zip') && !lowerName.endsWith('.pdf')) {
         if (typeof showToast === 'function') {
-            showToast('Selecione um arquivo .zip com os DAREs da SEFAZ-SP.', 'warning');
+            showToast('Selecione o arquivo .ZIP ou .PDF gerado pelo portal DARE-SP.', 'warning');
         } else {
-            alert('Selecione um arquivo .zip com os DAREs da SEFAZ-SP.');
+            alert('Selecione o arquivo .ZIP ou .PDF gerado pelo portal DARE-SP.');
         }
         inputEl.value = '';
         return;
     }
 
     if (typeof showToast === 'function') {
-        showToast('⏳ Processando arquivo .zip da SEFAZ-SP...', 'info');
+        showToast('⏳ Lendo e vinculando DARE(s) da SEFAZ-SP...', 'info');
     }
 
     try {
@@ -2508,9 +2509,11 @@ async function enviarRetornoSpZip(inputEl) {
         }
 
         const qtd = data.resumo?.atualizadas ?? 0;
-        const msg = `✓ Sucesso: ${qtd} DARE(s) de SP vinculado(s) com código de barras!`;
+        const msg = qtd > 0
+            ? `✓ ${qtd} DARE(s) de SP vinculada(s) com código de barras! Status alterado para A Pagar.`
+            : (data.message || 'Nenhuma guia pendente de SP correspondente foi encontrada.');
         if (typeof showToast === 'function') {
-            showToast(msg, 'success');
+            showToast(msg, qtd > 0 ? 'success' : 'warning');
         } else {
             alert(msg);
         }
@@ -3635,8 +3638,11 @@ function filtrarPorSituacaoTab(situacao, btnEl) {
 function obterGuiasGnreOficiaisEmitidas(lista) {
     return (lista || []).filter(g => {
         const uf = (g.uf || '').toUpperCase().trim();
-        if (!uf || uf === 'SP' || uf === 'ND') return false;
+        if (!uf || uf === 'ND') return false;
         const barClean = String(g.barcode || '').replace(/\D/g, '');
+        if (uf === 'SP') {
+            return barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && Boolean(g.storage_path);
+        }
         return barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
     });
 }
