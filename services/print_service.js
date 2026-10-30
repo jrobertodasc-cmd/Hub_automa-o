@@ -127,6 +127,50 @@ function isCodigoBarrasSinteticoLocal(barcode) {
 }
 
 /**
+ * Extrai a Data de Vencimento oficial (YYYY-MM-DD) codificada no código de barras FEBRABAN de 44 dígitos da GNRE/DARE.
+ * Suporta:
+ *  - Padrão YYYYMMDD nas posições 19..27 (DARE-SP / arrecadação direta) ou 20..28 (SEFAZ-RJ 0278)
+ *  - Padrão Juliano YYDDD nas posições 19..24 (Portal Nacional GNRE PE: AL, MG, BA, SC, PR, RS, GO, etc.)
+ */
+function extrairVencimentoDeBarcodeGnre(barcode) {
+    const bar = String(barcode || '').replace(/[^0-9]/g, '');
+    if (bar.length !== 44 || !bar.startsWith('8') || isCodigoBarrasSinteticoLocal(bar)) {
+        return null;
+    }
+
+    const parseYmdCandidate = (s) => {
+        if (!/^(202[4-9]|203\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(s)) return null;
+        const y = parseInt(s.slice(0, 4), 10);
+        const m = parseInt(s.slice(4, 6), 10);
+        const d = parseInt(s.slice(6, 8), 10);
+        const dt = new Date(Date.UTC(y, m - 1, d));
+        if (dt.getUTCFullYear() !== y || (dt.getUTCMonth() + 1) !== m || dt.getUTCDate() !== d) return null;
+        return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
+    };
+
+    const ymd19 = parseYmdCandidate(bar.slice(19, 27));
+    if (ymd19) return ymd19;
+
+    const ymd20 = parseYmdCandidate(bar.slice(20, 28));
+    if (ymd20) return ymd20;
+
+    // Portal Nacional GNRE (PE): campo livre inicia com YYDDD (ano 2 dígitos + dia juliano 001..366)
+    const yyStr = bar.slice(19, 21);
+    const dddStr = bar.slice(21, 24);
+    if (/^\d{2}$/.test(yyStr) && /^\d{3}$/.test(dddStr)) {
+        const yy = parseInt(yyStr, 10);
+        const ddd = parseInt(dddStr, 10);
+        const isLeap = ((2000 + yy) % 4 === 0 && (2000 + yy) % 100 !== 0) || ((2000 + yy) % 400 === 0);
+        if (yy >= 24 && yy <= 39 && ddd >= 1 && ddd <= (isLeap ? 366 : 365)) {
+            const dt = new Date(Date.UTC(2000 + yy, 0, ddd));
+            return dt.toISOString().slice(0, 10);
+        }
+    }
+
+    return null;
+}
+
+/**
  * Gera um PDF A4 de Espelho de Conferência da Guia GNRE (apenas com dados retornados pelo Webservice SEFAZ)
  */
 async function gerarGnrePdfBuffer(empresa, guia) {
@@ -148,7 +192,11 @@ async function gerarGnrePdfBuffer(empresa, guia) {
             const numNf = guia.nf_number || guia.documentoOrigem || '';
             const uf = (guia.uf || guia.ufFavorecida || '').toUpperCase().trim() || 'UF INDEFINIDA';
             const valorFmt = formatarMoeda(guia.value || guia.valor);
-            const vencimentoFmt = formatarData(guia.due_date || guia.dataVencimento);
+            const vencimentoFmt = formatarData(
+                guia.due_date ||
+                guia.dataVencimento ||
+                extrairVencimentoDeBarcodeGnre(guia.barcode || guia.codigoBarras)
+            );
             const chave = guia.chave_nfe || guia.chaveAcessoNfe || 'NÃO INFORMADA';
 
             let codBarras = (guia.barcode || guia.codigoBarras || '').replace(/[^0-9]/g, '');
@@ -546,8 +594,15 @@ async function enriquecerReciboGuias(guides, tenantId, supabaseClient) {
             }
         }
 
-        // Extrai Nº de Controle SEFAZ (e recibo, se faltar) do espelho HTML oficial salvo no Storage
-        const htmlGuides = guides.filter(g => g.storage_path && String(g.storage_path).toLowerCase().endsWith('.html') && (!g.numero_controle || !g.batch_receipt));
+        for (const g of guides) {
+            if (!g.due_date) {
+                const vencBar = extrairVencimentoDeBarcodeGnre(g.barcode || g.codigoBarras);
+                if (vencBar) g.due_date = vencBar;
+            }
+        }
+
+        // Extrai Nº de Controle SEFAZ, Recibo do Lote e Vencimento do espelho HTML oficial salvo no Storage
+        const htmlGuides = guides.filter(g => g.storage_path && String(g.storage_path).toLowerCase().endsWith('.html') && (!g.numero_controle || !g.batch_receipt || !g.due_date));
         if (htmlGuides.length > 0) {
             await Promise.all(htmlGuides.map(async (g) => {
                 try {
@@ -555,16 +610,22 @@ async function enriquecerReciboGuias(guides, tenantId, supabaseClient) {
                     if (!data) return;
                     const htmlText = Buffer.from(await data.arrayBuffer()).toString('utf8');
                     if (!g.numero_controle) {
-                        const ctrlMatch = htmlText.match(/N[uú]mero de Controle SEFAZ<\/div>\s*<div[^>]*>([^<]+)<\/div>/i);
+                        const ctrlMatch = htmlText.match(/N[uú]mero de Controle SEFAZ<\/(?:span|div)>\s*<(?:span|div)[^>]*>([^<]+)<\/(?:span|div)>/i);
                         if (ctrlMatch && ctrlMatch[1] && ctrlMatch[1].trim() !== '-') {
                             g.numero_controle = ctrlMatch[1].trim();
                         }
                     }
                     if (!g.batch_receipt) {
-                        const recMatch = htmlText.match(/Recibo Lote SEFAZ<\/div>\s*<div[^>]*>([^<]+)<\/div>/i)
+                        const recMatch = htmlText.match(/Recibo Lote SEFAZ<\/(?:span|div)>\s*<(?:span|div)[^>]*>([^<]+)<\/(?:span|div)>/i)
                             || htmlText.match(/LOTE SEFAZ Nº\s*([0-9]+)/i);
                         if (recMatch && recMatch[1] && recMatch[1].trim() !== '-') {
                             g.batch_receipt = recMatch[1].trim();
+                        }
+                    }
+                    if (!g.due_date) {
+                        const vencMatch = htmlText.match(/Data de Vencimento<\/(?:span|div)>\s*<(?:span|div)[^>]*>(\d{2})\/(\d{2})\/(\d{4})<\/(?:span|div)>/i);
+                        if (vencMatch) {
+                            g.due_date = `${vencMatch[3]}-${vencMatch[2]}-${vencMatch[1]}`;
                         }
                     }
                 } catch (errHtml) {}
@@ -804,5 +865,6 @@ module.exports = {
     gerarCodigoBarrasELinhaDigitavelGNRE,
     enriquecerReciboGuias,
     isGuiaLiberada,
-    isCodigoBarrasSinteticoLocal
+    isCodigoBarrasSinteticoLocal,
+    extrairVencimentoDeBarcodeGnre
 };

@@ -336,8 +336,12 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
             response = await sendSoapRequest(urls.recepcao, 'processar', soapXml, agent);
             const isTransientHttp = [429, 502, 503, 504].includes(response.statusCode) ||
                 (response.body && /(429 Too Many Requests|502 Bad Gateway|503 Service Temporarily Unavailable|504 Gateway Time-out)/i.test(response.body));
-            if (isTransientHttp && tentativa < 8) {
-                await new Promise(r => setTimeout(r, 2500));
+            const isTransientSefazDb = response.body && (
+                /<(?:[a-zA-Z0-9]+:)?codigo>\s*197\s*<\/(?:[a-zA-Z0-9]+:)?codigo>/i.test(response.body) ||
+                /Erro ao gravar lote/i.test(response.body)
+            );
+            if ((isTransientHttp || (isTransientSefazDb && tentativa <= 4)) && tentativa < 8) {
+                await new Promise(r => setTimeout(r, isTransientSefazDb ? 3500 : 2500));
                 continue;
             }
             break;
@@ -364,6 +368,10 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
     const reciboMatch = response.body.match(/<(?:[a-zA-Z0-9]+:)?numero>([^<]+)<\/(?:[a-zA-Z0-9]+:)?numero>/);
 
     if (!reciboMatch) {
+        const codRej = codigoMatch ? String(codigoMatch[1]).trim() : 'N/A';
+        if (codRej === '197') {
+            throw new Error(`Portal Nacional GNRE (SEFAZ-PE) com instabilidade temporária ao gravar o lote (Código 197). Aguarde alguns instantes e tente novamente.`);
+        }
         if (descricaoMatch && descricaoMatch[1]) {
             let desc = descricaoMatch[1]
                 .replace(/&#xE3;/g, 'ã')
@@ -377,7 +385,7 @@ async function enviarLote(listaGuias, agent, uf, environment, dadosEmpresa, logs
                 .replace(/&#xEA;/g, 'ê')
                 .replace(/&#xF4;/g, 'ô')
                 .replace(/&#xFB;/g, 'û');
-            throw new Error(`Rejeição da SEFAZ (Código ${codigoMatch ? codigoMatch[1] : 'N/A'}): ${desc}`);
+            throw new Error(`Rejeição da SEFAZ (Código ${codRej}): ${desc}`);
         }
         throw new Error("Lote rejeitado ou estrutura inválida na resposta da SEFAZ.");
     }

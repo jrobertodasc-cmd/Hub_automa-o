@@ -104,7 +104,7 @@ async function processarRetornoSpZip({ supabase, tenantId, caminhoZip }) {
         let query = supabase.from('guides').select('*').eq('tenant_id', tenantId);
 
         if (item.chave_nfe && item.chave_nfe.length === 44) {
-            query = query.eq('access_key', item.chave_nfe);
+            query = query.eq('chave_nfe', item.chave_nfe);
         } else if (item.nota_fiscal) {
             query = query.eq('nf_number', String(item.nota_fiscal));
         } else {
@@ -167,18 +167,9 @@ async function atualizarGuiaComDare(supabase, guia, item) {
 
     const updatePayload = {
         barcode: item.codigo_barras,
-        digitable_line: item.linha_digitavel,
-        status: 'aguardando_pagamento',
-        updated_at: new Date().toISOString()
+        line_digitizable: item.linha_digitavel,
+        status: 'aguardando_pagamento'
     };
-
-    if (item.data_vencimento) {
-        // Formato dd/mm/yyyy -> yyyy-mm-dd
-        const partes = item.data_vencimento.split('/');
-        if (partes.length === 3) {
-            updatePayload.due_date = `${partes[2]}-${partes[1]}-${partes[0]}`;
-        }
-    }
 
     const { error: errUp } = await supabase
         .from('guides')

@@ -1207,10 +1207,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                 // Se foi timeout ou erro de rede/5xx, mantém bloqueada em 'pagamento_incerto' para evitar pagamento duplicado
                 const isIncerto = pErr.isNetworkOrTimeout || (pErr.statusCode && pErr.statusCode >= 500);
                 await supabase.from('guides').update({
-                    status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento',
-                    rejection_reason: isIncerto
-                        ? `Resultado indeterminado (${pErr.message}). Concilie no painel Asaas antes de reenviar.`
-                        : pErr.message
+                    status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento'
                 }).eq('id', g.id).eq('tenant_id', tenant.id);
 
                 resultados.push({ id: g.id, nf: g.nf_number, erro: pErr.message, sucesso: false, incerto: isIncerto });
@@ -1370,10 +1367,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
         if (typeof guia !== 'undefined' && guia && guia.id) {
             const isIncerto = err.isNetworkOrTimeout || (err.statusCode && err.statusCode >= 500);
             await supabase.from('guides').update({
-                status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento',
-                rejection_reason: isIncerto
-                    ? `Resultado indeterminado (${err.message}). Concilie no painel Asaas antes de reenviar.`
-                    : err.message
+                status: isIncerto ? 'pagamento_incerto' : 'erro_pagamento'
             }).eq('id', guia.id).eq('tenant_id', tenant.id);
         }
         return res.status(500).json({ error: err.message });
@@ -1615,8 +1609,7 @@ app.post('/api/webhooks/asaas', async (req, res) => {
             if (guias && guias.length > 0) {
                 const guia = guias[0];
                 await supabase.from('guides').update({
-                    status: 'erro_pagamento',
-                    rejection_reason: motivo
+                    status: 'erro_pagamento'
                 }).eq('id', guia.id).eq('tenant_id', guia.tenant_id);
 
                 console.warn(`[Webhook Asaas] Guia NF ${guia.nf_number} marcada com ERRO DE PAGAMENTO: ${motivo}`);
@@ -1740,11 +1733,17 @@ app.get('/api/batch/download-xml/:batchId', requireAuth, async (req, res) => {
             }
 
             if (idsAtualizadosSp.length > 0) {
+                const dataSpBr = dataEscolhida.split('-').reverse().join('/');
                 await supabase
                     .from('guides')
-                    .update({ due_date: dataEscolhida })
+                    .update({
+                        barcode: 'IMPORTAR_NO_SEFAZ_SP',
+                        line_digitizable: `Gerar em lote pelo arquivo XML de SP (Venc. ${dataSpBr})`,
+                        status: 'requer_dare_sp'
+                    })
                     .in('id', idsAtualizadosSp)
-                    .eq('tenant_id', tenant.id);
+                    .eq('tenant_id', tenant.id)
+                    .eq('barcode', 'IMPORTAR_NO_SEFAZ_SP');
             }
 
             if (listaNotasSp.length > 0) {
@@ -2060,7 +2059,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
             const mapped = validGuides.map(g => ({
                 codigoBarras: g.barcode,
                 valor: g.value,
-                dataVencimento: paymentDateChosen || g.due_date || new Date().toISOString().split('T')[0],
+                dataVencimento: paymentDateChosen || g.due_date || printService.extrairVencimentoDeBarcodeGnre(g.barcode) || new Date().toISOString().split('T')[0],
                 documentoOrigem: g.nf_number,
                 ufFavorecida: g.uf
             }));
@@ -2130,7 +2129,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         const mapped = validItauGuides.map(g => ({
             codigoBarras: g.barcode,
             valor: g.value,
-            dataVencimento: g.due_date || dataPagamentoEfetiva,
+            dataVencimento: g.due_date || printService.extrairVencimentoDeBarcodeGnre(g.barcode) || dataPagamentoEfetiva,
             documentoOrigem: g.nf_number,
             ufFavorecida: g.uf
         }));
@@ -2468,7 +2467,14 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                     is_liberada: isPaga,
                     created_at: g.created_at,
                     emission_date: g.emission_date || g.nf_issue_date || g.created_at || null,
-                    due_date: g.due_date || null,
+                    due_date: g.due_date
+                        || printService.extrairVencimentoDeBarcodeGnre(g.barcode)
+                        || (() => {
+                            const mSp = String(g.line_digitizable || '').match(/Venc\.\s*(\d{2})\/(\d{2})\/(\d{4})/);
+                            return mSp ? `${mSp[3]}-${mSp[2]}-${mSp[1]}` : null;
+                        })()
+                        || null,
+                    has_xml: Boolean(g.xml_storage_path || (g.chave_nfe && String(g.chave_nfe).replace(/\D/g, '').length >= 44)),
                     storage_path: g.storage_path || null,
                     barcode: g.barcode || null,
                     line_digitizable: g.line_digitizable || null,
@@ -3753,14 +3759,13 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
 
         // 1. Caso SP: Gera indicação para importação na DARE SP
         if (uf === 'SP') {
+            const dataSpBr = dataAlvo.split('-').reverse().join('/');
             await supabase
                 .from('guides')
                 .update({
-                    due_date: dataAlvo,
                     barcode: 'IMPORTAR_NO_SEFAZ_SP',
-                    line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
-                    status: 'requer_dare_sp',
-                    updated_at: new Date().toISOString()
+                    line_digitizable: `Gerar em lote pelo arquivo XML de SP (Venc. ${dataSpBr})`,
+                    status: 'requer_dare_sp'
                 })
                 .eq('id', guide.id)
                 .eq('tenant_id', tenant.id);
@@ -3792,10 +3797,8 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
                 .update({
                     barcode: nBar,
                     line_digitizable: nBar,
-                    due_date: dataAlvo,
                     status: 'aguardando_pagamento',
-                    storage_path: remotePath,
-                    updated_at: new Date().toISOString()
+                    storage_path: remotePath
                 })
                 .eq('id', guide.id)
                 .eq('tenant_id', tenant.id);
@@ -3849,11 +3852,15 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
 
         if (Array.isArray(dadosGuias.rejeicoesDetalhadas) && dadosGuias.rejeicoesDetalhadas.length > 0) {
             const rej = dadosGuias.rejeicoesDetalhadas[0];
-            await supabase
-                .from('guides')
-                .update({ status: 'rejeitada_sefaz', updated_at: new Date().toISOString() })
-                .eq('id', guide.id)
-                .eq('tenant_id', tenant.id);
+            const barExistente = String(guide.barcode || '').replace(/\D/g, '');
+            const jaTinhaGuiaValida = barExistente.length >= 44 && guide.barcode !== 'IMPORTAR_NO_SEFAZ_SP' && !printService.isCodigoBarrasSinteticoLocal(barExistente);
+            if (!jaTinhaGuiaValida) {
+                await supabase
+                    .from('guides')
+                    .update({ status: 'rejeitada_sefaz' })
+                    .eq('id', guide.id)
+                    .eq('tenant_id', tenant.id);
+            }
 
             return res.status(400).json({
                 error: `Guia rejeitada pela SEFAZ ${uf}: ${rej.motivo || 'Rejeição cadastral/fiscal.'}`
@@ -3883,18 +3890,19 @@ app.post('/api/guide/emitir-sefaz/:guideId', requireAuth, requireActiveSubscript
                 upsert: true
             });
 
-        await supabase
+        const { error: errUpIndiv } = await supabase
             .from('guides')
             .update({
                 barcode: guiaEmitida.codigoBarras,
                 line_digitizable: guiaEmitida.linhaDigitavel || guiaEmitida.codigoBarras,
-                due_date: dataAlvo,
                 status: 'aguardando_pagamento',
-                storage_path: remotePath,
-                updated_at: new Date().toISOString()
+                storage_path: remotePath
             })
             .eq('id', guide.id)
             .eq('tenant_id', tenant.id);
+        if (errUpIndiv) {
+            throw new Error(`Falha ao gravar guia emitida no banco: ${errUpIndiv.message}`);
+        }
 
         return res.status(200).json({
             success: true,
@@ -6229,9 +6237,15 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 throw new Error("Nenhuma nota encontrada para este lote.");
             }
 
-            // Carrega os XMLs do storage (TRAVA ANTI-DUPLICIDADE: ignora solenemente guias já pagas/comprovadas)
+            const hoje = new Date().toISOString().split('T')[0];
+            const dataAlvo = paymentDate || hoje;
+
+            // Carrega os XMLs do storage (TRAVA ANTI-DUPLICIDADE: preserva pagas e guias já emitidas para a mesma data)
             const notasFiscais = [];
             let guiasPagasIgnoradas = 0;
+            let guiasJaEmitidasPreservadas = 0;
+            let guiasSemXmlIgnoradas = 0;
+
             for (const g of stagedGuides) {
                 const st = (g.status || '').toLowerCase();
                 const sit = (g.situacao_pagamento || '').toLowerCase();
@@ -6239,6 +6253,28 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                     guiasPagasIgnoradas++;
                     continue;
                 }
+
+                const barClean = String(g.barcode || '').replace(/\D/g, '');
+                const temBarcodeSefazValido = barClean.length >= 44
+                    && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP'
+                    && !printService.isCodigoBarrasSinteticoLocal(barClean);
+
+                if (temBarcodeSefazValido) {
+                    const vencAtual = printService.extrairVencimentoDeBarcodeGnre(g.barcode);
+                    if (vencAtual && vencAtual === dataAlvo) {
+                        if (st === 'rejeitada_sefaz' || st === 'rejeitada') {
+                            await supabase
+                                .from('guides')
+                                .update({ status: 'aguardando_pagamento' })
+                                .eq('id', g.id)
+                                .eq('tenant_id', tenant.id);
+                        }
+                        guiasJaEmitidasPreservadas++;
+                        log(`🛡 NF ${g.nf_number} (${g.uf}) já possui guia oficial SEFAZ autorizada para ${dataAlvo.split('-').reverse().join('/')} — preservada sem reenvio.`);
+                        continue;
+                    }
+                }
+
                 let content = null;
                 if (g.xml_storage_path) {
                     try {
@@ -6265,10 +6301,14 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 if (content) {
                     const dadosNfe = parserService.extrairDadosNfeXML(content);
                     dadosNfe.guide_id = g.id;
+                    dadosNfe.jaTinhaBarcodeValido = temBarcodeSefazValido;
                     dadosNfe.xmlContent = content;
                     dadosNfe.xml_storage_path = g.xml_storage_path;
                     dadosNfe.danfe_storage_path = g.danfe_storage_path;
                     notasFiscais.push(dadosNfe);
+                } else {
+                    guiasSemXmlIgnoradas++;
+                    log(`⚠ NF ${g.nf_number} sem XML de NF-e anexado — ignorada no envio automático.`);
                 }
             }
 
@@ -6277,14 +6317,23 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             }
 
             if (notasFiscais.length === 0) {
-                if (guiasPagasIgnoradas > 0) {
-                    log(`✔ Todas as guias deste lote já constam como quitadas/pagas. Nenhuma transmissão pendente necessária.`);
+                if (guiasPagasIgnoradas > 0 || guiasJaEmitidasPreservadas > 0) {
+                    log(`✔ Todas as guias elegíveis com XML deste lote já estão autorizadas na SEFAZ para ${dataAlvo.split('-').reverse().join('/')} (ou já quitadas).`);
                     task.progress = 100;
-                    task.status = 'concluido';
-                    await supabase.from('batches').update({ status: 'concluido' }).eq('id', batchId);
+                    task.status = 'sucesso';
+                    await supabase.from('batches').update({ status: 'sucesso', error_message: null }).eq('id', batchId);
+                    broadcastDockEvent({
+                        type: 'LOTE_ATUALIZADO',
+                        batchId,
+                        status: 'sucesso',
+                        paymentDate: dataAlvo,
+                        timestamp: new Date().toISOString()
+                    }, tenant.id);
                     return;
                 }
-                throw new Error("Não foi possível carregar os arquivos XML do lote para transmissão.");
+                throw new Error(guiasSemXmlIgnoradas > 0
+                    ? `As ${guiasSemXmlIgnoradas} nota(s) selecionada(s) são registros financeiros antigos sem arquivo XML de NF-e anexado.`
+                    : "Não foi possível carregar os arquivos XML do lote para transmissão.");
             }
 
             // Agente mTLS
@@ -6315,8 +6364,6 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             task.progress = 25;
 
             // Datas de vencimento/pagamento
-            const hoje = new Date().toISOString().split('T')[0];
-            const dataAlvo = paymentDate || hoje;
             for (const nota of notasFiscais) {
                 nota.dataVencimento = dataAlvo;
                 nota.dataPagamento = dataAlvo;
@@ -6379,13 +6426,13 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                                 upsert: true
                             });
 
+                        const dataSpBr = dataAlvo.split('-').reverse().join('/');
                         for (const n of notasPorUf[uf]) {
                             await supabase
                                 .from('guides')
                                 .update({
-                                    due_date: dataAlvo,
                                     barcode: 'IMPORTAR_NO_SEFAZ_SP',
-                                    line_digitizable: 'Gerar em lote pelo arquivo XML de SP',
+                                    line_digitizable: `Gerar em lote pelo arquivo XML de SP (Venc. ${dataSpBr})`,
                                     status: 'requer_dare_sp'
                                 })
                                 .eq('batch_id', batchId)
@@ -6445,18 +6492,21 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
 
                         if (!dadosGuias) throw new Error("Tempo esgotado aguardando retorno da SEFAZ.");
 
-                        // Persiste rejeições individuais do lote no banco para não deixar guias órfãs
+                        // Persiste rejeições individuais apenas em notas que ainda NÃO possuíam código de barras SEFAZ válido
                         if (Array.isArray(dadosGuias.rejeicoesDetalhadas) && dadosGuias.rejeicoesDetalhadas.length > 0) {
                             for (const rej of dadosGuias.rejeicoesDetalhadas) {
                                 log(`[${uf}] ⚠ NF ${rej.documentoOrigem} rejeitada pela SEFAZ: ${rej.motivo}`);
-                                await supabase
-                                    .from('guides')
-                                    .update({
-                                        status: 'rejeitada_sefaz'
-                                    })
-                                    .eq('batch_id', batchId)
-                                    .eq('tenant_id', tenant.id)
-                                    .eq('nf_number', rej.documentoOrigem);
+                                const notaRef = notasPorUf[uf].find(n => parserService.normalizarDocumentoOrigem(n.documentoOrigem) === parserService.normalizarDocumentoOrigem(rej.documentoOrigem));
+                                if (!notaRef || !notaRef.jaTinhaBarcodeValido) {
+                                    await supabase
+                                        .from('guides')
+                                        .update({
+                                            status: 'rejeitada_sefaz'
+                                        })
+                                        .eq('batch_id', batchId)
+                                        .eq('tenant_id', tenant.id)
+                                        .eq('nf_number', rej.documentoOrigem);
+                                }
                             }
                         }
 
@@ -6475,20 +6525,14 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 } catch (err) {
                     log(`[${uf}] ❌ Erro: ${err.message}`);
                     errosUf[uf] = err.message;
-                    // Marca todas as guias desta UF no lote com o erro/rejeição correspondente
-                    if (Array.isArray(err.rejeicoesDetalhadas) && err.rejeicoesDetalhadas.length > 0) {
-                        for (const rej of err.rejeicoesDetalhadas) {
-                            await supabase
-                                .from('guides')
-                                .update({
-                                    status: 'rejeitada_sefaz'
-                                })
-                                .eq('batch_id', batchId)
-                                .eq('tenant_id', tenant.id)
-                                .eq('nf_number', rej.documentoOrigem);
-                        }
-                    } else {
-                        const nfsUf = notasPorUf[uf].map(n => n.documentoOrigem);
+                    // NUNCA sobrescreve para 'rejeitada_sefaz' uma guia que já possui código de barras oficial SEFAZ válido!
+                    const notasSemGuiaPrevia = notasPorUf[uf].filter(n => !n.jaTinhaBarcodeValido);
+                    const notasComGuiaPrevia = notasPorUf[uf].filter(n => n.jaTinhaBarcodeValido);
+                    if (notasComGuiaPrevia.length > 0) {
+                        log(`[${uf}] 🛡 ${notasComGuiaPrevia.length} guia(s) já autorizada(s) anteriormente foram preservadas sem perder o código SEFAZ.`);
+                    }
+                    if (notasSemGuiaPrevia.length > 0) {
+                        const nfsSemGuia = notasSemGuiaPrevia.map(n => n.documentoOrigem);
                         await supabase
                             .from('guides')
                             .update({
@@ -6496,15 +6540,17 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                             })
                             .eq('batch_id', batchId)
                             .eq('tenant_id', tenant.id)
-                            .in('nf_number', nfsUf);
+                            .in('nf_number', nfsSemGuia);
                     }
                 }
 
                 task.progress = Math.round(25 + (55 * ((i + 1) / ufs.length)));
             }
 
-            if (todasGuias.length === 0 && Object.keys(errosUf).length > 0) {
-                throw new Error("Nenhuma guia pôde ser emitida na SEFAZ. Detalhes: " + JSON.stringify(errosUf));
+            const houveSpGerado = recibosEfetuados.some(r => r.startsWith('SP:'));
+            if (todasGuias.length === 0 && !houveSpGerado && Object.keys(errosUf).length > 0) {
+                const resumoErros = Object.entries(errosUf).map(([u, m]) => `${u}: ${m}`).join(' | ');
+                throw new Error(`Não foi possível concluir a transmissão na SEFAZ (${resumoErros}).`);
             }
 
             // Renderiza e envia espelho visual das guias validadas para o Storage
@@ -6554,27 +6600,52 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                 }
 
                 // Atualiza a guia no BD para 'aguardando_pagamento' somente após validação completa
-                await supabase
+                const { error: upGuideErr } = await supabase
                     .from('guides')
                     .update({
                         uf: ufRetornada || ufEsperada,
-                        due_date: dataAlvo,
                         barcode: guia.codigoBarras,
-                        line_digitizable: guia.linhaDigitavel,
+                        line_digitizable: guia.linhaDigitavel || guia.codigoBarras,
                         storage_path: remotePath,
                         status: 'aguardando_pagamento'
                     })
                     .eq('batch_id', batchId)
                     .eq('tenant_id', tenant.id)
                     .eq('nf_number', nfAlvo);
+                if (upGuideErr) {
+                    log(`⚠ Falha ao atualizar guia NF ${nfAlvo} no banco: ${upGuideErr.message}`);
+                }
             }
 
+            // Preserva recibos anteriores de outras UFs no mesmo lote ao atualizar
+            let reciboFinal = recibosEfetuados.join(', ');
+            try {
+                const { data: batchAtual } = await supabase.from('batches').select('receipt').eq('id', batchId).single();
+                if (batchAtual && batchAtual.receipt) {
+                    const mapaRec = {};
+                    String(batchAtual.receipt).split(',').map(s => s.trim()).filter(Boolean).forEach(par => {
+                        const idx = par.indexOf(':');
+                        if (idx > 0) mapaRec[par.slice(0, idx).trim()] = par.slice(idx + 1).trim();
+                    });
+                    recibosEfetuados.forEach(par => {
+                        const idx = par.indexOf(':');
+                        if (idx > 0) mapaRec[par.slice(0, idx).trim()] = par.slice(idx + 1).trim();
+                    });
+                    const listaRec = Object.entries(mapaRec).map(([k, v]) => `${k}:${v}`);
+                    if (listaRec.length > 0) reciboFinal = listaRec.join(', ');
+                }
+            } catch (eRec) {}
+
             // Atualiza status do lote para 'sucesso'
+            const resumoParcialErros = Object.keys(errosUf).length > 0
+                ? Object.entries(errosUf).map(([u, m]) => `${u}: ${m}`).join(' | ')
+                : null;
             await supabase
                 .from('batches')
                 .update({
                     status: 'sucesso',
-                    receipt: recibosEfetuados.join(', ')
+                    receipt: reciboFinal,
+                    error_message: resumoParcialErros
                 })
                 .eq('id', batchId);
 

@@ -5386,14 +5386,31 @@ function abrirModalEmitirSefazLote(apenasSelecionadas = false) {
         }
     }
 
-    // Calcula estritamente as NÃO PAGAS
-    const naoPagas = guiasAlvo.filter(g => {
+    // Calcula estritamente as NÃO PAGAS que possuem XML / UF válida para transmissão SEFAZ
+    const todasNaoPagas = guiasAlvo.filter(g => {
         const st = (g.status || '').toUpperCase();
         const sit = (g.situacao_pagamento || '').toLowerCase();
         return !g.is_paga && st !== 'PAGA' && sit !== 'paga' && !g.paid_at;
     });
 
-    const pagas = guiasAlvo.length - naoPagas.length;
+    const semXmlLegado = todasNaoPagas.filter(g => g.has_xml === false || ((!g.uf || g.uf === 'ND') && !g.chave_nfe));
+    const elegiveisComXml = todasNaoPagas.filter(g => !(g.has_xml === false || ((!g.uf || g.uf === 'ND') && !g.chave_nfe)));
+
+    const dataPreferida = obterDataSefazPreferida();
+    const aindaNaoEmitidas = elegiveisComXml.filter(g => {
+        const ufUp = (g.uf || '').toUpperCase();
+        if (ufUp === 'SP') return g.barcode !== 'IMPORTAR_NO_SEFAZ_SP' || (g.due_date && g.due_date !== dataPreferida);
+        const barClean = String(g.barcode || '').replace(/\D/g, '');
+        const temCodigoSefaz = barClean.length >= 44 && g.barcode !== 'IMPORTAR_NO_SEFAZ_SP';
+        if (!temCodigoSefaz) return true;
+        return Boolean(g.due_date && g.due_date !== dataPreferida);
+    });
+
+    const naoPagas = (!apenasSelecionadas && aindaNaoEmitidas.length > 0) ? aindaNaoEmitidas : elegiveisComXml;
+    const isModoReemissao = naoPagas.length > 0 && aindaNaoEmitidas.length === 0;
+    window._idsElegiveisModalSefaz = naoPagas.map(g => g.id);
+
+    const pagas = guiasAlvo.length - todasNaoPagas.length;
     const spNaoPagas = naoPagas.filter(g => (g.uf || '').toUpperCase() === 'SP');
     const gnreNaoPagas = naoPagas.filter(g => (g.uf || '').toUpperCase() !== 'SP');
     const totalValorNaoPagas = naoPagas.reduce((acc, g) => acc + (parseFloat(g.value) || 0), 0);
@@ -5412,24 +5429,45 @@ function abrirModalEmitirSefazLote(apenasSelecionadas = false) {
 
     const pagasEl = document.getElementById('sefaz-lote-qtd-pagas-bloqueadas');
     if (pagasEl) {
-        pagasEl.textContent = `${pagas} guia(s) já quitadas/pagas serão preservadas e NÃO reenviadas`;
+        const partesPreservadas = [`${pagas} paga(s)`];
+        if (!apenasSelecionadas && elegiveisComXml.length > naoPagas.length) {
+            partesPreservadas.push(`${elegiveisComXml.length - naoPagas.length} já emitida(s)`);
+        }
+        if (semXmlLegado.length > 0) {
+            partesPreservadas.push(`${semXmlLegado.length} antiga(s) sem XML`);
+        }
+        pagasEl.textContent = `Preservadas / fora do envio: ${partesPreservadas.join(' · ')}`;
     }
 
     const dataInput = document.getElementById('sefaz-lote-data');
     if (dataInput) {
-        dataInput.value = obterDataSefazPreferida();
+        dataInput.value = dataPreferida;
     }
 
     const feedback = document.getElementById('sefaz-lote-feedback');
     if (feedback) {
-        feedback.style.display = 'none';
-        feedback.innerHTML = '';
+        if (isModoReemissao) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(16, 185, 129, 0.12)';
+            feedback.style.color = '#6EE7B7';
+            feedback.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedback.innerHTML = `✔ As guias com XML deste lote <b>já estão autorizadas na SEFAZ</b>. Só retransmita se quiser alterar para uma <b>nova data de vencimento</b>.`;
+        } else {
+            feedback.style.display = 'none';
+            feedback.innerHTML = '';
+        }
     }
 
-    const btn = document.getElementById('btn-confirmar-sefaz-lote');
+    const btn = document.getElementById('sefaz-lote-data') ? document.getElementById('btn-confirmar-sefaz-lote') : document.getElementById('btn-confirmar-sefaz-lote');
     if (btn) {
         btn.disabled = (naoPagas.length === 0);
-        btn.innerHTML = naoPagas.length > 0 ? `<span>Transmitir ${naoPagas.length} Guia(s) na SEFAZ</span>` : `<span>Nenhuma Guia Pendente</span>`;
+        if (naoPagas.length === 0) {
+            btn.innerHTML = `<span>Nenhuma Guia com XML Pendente</span>`;
+        } else if (isModoReemissao) {
+            btn.innerHTML = `<span>Reemitir ${naoPagas.length} Guia(s) com Nova Data</span>`;
+        } else {
+            btn.innerHTML = `<span>Transmitir ${naoPagas.length} Guia(s) na SEFAZ</span>`;
+        }
     }
 
     modal.style.display = 'flex';
@@ -5457,6 +5495,8 @@ async function executarEmissaoSefazLote() {
     let ids = null;
     if (emissaoLoteApenasSelecionadas) {
         ids = Array.from(window.selectedGuideIds || []);
+    } else if (Array.isArray(window._idsElegiveisModalSefaz) && window._idsElegiveisModalSefaz.length > 0) {
+        ids = window._idsElegiveisModalSefaz;
     }
 
     if (feedback) {
