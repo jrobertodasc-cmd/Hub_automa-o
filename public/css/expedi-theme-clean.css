@@ -227,7 +227,7 @@ body {
 
 /* Linhas e Células da Tabela */
 .cockpit-table tbody td {
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
     border-bottom: 1px solid #F1F5F9 !important;
     color: #1E293B !important;
     font-size: 13px !important;
@@ -2396,12 +2396,12 @@ h1, h2, h3, h4,
     font-weight: 800 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .cockpit-table tbody td {
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     color: #E2E8F0 !important;
     font-size: 13px !important;
@@ -3550,7 +3550,7 @@ h1, h2, h3, h4,
 .cockpit-table tbody tr {
     background: #111B2E !important;
     border-bottom: 1px solid #29374E !important;
-    height: 88px !important;
+    height: 60px !important;
     transition: background 0.15s ease !important;
 }
 
@@ -3559,7 +3559,7 @@ h1, h2, h3, h4,
 }
 
 .cockpit-table tbody tr td {
-    padding: 14px 16px !important;
+    padding: 10px 14px !important;
     vertical-align: middle !important;
     border-bottom: 1px solid #29374E !important;
 }
@@ -4405,4 +4405,19 @@ h1, h2, h3, h4,
     padding: 2px 5px !important;
     border-radius: 4px !important;
     pointer-events: none !important;
+}
+
+
+/* Deck Operacional Enxuto · Expedição & SEFAZ */
+.cargas-deck-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1.25fr !important;
+    gap: 14px !important;
+    margin-bottom: 16px !important;
+}
+
+@media (max-width: 1024px) {
+    .cargas-deck-grid {
+        grid-template-columns: 1fr !important;
+    }
 }

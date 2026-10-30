@@ -1938,27 +1938,10 @@ async function carregarCargasDocaReais() {
         const libTotalEl = document.getElementById('carrier-total-liberadas');
         if (libTotalEl) libTotalEl.textContent = totalLib;
 
-        // 3. Atualiza Fita dos Últimos Volumes Bipados com cargas reais
-        const ribbonEl = document.getElementById('scanned-ribbon-items');
-        if (ribbonEl && cargas.length > 0) {
-            ribbonEl.innerHTML = cargas.slice(0, 3).map(g => {
-                const isLib = g.is_liberada;
-                const isSp = (g.uf === 'SP');
-                const chipClass = isLib ? 'chip-green' : 'chip-red';
-                const icon = isLib 
-                    ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-                    : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-                const desc = isLib ? (isSp ? 'Isento SP' : 'Liberada') : `Retida SEFAZ (R$ ${g.value.toFixed(2).replace('.', ',')})`;
-                return `
-                    <div class="scanned-chip ${chipClass}">
-                        ${icon}
-                        <span>NF-e ${escapeHtml(g.nf_number)} · ${escapeHtml(g.carrier_name)} (${desc})</span>
-                    </div>
-                `;
-            }).join('');
-        }
+        // 3. Mantém fita limpa até haver leitura óptica real nesta sessão
+        renderizarFitaUltimosBipados();
 
-        // 4. Salva cargas e renderiza a primeira página paginada (12 por página)
+        // 4. Salva cargas e renderiza a primeira página paginada
         window.todasCargasDoca = cargas;
         window.cargasFiltradasDoca = cargas;
 
@@ -1967,17 +1950,26 @@ async function carregarCargasDocaReais() {
         if (badgeNav) badgeNav.textContent = resumo.naoPagas || 0;
 
         const heroPend = document.getElementById('hero-qtd-pendentes');
-        if (heroPend) heroPend.textContent = `${resumo.naoPagas || 0} guias GNRE pendentes de emissão na SEFAZ`;
+        if (heroPend) {
+            const qtdEmitir = resumo.naoPagas || 0;
+            const valEmitir = (resumo.valorPendente || 0).toFixed(2).replace('.', ',');
+            heroPend.textContent = qtdEmitir > 0
+                ? `${qtdEmitir} ${qtdEmitir === 1 ? 'guia a emitir' : 'guias a emitir'} na SEFAZ (R$ ${valEmitir})`
+                : 'Nenhuma guia pendente de emissão na SEFAZ';
+        }
 
         const heroConc = document.getElementById('hero-qtd-conciliadas');
-        if (heroConc) heroConc.textContent = `${resumo.pagas || liberadasCount} cargas liberadas no Itaú`;
+        if (heroConc) {
+            const qtdLib = resumo.pagas !== undefined ? resumo.pagas : liberadasCount;
+            heroConc.textContent = `${qtdLib} ${qtdLib === 1 ? 'carga liberada' : 'cargas liberadas'} p/ coleta · ${resumo.total || totalCount} notas no lote`;
+        }
 
-        // Se houver notas não pagas (ex: 9 notas do Linx), foca na aba de não pagas por padrão
+        // Se houver notas a emitir, foca na aba correspondente por padrão
         if (resumo.naoPagas > 0 && !window.usuarioJaFiltrouManualmente) {
             filtroSituacaoAtivo = 'NAO_PAGAS';
             const btnNaoPagas = document.getElementById('tab-btn-nao-pagas');
             if (btnNaoPagas && btnNaoPagas.parentElement) {
-                btnNaoPagas.parentElement.querySelectorAll('.dock-tab-btn').forEach(b => b.classList.remove('active'));
+                btnNaoPagas.parentElement.querySelectorAll('.segmented-option-figma, .dock-underline-tab, .dock-tab-btn').forEach(b => b.classList.remove('active'));
                 btnNaoPagas.classList.add('active');
             }
         }
@@ -2936,21 +2928,16 @@ function executarAcaoBipagemPrimaria() {
     }
 }
 
-let ultimosVolumesBipados = [
-    { nf: '03001006', transp: 'Total Express', status: 'liberado', desc: 'Liberada (R$ 420,00)' },
-    { nf: '03001013', transp: 'Total Express', status: 'liberado', desc: 'Isento SP (R$ 0,00)' },
-    { nf: '03001003', transp: 'Total Express', status: 'bloqueado', desc: 'Retida SEFAZ (R$ 1.840,50)' }
-];
+let ultimosVolumesBipados = [];
 
 function adicionarUltimoBipado(guia, statusTipo) {
     const nfNum = String(guia.nf_number || '').padStart(6, '0');
     const nfFmt = nfNum.length === 6 ? `${nfNum.slice(0, 3)}.${nfNum.slice(3)}` : nfNum;
     const isSp = (guia.uf === 'SP' || guia.barcode === 'IMPORTAR_NO_SEFAZ_SP');
-    const valor = parseFloat(guia.value || 0).toFixed(2).replace('.', ',');
-    
-    let desc = statusTipo === 'liberado'
-        ? (isSp ? 'Isento SP (R$ 0,00)' : `Liberada (R$ ${valor})`)
-        : `Retida SEFAZ (R$ ${valor})`;
+
+    const desc = statusTipo === 'liberado'
+        ? (isSp ? 'Isenta SP' : 'Liberada')
+        : 'Retida · A emitir';
 
     ultimosVolumesBipados.unshift({
         nf: nfFmt,
@@ -2971,30 +2958,16 @@ function renderizarFitaUltimosBipados() {
     if (!container) return;
 
     if (!ultimosVolumesBipados || ultimosVolumesBipados.length === 0) {
-        container.innerHTML = `
-            <div style="font-size: 12px; color: #8597B1; padding: 12px 0;">
-                Aguardando leitura do primeiro volume pelo leitor óptico...
-            </div>
-        `;
+        container.innerHTML = `<span style="font-size: 11px; color: #64748B;">Leitor pronto (F2) · Bipe o volume na doca para validar liberação</span>`;
         return;
     }
 
-    container.innerHTML = ultimosVolumesBipados.slice(0, 4).map(item => {
+    container.innerHTML = `<span style="font-size: 10.5px; color: #64748B; font-weight: 600;">Últimas:</span>` + ultimosVolumesBipados.slice(0, 3).map(item => {
         const isOk = item.status === 'liberado';
-        const agora = new Date();
-        const horaFmt = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
-
         return `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(41, 55, 78, 0.4);">
-                <div>
-                    <div style="font-family: JetBrains Mono, monospace; font-size: 12.5px; font-weight: 700; color: #F1F5FC;">${escapeHtml(item.nf)}</div>
-                    <div style="font-size: 11px; color: #8597B1;">${horaFmt} · ${escapeHtml(item.transp || 'Total Express')}</div>
-                </div>
-                <span class="badge-figma ${isOk ? 'badge-figma-paga' : 'badge-figma-naopaga'}" style="font-size: 10px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">${isOk ? '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>' : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg>
-                    ${isOk ? 'Conferida' : 'Revisar'}
-                </span>
-            </div>
+            <span class="badge-figma ${isOk ? 'badge-figma-online' : 'badge-figma-naopaga'}" style="font-size: 10.5px; padding: 2px 7px; font-family: 'JetBrains Mono', monospace;">
+                NF ${escapeHtml(item.nf)} · ${escapeHtml(item.desc)}
+            </span>
         `;
     }).join('');
 }
@@ -3203,54 +3176,61 @@ function renderizarPaginaDoca(pagina = 1) {
                 const dataEmissaoFmt = idx === 4 ? '28/08/26' : (idx === 3 ? '28/09/26' : (idx === 2 ? '29/09/26' : '30/09/26'));
 
                 return `
-                    <tr class="${isChecked ? 'row-selected-figma' : ''}" style="height: 88px; background: ${isChecked ? '#172F54' : '#111B2E'}; border-bottom: 1px solid #29374E;">
-                        <td style="text-align: center; width: 44px;">
+                    <tr class="${isChecked ? 'row-selected-figma' : ''}" style="height: 60px; background: ${isChecked ? '#172F54' : '#111B2E'}; border-bottom: 1px solid #29374E;">
+                        <td style="text-align: center; width: 42px;">
                             <input type="checkbox" class="table-checkbox row-select-box" data-guide-id="${escapeHtml(g.id)}" data-nf="${escapeHtml(g.nf_number)}" ${isChecked} onchange="toggleSelectRowGuide('${escapeHtml(g.id)}', this.checked, event)" onclick="event.stopPropagation()">
                         </td>
-                        <td style="width: 140px;">
-                            <div style="font-family: JetBrains Mono, monospace; font-weight: 500; color: #F1F5FC; font-size: 12px;">${escapeHtml(nfFormatada)}</div>
-                            <div style="font-family: JetBrains Mono, monospace; font-size: 10px; color: #A6B5CA; margin-top: 3px;">${escapeHtml(pedidoRef)}</div>
+                        <td style="width: 135px;">
+                            <div style="font-family: JetBrains Mono, monospace; font-weight: 600; color: #F1F5FC; font-size: 12px;">${escapeHtml(nfFormatada)}</div>
+                            <div style="font-family: JetBrains Mono, monospace; font-size: 10px; color: #8597B1; margin-top: 2px;">${escapeHtml(pedidoRef)}</div>
                         </td>
-                        <td style="width: 360px;">
-                            <div style="font-weight: 500; color: #F1F5FC; font-size: 12px; font-family: Inter, sans-serif;">${escapeHtml(g.customer_name || 'Camila Andrade')}</div>
-                            <div style="font-size: 10px; color: #A6B5CA; margin-top: 3px; font-family: Inter, sans-serif;">
-                                ${escapeHtml(cidadeDestino)} · ${escapeHtml(g.uf || 'RJ')}
+                        <td>
+                            <div style="font-weight: 600; color: #F1F5FC; font-size: 12.5px;">${escapeHtml(g.customer_name || 'Consumidor Final')}</div>
+                            <div style="font-size: 10.5px; color: #8597B1; margin-top: 2px;">
+                                ${escapeHtml(cidadeDestino)} · <strong style="color: #93BCFF;">${escapeHtml(g.uf || 'RJ')}</strong>
                             </div>
                         </td>
-                        <td style="width: 120px;">
-                            <div style="font-family: JetBrains Mono, monospace; color: #A6B5CA; font-size: 10px;">${dataEmissaoFmt}</div>
-                            <div style="margin-top: 4px;">${docaTag}</div>
+                        <td style="width: 115px;">
+                            <div style="font-family: JetBrains Mono, monospace; color: #CBD5E1; font-size: 11px;">${dataEmissaoFmt}</div>
+                            <div style="margin-top: 2px;">${docaTag}</div>
                         </td>
-                        <td style="width: 130px;">
-                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #F1F5FC; font-family: Inter, sans-serif;">
+                        <td style="width: 140px;">
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #E2E8F0;">
                                 ${isCorreios
-                                    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
-                                    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>'
+                                    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
+                                    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>'
                                 }
                                 <span>${escapeHtml(transpNome)}</span>
                             </div>
                         </td>
                         <td style="text-align: right; width: 130px;">
-                            <div style="font-family: JetBrains Mono, monospace; color: #F1F5FC; font-size: 11px;">R$ ${vendaVal.toFixed(2).replace('.', ',')}</div>
-                            <div style="font-family: JetBrains Mono, monospace; font-size: 11px; color: #F5C268; margin-top: 3px;">R$ ${difalVal.toFixed(2).replace('.', ',')}</div>
+                            <div style="font-family: JetBrains Mono, monospace; color: #F1F5FC; font-size: 11.5px;">R$ ${vendaVal.toFixed(2).replace('.', ',')}</div>
+                            <div style="font-family: JetBrains Mono, monospace; font-size: 11px; color: ${difalVal <= 0 ? '#64748B' : '#F5C268'}; margin-top: 2px;">DIFAL R$ ${difalVal.toFixed(2).replace('.', ',')}</div>
                         </td>
-                        <td style="text-align: center; width: 130px;">
+                        <td style="text-align: center; width: 135px;">
                             ${sitCalc === 'paga'
-                                ? '<span class="badge-figma badge-figma-online"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Liberada · portão</span>'
-                                : '<span class="badge-figma badge-figma-naopaga"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF929B" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Retida · fiscal</span>'
+                                ? '<span class="badge-figma badge-figma-online"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#66DBAC" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg> Liberada</span>'
+                                : (sitCalc === 'pendente'
+                                    ? '<span class="badge-figma badge-figma-apagar"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F5C268" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Ag. Banco</span>'
+                                    : '<span class="badge-figma badge-figma-naopaga"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FF929B" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Retida</span>')
                             }
                         </td>
                         <td style="text-align: center; width: 120px;">
-                            <div style="font-size: 11px; color: #F1F5FC; font-family: Inter, sans-serif;">${sitCalc === 'paga' ? 'Emitida · Paga' : (sitCalc === 'pendente' ? 'Emitida · A pagar' : 'A emitir')}</div>
-                            <div style="font-size: 10px; color: #8597B1; margin-top: 3px; font-family: Inter, sans-serif;">GNRE / DIFAL</div>
+                            <div style="font-size: 11.5px; font-weight: 600; color: ${sitCalc === 'paga' ? '#66DBAC' : (sitCalc === 'pendente' ? '#F5C268' : '#FF929B')};">
+                                ${difalVal <= 0 ? 'Isenta' : (sitCalc === 'paga' ? 'Paga' : (sitCalc === 'pendente' ? 'A pagar' : 'A emitir'))}
+                            </div>
+                            <div style="font-size: 10px; color: #64748B; margin-top: 1px;">${g.uf === 'SP' ? 'DARE SP' : 'GNRE'}</div>
                         </td>
-                        <td style="text-align: right; width: 160px;">
-                            <div style="display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end;">
-                                <button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-primary-figma" style="height: 32px; padding: 0 12px; font-size: 11px; font-weight: 600;">
-                                    <span>Emitir SEFAZ</span>
-                                </button>
-                                <button type="button" class="btn-secondary-figma" style="width: 32px; height: 32px; padding: 0; justify-content: center; background: transparent; border-color: transparent;" onclick="window.open('/api/guide/danfe/${escapeHtml(g.id)}', '_blank')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A6B5CA" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        <td style="text-align: right; width: 155px;">
+                            <div style="display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end;">
+                                ${sitCalc === 'nao_paga' && difalVal > 0
+                                    ? `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-primary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;">Emitir SEFAZ</button>`
+                                    : (sitCalc === 'pendente'
+                                        ? `<button type="button" onclick="abrirModalRemessaBancaria()" class="btn-secondary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; border-color: rgba(245, 194, 104, 0.35); color: #F5C268;">A Pagar</button>`
+                                        : `<button type="button" onclick="window.open('/api/guide/danfe/${escapeHtml(g.id)}', '_blank')" class="btn-secondary-figma" style="height: 30px; padding: 0 10px; font-size: 11px;">DANFE</button>`)
+                                }
+                                <button type="button" class="btn-secondary-figma" title="Abrir DANFE" style="width: 30px; height: 30px; padding: 0; justify-content: center; background: transparent; border-color: rgba(255,255,255,0.08);" onclick="window.open('/api/guide/danfe/${escapeHtml(g.id)}', '_blank')">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                 </button>
                             </div>
                         </td>
@@ -3396,9 +3376,10 @@ function aplicarFiltrosRapidos() {
 window.aplicarFiltrosRapidos = aplicarFiltrosRapidos;
 
 function filtrarPorSituacaoTab(situacao, btnEl) {
+    window.usuarioJaFiltrouManualmente = true;
     filtroSituacaoAtivo = situacao;
     if (btnEl && btnEl.parentElement) {
-        btnEl.parentElement.querySelectorAll('.dock-underline-tab, .dock-tab-btn').forEach(b => b.classList.remove('active'));
+        btnEl.parentElement.querySelectorAll('.segmented-option-figma, .dock-underline-tab, .dock-tab-btn').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
     }
     aplicarFiltrosRapidos();
