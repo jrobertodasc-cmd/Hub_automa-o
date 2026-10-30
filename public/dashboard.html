@@ -1792,10 +1792,7 @@
                         <svg id="bi-refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                         <span>Atualizar Dados</span>
                     </button>
-                    <button type="button" onclick="abrirModalRemessaBancaria()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-                        <span>Remessa Ita&uacute; (CNAB 240)</span>
-                    </button>
+
                     <button type="button" onclick="navegarAbaPrincipal('relatorios')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38BDF8; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
                         <span>Central de Relat&oacute;rios &rarr;</span>
@@ -1803,83 +1800,83 @@
                 </div>
             </div>
 
-            <!-- STRIP DE INDICADORES EXECUTIVOS (LINX ERP + OLIST VNDA + EXPEDIÇÃO FISCAL) -->
+            <!-- STRIP DE INDICADORES EXECUTIVOS DE E-COMMERCE (OLIST VNDA + LINX ERP + LOGÍSTICA) -->
             <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px;">
-                <!-- KPI 1 -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Faturamento Estimado</span>
-                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">CARTEIRA TOTAL</span>
-                    </div>
-                    <div id="bi-kpi-faturamento" style="font-size: 27px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Ticket M&eacute;dio:</span>
-                        <strong id="bi-kpi-ticket-medio" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">R$ 0,00</strong>
-                    </div>
-                </div>
-
-                <!-- KPI 2 -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">DIFAL Interestadual</span>
-                        <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">TRIBUTO TOTAL</span>
-                    </div>
-                    <div id="bi-kpi-difal" style="font-size: 27px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Carga M&eacute;dia Tribut&aacute;ria:</span>
-                        <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 7.8%</strong>
-                    </div>
-                </div>
-
-                <!-- KPI 3 -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Cargas &amp; Libera&ccedil;&atilde;o</span>
-                        <span id="bi-kpi-liberacao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">0% PRONTO</span>
-                    </div>
-                    <div id="bi-kpi-cargas-status" style="font-size: 27px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">0 / 0</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Pend&ecirc;ncias Retidas:</span>
-                        <strong id="bi-kpi-pendentes" style="color: #F87171; font-family: 'JetBrains Mono', monospace;">0 guias</strong>
-                    </div>
-                </div>
-
-                <!-- KPI 4 -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Efici&ecirc;ncia da Doca</span>
-                        <span style="background: rgba(168, 85, 247, 0.15); color: #C084FC; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">SLA DOCA</span>
-                    </div>
-                    <div id="bi-kpi-sla" style="font-size: 27px; font-weight: 800; color: #C084FC; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">2h 18min</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Venda &rarr; NF-e &rarr; Libera&ccedil;&atilde;o</span>
-                        <strong style="color: #34D399;">&bull; 95% SLA</strong>
-                    </div>
-                </div>
-
-                <!-- KPI 5: API LINX MICROVIX ERP -->
+                <!-- KPI 1: GMV E-COMMERCE APROVADO -->
                 <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em;">Linx Microvix</span>
-                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">ERP B2C</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">GMV E-commerce</span>
+                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">VNDA ONLINE</span>
                     </div>
-                    <div id="bi-kpi-linx-nfs" style="font-size: 27px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">96 NFs</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Clientes &uacute;nicos:</span>
+                    <div id="bi-kpi-faturamento" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 11.304,09</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Ticket M&eacute;dio:</span>
+                        <strong id="bi-kpi-ticket-medio" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 282,60</strong>
+                    </div>
+                </div>
+
+                <!-- KPI 2: CESTA & PEÇAS VENDIDAS -->
+                <div style="background: #111B2E; border: 1px solid rgba(195, 172, 255, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pe&ccedil;as Vendidas</span>
+                        <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">CESTA ONLINE</span>
+                    </div>
+                    <div id="bi-kpi-olist-pecas-total" style="font-size: 26px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">53 pe&ccedil;as</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>PA (Pe&ccedil;as/Ped):</span>
+                        <strong id="bi-kpi-olist-pa" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">1.3 pe&ccedil;as</strong>
+                    </div>
+                </div>
+
+                <!-- KPI 3: PEDIDOS & CONVERSÃO -->
+                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pedidos Online</span>
+                        <span id="bi-kpi-conversao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">80% APROVADOS</span>
+                    </div>
+                    <div id="bi-kpi-olist-pedidos" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">40 pedidos</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Cancelados:</span>
+                        <strong id="bi-kpi-cancelados" style="color: #F87171; font-family: 'JetBrains Mono', monospace;">10 (20%)</strong>
+                    </div>
+                </div>
+
+                <!-- KPI 4: LINX MICROVIX ERP -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Linx Microvix</span>
+                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">ERP FATURADO</span>
+                    </div>
+                    <div id="bi-kpi-linx-nfs" style="font-size: 26px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">96 NFs</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Compradores &uacute;nicos:</span>
                         <strong id="bi-kpi-linx-clientes" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">78</strong>
                     </div>
                 </div>
 
-                <!-- KPI 6: API OLIST VNDA E-COMMERCE -->
-                <div style="background: #111B2E; border: 1px solid rgba(195, 172, 255, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <!-- KPI 5: FRETE & LOGÍSTICA D2C -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11.5px; font-weight: 700; color: #C3ACFF; text-transform: uppercase; letter-spacing: 0.05em;">Olist Vnda</span>
-                        <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">E-COMMERCE</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Frete M&eacute;dio</span>
+                        <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">LOG&Iacute;STICA</span>
                     </div>
-                    <div id="bi-kpi-olist-pedidos" style="font-size: 27px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">40 pedidos</div>
-                    <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Pe&ccedil;as:</span>
-                        <strong id="bi-kpi-olist-pecas" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">53 pe&ccedil;as (1.3/ped)</strong>
+                    <div id="bi-kpi-frete-medio" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 5,39</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Parceiro l&iacute;der:</span>
+                        <strong style="color: #38BDF8;">Total Express (90%)</strong>
+                    </div>
+                </div>
+
+                <!-- KPI 6: CARGA DIFAL INTERESTADUAL -->
+                <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">DIFAL Interestadual</span>
+                        <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">IMPOSTO</span>
+                    </div>
+                    <div id="bi-kpi-difal" style="font-size: 26px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span>Carga M&eacute;dia:</span>
+                        <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 7.8%</strong>
                     </div>
                 </div>
             </div>
@@ -1970,73 +1967,46 @@
                     </div>
                 </div>
 
-                <!-- FUNIL DE EFICIÊNCIA OPERACIONAL & INTEGRAÇÕES -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
+                <!-- INTELIGÊNCIA DE CHECKOUT & PRODUTOS E-COMMERCE -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 18px;">
+                    
+                    <!-- BLOCO 1: MIX DE MEIOS DE PAGAMENTO (OLIST VNDA) -->
                     <div>
-                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                            <span>Funil Operacional da Doca (BOAH)</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span>Meios de Pagamento Online</span>
+                            </div>
+                            <span style="font-size: 10.5px; color: #38BDF8; background: rgba(56, 189, 248, 0.12); padding: 2px 7px; border-radius: 4px; font-weight: 700;">CHECKOUT VNDA</span>
                         </div>
-                        <div style="font-size: 12px; color: #94A3B8; margin-bottom: 20px;">Throughput de pedidos desde a autoriza&ccedil;&atilde;o at&eacute; o embarque f&iacute;sico.</div>
-
-                        <!-- ETAPAS DO FUNIL -->
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <!-- Etapa 1 -->
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 12px; font-weight: 700; color: #C3ACFF;">1. Venda Aprovada (VNDA)</span>
-                                    <strong style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">100%</strong>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
-                                    <div style="background: #C3ACFF; height: 100%; width: 100%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Etapa 2 -->
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 12px; font-weight: 700; color: #38BDF8;">2. NF-e Emitida (Linx ERP)</span>
-                                    <strong style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">100%</strong>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
-                                    <div style="background: #38BDF8; height: 100%; width: 100%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Etapa 3 -->
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 12px; font-weight: 700; color: #F59E0B;">3. C&aacute;lculo Tribut&aacute;rio &amp; DIFAL</span>
-                                    <strong id="bi-funil-difal-pct" style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">96%</strong>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
-                                    <div id="bi-funil-difal-bar" style="background: #F59E0B; height: 100%; width: 96%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Etapa 4 -->
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <span style="font-size: 12px; font-weight: 700; color: #10B981;">4. Remessa Ita&uacute; / Carga Liberada</span>
-                                    <strong id="bi-funil-liberadas-pct" style="font-size: 12.5px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">95.6%</strong>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.08); height: 6px; border-radius: 3px; overflow: hidden;">
-                                    <div id="bi-funil-liberadas-bar" style="background: #10B981; height: 100%; width: 95.6%;"></div>
-                                </div>
-                            </div>
+                        <div id="bi-meios-pagamento-list" style="display: flex; flex-direction: column; gap: 9px;">
+                            <!-- Injetado dinamicamente via JS -->
                         </div>
                     </div>
 
-                    <!-- CARD ESTRATÉGICO DE INTEGRAÇÃO ASAAS -->
-                    <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.08)); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 16px; margin-top: 20px;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <span style="font-size: 14px;">&bull;</span>
-                            <strong style="font-size: 12.5px; color: #60A5FA;">Roadmap Tecnol&oacute;gico: API Asaas</strong>
+                    <!-- BLOCO 2: TOP SKUS MAIS VENDIDOS (BOAH LOJA VIRTUAL) -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C3ACFF" stroke-width="2.2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                <span>Top SKUs Mais Vendidos</span>
+                            </div>
+                            <span style="font-size: 10.5px; color: #C3ACFF; background: rgba(195, 172, 255, 0.12); padding: 2px 7px; border-radius: 4px; font-weight: 700;">BOAH B2C</span>
                         </div>
-                        <p style="font-size: 11.5px; color: #94A3B8; margin: 0; line-height: 1.5;">
-                            A arquitetura atual com Remessa Ita&uacute; SISPAG (CNAB 240) est&aacute; preparada para conex&atilde;o direta via webhook Asaas, permitindo liquida&ccedil;&atilde;o Pix instant&acirc;nea sem troca manual de arquivos.
-                        </p>
+                        <div id="bi-top-produtos-list" style="display: flex; flex-direction: column; gap: 7px;">
+                            <!-- Injetado dinamicamente via JS -->
+                        </div>
                     </div>
+
+                    <!-- BLOCO 3: SLA OPERACIONAL VNDA -> LINX -->
+                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                        <div>
+                            <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">SLA Pedido &rarr; Faturamento Linx</div>
+                            <div style="font-size: 13px; font-weight: 800; color: #34D399; margin-top: 2px;">Lead Time M&eacute;dio: 2h 18min</div>
+                        </div>
+                        <span style="font-size: 11px; font-weight: 800; color: #10B981; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px;">95% NO DIA</span>
+                    </div>
+
                 </div>
             </div>
 
