@@ -5017,6 +5017,16 @@ function renderizarCards360(data) {
         return;
     }
 
+    // Atualiza contagem no subtítulo do escopo da grade
+    const elContagemPedidos = document.getElementById('escopo-contagem-pedidos');
+    if (elContagemPedidos) {
+        const totalPecasFiltradas = guiasFiltradas.reduce((acc, g) => acc + (g.total_pecas || 1), 0);
+        elContagemPedidos.innerHTML = `
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #38BDF8; display: inline-block;"></span>
+            ${guiasFiltradas.length} pedidos de moda conciliados &middot; ${totalPecasFiltradas} peças faturadas
+        `;
+    }
+
     // ==========================================
     // MODO 2: AGRUPADO POR PEDIDO / NF-E (PADRÃO - MAIS RECENTES PRIMEIRO)
     // ==========================================
@@ -5087,7 +5097,17 @@ function renderizarCards360(data) {
 
         const tituloExibir = peca.descricao || titulosPecas[idx % titulosPecas.length];
         const skuExibir = peca.sku || skusPecas[idx % skusPecas.length];
-        const dataExibir = idx === 5 ? '27/09/26' : (idx === 4 ? '28/08/26' : (idx === 3 ? '28/09/26' : (idx === 2 ? '29/09/26' : '30/09/26')));
+        let dataExibir = '03/11/26';
+        const rawDt = g.data_venda || g.data_emissao;
+        if (rawDt) {
+            if (rawDt.includes('T')) {
+                const parts = rawDt.split('T')[0].split('-');
+                if (parts.length === 3) dataExibir = `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+            } else if (rawDt.includes('-')) {
+                const parts = rawDt.split('-');
+                if (parts.length === 3) dataExibir = `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+            }
+        }
 
         const cidades = ['Rio de Janeiro · RJ', 'Belo Horizonte · MG', 'Maceió · AL', 'Niterói · RJ', 'Uberlândia · MG', 'Não informado · ND'];
         const clientes = ['Camila Andrade', 'Juliana Martins', 'Renata Oliveira', 'Fernanda Lima', 'Beatriz Santos', 'Consumidor Final'];
@@ -5145,7 +5165,7 @@ function renderizarCards360(data) {
                 <!-- 3. Peça BOAH & Lookbook Preview -->
                 <div class="card-fashion-item-row">
                     <div class="card-fashion-thumb-wrap">
-                        <img src="${chosenThumbs[0]}" alt="Peça BOAH" class="card-fashion-thumb-img" onerror="this.src='/images/figma_1bd19832dc.png';">
+                        <img src="${peca.foto || peca.foto_url || chosenThumbs[0]}" alt="Peça BOAH" class="card-fashion-thumb-img" onerror="this.src='/images/figma_1bd19832dc.png';">
                         ${chosenThumbs.length > 1 ? `<span class="card-fashion-item-count">+${chosenThumbs.length - 1}</span>` : ''}
                     </div>
                     <div style="flex: 1; min-width: 0;">
