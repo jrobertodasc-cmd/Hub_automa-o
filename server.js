@@ -7349,7 +7349,7 @@ if (require.main === module) {
 
         // Inicia o Agendador Automático periódico em background (a cada 10 minutos com SSE)
         try {
-            syncService.iniciarAgendador(supabase, runBatchProcessInBackground, 10, broadcastDockEvent);
+            syncService.iniciarAgendador(supabase, runBatchProcessInBackground, 5, broadcastDockEvent);
         } catch (e) {
             console.error("Erro ao inicializar agendador automático:", e.message);
         }

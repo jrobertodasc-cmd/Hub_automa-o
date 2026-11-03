@@ -219,18 +219,30 @@ async function sincronizarTenant(tenant, supabase, runBatchProcessFn, options = 
         }
     }
 
-    // 2. Sincronização e Enriquecimento Olist Vnda
-    if (tenant.vnda_token_encrypted && tenant.vnda_shop_host) {
+    // 2. Sincronização e Enriquecimento Olist Vnda (Com fallback automático para credenciais BOAH)
+    let vndaTokenEncrypted = tenant.vnda_token_encrypted;
+    let vndaShopHost = (tenant.vnda_shop_host || 'www.boah.com.br').trim();
+
+    if (!vndaTokenEncrypted) {
+        const { data: boahT } = await supabase
+            .from('tenants')
+            .select('vnda_token_encrypted, vnda_shop_host')
+            .eq('cnpj', '10436619000105')
+            .single();
+        if (boahT && boahT.vnda_token_encrypted) {
+            vndaTokenEncrypted = boahT.vnda_token_encrypted;
+            vndaShopHost = (boahT.vnda_shop_host || vndaShopHost).trim();
+        }
+    }
+
+    if (vndaTokenEncrypted && vndaShopHost) {
         resultado.vnda.consultado = true;
         try {
             const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
-            const token = decrypt(tenant.vnda_token_encrypted, key);
-            const shopHost = tenant.vnda_shop_host;
+            const token = decrypt(vndaTokenEncrypted, key);
+            const shopHost = vndaShopHost;
 
-            const pedidos = await vndaService.listarPedidos(token, shopHost, {
-                page: 1,
-                per_page: 50
-            });
+            const pedidos = await vndaService.listarPedidosRecentes(token, shopHost, 100);
             resultado.vnda.pedidosLidos = pedidos ? pedidos.length : 0;
 
             // Enriquecer guias recentes que ainda não têm cliente ou transportadora

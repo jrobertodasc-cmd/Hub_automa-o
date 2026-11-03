@@ -185,6 +185,9 @@ function iniciarSSEAtualizacaoDoca() {
                     if (typeof carregarStatusSync === 'function') {
                         carregarStatusSync();
                     }
+                    if (typeof carregarCockpit360 === 'function' && document.getElementById('secao-view-ecommerce')?.style.display !== 'none') {
+                        carregarCockpit360();
+                    }
                     if (window.activeBatchId && typeof carregarDetalhesLote === 'function') {
                         carregarDetalhesLote(window.activeBatchId);
                     }
@@ -259,6 +262,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2.1 Carrega status do agendador automático
     await carregarStatusSync();
+
+    // 2.15 Heartbeat Silencioso: auto-atualiza métricas em background a cada 60s sem travar o navegador
+    setInterval(() => {
+        try {
+            if (typeof carregarDadosBI === 'function') carregarDadosBI();
+            if (typeof carregarResumoRemessaAoVivo === 'function') carregarResumoRemessaAoVivo();
+            if (typeof carregarStatusSync === 'function') carregarStatusSync();
+        } catch (e) {
+            console.debug('[Heartbeat] Sync silencioso:', e.message);
+        }
+    }, 60000);
 
     // 2.2 Atalho de Teclado Cmd/Ctrl + K para busca rápida (Figma)
     window.addEventListener('keydown', (e) => {
