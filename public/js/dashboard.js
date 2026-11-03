@@ -171,10 +171,19 @@ function iniciarSSEAtualizacaoDoca() {
                 const data = JSON.parse(event.data);
                 console.log("[SSE Doca] Evento em tempo real recebido:", data);
 
-                if (data.type === 'GUIA_PAGA' || data.type === 'GUIA_ERRO' || data.type === 'LOTE_ATUALIZADO') {
-                    // Atualiza Cockpit da doca instantaneamente sem F5
+                if (data.type === 'GUIA_PAGA' || data.type === 'GUIA_ERRO' || data.type === 'LOTE_ATUALIZADO' || data.type === 'AUTO_SYNC_CONCLUIDO') {
+                    // Atualiza Cockpit da doca, remessa e BI instantaneamente sem F5
                     if (typeof carregarCargasDocaReais === 'function') {
                         carregarCargasDocaReais();
+                    }
+                    if (typeof carregarResumoRemessaAoVivo === 'function') {
+                        carregarResumoRemessaAoVivo();
+                    }
+                    if (typeof carregarDadosBI === 'function') {
+                        carregarDadosBI();
+                    }
+                    if (typeof carregarStatusSync === 'function') {
+                        carregarStatusSync();
                     }
                     if (window.activeBatchId && typeof carregarDetalhesLote === 'function') {
                         carregarDetalhesLote(window.activeBatchId);
@@ -1664,7 +1673,7 @@ async function carregarStatusSync() {
                     const hora = new Date(data.ultimaExecucao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                     textEl.textContent = `Última varredura: Hoje às ${hora} · ${data.mensagem || 'OK'}`;
                 } else {
-                    textEl.textContent = 'Agendador ativo (ciclos automáticos a cada 30 min)';
+                    textEl.textContent = 'Agendador ativo (ciclos automáticos em segundo plano a cada 10 min)';
                 }
             }
         }

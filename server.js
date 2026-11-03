@@ -7263,9 +7263,9 @@ if (require.main === module) {
         console.log(`🔗 Ambiente: ${process.env.NODE_ENV || 'development'}`);
         console.log(`==================================================\n`);
 
-        // Inicia o Agendador Automático periódico (a cada 30 minutos)
+        // Inicia o Agendador Automático periódico em background (a cada 10 minutos com SSE)
         try {
-            syncService.iniciarAgendador(supabase, runBatchProcessInBackground, 30);
+            syncService.iniciarAgendador(supabase, runBatchProcessInBackground, 10, broadcastDockEvent);
         } catch (e) {
             console.error("Erro ao inicializar agendador automático:", e.message);
         }

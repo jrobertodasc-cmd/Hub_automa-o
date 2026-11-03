@@ -43,10 +43,10 @@ function decrypt(text, key) {
 // Estado em memória da sincronização para exibição no Dashboard
 let syncState = {
     ativo: true,
-    intervaloMinutos: 30,
+    intervaloMinutos: 10,
     ultimaExecucao: null,
     status: 'ocioso',
-    mensagem: 'Agendador de sincronização automática ativo (a cada 30 min).',
+    mensagem: 'Agendador de sincronização automática ativo (a cada 10 min).',
     historico: []
 };
 
@@ -324,7 +324,7 @@ async function sincronizarTenant(tenant, supabase, runBatchProcessFn, options = 
 /**
  * Inicia o Agendador Automático periódico
  */
-function iniciarAgendador(supabase, runBatchProcessFn, intervaloMinutos = 30) {
+function iniciarAgendador(supabase, runBatchProcessFn, intervaloMinutos = 10, broadcastEventFn = null) {
     if (cronTimer) clearInterval(cronTimer);
 
     syncState.intervaloMinutos = intervaloMinutos;
@@ -352,6 +352,16 @@ function iniciarAgendador(supabase, runBatchProcessFn, intervaloMinutos = 30) {
                 syncState.mensagem = res.mensagem;
                 syncState.historico.unshift(res);
                 if (syncState.historico.length > 20) syncState.historico.pop();
+
+                // Notifica a tela em tempo real via SSE
+                if (typeof broadcastEventFn === 'function') {
+                    broadcastEventFn({
+                        type: 'AUTO_SYNC_CONCLUIDO',
+                        message: res.mensagem || 'Sincronização em segundo plano concluída.',
+                        data: res,
+                        timestamp: new Date().toISOString()
+                    }, tenant.id);
+                }
             }
         } catch (err) {
             console.error(`[AutoSync] Falha no ciclo do agendador:`, err.message);
