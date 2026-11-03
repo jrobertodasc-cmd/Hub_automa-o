@@ -2888,7 +2888,7 @@ async function reemitirGuiasSefazComData(apenasSelecionadas = false) {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg><span>Emitir SEFAZ c/ Data</span>`;
+            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg><span>Emitir c/ Data</span>`;
         }
     }
 }
@@ -3552,7 +3552,7 @@ function renderizarPaginaDoca(pagina = 1) {
                                 ${sitCalc === 'nao_paga' && difalVal > 0
                                     ? (g.uf === 'SP'
                                         ? `<button type="button" onclick="baixarXmlSpNotaIndividual('${escapeHtml(g.id)}')" class="btn-primary-figma" style="height: 30px; padding: 0 9px; font-size: 11px; font-weight: 600; background: #D97706; border-color: #F59E0B;" title="Baixar XML DARE-SP desta nota">XML SP</button>`
-                                        : `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-primary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;">Emitir SEFAZ</button>`)
+                                        : `<button type="button" onclick="abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.value || 0})" class="btn-primary-figma" style="height: 30px; padding: 0 10px; font-size: 11px; font-weight: 600;">Emitir</button>`)
                                     : (sitCalc === 'pendente'
                                         ? `<button type="button" onclick="window.open('/api/guide/download/${escapeHtml(g.id)}', '_blank')" class="btn-secondary-figma" style="height: 30px; padding: 0 9px; font-size: 11px; border-color: rgba(56, 189, 248, 0.35); color: #7DD3FC;" title="Visualizar / imprimir guia GNRE emitida">Ver Guia</button>
                                            <button type="button" onclick="abrirModalRemessaBancaria()" class="btn-secondary-figma" style="height: 30px; padding: 0 9px; font-size: 11px; border-color: rgba(245, 194, 104, 0.35); color: #F5C268;" title="Incluir na Remessa Itaú CNAB 240">Pagar</button>`
@@ -5216,7 +5216,7 @@ function renderizarCards360(data) {
                     <div style="display: flex; align-items: center; gap: 6px;">
                         ${(!isPaga && !isSemDifal && !isPendente)
                             ? (`<button type="button" class="btn-primary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 700;" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${escapeHtml(g.id)}', '${escapeHtml(g.nf_number)}', '${escapeHtml(g.uf)}', ${g.valor_difal || 0})">
-                                 Emitir SEFAZ
+                                 Emitir
                                </button>`)
                             : (isPendente ? `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600; border-color: rgba(245, 194, 104, 0.35); color: #F5C268;" onclick="event.stopPropagation(); abrirModalPagamento360('${escapeHtml(g.id)}');">Ver Guia</button>` : `<button type="button" class="btn-secondary-figma" style="height: 30px; padding: 0 12px; font-size: 11px; font-weight: 600;" onclick="event.stopPropagation(); window.open('${escapeHtml(g.danfe_url || '#')}', '_blank');">
                                  DANFE
@@ -7658,11 +7658,11 @@ function renderizarTabelaDifal() {
                          XML SP
                        </button>`
                     : `<button type="button" onclick="event.stopPropagation(); abrirModalEmitirSefazIndividual('${g.id || ('linx-difal-' + g.nf)}', '${g.nf}', '${g.uf}', ${vNom})" title="Emitir guia GNRE individual na SEFAZ" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                         Emitir SEFAZ
+                         Emitir
                        </button>`
                  }
                  <button type="button" onclick="event.stopPropagation(); liquidarGuiaManual('${g.nf}', '${g.uf}', ${vNom})" title="Marcar como paga / confirmar liquidação" style="background: #16233A; border: 1px solid #29374E; color: #34D399; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                   <span>Baixar ✓</span>
+                   <span>Baixar</span>
                  </button>
                  <button type="button" onclick="event.stopPropagation(); abrirModalDossieDifal('${g.nf}')" title="Ver Dossiê Completo DIFAL" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 10.5px; font-weight: 700; padding: 4px 7px; border-radius: 6px; cursor: pointer;">
                    Dossiê
@@ -7980,11 +7980,11 @@ function abrirModalDossieDifal(nf) {
                          XML SP
                        </button>`
                     : `<button type="button" onclick="abrirModalEmitirSefazIndividual('${g.id || ('linx-difal-' + g.nf)}', '${g.nf}', '${g.uf}', ${vNom})" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer;">
-                         ⚡ Emitir SEFAZ
+                         Emitir
                        </button>`
                 }
                 <button type="button" onclick="liquidarGuiaManual('${g.nf}', '${g.uf}', ${vNom}); fecharModalDossieDifal();" style="background: #16233A; border: 1px solid #29374E; color: #34D399; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer;">
-                    Liquidar ✓
+                    Liquidar
                 </button>
             `;
         } else {
