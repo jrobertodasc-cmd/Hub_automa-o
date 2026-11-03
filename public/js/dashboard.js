@@ -186,8 +186,11 @@ function iniciarSSEAtualizacaoDoca() {
                 const data = JSON.parse(event.data);
                 console.log("[SSE Doca] Evento em tempo real recebido:", data);
 
-                if (data.type === 'GUIA_PAGA' || data.type === 'GUIA_ERRO' || data.type === 'LOTE_ATUALIZADO' || data.type === 'AUTO_SYNC_CONCLUIDO') {
+                                if (data.type === 'GUIA_PAGA' || data.type === 'GUIA_ERRO' || data.type === 'LOTE_ATUALIZADO' || data.type === 'AUTO_SYNC_CONCLUIDO') {
                     // Atualiza Cockpit da doca, remessa e BI instantaneamente sem F5
+                    if (typeof carregarPainelUnificadoDifal === 'function') {
+                        carregarPainelUnificadoDifal(false);
+                    }
                     if (typeof carregarCargasDocaReais === 'function') {
                         carregarCargasDocaReais();
                     }
