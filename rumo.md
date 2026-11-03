@@ -65,6 +65,11 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Rota em Tempo Real `/api/remessa/resumo`:** Criado endpoint dedicado que alimenta instantaneamente o Card 5 do Hub e o Modal de Remessa ao carregar a página inicial.
 - **Download em 1 Clique:** O botão "Baixar TXT" no Hub agora funciona de imediato com dados reais do banco de dados.
 
+### 2.7. Processamento e Conciliação de Retorno Bancário Itaú (.RET) (03/11/2026)
+- **Suporte aos Segmentos O e J:** O parser do CNAB 240 agora processa tanto pagamentos de tributos/concessionárias (Segmento O) quanto títulos/boletos (Segmento J), capturando ocorrências (00 = Pago, BD = Agendado), data efetiva de liquidação e autenticação bancária (Segmento Z).
+- **Conciliação Inteligente:** Localização de guias tanto por código de barras normalizado (44 dígitos) quanto por cruzamento numérico da Nota Fiscal (`nf_number`).
+- **Drag-and-Drop Nativo no Modal:** Área de soltura arrastar-e-soltar para arquivos `.RET`, executando baixa instantânea de guias, liberação de caixas para coleta e atualização ao vivo da esteira.
+
 ---
 
 ## 3. Rumo Estratégico & Próximos Passos (Roadmap de Evolução)
