@@ -228,6 +228,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1.2 Inicia escuta em tempo real da Doca (SSE)
     iniciarSSEAtualizacaoDoca();
 
+    // 1.25 Carrega resumo consolidado da Remessa Itaú em tempo real
+    if (typeof carregarResumoRemessaAoVivo === 'function') {
+        carregarResumoRemessaAoVivo();
+    }
+
     // 1.3 Ativa a visualização principal do Figma (Início / Hub Operacional) por padrão
     const urlParams = new URLSearchParams(window.location.search);
     const abaAlvo = urlParams.get('aba') || (window.location.hash ? window.location.hash.replace('#', '') : 'hub');
@@ -6510,6 +6515,20 @@ function construirResumoRemessaFallback() {
         contaBancaria: 'Ag. 0334 C/C 98775-7'
     };
 }
+
+async function carregarResumoRemessaAoVivo() {
+    try {
+        const res = await fetch('/api/remessa/resumo');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && typeof atualizarInterfaceRemessaViva === 'function') {
+            atualizarInterfaceRemessaViva(data);
+        }
+    } catch (e) {
+        console.warn('[Remessa Ao Vivo] Falha ao carregar resumo:', e);
+    }
+}
+window.carregarResumoRemessaAoVivo = carregarResumoRemessaAoVivo;
 
 function atualizarInterfaceRemessaViva(remessaApi) {
     const rem = remessaApi || window.currentRemessaResumo || construirResumoRemessaFallback();

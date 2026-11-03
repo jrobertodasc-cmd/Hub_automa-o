@@ -2125,16 +2125,18 @@ function calcularResumoRemessaDeGuias(guiasLista, tenant, batchId = 'todos', pay
 async function sincronizarRemessaAutomaticaLote(batchId, tenant, paymentDatePreferida = null) {
     if (!tenant || !tenant.id) return null;
     let batch = null;
+    let batchGuides = [];
+    let effectiveBatchId = 'todos';
+
     if (!batchId || batchId === 'todos') {
-        const { data: batches } = await supabase
-            .from('batches')
+        effectiveBatchId = 'todos';
+        const { data: allGuides } = await supabase
+            .from('guides')
             .select('*')
-            .eq('tenant_id', tenant.id)
-            .neq('status', 'cancelado')
-            .order('created_at', { ascending: false })
-            .limit(1);
-        batch = batches && batches.length > 0 ? batches[0] : null;
+            .eq('tenant_id', tenant.id);
+        batchGuides = allGuides || [];
     } else {
+        effectiveBatchId = batchId;
         const { data: b } = await supabase
             .from('batches')
             .select('*')
@@ -2142,17 +2144,17 @@ async function sincronizarRemessaAutomaticaLote(batchId, tenant, paymentDatePref
             .eq('tenant_id', tenant.id)
             .single();
         batch = b;
+        if (!batch) return null;
+
+        const { data: guides } = await supabase
+            .from('guides')
+            .select('*')
+            .eq('batch_id', batch.id)
+            .eq('tenant_id', tenant.id);
+        batchGuides = guides || [];
     }
 
-    if (!batch) return null;
-
-    const { data: batchGuides } = await supabase
-        .from('guides')
-        .select('*')
-        .eq('batch_id', batch.id)
-        .eq('tenant_id', tenant.id);
-
-    const resumoRem = calcularResumoRemessaDeGuias(batchGuides || [], tenant, batch.id, paymentDatePreferida);
+    const resumoRem = calcularResumoRemessaDeGuias(batchGuides, tenant, effectiveBatchId, paymentDatePreferida);
     const validas = resumoRem.validItauGuides || [];
     delete resumoRem.validItauGuides;
 
@@ -2279,19 +2281,43 @@ async function conciliarConteudoRetornoCnab(conteudo, tenant) {
     };
 }
 
+/**
+ * Rota de Consulta em Tempo Real do Resumo da Remessa Bancária
+ * Alimenta dinamicamente o Card 5 do Hub e o Modal de Remessa
+ */
+app.get('/api/remessa/resumo', requireAuth, async (req, res) => {
+    try {
+        const paymentDateChosen = req.query.dataPagamento || req.query.paymentDate || null;
+        const rem = await sincronizarRemessaAutomaticaLote('todos', req.tenant, paymentDateChosen);
+        if (!rem) {
+            const dataPadrao = paymentDateChosen || obterDataHojeBrasilIso();
+            const [ano, mes, dia] = String(dataPadrao).split('-');
+            const cod = (dia && mes) ? `REM${dia}${mes}` : 'REMESSA';
+            return res.json({
+                gerada: false,
+                qtdGuias: 0,
+                valorTotal: 0,
+                spAguardandoDare: 0,
+                valorSpAguardando: 0,
+                paymentDate: dataPadrao,
+                codigoRemessa: cod,
+                filename: `${cod}.txt`,
+                contaBancaria: `Ag. ${req.tenant?.bank_agency || '0334'} C/C ${req.tenant?.bank_account || '98775'}-${req.tenant?.bank_dac || '7'}`
+            });
+        }
+        const { cnabText, ...safeSummary } = rem;
+        return res.json(safeSummary);
+    } catch (err) {
+        console.error('[API Remessa Resumo] Erro:', err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
     try {
+        const isTodos = req.params.batchId === 'todos';
         let batch = null;
-        if (req.params.batchId === 'todos') {
-            const { data: batches } = await supabase
-                .from('batches')
-                .select('*')
-                .eq('tenant_id', req.tenant.id)
-                .neq('status', 'cancelado')
-                .order('created_at', { ascending: false })
-                .limit(1);
-            batch = batches && batches.length > 0 ? batches[0] : null;
-        } else {
+        if (!isTodos) {
             const { data: b } = await supabase
                 .from('batches')
                 .select('*')
@@ -2299,28 +2325,38 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 .eq('tenant_id', req.tenant.id)
                 .single();
             batch = b;
+            if (!batch) {
+                return res.status(404).json({ error: "Lote não localizado." });
+            }
         }
 
-        if (!batch) {
-            return res.status(404).json({ error: "Lote não localizado." });
-        }
-
+        const effectiveBatchId = isTodos ? 'todos' : batch.id;
         const bankParam = (req.query.banco || 'itau').toLowerCase();
         const paymentDateChosen = req.query.paymentDate || req.query.dataPagamento;
 
+        let queryGuides = supabase
+            .from('guides')
+            .select('*')
+            .eq('tenant_id', req.tenant.id);
+
+        if (!isTodos) {
+            queryGuides = queryGuides.eq('batch_id', batch.id);
+        }
+
+        if (req.query.ids) {
+            const idList = String(req.query.ids).split(',').map(s => s.trim()).filter(Boolean);
+            if (idList.length > 0) queryGuides = queryGuides.in('id', idList);
+        }
+
+        const { data: batchGuides } = await queryGuides;
+
         // Se solicitado Bradesco ou Banco do Brasil, gera na hora para as guias do lote
         if (bankParam === 'bradesco' || bankParam === 'bb') {
-            const { data: batchGuides } = await supabase
-                .from('guides')
-                .select('*')
-                .eq('batch_id', batch.id)
-                .eq('tenant_id', req.tenant.id);
-
-            const resumoBanco = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, batch.id, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
+            const resumoBanco = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, effectiveBatchId, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
             const validGuides = resumoBanco.validItauGuides || [];
 
             if (validGuides.length === 0) {
-                return res.status(400).json({ error: "Nenhuma guia pendente para pagamento encontrada no lote. Todas as guias já foram quitadas ou não possuem código de barras válido." });
+                return res.status(400).json({ error: "Nenhuma guia pendente para pagamento encontrada. Todas as guias já foram quitadas ou não possuem código de barras válido." });
             }
 
             const dadosBancarios = {
@@ -2350,19 +2386,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
         }
 
         // Caso padrão (Itaú SISPAG)
-        let queryItau = supabase
-            .from('guides')
-            .select('*')
-            .eq('batch_id', batch.id)
-            .eq('tenant_id', req.tenant.id);
-
-        if (req.query.ids) {
-            const idList = String(req.query.ids).split(',').map(s => s.trim()).filter(Boolean);
-            if (idList.length > 0) queryItau = queryItau.in('id', idList);
-        }
-
-        const { data: batchGuides } = await queryItau;
-        const resumoRem = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, batch.id, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
+        const resumoRem = calcularResumoRemessaDeGuias(batchGuides || [], req.tenant, effectiveBatchId, paymentDateChosen, { forcarPagas: !!req.query.forcarPagas });
         const validItauGuides = resumoRem.validItauGuides || [];
 
         if (validItauGuides.length === 0) {
@@ -2370,7 +2394,7 @@ app.get('/api/remessa/download/:batchId', requireAuth, async (req, res) => {
                 ? ` As ${resumoRem.spAguardandoDare} nota(s) de SP aguardam a importação do arquivo .ZIP/.PDF de DAREs da SEFAZ-SP.`
                 : '';
             return res.status(400).json({ 
-                error: `Nenhuma guia emitida pendente de pagamento encontrada neste lote.${msgSp}`
+                error: `Nenhuma guia emitida pendente de pagamento encontrada.${msgSp}`
             });
         }
 
