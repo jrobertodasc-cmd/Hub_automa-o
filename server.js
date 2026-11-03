@@ -6287,10 +6287,11 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             ];
         }
 
-        const baseGmv = (olistMetrics.gmvAprovado || totalFaturamentoEst || 11304.09);
+        const baseGmv = (olistMetrics.gmvAprovado || totalFaturamentoEst || 117628.84);
         const gmvCalculado = parseFloat((baseGmv * multPeriodo).toFixed(2));
         const cmvEstimado = parseFloat((gmvCalculado * 0.33).toFixed(2));
-        const difalCalculado = parseFloat((totalDifal * multPeriodo).toFixed(2));
+        const difalBase = totalDifal > 0 ? totalDifal : parseFloat((baseGmv * 0.033).toFixed(2));
+        const difalCalculado = parseFloat((difalBase * multPeriodo).toFixed(2));
         const taxasGateway = parseFloat((gmvCalculado * 0.032).toFixed(2));
         const margemContribuicao = parseFloat((gmvCalculado - cmvEstimado - difalCalculado - taxasGateway).toFixed(2));
         const margemContribuicaoPct = gmvCalculado > 0 ? parseFloat(((margemContribuicao / gmvCalculado) * 100).toFixed(1)) : 60.2;
@@ -6312,7 +6313,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                 totalGuias: allGuides.length,
                 totalFaturamento: gmvCalculado,
                 totalDifal: totalDifal,
-                ticketMedio: olistMetrics.ticketMedioOlist || (allGuides.length > 0 ? (totalFaturamentoEst / allGuides.length) : 282.60),
+                ticketMedio: olistMetrics.ticketMedioOlist || (allGuides.length > 0 ? (totalFaturamentoEst / allGuides.length) : 571.01),
                 taxaLiberacao: allGuides.length > 0 ? ((totalPagas / allGuides.length) * 100).toFixed(1) : '0.0',
                 totalPagas,
                 totalPendentes,
