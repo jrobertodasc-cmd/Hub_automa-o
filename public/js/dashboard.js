@@ -6749,6 +6749,7 @@ async function processarArquivoRetornoModal(event) {
             exibirToastHandsfree('RETORNO CONCILIADO!', `${qtdConc} guia(s) liquidada(s) e cargas liberadas.`);
         }
         fecharModalRemessaBancaria();
+        if (typeof carregarResumoRemessaAoVivo === 'function') carregarResumoRemessaAoVivo();
         if (typeof carregarDadosBI === 'function') carregarDadosBI();
         if (typeof carregarCargasDocaReais === 'function') await carregarCargasDocaReais();
     } catch (err) {

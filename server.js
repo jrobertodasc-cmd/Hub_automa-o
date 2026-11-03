@@ -2223,7 +2223,12 @@ async function conciliarConteudoRetornoCnab(conteudo, tenant) {
         }
 
         if (guiasEncontradas.length === 0 && pag.nfNumber) {
-            guiasEncontradas = listaTenant.filter(g => String(g.nf_number) === String(pag.nfNumber));
+            const numRet = parseInt(pag.nfNumber, 10);
+            guiasEncontradas = listaTenant.filter(g => {
+                if (String(g.nf_number).trim() === String(pag.nfNumber).trim()) return true;
+                const gNum = parseInt(g.nf_number, 10);
+                return !isNaN(gNum) && !isNaN(numRet) && gNum === numRet;
+            });
         }
 
         if (guiasEncontradas.length > 0) {

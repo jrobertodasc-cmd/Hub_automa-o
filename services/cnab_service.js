@@ -287,6 +287,49 @@ function processarRetornoSispag(conteudoRetorno) {
             };
 
             pagamentos.push(ultimoPagamento);
+        } else if (segmento === 'J') {
+            // Segmento J: Liquidação de Títulos de Cobrança / Boletos
+            const codigoBarras = linha.substring(17, 61).trim();
+            const vencimentoRaw = linha.substring(91, 99).trim();
+            const valorGuiaCentavos = parseInt(linha.substring(99, 114), 10) || 0;
+            const dataPagamentoRaw = linha.substring(144, 152).trim();
+            const valorPagoCentavos = parseInt(linha.substring(152, 167), 10) || 0;
+            const seuNumero = linha.substring(182, 202).trim();
+            const nossoNumero = linha.substring(202, 222).trim();
+            const ocorrencias = linha.substring(230, 240).trim();
+
+            let nfNumber = null;
+            const matchNf = seuNumero.match(/(?:NF-?|SEQ-?)(\d+)/i);
+            if (matchNf) {
+                nfNumber = matchNf[1];
+            }
+
+            const formatarDataIso = (dStr) => {
+                if (!dStr || dStr.length !== 8 || dStr === '00000000') return null;
+                const dia = dStr.substring(0, 2);
+                const mes = dStr.substring(2, 4);
+                const ano = dStr.substring(4, 8);
+                return `${ano}-${mes}-${dia}`;
+            };
+
+            const status = (ocorrencias.startsWith('00') || ocorrencias === '00') ? 'PAGO' :
+                           (ocorrencias.startsWith('BD') ? 'AGENDADO' : 'REJEITADO');
+
+            ultimoPagamento = {
+                codigoBarras,
+                nfNumber,
+                seuNumero,
+                nossoNumero,
+                vencimento: formatarDataIso(vencimentoRaw),
+                dataPagamento: formatarDataIso(dataPagamentoRaw),
+                valorGuia: valorGuiaCentavos / 100,
+                valorPago: valorPagoCentavos > 0 ? (valorPagoCentavos / 100) : (valorGuiaCentavos / 100),
+                ocorrencias,
+                status,
+                autenticacao: null
+            };
+
+            pagamentos.push(ultimoPagamento);
         } else if (segmento === 'Z') {
             // Segmento Z: Autenticação bancária do pagamento anterior
             const autenticacao = linha.substring(14, 78).trim();
