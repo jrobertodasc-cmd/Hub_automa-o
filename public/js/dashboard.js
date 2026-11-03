@@ -7787,7 +7787,7 @@ function handleBipagemDifal(event) {
     if (event.key !== 'Enter') return;
     event.preventDefault();
 
-    const input = document.getElementById('difal-danfe-scanner');
+    const input = document.getElementById('difal-search-input') || document.getElementById('difal-danfe-scanner');
     const feedbackBox = document.getElementById('difal-laser-feedback');
     const feedbackText = document.getElementById('difal-laser-feedback-text');
     const termo = (input?.value || '').trim();
