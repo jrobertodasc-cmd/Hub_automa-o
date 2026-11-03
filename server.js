@@ -6407,6 +6407,7 @@ function obterGuiasAbertasLinx() {
 
 // Armazena baixas manuais ou recentes em memória
 const baixasManuaisDIFAL = new Map();
+let ultimaConsultaLinxDifal = 0;
 
 app.get('/api/difal/painel-unificado', requireAuth, async (req, res) => {
     try {
@@ -6435,7 +6436,10 @@ app.get('/api/difal/painel-unificado', requireAuth, async (req, res) => {
         });
 
         // Se solicitado forçar sincronização com Linx ao vivo
-        if (req.query.forcar === 'true' && tenant.microvix_key && tenant.microvix_cnpj) {
+        const agora = Date.now();
+        const deveConsultarLinx = (req.query.forcar === 'true') || (agora - ultimaConsultaLinxDifal > 120000); // Auto-sync a cada 2 min
+        if (deveConsultarLinx && tenant.microvix_key && tenant.microvix_cnpj) {
+            ultimaConsultaLinxDifal = agora;
             try {
                 let pass = tenant.microvix_password_encrypted || '';
                 if (pass.includes(':')) {
@@ -6495,6 +6499,12 @@ app.get('/api/difal/painel-unificado', requireAuth, async (req, res) => {
             } catch (linxErr) {
                 console.warn('[DIFAL Unificado] Aviso ao consultar Linx live:', linxErr.message);
             }
+
+            // Persiste automaticamente a lista em aberto atualizada
+            try {
+                const listaAtualizada = Array.from(mapaAbertas.values());
+                fs.writeFileSync(path.join(__dirname, 'guias_em_aberto_linx.json'), JSON.stringify(listaAtualizada, null, 2), 'utf8');
+            } catch (wErr) {}
         }
 
         // Remove do mapaAbertas qualquer uma que foi baixada manualmente

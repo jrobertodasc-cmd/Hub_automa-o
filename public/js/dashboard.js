@@ -7677,3 +7677,31 @@ function exportarDifalCsv() {
     window.location.href = '/api/difal/exportar-csv';
 }
 window.exportarDifalCsv = exportarDifalCsv;
+
+// ==============================================================
+// AGENDADOR DE SINCRONIZAÇÃO AUTOMÁTICA EM SEGUNDO PLANO (DIFAL)
+// ==============================================================
+setInterval(() => {
+    const secaoDifal = document.getElementById('secao-view-difal');
+    const difalVisivel = secaoDifal && (secaoDifal.style.display !== 'none');
+
+    if (difalVisivel) {
+        // Se o operador está vendo a tela de DIFAL, atualiza a tabela silenciosamente
+        if (typeof carregarPainelUnificadoDifal === 'function') {
+            carregarPainelUnificadoDifal(false);
+        }
+    } else {
+        // Se estiver em outra aba, checa e atualiza a badge da navbar a cada 60s
+        fetch('/api/difal/painel-unificado')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.resumo) {
+                    const navBadge = document.getElementById('nav-badge-difal');
+                    if (navBadge) {
+                        navBadge.textContent = `${data.resumo.qtdEmAberto || 12} abertas`;
+                    }
+                }
+            })
+            .catch(() => {});
+    }
+}, 60000);
