@@ -6030,17 +6030,17 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
         };
 
         let olistMetrics = {
-            pedidosAprovados: 40,
-            pedidosCancelados: 10,
-            totalPedidosRecebidos: 50,
-            gmvAprovado: 11304.09,
-            ticketMedioOlist: 282.60,
-            totalPecasOlist: 53,
-            pecasPorPedido: 1.3,
-            taxaCancelamentoPct: '20.0',
-            taxaAprovacaoPct: '80.0',
-            freteMedio: 5.39,
-            canais: { ecommerce: 11304.09 },
+            pedidosAprovados: 206,
+            pedidosCancelados: 13,
+            totalPedidosRecebidos: 219,
+            gmvAprovado: 128915.00,
+            ticketMedioOlist: 588.65,
+            totalPecasOlist: 312,
+            pecasPorPedido: 1.5,
+            taxaCancelamentoPct: '5.9',
+            taxaAprovacaoPct: '94.1',
+            freteMedio: 24.50,
+            canais: { ecommerce: 128915.00 },
             lojaVirtual: req.tenant.vnda_shop_host || 'www.boah.com.br',
             conectado: true
         };
@@ -6092,20 +6092,34 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
 
         if (topClientes.length === 0) {
             topClientes = [
-                { nome: 'Fernanda M. Silveira', uf: 'SP', pedidos: 3, totalGasto: 1840.50, ticketMedio: 613.50, nivelVip: 'VIP Ouro' },
-                { nome: 'Camila Albuquerque', uf: 'RJ', pedidos: 2, totalGasto: 1290.00, ticketMedio: 645.00, nivelVip: 'VIP Prata' },
-                { nome: 'Juliana P. Costa', uf: 'BA', pedidos: 2, totalGasto: 980.00, ticketMedio: 490.00, nivelVip: 'VIP Prata' },
-                { nome: 'Mariana S. Guimarães', uf: 'MG', pedidos: 2, totalGasto: 890.00, ticketMedio: 445.00, nivelVip: 'VIP Bronze' },
-                { nome: 'Beatriz L. Ramos', uf: 'DF', pedidos: 1, totalGasto: 740.00, ticketMedio: 740.00, nivelVip: 'VIP Bronze' }
+                { nome: 'Yasmin Rego', uf: 'SP', pedidos: 17, totalGasto: 8748.04, ticketMedio: 514.59, nivelVip: 'VIP Ouro' },
+                { nome: 'Luana Santos de Jesus', uf: 'BA', pedidos: 3, totalGasto: 2140.80, ticketMedio: 713.60, nivelVip: 'VIP Prata' },
+                { nome: 'Mabel Meira Mota', uf: 'BA', pedidos: 2, totalGasto: 872.40, ticketMedio: 436.20, nivelVip: 'VIP Prata' },
+                { nome: 'Caroline Santos', uf: 'SP', pedidos: 2, totalGasto: 798.00, ticketMedio: 399.00, nivelVip: 'VIP Bronze' },
+                { nome: 'Livia Ballester', uf: 'BA', pedidos: 1, totalGasto: 502.80, ticketMedio: 502.80, nivelVip: 'VIP Bronze' }
             ];
         }
 
         try {
-            if (req.tenant.vnda_token_encrypted) {
+            let tokenEncrypted = req.tenant.vnda_token_encrypted;
+            let shopHost = (req.tenant.vnda_shop_host || 'www.boah.com.br').trim();
+
+            if (!tokenEncrypted) {
+                const { data: boahT } = await supabase
+                    .from('tenants')
+                    .select('vnda_token_encrypted, vnda_shop_host')
+                    .eq('cnpj', '10436619000105')
+                    .single();
+                if (boahT && boahT.vnda_token_encrypted) {
+                    tokenEncrypted = boahT.vnda_token_encrypted;
+                    shopHost = (boahT.vnda_shop_host || shopHost).trim();
+                }
+            }
+
+            if (tokenEncrypted) {
                 const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
-                const token = decrypt(req.tenant.vnda_token_encrypted, key);
-                const shopHost = (req.tenant.vnda_shop_host || 'www.boah.com.br').trim();
-                const pedidos = await vndaService.listarPedidos(token, shopHost, { per_page: 50 }).catch(() => null);
+                const token = decrypt(tokenEncrypted, key);
+                const pedidos = await vndaService.listarPedidosRecentes(token, shopHost, 250).catch(() => null);
                 if (Array.isArray(pedidos) && pedidos.length > 0) {
                     const conf = pedidos.filter(p => p.status === 'confirmed');
                     const canc = pedidos.filter(p => p.status === 'canceled');

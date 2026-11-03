@@ -5,6 +5,92 @@ const https = require('https');
 
 const VNDA_HOST = 'api.vnda.com.br';
 
+function requestVndaWithHeaders(path, token, shopHost, options = {}) {
+    return new Promise((resolve, reject) => {
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'X-Shop-Host': shopHost,
+            'User-Agent': 'expediHUB/2.4.0',
+            'Accept': 'application/json',
+            ...(options.headers || {})
+        };
+
+        const reqOpts = {
+            hostname: VNDA_HOST,
+            path: path,
+            method: options.method || 'GET',
+            headers: headers
+        };
+
+        const req = https.request(reqOpts, (res) => {
+            let data = '';
+            res.setEncoding('utf8');
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve({ data: json, headers: res.headers });
+                    } else {
+                        reject(new Error(json.error || json.message || `HTTP ${res.statusCode}: ${data.substring(0, 200)}`));
+                    }
+                } catch (e) {
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve({ data, headers: res.headers });
+                    } else {
+                        reject(new Error(`HTTP ${res.statusCode}: ${data.substring(0, 200)}`));
+                    }
+                }
+            });
+        });
+
+        req.on('error', reject);
+        if (options.body) {
+            req.write(typeof options.body === 'string' ? options.body : JSON.stringify(options.body));
+        }
+        req.end();
+    });
+}
+
+/**
+ * 1.1 Lista os pedidos mais recentes da loja navegando pelas últimas páginas (ordem cronológica real)
+ */
+async function listarPedidosRecentes(token, shopHost, totalDesejado = 250) {
+    try {
+        const first = await requestVndaWithHeaders('/api/v2/orders?per_page=50&page=1', token, shopHost);
+        const pagRaw = first.headers['x-pagination'];
+        let totalPages = 1;
+        if (pagRaw) {
+            try {
+                const pag = JSON.parse(pagRaw);
+                totalPages = pag.total_pages || 1;
+            } catch (e) {}
+        }
+
+        let orders = [];
+        const pagesToFetch = Math.ceil(totalDesejado / 50);
+        const startPage = totalPages;
+        const endPage = Math.max(1, totalPages - pagesToFetch + 1);
+
+        for (let p = startPage; p >= endPage; p--) {
+            try {
+                const pageRes = await requestVnda(`/api/v2/orders?per_page=50&page=${p}`, token, shopHost);
+                if (Array.isArray(pageRes)) {
+                    orders = orders.concat(pageRes);
+                }
+            } catch (errPage) {
+                console.warn(`[Vnda] Falha ao ler página ${p}:`, errPage.message);
+            }
+        }
+
+        orders.sort((a, b) => new Date(b.received_at || 0) - new Date(a.received_at || 0));
+        return orders;
+    } catch (e) {
+        console.error('[Vnda] Erro ao listar pedidos recentes:', e.message);
+        return await listarPedidos(token, shopHost, { per_page: 50 });
+    }
+}
+
 function requestVnda(path, token, shopHost, options = {}) {
     return new Promise((resolve, reject) => {
         const headers = {
