@@ -75,6 +75,10 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Card Executivo de Margem de Contribuição:** Exibição do lucro operacional líquido (R$ e %) com badge luminoso de rentabilidade.
 - **Barra de DRE Express do E-commerce:** Visão sequencial de conciliação comercial: `(+) GMV Bruto` &minus; `(&minus;) CMV (33%)` &minus; `(&minus;) DIFAL` &minus; `(&minus;) Gateway (3.2%)` = `Margem Líquida Real`.
 
+### 2.9. Sincronização em Segundo Plano (Worker Ativo a cada 10 min) (03/11/2026)
+- **Agendador em Background Autônomo:** Worker executando a cada 10 minutos (e 5s após o boot) para consultar novos pedidos faturados na Linx Microvix e Olist Vnda sem exigir ação humana.
+- **Canal Reativo SSE (`AUTO_SYNC_CONCLUIDO`):** Ao concluir a sincronização de pedidos e notas, o servidor emite evento Server-Sent Events que atualiza a Doca, a Remessa e o Cockpit de BI no navegador dos operadores em tempo real sem necessidade de F5.
+
 ---
 
 ## 3. Rumo Estratégico & Próximos Passos (Roadmap de Evolução)
