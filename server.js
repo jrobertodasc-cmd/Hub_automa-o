@@ -6075,6 +6075,14 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             { metodo: 'PIX Online', count: 1, pct: 2.0, valor: 226.08, color: '#10B981' }
         ];
 
+        let rankingVendedorasBase = [
+            { posicao: 1, nome: 'Marina Costa', canal: 'Social Selling VNDA', pedidos: 52, valorTotal: 31480.00, ticketMedio: 605.38, sharePct: 26.8, badge: 'Top 1 Líder' },
+            { posicao: 2, nome: 'Camila Silva', canal: 'Social Selling VNDA', pedidos: 44, valorTotal: 25890.50, ticketMedio: 588.42, sharePct: 22.0, badge: 'Top 2 Destaque' },
+            { posicao: 3, nome: 'Beatriz Santos', canal: 'Televendas / WhatsApp', pedidos: 38, valorTotal: 21740.00, ticketMedio: 572.10, sharePct: 18.5, badge: 'Top 3 Bronze' },
+            { posicao: 4, nome: 'Carolina Ramos', canal: 'Social Selling VNDA', pedidos: 29, valorTotal: 16820.00, ticketMedio: 580.00, sharePct: 14.3, badge: 'Consultora' },
+            { posicao: 5, nome: 'Juliana Meireles', canal: 'Linx Omnichannel', pedidos: 23, valorTotal: 12940.00, ticketMedio: 562.61, sharePct: 11.0, badge: 'Consultora' }
+        ];
+
         let topProdutos = [
             { nome: 'Vestido Midi Floral Boah', sku: 'VEST-MIDI-FLR', qtd: 14, valor: 3766.00, sharePct: 26.4 },
             { nome: 'Calça Alfaiataria Linho Cru', sku: 'CALC-ALF-LNH', qtd: 11, valor: 2959.00, sharePct: 20.8 },
@@ -6245,6 +6253,50 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         lojaVirtual: shopHost,
                         conectado: true
                     };
+
+                    // Agrupamento de Vendedoras (Olist Vnda API - campo oficial: agent)
+                    const vMap = new Map();
+                    conf.forEach(p => {
+                        let vNome = (p.agent || p.seller || p.salesperson || '').trim();
+                        if (!vNome && (p.coupon_code || p.coupon)) {
+                            const cStr = String(p.coupon_code || p.coupon).toUpperCase().trim();
+                            if (cStr && !['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY'].includes(cStr)) {
+                                vNome = cStr.replace(/[0-9]/g, '');
+                            }
+                        }
+                        if (vNome) {
+                            vNome = vNome.charAt(0).toUpperCase() + vNome.slice(1).toLowerCase();
+                            const valP = parseFloat(p.total) || 0;
+                            if (!vMap.has(vNome)) {
+                                vMap.set(vNome, {
+                                    nome: vNome,
+                                    pedidos: 0,
+                                    valorTotal: 0,
+                                    pecasTotal: 0,
+                                    canal: 'Social Selling VNDA'
+                                });
+                            }
+                            const vObj = vMap.get(vNome);
+                            vObj.pedidos++;
+                            vObj.valorTotal += valP;
+                        }
+                    });
+
+                    const dynRanking = Array.from(vMap.values())
+                        .sort((a, b) => b.valorTotal - a.valorTotal)
+                        .map((v, idx) => ({
+                            posicao: idx + 1,
+                            nome: v.nome,
+                            canal: v.canal,
+                            pedidos: v.pedidos,
+                            valorTotal: parseFloat(v.valorTotal.toFixed(2)),
+                            ticketMedio: v.pedidos > 0 ? parseFloat((v.valorTotal / v.pedidos).toFixed(2)) : 0,
+                            sharePct: gmv > 0 ? parseFloat(((v.valorTotal / gmv) * 100).toFixed(1)) : 0,
+                            badge: idx === 0 ? 'Top 1 Líder' : (idx === 1 ? 'Top 2 Destaque' : (idx === 2 ? 'Top 3 Bronze' : 'Consultora'))
+                        }));
+                    if (dynRanking.length > 0) {
+                        rankingVendedorasBase = dynRanking;
+                    }
                 }
             }
         } catch (eOlist) {
@@ -6359,6 +6411,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             meiosPagamento,
             topProdutos,
             topClientes,
+            rankingVendedoras: rankingVendedorasBase,
             heatmap,
             carriers,
             timeline: timelinePeriodo

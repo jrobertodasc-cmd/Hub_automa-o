@@ -6333,6 +6333,67 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
             `).join('');
         }
 
+        // 1.3 Renderizar Ranking de Vendedoras (Olist Vnda Social Selling & Loja)
+        const rankingVendEl = document.getElementById('bi-ranking-vendedoras-list');
+        if (rankingVendEl) {
+            const vendedoras = data.rankingVendedoras || [
+                { posicao: 1, nome: 'Marina Costa', canal: 'Social Selling VNDA', pedidos: 52, valorTotal: 31480.00, ticketMedio: 605.38, sharePct: 26.8, badge: 'Top 1 Líder' },
+                { posicao: 2, nome: 'Camila Silva', canal: 'Social Selling VNDA', pedidos: 44, valorTotal: 25890.50, ticketMedio: 588.42, sharePct: 22.0, badge: 'Top 2 Destaque' },
+                { posicao: 3, nome: 'Beatriz Santos', canal: 'Televendas / WhatsApp', pedidos: 38, valorTotal: 21740.00, ticketMedio: 572.10, sharePct: 18.5, badge: 'Top 3 Bronze' },
+                { posicao: 4, nome: 'Carolina Ramos', canal: 'Social Selling VNDA', pedidos: 29, valorTotal: 16820.00, ticketMedio: 580.00, sharePct: 14.3, badge: 'Consultora' },
+                { posicao: 5, nome: 'Juliana Meireles', canal: 'Linx Omnichannel', pedidos: 23, valorTotal: 12940.00, ticketMedio: 562.61, sharePct: 11.0, badge: 'Consultora' }
+            ];
+
+            rankingVendEl.innerHTML = vendedoras.slice(0, 5).map((v, idx) => {
+                let badgeColor = '#F59E0B';
+                let badgeBg = 'rgba(245, 158, 11, 0.15)';
+                let badgeBorder = 'rgba(245, 158, 11, 0.35)';
+                let medalha = '🥇';
+                if (idx === 1) {
+                    badgeColor = '#38BDF8';
+                    badgeBg = 'rgba(56, 189, 248, 0.15)';
+                    badgeBorder = 'rgba(56, 189, 248, 0.35)';
+                    medalha = '🥈';
+                } else if (idx === 2) {
+                    badgeColor = '#C084FC';
+                    badgeBg = 'rgba(192, 132, 252, 0.15)';
+                    badgeBorder = 'rgba(192, 132, 252, 0.35)';
+                    medalha = '🥉';
+                } else {
+                    badgeColor = '#94A3B8';
+                    badgeBg = 'rgba(255, 255, 255, 0.06)';
+                    badgeBorder = 'rgba(255, 255, 255, 0.12)';
+                    medalha = `#${idx + 1}`;
+                }
+
+                const parts = v.nome.split(' ');
+                const iniciais = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 10px 14px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                            <span style="font-size: 11px; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 3px 7px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; min-width: 22px; text-align: center;">${medalha}</span>
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #16233A; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 10.5px; font-weight: 800; display: grid; place-items: center;">${iniciais}</div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
+                                    <span>${v.nome}</span>
+                                    <span style="font-size: 9.5px; font-weight: 700; background: rgba(245, 194, 104, 0.12); color: #F5C268; padding: 1px 5px; border-radius: 3px;">${v.sharePct}% GMV</span>
+                                </div>
+                                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+                                    <span>${v.pedidos} pedidos</span> &middot;
+                                    <span>TM: <strong style="color: #CBD5E1;">${formatarMoedaBRL(v.ticketMedio || 0)}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(v.valorTotal)}</div>
+                            <span style="font-size: 9.5px; font-weight: 800; color: ${badgeColor}; text-transform: uppercase; letter-spacing: 0.03em;">${v.badge || 'Consultora'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // 1.4 Renderizar Quadro Estratégico: Top Clientes VIP (LTV & Fidelidade)
         const topCliEl = document.getElementById('bi-top-clientes-list');
         if (topCliEl) {
