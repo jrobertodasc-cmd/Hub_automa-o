@@ -6738,6 +6738,161 @@ app.get('/api/difal/exportar-csv', requireAuth, async (req, res) => {
     }
 });
 
+/**
+ * Visualização direta / Download do DANFE em PDF a partir do Painel Fiscal / DIFAL
+ */
+app.get('/api/difal/danfe/:nf', requireAuth, async (req, res) => {
+    try {
+        const nfStr = String(req.params.nf).trim();
+        if (!nfStr) {
+            return res.status(400).send('Número de NF inválido.');
+        }
+
+        // 1. Resolve tenant (LALUA caso logado como grupo)
+        let tenant = req.tenant;
+        if (tenant.cnpj === '00000000000191' || !tenant.microvix_key) {
+            try {
+                const { data: lalua } = await supabase.from('tenants').select('*').eq('cnpj', '10436619000105').limit(1);
+                if (lalua && lalua.length > 0) {
+                    tenant = lalua[0];
+                }
+            } catch (tErr) {}
+        }
+
+        // 2. Busca se existe registro na tabela guides
+        let guide = null;
+        try {
+            const { data: gData } = await supabase
+                .from('guides')
+                .select('*')
+                .eq('tenant_id', tenant.id)
+                .eq('nf_number', nfStr)
+                .maybeSingle();
+            guide = gData;
+        } catch (dbErr) {
+            console.warn('[DANFE DIFAL] Aviso ao buscar guide no Supabase:', dbErr.message);
+        }
+
+        // 3. Se encontrou a guia no banco, tenta obter ou gerar via danfeService
+        if (guide) {
+            try {
+                const buffer = await danfeService.obterOuGerarDanfePdfGuia(supabase, tenant.id, guide);
+                if (buffer) {
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${nfStr}.pdf"`);
+                    return res.send(buffer);
+                }
+            } catch (dErr) {
+                console.warn('[DANFE DIFAL] Erro ao obter DANFE do guide:', dErr.message);
+            }
+        }
+
+        // 4. Se não achou na tabela guides, tenta baixar direto do Storage se já foi salvo
+        const danfePath = `${tenant.id}/danfe/danfe_NF_${nfStr}.pdf`;
+        try {
+            const { data: dData, error: dErr } = await supabase.storage.from('tenant-storage').download(danfePath);
+            if (!dErr && dData) {
+                const buffer = Buffer.from(await dData.arrayBuffer());
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${nfStr}.pdf"`);
+                return res.send(buffer);
+            }
+        } catch (sErr) {}
+
+        // 5. Tenta encontrar XML correspondente no Storage para gerar a DANFE
+        const xmlPaths = [
+            `${tenant.id}/xml/nfe_${nfStr}.xml`,
+            `${tenant.id}/xml/nfe_NF_${nfStr}.xml`,
+            `${tenant.id}/xml/danfe_${nfStr}.xml`
+        ];
+        for (const xp of xmlPaths) {
+            try {
+                const { data: xData, error: xErr } = await supabase.storage.from('tenant-storage').download(xp);
+                if (!xErr && xData) {
+                    const xmlStr = await xData.text();
+                    const pdfBuffer = await danfeService.gerarDanfePdf(xmlStr);
+                    if (pdfBuffer) {
+                        try {
+                            await supabase.storage.from('tenant-storage').upload(danfePath, pdfBuffer, {
+                                contentType: 'application/pdf',
+                                upsert: true
+                            });
+                        } catch (uErr) {}
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${nfStr}.pdf"`);
+                        return res.send(pdfBuffer);
+                    }
+                }
+            } catch (xErr) {}
+        }
+
+        // 6. Linx Microvix ERP fallback: busca nota no ERP e converte XML para PDF
+        if (tenant.microvix_key && tenant.microvix_cnpj) {
+            try {
+                let pass = tenant.microvix_password_encrypted || '';
+                if (pass.includes(':')) {
+                    pass = decrypt(pass, getEncryptionKey(process.env.ENCRYPTION_KEY));
+                }
+                const creds = {
+                    user: tenant.microvix_user || 'linx_b2c',
+                    password: pass,
+                    chave: tenant.microvix_key,
+                    cnpjEmp: tenant.microvix_cnpj
+                };
+                const hoje = new Date().toISOString().split('T')[0];
+                const notas = await microvixService.consultarNFe(creds, '2026-10-15', hoje);
+                const nfeEncontrada = (notas || []).find(n => String(n.documento).trim() === nfStr);
+                if (nfeEncontrada && nfeEncontrada.xml) {
+                    const pdfBuffer = await danfeService.gerarDanfePdf(nfeEncontrada.xml);
+                    if (pdfBuffer) {
+                        try {
+                            await supabase.storage.from('tenant-storage').upload(danfePath, pdfBuffer, {
+                                contentType: 'application/pdf',
+                                upsert: true
+                            });
+                        } catch (uErr) {}
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-Disposition', `inline; filename="DANFE_NF_${nfStr}.pdf"`);
+                        return res.send(pdfBuffer);
+                    }
+                }
+            } catch (linxErr) {
+                console.error(`[DANFE DIFAL] Erro ao consultar Linx para NF ${nfStr}:`, linxErr.message);
+            }
+        }
+
+        // 7. Resposta visual amigável se a NF ainda não possui arquivo sincronizado
+        return res.status(404).send(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="utf-8">
+                <title>DANFE NF ${nfStr} - Não Disponível</title>
+                <style>
+                    body { background: #0B1220; color: #F1F5F9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                    .card { background: #111B2E; border: 1px solid #29374E; border-radius: 16px; padding: 36px; max-width: 480px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+                    .btn { margin-top: 20px; padding: 10px 22px; background: #1E293B; border: 1px solid #334155; color: #38BDF8; font-weight: 700; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
+                    .btn:hover { background: #243247; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div style="font-size: 40px; margin-bottom: 12px;">📄⚠️</div>
+                    <h2 style="font-size: 20px; margin: 0 0 10px 0; color: #38BDF8;">DANFE NF ${nfStr}</h2>
+                    <p style="font-size: 13.5px; color: #94A3B8; line-height: 1.6; margin: 0;">
+                        O arquivo XML da NF <strong>${nfStr}</strong> ainda não está sincronizado no storage ou aguarda autorização da SEFAZ pelo ERP.
+                    </p>
+                    <button class="btn" onclick="window.close()">Fechar Janela</button>
+                </div>
+            </body>
+            </html>
+        `);
+    } catch (e) {
+        console.error(`[DANFE DIFAL] Erro ao processar NF ${req.params.nf}:`, e);
+        return res.status(500).send(`Erro interno ao processar DANFE da NF ${req.params.nf}: ${e.message}`);
+    }
+});
+
 
 // ==========================================
 // MÓDULO: SINCRONIZAÇÃO AUTOMÁTICA (SCHEDULER / WORKER)
