@@ -606,6 +606,9 @@ async function gerarCockpit360(supabase, tenant, batchId) {
         }
     }
 
+    // Ordena rigorosamente em ordem cronológica decrescente (pedidos mais recentes de Novembro/Hoje no topo absoluto)
+    guias360.sort((a, b) => new Date(b.data_venda || b.data_emissao || 0) - new Date(a.data_venda || a.data_emissao || 0));
+
     // 7. Agrupamento consolidado por Cliente (Visão Cliente 360°)
     const clientesMap = new Map();
     guias360.forEach(g => {

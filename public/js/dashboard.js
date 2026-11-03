@@ -4337,6 +4337,7 @@ function filtrarCockpit360PorPeriodo(periodo, btn) {
     window.cockpit360Periodo = periodo;
     const btns = [
         document.getElementById('btn-periodo-360-atual'),
+        document.getElementById('btn-periodo-360-out'),
         document.getElementById('btn-periodo-360-set'),
         document.getElementById('btn-periodo-360-todas')
     ];
@@ -4713,10 +4714,13 @@ function renderizarCards360(data) {
     const totalSet = guias.filter(g => (g.mes_emissao === '2026-09' || (g.data_venda || '').startsWith('2026-09') || (g.data_emissao || '').startsWith('2026-09'))).length;
     const totalTodas = guias.length;
 
+    const totalOut = guias.filter(g => (g.mes_emissao || '').startsWith('2026-10') || (g.data_venda || '').startsWith('2026-10')).length;
     const elCntAtual = document.getElementById('cnt-360-atual');
+    const elCntOut = document.getElementById('cnt-360-out');
     const elCntSet = document.getElementById('cnt-360-set');
-    const elCntTodas = document.getElementById('cnt-360-todas');
+    const elCntTodas = document.getElementById('cnt-360-todas-btn');
     if (elCntAtual) elCntAtual.textContent = totalAtual;
+    if (elCntOut) elCntOut.textContent = totalOut;
     if (elCntSet) elCntSet.textContent = totalSet;
     if (elCntTodas) elCntTodas.textContent = totalTodas;
 
@@ -4725,13 +4729,31 @@ function renderizarCards360(data) {
     let guiasDoPeriodo = guias;
     if (periodo === 'atual') {
         guiasDoPeriodo = guias.filter(g => (
-            g.mes_emissao === '2026-11' || g.mes_emissao === '2026-10' ||
-            (g.data_venda || '').startsWith('2026-11') || (g.data_venda || '').startsWith('2026-10') ||
-            (g.data_emissao || '').startsWith('2026-11') || (g.data_emissao || '').startsWith('2026-10')
+            (g.mes_emissao || '').startsWith('2026-11') ||
+            (g.data_venda || '').startsWith('2026-11') ||
+            (g.data_emissao || '').startsWith('2026-11')
         ));
+        // Se início do mês tiver menos de 50 pedidos, inclui safra Out/26
+        if (guiasDoPeriodo.length < 50) {
+            guiasDoPeriodo = guias.filter(g => (
+                (g.mes_emissao || '').startsWith('2026-11') || (g.mes_emissao || '').startsWith('2026-10') ||
+                (g.data_venda || '').startsWith('2026-11') || (g.data_venda || '').startsWith('2026-10') ||
+                (g.data_emissao || '').startsWith('2026-11') || (g.data_emissao || '').startsWith('2026-10')
+            ));
+        }
         if (guiasDoPeriodo.length === 0) guiasDoPeriodo = guias;
+    } else if (periodo === '2026-10') {
+        guiasDoPeriodo = guias.filter(g => (
+            (g.mes_emissao || '').startsWith('2026-10') ||
+            (g.data_venda || '').startsWith('2026-10') ||
+            (g.data_emissao || '').startsWith('2026-10')
+        ));
     } else if (periodo === '2026-09') {
-        guiasDoPeriodo = guias.filter(g => (g.mes_emissao === '2026-09' || (g.data_venda || '').startsWith('2026-09') || (g.data_emissao || '').startsWith('2026-09')));
+        guiasDoPeriodo = guias.filter(g => (
+            (g.mes_emissao || '').startsWith('2026-09') ||
+            (g.data_venda || '').startsWith('2026-09') ||
+            (g.data_emissao || '').startsWith('2026-09')
+        ));
     }
 
     // 3. Contadores Operacionais da DIFAL (para o período selecionado)

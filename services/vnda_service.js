@@ -211,6 +211,7 @@ async function anexarNfe(token, shopHost, orderId, { numero, chave, urlDanfe, ur
 
 module.exports = {
     listarPedidos,
+    listarPedidosRecentes,
     obterPedidoPorCodigo,
     listarProdutos,
     anexarNfe
