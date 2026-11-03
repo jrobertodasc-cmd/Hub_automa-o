@@ -1787,15 +1787,28 @@
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <!-- SELETOR SEGMENTADO DE SAFRA / PERÍODO TEMPORAL -->
+                    <div style="display: flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px;">
+                        <button type="button" class="btn-periodo-bi" id="btn-periodo-mes_atual" onclick="selecionarPeriodoBI('mes_atual')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
+                            M&ecirc;s Atual (Nov/26)
+                        </button>
+                        <button type="button" class="btn-periodo-bi" id="btn-periodo-mes_anterior" onclick="selecionarPeriodoBI('mes_anterior')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
+                            M&ecirc;s Anterior (Out/26)
+                        </button>
+                        <button type="button" class="btn-periodo-bi" id="btn-periodo-7dias" onclick="selecionarPeriodoBI('7dias')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
+                            &Uacute;ltimos 7 Dias
+                        </button>
+                    </div>
+
                     <button type="button" onclick="carregarDadosBI(true)" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
                         <svg id="bi-refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                        <span>Atualizar Dados</span>
+                        <span>Atualizar</span>
                     </button>
 
                     <button type="button" onclick="navegarAbaPrincipal('relatorios')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38BDF8; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-                        <span>Central de Relat&oacute;rios &rarr;</span>
+                        <span>Relat&oacute;rios &rarr;</span>
                     </button>
                 </div>
             </div>
@@ -1808,7 +1821,7 @@
                         <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">GMV E-commerce</span>
                         <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">VNDA ONLINE</span>
                     </div>
-                    <div id="bi-kpi-faturamento" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 11.304,09</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-faturamento" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">R$ 11.304,09</div><span id="bi-kpi-faturamento-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +18.4%</span></div>
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                         <span>Ticket M&eacute;dio:</span>
                         <strong id="bi-kpi-ticket-medio" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 282,60</strong>
@@ -1821,7 +1834,7 @@
                         <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pe&ccedil;as Vendidas</span>
                         <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">CESTA ONLINE</span>
                     </div>
-                    <div id="bi-kpi-olist-pecas-total" style="font-size: 26px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">53 pe&ccedil;as</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-olist-pecas-total" style="font-size: 26px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace;">53 pe&ccedil;as</div><span id="bi-kpi-pecas-var" style="font-size: 10.5px; font-weight: 800; color: #C3ACFF; background: rgba(195, 172, 255, 0.15); border: 1px solid rgba(195, 172, 255, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +12.8%</span></div>
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                         <span>PA (Pe&ccedil;as/Ped):</span>
                         <strong id="bi-kpi-olist-pa" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">1.3 pe&ccedil;as</strong>
@@ -1834,7 +1847,7 @@
                         <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pedidos Online</span>
                         <span id="bi-kpi-conversao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">80% APROVADOS</span>
                     </div>
-                    <div id="bi-kpi-olist-pedidos" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">40 pedidos</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-olist-pedidos" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">40 pedidos</div><span id="bi-kpi-pedidos-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +14.3%</span></div>
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                         <span>Cancelados:</span>
                         <strong id="bi-kpi-cancelados" style="color: #F87171; font-family: 'JetBrains Mono', monospace;">10 (20%)</strong>
@@ -1847,7 +1860,7 @@
                         <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Margem Contribui&ccedil;&atilde;o</span>
                         <span id="bi-kpi-margem-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">60.2% L&Iacute;QUIDO</span>
                     </div>
-                    <div id="bi-kpi-margem-valor" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 6.808,65</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-margem-valor" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">R$ 6.808,65</div><span id="bi-kpi-margem-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +2.4 p.p.</span></div>
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                         <span>CMV Est. (33%):</span>
                         <strong id="bi-kpi-cmv-valor" style="color: #F59E0B; font-family: 'JetBrains Mono', monospace;">R$ 3.730,35</strong>
@@ -3496,7 +3509,7 @@
     </div>
 
     <script src="/js/auth.js?v=20261029_1000"></script>
-    <script src="/js/dashboard.js?v=20261103_0955"></script>
+    <script src="/js/dashboard.js?v=20261103_1030"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->

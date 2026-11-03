@@ -6027,7 +6027,31 @@ function formatarMoedaBRL(val) {
 // ----------------------------------------------------------------------------
 // 1. BI EXECUTIVO 360° (GRÁFICOS CHART.JS, HEATMAP POR UF E KPIS)
 // ----------------------------------------------------------------------------
-async function carregarDadosBI(forcar = false) {
+let _biPeriodoAtivo = 'mes_atual';
+window._biPeriodoAtivo = _biPeriodoAtivo;
+
+function selecionarPeriodoBI(periodo) {
+    window._biPeriodoAtivo = periodo;
+    ['mes_atual', 'mes_anterior', '7dias'].forEach(p => {
+        const btn = document.getElementById(`btn-periodo-${p}`);
+        if (btn) {
+            if (p === periodo) {
+                btn.style.background = '#1E293B';
+                btn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+                btn.style.color = '#38BDF8';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'transparent';
+                btn.style.color = '#94A3B8';
+            }
+        }
+    });
+    carregarDadosBI(false, periodo);
+}
+window.selecionarPeriodoBI = selecionarPeriodoBI;
+
+async function carregarDadosBI(forcar = false, periodoParam = null) {
+    const periodo = periodoParam || window._biPeriodoAtivo || 'mes_atual';
     const refreshIcon = document.getElementById('bi-refresh-icon');
     if (refreshIcon) refreshIcon.style.animation = 'spin 1s linear infinite';
 
@@ -6036,7 +6060,7 @@ async function carregarDadosBI(forcar = false) {
         const headers = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const res = await fetch('/api/bi/metrics', { headers });
+        const res = await fetch(`/api/bi/metrics?periodo=${encodeURIComponent(periodo)}`, { headers });
         if (!res.ok) throw new Error('Falha ao obter métricas de BI');
         const data = await res.json();
 
@@ -6098,6 +6122,25 @@ async function carregarDadosBI(forcar = false) {
             const mVal = com.margem ?? kpis.margemContribuicao ?? 6808.65;
             const mPct = com.margemPct ?? kpis.margemContribuicaoPct ?? 60.2;
             elDreMargem.textContent = `${formatarMoedaBRL(mVal)} (${mPct}%)`;
+        }
+
+        // 1.15 Atualizar badges de variação temporal comparativa (MoM / WoW)
+        const comp = data.comparativo || {};
+        const elFatVar = document.getElementById('bi-kpi-faturamento-var');
+        if (elFatVar && comp.gmvVarPct) elFatVar.textContent = `▲ ${comp.gmvVarPct}`;
+
+        const elPecasVar = document.getElementById('bi-kpi-pecas-var');
+        if (elPecasVar && comp.pecasVarPct) elPecasVar.textContent = `▲ ${comp.pecasVarPct}`;
+
+        const elPedVar = document.getElementById('bi-kpi-pedidos-var');
+        if (elPedVar && comp.pedidosVarPct) elPedVar.textContent = `▲ ${comp.pedidosVarPct}`;
+
+        const elMargemVar = document.getElementById('bi-kpi-margem-var');
+        if (elMargemVar && comp.margemVarPp) elMargemVar.textContent = `▲ ${comp.margemVarPp}`;
+
+        const elDreSub = document.getElementById('bi-dre-periodo-sub');
+        if (elDreSub && comp.labelPeriodo) {
+            elDreSub.textContent = `${comp.labelPeriodo} · ${comp.labelComparativo}`;
         }
 
         // KPI 5: Frete Médio
