@@ -1841,16 +1841,16 @@
                     </div>
                 </div>
 
-                <!-- KPI 4: LINX MICROVIX ERP -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <!-- KPI 4: MARGEM DE CONTRIBUIÇÃO (LUCRO OPERACIONAL) -->
+                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Linx Microvix</span>
-                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">ERP FATURADO</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Margem Contribui&ccedil;&atilde;o</span>
+                        <span id="bi-kpi-margem-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">60.2% L&Iacute;QUIDO</span>
                     </div>
-                    <div id="bi-kpi-linx-nfs" style="font-size: 26px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">96 NFs</div>
+                    <div id="bi-kpi-margem-valor" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 6.808,65</div>
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Compradores &uacute;nicos:</span>
-                        <strong id="bi-kpi-linx-clientes" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">78</strong>
+                        <span>CMV Est. (33%):</span>
+                        <strong id="bi-kpi-cmv-valor" style="color: #F59E0B; font-family: 'JetBrains Mono', monospace;">R$ 3.730,35</strong>
                     </div>
                 </div>
 
@@ -1877,6 +1877,39 @@
                     <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                         <span>Carga M&eacute;dia:</span>
                         <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 7.8%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRE OPERACIONAL EXPRESS (VISÃO COMERCIAL & MARGEM REAL BOAH) -->
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="display: flex; align-items: center; gap: 9px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.04em;">DRE Express &middot; Margem Comercial</div>
+                        <div style="font-size: 11px; color: #64748B;">Lucro operacional que sobra no caixa ap&oacute;s custo da pe&ccedil;a (CMV), DIFAL e gateway.</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px; font-size: 12px; font-family: 'JetBrains Mono', monospace; flex-wrap: wrap;">
+                    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); padding: 5px 10px; border-radius: 6px;">
+                        <span style="color: #94A3B8;">(+) GMV:</span> <strong id="bi-dre-gmv" style="color: #38BDF8;">R$ 11.304,09</strong>
+                    </div>
+                    <span style="color: #64748B; font-weight: 800;">&minus;</span>
+                    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); padding: 5px 10px; border-radius: 6px;">
+                        <span style="color: #94A3B8;">(&minus;) CMV (33%):</span> <strong id="bi-dre-cmv" style="color: #F59E0B;">R$ 3.730,35</strong>
+                    </div>
+                    <span style="color: #64748B; font-weight: 800;">&minus;</span>
+                    <div style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.2); padding: 5px 10px; border-radius: 6px;">
+                        <span style="color: #94A3B8;">(&minus;) DIFAL:</span> <strong id="bi-dre-difal" style="color: #FB7185;">R$ 0,00</strong>
+                    </div>
+                    <span style="color: #64748B; font-weight: 800;">&minus;</span>
+                    <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2); padding: 5px 10px; border-radius: 6px;">
+                        <span style="color: #94A3B8;">(&minus;) Gateway:</span> <strong id="bi-dre-gateway" style="color: #C084FC;">R$ 361,73</strong>
+                    </div>
+                    <span style="color: #64748B; font-weight: 800;">=</span>
+                    <div style="background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 12px; border-radius: 8px;">
+                        <span style="color: #34D399; font-weight: 700;">Margem L&iacute;quida:</span> 
+                        <strong id="bi-dre-margem" style="color: #34D399; font-weight: 800; font-size: 13px;">R$ 6.808,65 (60.2%)</strong>
                     </div>
                 </div>
             </div>
