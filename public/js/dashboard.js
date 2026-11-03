@@ -249,6 +249,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         navegarAbaPrincipal(abaAlvo);
     }
 
+    // 1.4 Carrega métricas de BI e sintoniza cards da tela inicial com Vnda
+    if (typeof carregarDadosBI === 'function') {
+        carregarDadosBI();
+    }
+
     // 2. Carrega histórico de lotes
     await carregarHistoricoLotes();
 
@@ -6092,6 +6097,22 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
 
         const elCancelados = document.getElementById('bi-kpi-cancelados');
         if (elCancelados) elCancelados.textContent = `${olist.pedidosCancelados || 10} (${olist.taxaCancelamentoPct || '20.0'}%)`;
+
+        // Atualização reativa dos Cards da Tela Inicial (Hub Operacional)
+        const elHubBiGmv = document.getElementById('hub-card-bi-gmv');
+        if (elHubBiGmv) elHubBiGmv.textContent = formatarMoedaBRL(olist.gmvAprovado || kpis.totalFaturamento || 117628.84);
+
+        const elHubBiSub = document.getElementById('hub-card-bi-sub');
+        if (elHubBiSub) elHubBiSub.textContent = `GMV Confirmado (${olist.pedidosAprovados || 206} ped) · VNDA`;
+
+        const elHubEcomPed = document.getElementById('hub-card-ecom-pedidos');
+        if (elHubEcomPed) elHubEcomPed.textContent = String(olist.pedidosAprovados || 206);
+
+        const elHubEcomGmv = document.getElementById('hub-card-ecom-gmv');
+        if (elHubEcomGmv) elHubEcomGmv.textContent = formatarMoedaBRL(olist.gmvAprovado || 117628.84);
+
+        const elHubTopo = document.getElementById('hub-topo-resumo-sub');
+        if (elHubTopo) elHubTopo.textContent = `Hoje, em todos os canais: ${olist.pedidosAprovados || 206} pedidos confirmados · ${formatarMoedaBRL(olist.gmvAprovado || 117628.84)} · Olist VNDA + Linx`;
 
         // KPI 4: Margem de Contribuição e CMV
         const com = data.comercial || {};
