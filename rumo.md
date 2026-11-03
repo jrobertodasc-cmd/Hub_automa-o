@@ -70,6 +70,11 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Conciliação Inteligente:** Localização de guias tanto por código de barras normalizado (44 dígitos) quanto por cruzamento numérico da Nota Fiscal (`nf_number`).
 - **Drag-and-Drop Nativo no Modal:** Área de soltura arrastar-e-soltar para arquivos `.RET`, executando baixa instantânea de guias, liberação de caixas para coleta e atualização ao vivo da esteira.
 
+### 2.8. Inteligência Comercial: CMV, Margem de Contribuição e DRE Express (03/11/2026)
+- **Cálculo de CMV da Coleção:** Estimativa e apuração de Custo de Mercadorias Vendidas (33% no padrão atelier BOAH) associado ao faturamento GMV.
+- **Card Executivo de Margem de Contribuição:** Exibição do lucro operacional líquido (R$ e %) com badge luminoso de rentabilidade.
+- **Barra de DRE Express do E-commerce:** Visão sequencial de conciliação comercial: `(+) GMV Bruto` &minus; `(&minus;) CMV (33%)` &minus; `(&minus;) DIFAL` &minus; `(&minus;) Gateway (3.2%)` = `Margem Líquida Real`.
+
 ---
 
 ## 3. Rumo Estratégico & Próximos Passos (Roadmap de Evolução)
