@@ -79,6 +79,11 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Agendador em Background Autônomo:** Worker executando a cada 10 minutos (e 5s após o boot) para consultar novos pedidos faturados na Linx Microvix e Olist Vnda sem exigir ação humana.
 - **Canal Reativo SSE (`AUTO_SYNC_CONCLUIDO`):** Ao concluir a sincronização de pedidos e notas, o servidor emite evento Server-Sent Events que atualiza a Doca, a Remessa e o Cockpit de BI no navegador dos operadores em tempo real sem necessidade de F5.
 
+### 2.12. Ingestão e Ordenação Viva da VNDA no Cockpit 360° (03/11/2026)
+- **Exportação da Função Reversa da VNDA:** Corrigida a exportação de `listarPedidosRecentes` no `services/vnda_service.js`.
+- **Ordenação Cronológica Decrescente:** O Cockpit 360° agora ordena rigorosamente os pedidos por data decrescente, colocando as vendas de hoje (03/11/2026) como os primeiros cards no topo da grade.
+- **Seletor de Safras Completo:** Botões segmentados `Mês Vigente (Nov/26)`, `Outubro/26`, `Setembro/26` e `Arquivo Geral`.
+
 ### 2.11. Automação Contínua "Zero Preocupação" (03/11/2026)
 - **Worker em Segundo Plano a Cada 5 Minutos:** O servidor roda um ciclo autônomo que consulta novas NF-e na Linx Microvix, identifica DIFAL interestadual e faz a ingestão dos pedidos mais recentes da Olist VNDA de forma contínua.
 - **Heartbeat Silencioso no Front-End (60s):** O navegador atualiza os indicadores automaticamente a cada minuto, garantindo que mesmo com a aba aberta por horas o painel nunca fique defasado ou estático.
