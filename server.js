@@ -5959,6 +5959,152 @@ app.get('/api/vnda/auditoria-custos', requireAuth, async (req, res) => {
 // ==========================================
 // MÓDULO BI & INTELIGÊNCIA EXECUTIVA DA EXPEDIÇÃO
 // ==========================================
+// Cache em memória de vendedores Linx Microvix por tenant (TTL: 1 hora)
+const linxVendedoresCache = new Map();
+
+function formatarNomePessoa(str) {
+    if (!str) return '';
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map(w => ['de', 'da', 'do', 'das', 'dos', 'e'].includes(w) ? w : (w.charAt(0).toUpperCase() + w.slice(1)))
+        .join(' ');
+}
+
+async function getLinxVendedoresCatalog(tenant) {
+    if (!tenant) return { byCode: new Map(), byName: new Map() };
+    const tenantId = tenant.id || tenant.cnpj || 'default';
+    const now = Date.now();
+    const cached = linxVendedoresCache.get(tenantId);
+    if (cached && (now - cached.timestamp < 3600000)) {
+        return cached.catalog;
+    }
+
+    const byCode = new Map();
+    const byName = new Map();
+
+    try {
+        let chave = tenant.microvix_key;
+        let cnpj = tenant.microvix_cnpj || tenant.cnpj;
+        let user = tenant.microvix_user || 'linx_b2c';
+        let pass = tenant.microvix_password_encrypted || '';
+
+        if (!chave && tenant.cnpj !== '10436619000105') {
+            const { data: boah } = await supabase
+                .from('tenants')
+                .select('*')
+                .eq('cnpj', '10436619000105')
+                .single();
+            if (boah) {
+                chave = boah.microvix_key;
+                cnpj = boah.microvix_cnpj || boah.cnpj;
+                user = boah.microvix_user || user;
+                pass = boah.microvix_password_encrypted || pass;
+            }
+        }
+
+        if (pass && pass.includes(':')) {
+            const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
+            pass = decrypt(pass, key);
+        }
+
+        if (chave && cnpj) {
+            const list = await microvixService.consultarVendedores({
+                user,
+                password: pass,
+                chave,
+                cnpjEmp: cnpj
+            }, 0);
+
+            if (Array.isArray(list)) {
+                list.forEach(v => {
+                    const cod = String(v.cod_vendedor || '').trim();
+                    const nome = String(v.nome_vendedor || '').trim();
+                    if (cod) {
+                        byCode.set(cod, v);
+                        byCode.set('L' + cod, v);
+                        byCode.set('l' + cod, v);
+                        const num = parseInt(cod, 10);
+                        if (!isNaN(num)) {
+                            byCode.set(String(num), v);
+                            byCode.set('L' + num, v);
+                            byCode.set('l' + num, v);
+                        }
+                    }
+                    if (nome) {
+                        const cleanName = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        byName.set(cleanName, v);
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.warn('[BI] Aviso ao consultar catálogo de vendedores Linx Microvix:', err.message);
+    }
+
+    const catalog = { byCode, byName };
+    linxVendedoresCache.set(tenantId, { timestamp: now, catalog });
+    return catalog;
+}
+
+function resolverVendedora(rawIdentifier, linxCatalog) {
+    const raw = String(rawIdentifier || '').trim();
+    if (!raw) return null;
+
+    // 1. Busca por código direto ou prefixado com L (ex: L55, 55, L79, 79, L3, 3, L5, 5)
+    let match = linxCatalog.byCode.get(raw) || linxCatalog.byCode.get(raw.toUpperCase());
+    if (!match) {
+        const digitsOnly = raw.replace(/^L(OJA)?/i, '').replace(/[^0-9]/g, '');
+        if (digitsOnly) {
+            match = linxCatalog.byCode.get(digitsOnly);
+        }
+    }
+
+    // 2. Mapeamento de apelidos e canais notáveis
+    if (!match) {
+        const up = raw.toUpperCase();
+        if (up === 'MILA' || up.includes('MILA') || up.includes('CAMILA')) {
+            match = linxCatalog.byCode.get('66') || { cod_vendedor: '66', nome_vendedor: 'Camila (Mila)', ativo: '1' };
+        }
+    }
+
+    if (match) {
+        let nomeLimpo = formatarNomePessoa(match.nome_vendedor);
+        if (match.cod_vendedor === '3') {
+            return {
+                nome: 'Venda Online',
+                codigoLinx: '3',
+                canal: 'Loja Online (Linx #3)',
+                ativo: match.ativo === '1'
+            };
+        }
+        if (match.cod_vendedor === '66' && !nomeLimpo.includes('Mila')) {
+            nomeLimpo = 'Camila (Mila)';
+        }
+        return {
+            nome: nomeLimpo,
+            codigoLinx: match.cod_vendedor,
+            canal: `Social Selling (Linx #${match.cod_vendedor})`,
+            ativo: match.ativo === '1'
+        };
+    }
+
+    // 3. Fallback inteligente para cupons nominais (ex: LANESANTOS -> Lane Santos)
+    let nomeFallback = raw;
+    if (/^[A-Z]+$/.test(raw) && raw.length > 4) {
+        nomeFallback = formatarNomePessoa(raw.replace(/[0-9]/g, ''));
+    } else {
+        nomeFallback = formatarNomePessoa(raw);
+    }
+
+    return {
+        nome: nomeFallback,
+        codigoLinx: null,
+        canal: 'Social Selling VNDA',
+        ativo: true
+    };
+}
+
 app.get('/api/bi/metrics', requireAuth, async (req, res) => {
     try {
         const tenantId = req.tenant.id;
@@ -6076,11 +6222,11 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
         ];
 
         let rankingVendedorasBase = [
-            { posicao: 1, nome: 'Marina Costa', canal: 'Social Selling VNDA', pedidos: 52, valorTotal: 31480.00, ticketMedio: 605.38, sharePct: 26.8, badge: 'Top 1 Líder' },
-            { posicao: 2, nome: 'Camila Silva', canal: 'Social Selling VNDA', pedidos: 44, valorTotal: 25890.50, ticketMedio: 588.42, sharePct: 22.0, badge: 'Top 2 Destaque' },
-            { posicao: 3, nome: 'Beatriz Santos', canal: 'Televendas / WhatsApp', pedidos: 38, valorTotal: 21740.00, ticketMedio: 572.10, sharePct: 18.5, badge: 'Top 3 Bronze' },
-            { posicao: 4, nome: 'Carolina Ramos', canal: 'Social Selling VNDA', pedidos: 29, valorTotal: 16820.00, ticketMedio: 580.00, sharePct: 14.3, badge: 'Consultora' },
-            { posicao: 5, nome: 'Juliana Meireles', canal: 'Linx Omnichannel', pedidos: 23, valorTotal: 12940.00, ticketMedio: 562.61, sharePct: 11.0, badge: 'Consultora' }
+            { posicao: 1, nome: 'Bruna Melo da Silva', canal: 'Social Selling (Linx #55)', pedidos: 52, valorTotal: 31480.00, ticketMedio: 605.38, sharePct: 26.8, badge: 'Top 1 Líder' },
+            { posicao: 2, nome: 'Camila (Mila)', canal: 'Social Selling (Linx #66)', pedidos: 44, valorTotal: 25890.50, ticketMedio: 588.42, sharePct: 22.0, badge: 'Top 2 Destaque' },
+            { posicao: 3, nome: 'Waillyn Vieira Teles', canal: 'Social Selling (Linx #79)', pedidos: 38, valorTotal: 21740.00, ticketMedio: 572.10, sharePct: 18.5, badge: 'Top 3 Bronze' },
+            { posicao: 4, nome: 'Ana Beatriz Silva', canal: 'Social Selling (Linx #5)', pedidos: 29, valorTotal: 16820.00, ticketMedio: 580.00, sharePct: 14.3, badge: 'Consultora' },
+            { posicao: 5, nome: 'Venda Online', canal: 'Loja Online (Linx #3)', pedidos: 23, valorTotal: 12940.00, ticketMedio: 562.61, sharePct: 11.0, badge: 'Consultora' }
         ];
 
         let topProdutos = [
@@ -6254,31 +6400,36 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         conectado: true
                     };
 
-                    // Agrupamento de Vendedoras (Olist Vnda API - campo oficial: agent)
+                    // Agrupamento de Vendedoras (Olist Vnda API cruzado com Linx Microvix B2CConsultaVendedores)
                     const vMap = new Map();
+                    const linxCatalog = await getLinxVendedoresCatalog(req.tenant);
                     conf.forEach(p => {
-                        let vNome = (p.agent || p.seller || p.salesperson || '').trim();
-                        if (!vNome && (p.coupon_code || p.coupon)) {
+                        let rawAgent = (p.agent || p.seller || p.salesperson || '').trim();
+                        if (!rawAgent && (p.coupon_code || p.coupon)) {
                             const cStr = String(p.coupon_code || p.coupon).toUpperCase().trim();
                             if (cStr && !['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY'].includes(cStr)) {
-                                vNome = cStr.replace(/[0-9]/g, '');
+                                rawAgent = cStr;
                             }
                         }
-                        if (vNome) {
-                            vNome = vNome.charAt(0).toUpperCase() + vNome.slice(1).toLowerCase();
-                            const valP = parseFloat(p.total) || 0;
-                            if (!vMap.has(vNome)) {
-                                vMap.set(vNome, {
-                                    nome: vNome,
-                                    pedidos: 0,
-                                    valorTotal: 0,
-                                    pecasTotal: 0,
-                                    canal: 'Social Selling VNDA'
-                                });
+                        if (rawAgent) {
+                            const resolved = resolverVendedora(rawAgent, linxCatalog);
+                            if (resolved && resolved.nome) {
+                                const key = resolved.nome.toUpperCase();
+                                const valP = parseFloat(p.total) || 0;
+                                if (!vMap.has(key)) {
+                                    vMap.set(key, {
+                                        nome: resolved.nome,
+                                        codigoLinx: resolved.codigoLinx,
+                                        pedidos: 0,
+                                        valorTotal: 0,
+                                        pecasTotal: 0,
+                                        canal: resolved.canal || 'Social Selling VNDA'
+                                    });
+                                }
+                                const vObj = vMap.get(key);
+                                vObj.pedidos++;
+                                vObj.valorTotal += valP;
                             }
-                            const vObj = vMap.get(vNome);
-                            vObj.pedidos++;
-                            vObj.valorTotal += valP;
                         }
                     });
 
@@ -6287,6 +6438,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         .map((v, idx) => ({
                             posicao: idx + 1,
                             nome: v.nome,
+                            codigoLinx: v.codigoLinx,
                             canal: v.canal,
                             pedidos: v.pedidos,
                             valorTotal: parseFloat(v.valorTotal.toFixed(2)),

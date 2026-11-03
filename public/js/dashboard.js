@@ -6379,7 +6379,8 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
                                     <span>${v.nome}</span>
                                     <span style="font-size: 9.5px; font-weight: 700; background: rgba(245, 194, 104, 0.12); color: #F5C268; padding: 1px 5px; border-radius: 3px;">${v.sharePct}% GMV</span>
                                 </div>
-                                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+                                <div style="font-size: 11px; color: #64748B; margin-top: 2px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                                    <span style="color: #38BDF8; font-weight: 600;">${v.canal || 'Social Selling VNDA'}</span> &middot;
                                     <span>${v.pedidos} pedidos</span> &middot;
                                     <span>TM: <strong style="color: #CBD5E1;">${formatarMoedaBRL(v.ticketMedio || 0)}</strong></span>
                                 </div>

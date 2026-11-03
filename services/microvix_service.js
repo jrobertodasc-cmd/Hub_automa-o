@@ -117,4 +117,68 @@ async function consultarNFe({ user, password, chave, cnpjEmp }, dataInicial, dat
     })).filter(n => n.xml && n.xml.length > 100); // Descarta entradas sem XML
 }
 
-module.exports = { consultarNFe };
+/**
+ * Monta o envelope XML para o comando B2CConsultaVendedores.
+ */
+function buildVendedoresRequestXml({ user, password, chave, cnpjEmp, timestamp = 0 }) {
+    return `<?xml version="1.0" encoding="utf-8"?>
+<LinxMicrovix>
+    <Authentication user="${user}" password="${password}" />
+    <ResponseFormat>json</ResponseFormat>
+    <Command>
+        <Name>B2CConsultaVendedores</Name>
+        <Parameters>
+            <Parameter id="chave">${chave}</Parameter>
+            <Parameter id="cnpjEmp">${cnpjEmp}</Parameter>
+            <Parameter id="timestamp">${timestamp}</Parameter>
+        </Parameters>
+    </Command>
+</LinxMicrovix>`;
+}
+
+/**
+ * Consulta vendedores cadastrados no Linx Microvix usando o comando B2CConsultaVendedores.
+ *
+ * @param {object} credentials - Credenciais do tenant { user, password, chave, cnpjEmp }
+ * @param {number} timestamp   - Timestamp incremental (0 para buscar todos)
+ * @returns {Promise<Array>}   - Array de objetos { cod_vendedor, nome_vendedor, tipo, ativo, comissionado, timestamp }
+ */
+async function consultarVendedores({ user, password, chave, cnpjEmp }, timestamp = 0) {
+    const xmlBody = buildVendedoresRequestXml({ user, password, chave, cnpjEmp, timestamp });
+    const rawResponse = await httpPost(MICROVIX_ENDPOINT, xmlBody);
+
+    let clean = rawResponse;
+    if (clean && clean.charCodeAt(0) === 0xFEFF) {
+        clean = clean.substring(1);
+    }
+
+    let parsed;
+    try {
+        parsed = JSON.parse(clean);
+    } catch {
+        const jsonMatch = clean ? clean.match(/(\[[\s\S]*\]|\{[\s\S]*\})/) : null;
+        if (!jsonMatch) {
+            throw new Error('Resposta de vendedores da Linx Microvix não é JSON válido: ' + String(clean || '').substring(0, 300));
+        }
+        parsed = JSON.parse(jsonMatch[1]);
+    }
+
+    const vendedores = Array.isArray(parsed)
+        ? parsed
+        : (parsed.ResponseData || parsed.data || parsed.vendedores || []);
+
+    if (!Array.isArray(vendedores)) {
+        return [];
+    }
+
+    return vendedores.map(v => ({
+        cod_vendedor: String(v.cod_vendedor || '').trim(),
+        nome_vendedor: String(v.nome_vendedor || '').trim(),
+        tipo: String(v.tipo || 'V').trim(),
+        ativo: String(v.ativo || '1').trim(),
+        comissionado: String(v.comissionado || '0').trim(),
+        timestamp: Number(v.timestamp || 0)
+    }));
+}
+
+module.exports = { consultarNFe, consultarVendedores };
