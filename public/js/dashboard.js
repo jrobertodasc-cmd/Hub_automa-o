@@ -5275,6 +5275,10 @@ function atualizarTopKpisScreen2() {
 }
 
 function navegarAbaPrincipal(aba) {
+    // Redireciona qualquer chamada legada de 'cargas' para o painel unificado de difal
+    if (aba === 'cargas') {
+        return navegarAbaPrincipal('difal');
+    }
     const abas = ['hub', 'ecommerce', 'dashboard', 'relatorios', 'cargas', 'difal'];
 
     // Sincroniza visual das abas do pipeline no cabeçalho
@@ -7389,6 +7393,26 @@ async function carregarPainelUnificadoDifal(forcar = false) {
         const data = await res.json();
         window.painelDifalState.dados = data;
 
+        // Sincroniza guias em aberto nas variáveis operacionais da SEFAZ / Itaú
+        const abertas = data.emAberto || [];
+        window.todasCargasDoca = abertas.map(g => ({
+            id: g.id || `linx-difal-${g.nf}`,
+            nf_number: g.nf,
+            serie: g.serie || '1',
+            uf: g.uf,
+            value: g.valor_fatura,
+            due_date: g.vencto,
+            status: 'EM_ABERTO',
+            situacao_pagamento: 'aberta',
+            is_paga: false,
+            barcode: g.tipo === 'DARE' ? 'IMPORTAR_NO_SEFAZ_SP' : (g.barcode || ''),
+            customer_name: g.customer_name || 'Consumidor Final',
+            carrier_name: g.carrier_name || 'Total Express',
+            chave_nfe: g.chave_nfe || ''
+        }));
+        window.currentBatchGuides = window.todasCargasDoca;
+        if (!window.activeBatchId) window.activeBatchId = 'linx-difal-ativo';
+
         // 1. Atualiza HUD KPI Cards
         const r = data.resumo || {};
         const kpiPagasVal = document.getElementById('difal-kpi-pagas-valor');
@@ -7593,19 +7617,30 @@ function renderizarTabelaDifal() {
             : `<span style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">GNRE</span>`;
 
         const acaoBtn = isAberta
-            ? `<div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                 <button type="button" onclick="liquidarGuiaManual('${g.nf}', '${g.uf}', ${vNom})" title="Marcar como paga / confirmar liquidação" style="background: #16233A; border: 1px solid #29374E; color: #34D399; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+            ? `<div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                 ${(g.uf === 'SP')
+                    ? `<button type="button" onclick="baixarXmlSpNotaIndividual('${g.id || ('linx-difal-' + g.nf)}')" title="Baixar XML do Lote DARE-SP" style="background: rgba(245, 194, 104, 0.15); border: 1px solid rgba(245, 194, 104, 0.4); color: #F5C268; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                         XML SP
+                       </button>`
+                    : `<button type="button" onclick="abrirModalEmitirSefazIndividual('${g.id || ('linx-difal-' + g.nf)}', '${g.nf}', '${g.uf}', ${vNom})" title="Emitir guia GNRE individual na SEFAZ" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
+                         Emitir SEFAZ
+                       </button>`
+                 }
+                 <button type="button" onclick="liquidarGuiaManual('${g.nf}', '${g.uf}', ${vNom})" title="Marcar como paga / confirmar liquidação" style="background: #16233A; border: 1px solid #29374E; color: #34D399; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
                    <span>Baixar ✓</span>
                  </button>
-                 <button type="button" onclick="navegarAbaPrincipal('cargas')" title="Emitir na Doca SEFAZ" style="background: #1E293B; border: 1px solid #334155; color: #CBD5E1; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; cursor: pointer;">
-                   Doca ↗
+                 <button type="button" onclick="abrirModalPagamento360('${g.id || ('linx-difal-' + g.nf)}')" title="Ver Dossiê Completo 360°" style="background: transparent; border: 1px solid #29374E; color: #94A3B8; font-size: 10.5px; font-weight: 600; padding: 4px 6px; border-radius: 6px; cursor: pointer;">
+                   360°
                  </button>
                </div>`
-            : `<div style="text-align: center; font-size: 11px; color: #64748B;">
-                 <span title="Conciliada oficialmente com relatório do Linx Microvix ERP" style="display: inline-flex; align-items: center; gap: 4px; color: #94A3B8;">
+            : `<div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px;">
+                 <span title="Conciliada oficialmente com relatório do Linx Microvix ERP" style="display: inline-flex; align-items: center; gap: 4px; color: #10B981; font-weight: 600;">
                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                    ERP Microvix
                  </span>
+                 <button type="button" onclick="abrirModalPagamento360('${g.id || ('linx-difal-' + g.nf)}')" title="Ver Dossiê da Guia" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #8597B1; font-size: 10.5px; padding: 3px 6px; border-radius: 5px; cursor: pointer;">
+                   360°
+                 </button>
                </div>`;
 
         html += `
@@ -7705,3 +7740,91 @@ setInterval(() => {
             .catch(() => {});
     }
 }, 60000);
+
+// ==============================================================
+// FUNÇÕES OPERACIONAIS MIGRADAS PARA O PAINEL DE DIFAL & SEFAZ
+// ==============================================================
+function handleBipagemDifal(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+
+    const input = document.getElementById('difal-danfe-scanner');
+    const feedbackBox = document.getElementById('difal-laser-feedback');
+    const feedbackText = document.getElementById('difal-laser-feedback-text');
+    const termo = (input?.value || '').trim();
+    if (!termo) return;
+
+    let nfExtraida = termo.replace(/\D/g, '');
+    if (nfExtraida.length >= 44) {
+        // Posições 26 a 34 da chave de 44 dígitos representam o número da NF-e
+        const numNf = parseInt(nfExtraida.substring(25, 34), 10);
+        if (!isNaN(numNf)) nfExtraida = String(numNf);
+    }
+
+    const data = window.painelDifalState?.dados;
+    const abertas = data?.emAberto || [];
+    const pagas = data?.pagas || [];
+
+    // 1. Procura primeiro nas abertas
+    const guiaAberta = abertas.find(g => String(g.nf) === nfExtraida);
+    if (guiaAberta) {
+        if (window.painelDifalState.aba !== 'abertas') {
+            alternarAbaDifal('abertas');
+        }
+        window.painelDifalState.busca = nfExtraida;
+        const searchInput = document.getElementById('difal-search-input');
+        if (searchInput) searchInput.value = nfExtraida;
+        renderizarTabelaDifal();
+
+        if (feedbackBox && feedbackText) {
+            feedbackBox.style.display = 'inline-flex';
+            feedbackBox.style.color = '#F59E0B';
+            feedbackText.innerHTML = `✓ <b>NF ${guiaAberta.nf} (${guiaAberta.uf}) localizada!</b> DIFAL R$ ${Number(guiaAberta.valor_fatura || 0).toFixed(2).replace('.', ',')} &middot; Status: EM ABERTO`;
+        }
+        return;
+    }
+
+    // 2. Procura nas pagas
+    const guiaPaga = pagas.find(g => String(g.nf) === nfExtraida);
+    if (guiaPaga) {
+        if (window.painelDifalState.aba !== 'pagas') {
+            alternarAbaDifal('pagas');
+        }
+        window.painelDifalState.busca = nfExtraida;
+        const searchInput = document.getElementById('difal-search-input');
+        if (searchInput) searchInput.value = nfExtraida;
+        renderizarTabelaDifal();
+
+        if (feedbackBox && feedbackText) {
+            feedbackBox.style.display = 'inline-flex';
+            feedbackBox.style.color = '#10B981';
+            feedbackText.innerHTML = `✓ <b>NF ${guiaPaga.nf} (${guiaPaga.uf}) localizada!</b> PAGA &amp; BAIXADA em ${guiaPaga.pagto || 'data oficial'}. Conciliada no Linx Microvix ERP.`;
+        }
+        return;
+    }
+
+    // 3. Não encontrada
+    if (feedbackBox && feedbackText) {
+        feedbackBox.style.display = 'inline-flex';
+        feedbackBox.style.color = '#EF4444';
+        feedbackText.innerHTML = `✕ NF ${nfExtraida} não encontrada no lote monitorado.`;
+    }
+}
+window.handleBipagemDifal = handleBipagemDifal;
+
+function handleBuscaRapidaDifal(val) {
+    const inputBusca = document.getElementById('difal-search-input');
+    if (inputBusca) inputBusca.value = val;
+    window.painelDifalState.busca = (val || '').trim().toLowerCase();
+    window.painelDifalState.pagina = 1;
+    renderizarTabelaDifal();
+}
+window.handleBuscaRapidaDifal = handleBuscaRapidaDifal;
+
+function toggleBarraLoteSpDifal() {
+    const bar = document.getElementById('sp-lote-bar');
+    if (!bar) return;
+    const isVisible = (bar.style.display !== 'none' && bar.style.display !== '');
+    bar.style.display = isVisible ? 'none' : 'flex';
+}
+window.toggleBarraLoteSpDifal = toggleBarraLoteSpDifal;

@@ -1373,11 +1373,7 @@
                 <span class="hub-pipeline-badge" id="nav-badge-difal" style="background: #F59E0B; color: #000; font-weight: 800; font-size: 10.5px; padding: 1px 7px; border-radius: 999px;">12 abertas</span>
             </button>
 
-            <!-- Botão Cargas & Doca -->
-            <button type="button" class="hub-nav-link-btn" id="nav-btn-cargas" onclick="navegarAbaPrincipal('cargas')" title="Doca de Cargas e Expedição" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                <span>Doca &amp; Cargas</span>
-            </button>
+            
         </div>
 
         <!-- Right: Online Fiscal Connection + User Profile MC (Figma) -->
@@ -1451,12 +1447,9 @@
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <button type="button" onclick="navegarAbaPrincipal('difal')" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease;" onmouseover="this.style.background='#1D4ED8'" onmouseout="this.style.background='#2563EB'">
-                            Painel DIFAL (Pagas vs Abertas)
+                        <button type="button" onclick="navegarAbaPrincipal('difal')" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease;" onmouseover="this.style.background='#1D4ED8'" onmouseout="this.style.background='#2563EB'">
+                            <span>Acessar Painel DIFAL &amp; SEFAZ</span>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </button>
-                        <button type="button" onclick="navegarAbaPrincipal('cargas')" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease;" onmouseover="this.style.background='#1E2F4C'" onmouseout="this.style.background='#16233A'">
-                            Doca
                         </button>
                     </div>
                 </div>
@@ -1648,23 +1641,22 @@
                     </div>
                 </div>
 
-                <!-- Card 4: Expedição Operacional -->
-                <div class="figma-module-card" onclick="navegarAbaPrincipal('cargas')">
+                <!-- Card 4: DIFAL & Regularização SEFAZ -->
+                <div class="figma-module-card" onclick="navegarAbaPrincipal('difal')">
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">Expedi&ccedil;&atilde;o Operacional</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                                <span style="font-size: 14px; font-weight: 600; color: #F1F5FC;">DIFAL &amp; Regulariza&ccedil;&atilde;o SEFAZ</span>
                             </div>
                             <svg class="card-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F1F5FC; line-height: 1;">5</div>
-                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">guias pendentes de emiss&atilde;o</div>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: #F59E0B; line-height: 1;" id="hub-card-difal-count">12</div>
+                                <div style="font-size: 12px; color: #A6B5CA; margin-top: 4px;">guias em aberto no ERP Linx</div>
                             </div>
-                            <!-- 5 Barras douradas da esteira Figma -->
                             <div style="display: flex; align-items: center; gap: 4px;">
                                 <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
                                 <div style="width: 8px; height: 32px; border: 1.5px solid #F5C268; border-radius: 2px;"></div>
@@ -1674,26 +1666,15 @@
                             </div>
                         </div>
 
-                        <div id="hub-card-cargas-pendentes-difal" style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">R$ 3.881,75 em DIFAL a resolver</div>
+                        <div id="hub-card-cargas-pendentes-difal" style="font-size: 12px; color: #F1F5FC; margin-top: 12px;">R$ 274,23 em aberto &middot; 591 conciliadas</div>
 
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
                             <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(245, 194, 104, 0.12); border: 1px solid rgba(245, 194, 104, 0.25); color: #F5C268; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                Esteira ativa
+                                <span style="width: 5px; height: 5px; border-radius: 50%; background: #F5C268;"></span>
+                                Port&atilde;o Fiscal
                             </span>
-                            <span style="font-size: 10.5px; color: #8597B1;">Hoje</span>
+                            <span class="card-footer-action" style="font-size: 12px; font-weight: 600; color: #38BDF8;">Abrir Painel &rarr;</span>
                         </div>
-                    </div>
-
-                    <div>
-                        <div style="height: 1px; background: #1E2D44; margin: 16px 0 10px 0;"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="card-footer-action" style="font-size: 12.5px; font-weight: 600; color: #38BDF8;">Abrir fila de expedi&ccedil;&atilde;o &rarr;</div>
-                            <button type="button" onclick="event.stopPropagation(); abrirModalRemessaBancaria()" title="Ir direto para a Remessa Itaú" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                                Remessa Itaú ↗
-                            </button>
-                        </div>
-                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">0 cargas liberadas neste recorte</div>
                     </div>
                 </div>
 
@@ -2581,272 +2562,6 @@
 
         </div>
 
-        <div id="secao-view-cargas" class="main-view-section" style="display: none; max-width: 1360px; margin: 0 auto; padding-top: 8px; padding-bottom: 48px;">
-            <!-- 1. TOPO COMPACTO UNIFICADO: NAVEGAÇÃO + TÍTULO + SINCRONIZAÇÕES -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 14px;">
-                    <button type="button" onclick="navegarAbaPrincipal('hub')" style="background: #111B2E; border: 1px solid #29374E; color: #F1F5FC; border-radius: 10px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.15s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
-                        <span>Início</span>
-                    </button>
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <h1 style="font-size: 22px; font-weight: 700; color: #FFFFFF; margin: 0; letter-spacing: -0.02em;">Expedição &amp; Emissão SEFAZ</h1>
-                            <span class="badge-figma badge-figma-online">
-                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #66DBAC; display: inline-block;"></span>
-                                <span>Portão Fiscal Ativo</span>
-                            </span>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Ações de Sincronização e Atalho Bancário Agrupados -->
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" class="btn-secondary-figma" onclick="abrirModalMicrovix()" title="Importar ou sincronizar notas do Linx">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-                        <span>Sincronizar Linx</span>
-                    </button>
-                    <button type="button" class="btn-secondary-figma" onclick="abrirModalConciliacao()" title="Conferir conciliação bancária e comprovantes">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
-                        <span>Conciliar</span>
-                    </button>
-                    <button type="button" class="btn-secondary-figma" id="btn-top-lote-sp" onclick="toggleBarraLoteSp(true)" style="display: none; border-color: rgba(245, 194, 104, 0.35); color: #F5C268; background: rgba(245, 194, 104, 0.08);" title="Baixar XML do Lote de São Paulo (DARE-SP) ou importar retorno .ZIP">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span id="btn-top-lote-sp-label">Lote SP (XML)</span>
-                    </button>
-                    <button type="button" class="btn-secondary-figma" id="btn-top-remessa-itau" onclick="abrirModalRemessaBancaria()" style="border-color: rgba(16, 185, 129, 0.35); color: #34D399; background: rgba(16, 185, 129, 0.1);" title="Baixar Remessa Itaú SISPAG CNAB 240 gerada automaticamente ou enviar retorno .RET">
-                        <span id="btn-top-remessa-label">Remessa Itaú</span>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 2. DECK OPERACIONAL SLIM (2 COLUNAS LADO A LADO: EMISSÃO EM LOTE + LEITOR ÓPTICO) -->
-            <div class="cargas-deck-grid">
-                <!-- Card Esquerdo: Resumo de Pendências & Emissão SEFAZ -->
-                <div style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
-                    <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(245, 194, 104, 0.12); border: 1px solid rgba(245, 194, 104, 0.28); display: grid; place-items: center; color: #F5C268; flex-shrink: 0;">
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        </div>
-                        <div style="min-width: 0;">
-                            <div id="hero-pendentes-texto" style="font-size: 13.5px; font-weight: 700; color: #F1F5FC; line-height: 1.3;">
-                                <span id="hero-qtd-pendentes">5 guias a emitir na SEFAZ</span>
-                            </div>
-                            <div id="hero-qtd-conciliadas" style="font-size: 11.5px; color: #8597B1; margin-top: 2px;">
-                                0 cargas liberadas para coleta
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" id="btn-hero-acao-lote" class="btn-primary-figma" onclick="executarAcaoPrimariaDeckDoca()" style="flex-shrink: 0; white-space: nowrap; height: 36px; padding: 0 14px;" title="Emitir todas as guias pendentes na SEFAZ">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
-                        <span>Emitir Todas na SEFAZ</span>
-                    </button>
-                </div>
-
-                <!-- Card Direito: Leitor Óptico de NF-e (Compacto, Sem Ruído Visual) -->
-                <div id="laser-station-box" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 6px;">
-                    <div style="position: relative; display: flex; align-items: center;">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" style="position: absolute; left: 12px; pointer-events: none;"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>
-                        <input type="text" id="filter-search" placeholder="Bipe ou digite a chave de 44 dígitos da DANFE (F2)..." onkeydown="handleBipagemPortaoFiscal(event)" oninput="aplicarFiltrosTabela()" autocomplete="off" autofocus style="width: 100%; height: 36px; background: #0B1220; border: 1.5px solid rgba(59, 130, 246, 0.55); border-radius: 8px; padding-left: 38px; padding-right: 68px; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; box-sizing: border-box;">
-                        <span style="position: absolute; right: 8px; background: #16233A; border: 1px solid #29374E; border-radius: 5px; padding: 2px 7px; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #94A3B8; pointer-events: none;">Enter ↵</span>
-                    </div>
-                    <div id="laser-status-row" style="display: none; align-items: center; justify-content: space-between; gap: 10px;">
-                        <div id="scanned-ribbon-items" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; overflow: hidden;">
-
-                        </div>
-                        <div id="laser-feedback-box" style="display: none; align-items: center; gap: 6px; font-size: 11px; color: #66DBAC;">
-                            <span id="laser-feedback-text"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2.1 MONITOR EM TEMPO REAL DE TRANSMISSÃO SEFAZ (EXIBIDO DURANTE / APÓS EMISSÃO) -->
-            <div id="sefaz-live-status-bar" style="display: none; background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                        <span id="sefaz-live-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #38BDF8; box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2); flex-shrink: 0;"></span>
-                        <div style="min-width: 0;">
-                            <div id="sefaz-live-title" style="font-size: 13px; font-weight: 700; color: #F1F5FC;">Transmitindo lote para a SEFAZ...</div>
-                            <div id="sefaz-live-last-log" style="font-size: 11.5px; color: #93C5FD; font-family: 'JetBrains Mono', monospace; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 760px;">Conectando ao WebService GNRE...</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                        <span id="sefaz-live-pct" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #38BDF8; min-width: 38px; text-align: right;">0%</span>
-                        <button type="button" id="sefaz-live-remessa-btn" class="btn-primary-figma" onclick="baixarRemessaItauDireto()" style="display: none; height: 28px; padding: 0 11px; font-size: 11px; font-weight: 700; background: #10B981; border-color: #10B981;">
-                            <span id="sefaz-live-remessa-btn-text">⬇ Baixar Remessa (.TXT)</span>
-                        </button>
-                        <button type="button" class="btn-secondary-figma" onclick="toggleLogLiveSefaz()" style="height: 28px; padding: 0 10px; font-size: 11px;">
-                            <span id="sefaz-live-log-btn-text">Ver Log SEFAZ</span>
-                        </button>
-                        <button type="button" id="sefaz-live-close-btn" onclick="fecharPainelLiveSefaz()" style="background: transparent; border: 1px solid rgba(255,255,255,0.12); color: #94A3B8; width: 28px; height: 28px; border-radius: 7px; cursor: pointer; font-size: 14px; line-height: 1;" title="Ocultar aviso">×</button>
-                    </div>
-                </div>
-                <div style="width: 100%; height: 5px; background: #090F1C; border-radius: 999px; overflow: hidden; margin-top: 10px;">
-                    <div id="sefaz-live-progress-fill" style="width: 8%; height: 100%; background: linear-gradient(90deg, #2563EB, #38BDF8); transition: width 0.35s ease;"></div>
-                </div>
-                <div id="sefaz-live-log-drawer" style="display: none; margin-top: 10px; background: #080D17; border: 1px solid #202D42; border-radius: 8px; padding: 10px 12px; max-height: 170px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #CBD5E1; line-height: 1.55;"></div>
-            </div>
-
-            <!-- 2.2 BARRA DEDICADA SÃO PAULO (LOTE XML DARE-SP + IMPORTAÇÃO DE RETORNO .ZIP) -->
-            <div id="sp-lote-bar" style="display: none; background: #111B2E; border: 1px solid rgba(245, 194, 104, 0.35); border-radius: 10px; padding: 8px 14px; margin-bottom: 12px; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;" title="SP utiliza portal próprio DARE-SP: 1º Baixe o XML com a data desejada · 2º Gere no portal SEFAZ-SP · 3º Importe o .ZIP de retorno">
-                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                    <span style="background: rgba(245, 194, 104, 0.16); border: 1px solid rgba(245, 194, 104, 0.4); color: #F5C268; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0;">UF · SP</span>
-                    <div style="min-width: 0;">
-                        <div style="font-size: 12.5px; font-weight: 700; color: #F1F5FC;">
-                            <span id="sp-bar-resumo">Notas de São Paulo (DARE-SP em Lote)</span>
-                        </div>
-                        <div style="font-size: 11px; color: #8597B1; margin-top: 1px;">
-
-                        </div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #0B1220; border: 1px solid #29374E; border-radius: 8px; padding: 0 8px; height: 34px;">
-                        <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">Vencimento:</span>
-                        <input type="date" id="sp-xml-date-input" onchange="salvarDataSefazPreferida(this.value)" style="background: transparent; border: none; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; outline: none; cursor: pointer;">
-                    </div>
-                    <button type="button" class="btn-primary-figma" onclick="baixarXmlLoteSpComData(event, false)" style="height: 34px; padding: 0 12px; font-size: 12px; background: #D97706; border-color: #F59E0B;" title="Baixar arquivo XML de São Paulo com a data de vencimento ao lado">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span>Baixar XML Lote SP</span>
-                    </button>
-                    <input type="file" id="sp-retorno-zip-input" accept=".zip,.pdf" style="display: none;" onchange="enviarRetornoSpZip(this)">
-                    <button type="button" class="btn-secondary-figma" onclick="document.getElementById('sp-retorno-zip-input').click()" style="height: 34px; padding: 0 12px; font-size: 12px; border-color: rgba(56, 189, 248, 0.35); color: #7DD3FC;" title="Importar o arquivo .ZIP retornado pelo portal DARE-SP com os códigos de barras">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        <span>Importar DARE (.ZIP)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 3. BARRA DE AÇÕES EM LOTE (EXIBIDA APENAS QUANDO HÁ ITENS MARCADOS) -->
-            <div id="dock-bulk-bar" class="dock-bulk-bar-figma" style="display: none;">
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <div style="font-size: 12px; font-weight: 600; color: #F1F5FC;">
-                        <span id="bulk-selected-count">0</span> selecionadas
-                    </div>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #93BCFF;">
-                        DIFAL <span id="bulk-selected-difal">R$ 0,00</span>
-                    </div>
-                </div>
-                <div class="bulk-divider-figma" style="display: none;"></div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <button type="button" onclick="imprimirDanfesLoteSelecionado()" class="btn-secondary-figma">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                        <span>DANFEs</span>
-                    </button>
-                    <button type="button" id="btn-bulk-print-gnre-mixed" onclick="imprimirGnresLoteSelecionado()" class="btn-secondary-figma" style="display: none; border-color: rgba(56, 189, 248, 0.45); color: #7DD3FC;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
-                        <span>Imprimir Emitidas</span>
-                    </button>
-                    <button type="button" onclick="abrirModalFechamentoContabil()" class="btn-secondary-figma">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
-                        <span>Pacote .ZIP</span>
-                    </button>
-                    <button type="button" id="btn-bulk-primary-action" onclick="executarAcaoPrimariaSelecaoDoca()" class="btn-primary-figma">
-                        <span>Emitir Selecionadas</span>
-                    </button>
-                    <button type="button" onclick="desmarcarTodasLinhas()" class="btn-secondary-figma" style="background: transparent; border-color: transparent; color: #94A3B8;">
-                        Limpar seleção
-                    </button>
-                </div>
-            </div>
-
-            <!-- 4. CARD UNIFICADO DA TABELA (ABAS DE STATUS + FILTROS NA MESMA BARRA + TABELA) -->
-            <div id="container-view-fiscal" style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; overflow: hidden; margin-bottom: 12px;">
-                <!-- Toolbar Integrada da Fila -->
-                <div style="padding: 10px 16px; background: #0E1626; border-bottom: 1px solid #29374E; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                    <!-- Segmented Tabs de Status -->
-                    <div class="filter-segmented-group" id="dock-status-tabs">
-                        <button type="button" class="segmented-option-figma active" id="tab-btn-nao-pagas" onclick="filtrarPorSituacaoTab('NAO_PAGAS', this)" title="Notas ainda sem guia emitida ou aguardando DARE-SP">
-                            <span class="status-indicator-dot dot-red"></span>
-                            <span>A Emitir</span>
-                            <span class="pill-badge-cnt" id="tab-cnt-nao-pagas">0</span>
-                        </button>
-                        <button type="button" class="segmented-option-figma" id="tab-btn-pendentes" onclick="filtrarPorSituacaoTab('PENDENTES', this)" title="Guias já emitidas na SEFAZ (com código de barras), aguardando pagamento bancário">
-                            <span class="status-indicator-dot" style="background: #F5C268; box-shadow: 0 0 6px rgba(245, 194, 104, 0.55);"></span>
-                            <span>Emitidas · A Pagar</span>
-                            <span class="pill-badge-cnt" id="tab-cnt-pendentes">0</span>
-                        </button>
-                        <button type="button" class="segmented-option-figma" id="tab-btn-pagas" onclick="filtrarPorSituacaoTab('PAGAS', this)" title="Guias pagas/conciliadas e cargas liberadas para coleta">
-                            <span class="status-indicator-dot dot-green"></span>
-                            <span>Pagas / Liberadas</span>
-                            <span class="pill-badge-cnt" id="tab-cnt-pagas">0</span>
-                        </button>
-                        <button type="button" class="segmented-option-figma" id="tab-btn-todas" onclick="filtrarPorSituacaoTab('TODAS', this)">
-                            <span>Todas</span>
-                            <span class="pill-badge-cnt" id="tab-cnt-todas">0</span>
-                        </button>
-                    </div>
-
-                    <!-- Filtros Rápidos à Direita -->
-                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <div style="position: relative;">
-                            <select id="select-filter-transp" onchange="filtrarPorTransportadora(this.value, null)" class="btn-secondary-figma" style="height: 34px; padding: 0 30px 0 12px; font-size: 12px; appearance: none; -webkit-appearance: none; cursor: pointer; background: #080D17;">
-                                <option value="TODAS" selected>Todas as transportadoras</option>
-                                <option value="Total Express">Total Express</option>
-                                <option value="Correios">Correios</option>
-                            </select>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2" style="position: absolute; right: 10px; top: 11px; pointer-events: none;"><path d="m6 9 6 6 6-6"/></svg>
-                        </div>
-                        <div style="position: relative; display: flex; align-items: center;">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8597B1" stroke-width="2" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            <input type="text" id="filter-inline-search" oninput="aplicarFiltroTextoInline(this.value)" placeholder="Filtrar NF-e, pedido ou cliente..." style="width: 240px; height: 34px; background: #080D17; border: 1px solid #202D42; border-radius: 8px; padding-left: 32px; padding-right: 10px; color: #F1F5FC; font-size: 12px; outline: none; box-sizing: border-box;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabela Enxuta e Legível -->
-                <div style="overflow-x: auto;">
-                    <table class="cockpit-table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th style="width: 42px; text-align: center;">
-                                    <input type="checkbox" id="check-all-rows" class="table-checkbox" onchange="toggleSelectAllRows(this.checked)" title="Selecionar todas as cargas">
-                                </th>
-                                <th style="width: 135px;">NF-e / Pedido</th>
-                                <th>Cliente &amp; Destino</th>
-                                <th style="width: 115px;">Emissão</th>
-                                <th style="width: 140px;">Transportadora</th>
-                                <th style="text-align: right; width: 130px;">Venda / DIFAL</th>
-                                <th style="text-align: center; width: 135px;">Portão Fiscal</th>
-                                <th style="text-align: center; width: 120px;">Status Guia</th>
-                                <th style="text-align: right; width: 155px;">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="guides-table-body">
-                            <tr id="empty-dock-state">
-                                <td colspan="9" style="text-align: center; padding: 40px 16px; color: #8597B1;">
-                                    Carregando fila operacional da doca...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Rodapé de Totais Integrado -->
-                <div class="table-totais-figma" id="table-totais-container" style="padding: 10px 16px; background: #0E1626; border-top: 1px solid #29374E; display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94A3B8;">
-                    <div class="table-totais-left" id="table-totais-left-text">
-                        Carregando resumo...
-                    </div>
-                    <div class="table-totais-right" id="table-totais-right-text" style="font-family: 'JetBrains Mono', monospace; color: #CBD5E1; font-weight: 600;">
-                        —
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. PAGINAÇÃO SLIM -->
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #8597B1;">
-                <span id="label-totais-cargas-resumo">Ordenadas por emissão</span>
-                <div id="dock-pagination-pages" style="display: flex; align-items: center; gap: 6px;">
-                    <button type="button" class="btn-secondary-figma" style="width: 30px; height: 30px; padding: 0; justify-content: center;" onclick="mudarPaginaDoca(-1)">‹</button>
-                    <button type="button" class="btn-secondary-figma" style="width: 30px; height: 30px; padding: 0; justify-content: center; background: #16233A; color: #F1F5FC; font-weight: 600;">1</button>
-                    <button type="button" class="btn-secondary-figma" style="width: 30px; height: 30px; padding: 0; justify-content: center;" onclick="mudarPaginaDoca(1)">›</button>
-                </div>
-            </div>
-        </div>
-
         <!-- ============================================================== -->
         <!-- SEÇÃO: PAINEL UNIFICADO DE DIFAL & SEFAZ (MARCO ZERO CONCILIADO) -->
         <!-- ============================================================== -->
@@ -2872,12 +2587,20 @@
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button type="button" onclick="exportarDifalCsv()" class="btn-secondary-figma" style="background: #16233A; border: 1px solid #29374E; color: #38BDF8; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span>Exportar CSV / Excel</span>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="btn-secondary-figma" onclick="abrirModalMicrovix()" title="Sincronizar notas da Linx Microvix" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                        <span>Sincronizar Linx</span>
                     </button>
-                    <button type="button" onclick="carregarPainelUnificadoDifal(true)" class="btn-secondary-figma" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <button type="button" class="btn-secondary-figma" onclick="abrirModalConciliacao()" title="Conferir conciliação e comprovantes" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                        <span>Conciliar</span>
+                    </button>
+                    <button type="button" onclick="exportarDifalCsv()" class="btn-secondary-figma" style="background: #16233A; border: 1px solid #29374E; color: #38BDF8; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Exportar CSV</span>
+                    </button>
+                    <button type="button" onclick="carregarPainelUnificadoDifal(true)" class="btn-secondary-figma" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                         <span>Atualizar ⟳</span>
                     </button>
@@ -2953,6 +2676,111 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- 2.5 DECK OPERACIONAL: LEITOR ÓPTICO DANFE (F2) + TRANSMISSÃO SEFAZ & REMESSA ITAÚ -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+                <!-- Card Esquerdo: Leitor Óptico / Bipador DANFE 44 dígitos -->
+                <div style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 6px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #93C5FD; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.04em;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>
+                            LEITOR &Oacute;PTICO / BUSCA R&Aacute;PIDA (F2)
+                        </span>
+                        <span style="font-size: 10.5px; color: #8597B1;">Chave 44 d&iacute;gitos ou NF</span>
+                    </div>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" style="position: absolute; left: 12px; pointer-events: none;"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>
+                        <input type="text" id="difal-danfe-scanner" placeholder="Bipe a DANFE ou digite a NF para filtrar e acionar..." onkeydown="handleBipagemDifal(event)" oninput="handleBuscaRapidaDifal(this.value)" autocomplete="off" style="width: 100%; height: 38px; background: #0B1220; border: 1.5px solid rgba(59, 130, 246, 0.55); border-radius: 8px; padding-left: 36px; padding-right: 70px; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; box-sizing: border-box; transition: all 0.2s;" onfocus="this.style.borderColor='#38BDF8'; this.style.boxShadow='0 0 12px rgba(56,189,248,0.2)'" onblur="this.style.borderColor='rgba(59, 130, 246, 0.55)'; this.style.boxShadow='none'">
+                        <span style="position: absolute; right: 8px; background: #16233A; border: 1px solid #29374E; border-radius: 5px; padding: 2px 7px; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #94A3B8; pointer-events: none;">Enter ↵</span>
+                    </div>
+                    <div id="difal-laser-feedback" style="display: none; align-items: center; gap: 6px; font-size: 11px; padding: 2px 4px; color: #34D399;">
+                        <span id="difal-laser-feedback-text"></span>
+                    </div>
+                </div>
+
+                <!-- Card Direito: Central de Ações Operacionais -->
+                <div style="background: #111B2E; border: 1px solid #29374E; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: #F1F5FC; display: flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5C268" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            <span>Emiss&atilde;o Fiscal &amp; Remessa</span>
+                        </div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 2px;">
+                            12 guias prontas para transmiss&atilde;o oficial
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-primary-figma" onclick="abrirModalEmitirSefazLote(false)" style="height: 36px; padding: 0 14px; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #2563EB, #1D4ED8); border-color: #3B82F6;" title="Transmitir todas as guias em lote para a SEFAZ">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+                            <span>Emitir Todas na SEFAZ</span>
+                        </button>
+                        <button type="button" class="btn-secondary-figma" id="btn-toggle-sp-lote" onclick="toggleBarraLoteSpDifal()" style="height: 36px; padding: 0 12px; font-size: 12px; border-color: rgba(245, 194, 104, 0.4); color: #F5C268; background: rgba(245, 194, 104, 0.08);" title="Gerar XML do lote DARE-SP ou importar retorno .ZIP">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Lote SP (DARE)</span>
+                        </button>
+                        <button type="button" class="btn-secondary-figma" onclick="abrirModalRemessaBancaria()" style="height: 36px; padding: 0 12px; font-size: 12px; border-color: rgba(16, 185, 129, 0.4); color: #34D399; background: rgba(16, 185, 129, 0.08);" title="Gerar arquivo TXT CNAB 240 ou importar retorno .RET do Itaú">
+                            <span>Remessa Ita&uacute; &rarr;</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONITOR EM TEMPO REAL DE TRANSMISSÃO SEFAZ -->
+            <div id="sefaz-live-status-bar" style="display: none; background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.45); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                        <span id="sefaz-live-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #38BDF8; box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2); flex-shrink: 0;"></span>
+                        <div style="min-width: 0;">
+                            <div id="sefaz-live-title" style="font-size: 13px; font-weight: 700; color: #F1F5FC;">Transmitindo lote para a SEFAZ...</div>
+                            <div id="sefaz-live-last-log" style="font-size: 11.5px; color: #93C5FD; font-family: 'JetBrains Mono', monospace; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 760px;">Conectando ao WebService GNRE...</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <span id="sefaz-live-pct" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #38BDF8; min-width: 38px; text-align: right;">0%</span>
+                        <button type="button" id="sefaz-live-remessa-btn" class="btn-primary-figma" onclick="baixarRemessaItauDireto()" style="display: none; height: 28px; padding: 0 11px; font-size: 11px; font-weight: 700; background: #10B981; border-color: #10B981;">
+                            <span id="sefaz-live-remessa-btn-text">⬇ Baixar Remessa (.TXT)</span>
+                        </button>
+                        <button type="button" class="btn-secondary-figma" onclick="toggleLogLiveSefaz()" style="height: 28px; padding: 0 10px; font-size: 11px;">
+                            <span id="sefaz-live-log-btn-text">Ver Log SEFAZ</span>
+                        </button>
+                        <button type="button" id="sefaz-live-close-btn" onclick="fecharPainelLiveSefaz()" style="background: transparent; border: 1px solid rgba(255,255,255,0.12); color: #94A3B8; width: 28px; height: 28px; border-radius: 7px; cursor: pointer; font-size: 14px; line-height: 1;" title="Ocultar aviso">×</button>
+                    </div>
+                </div>
+                <div style="width: 100%; height: 5px; background: #090F1C; border-radius: 999px; overflow: hidden; margin-top: 10px;">
+                    <div id="sefaz-live-progress-fill" style="width: 8%; height: 100%; background: linear-gradient(90deg, #2563EB, #38BDF8); transition: width 0.35s ease;"></div>
+                </div>
+                <div id="sefaz-live-log-drawer" style="display: none; margin-top: 10px; background: #080D17; border: 1px solid #202D42; border-radius: 8px; padding: 10px 12px; max-height: 170px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #CBD5E1; line-height: 1.55;"></div>
+            </div>
+
+            <!-- BARRA DEDICADA SÃO PAULO (LOTE XML DARE-SP + IMPORTAÇÃO DE RETORNO .ZIP) -->
+            <div id="sp-lote-bar" style="display: none; background: #111B2E; border: 1px solid rgba(245, 194, 104, 0.35); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;" title="SP utiliza portal próprio DARE-SP: 1º Baixe o XML com a data desejada · 2º Gere no portal SEFAZ-SP · 3º Importe o .ZIP de retorno">
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                    <span style="background: rgba(245, 194, 104, 0.16); border: 1px solid rgba(245, 194, 104, 0.4); color: #F5C268; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0;">UF &middot; SP</span>
+                    <div style="min-width: 0;">
+                        <div style="font-size: 12.5px; font-weight: 700; color: #F1F5FC;">
+                            <span id="sp-bar-resumo">Notas de S&atilde;o Paulo (DARE-SP em Lote)</span>
+                        </div>
+                        <div style="font-size: 11px; color: #8597B1; margin-top: 1px;">
+                            Gera&ccedil;&atilde;o do arquivo XML para envio no Posto Fiscal Eletr&ocirc;nico de SP
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #0B1220; border: 1px solid #29374E; border-radius: 8px; padding: 0 8px; height: 34px;">
+                        <span style="font-size: 11px; color: #94A3B8; font-weight: 600;">Vencimento:</span>
+                        <input type="date" id="sp-xml-date-input" onchange="salvarDataSefazPreferida(this.value)" style="background: transparent; border: none; color: #F1F5FC; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; outline: none; cursor: pointer;">
+                    </div>
+                    <button type="button" class="btn-primary-figma" onclick="baixarXmlLoteSpComData(event, false)" style="height: 34px; padding: 0 12px; font-size: 12px; background: #D97706; border-color: #F59E0B;" title="Baixar arquivo XML de São Paulo com a data de vencimento ao lado">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Baixar XML Lote SP</span>
+                    </button>
+                    <input type="file" id="sp-retorno-zip-input" accept=".zip,.pdf" style="display: none;" onchange="enviarRetornoSpZip(this)">
+                    <button type="button" class="btn-secondary-figma" onclick="document.getElementById('sp-retorno-zip-input').click()" style="height: 34px; padding: 0 12px; font-size: 12px; border-color: rgba(56, 189, 248, 0.35); color: #7DD3FC;" title="Importar o arquivo .ZIP retornado pelo portal DARE-SP com os códigos de barras">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>Importar DARE (.ZIP)</span>
+                    </button>
+                </div>
             </div>
 
             <!-- 3. BARRA DE CONTROLE: ABAS SEGMENTADAS + BUSCA + FILTRO UF -->
