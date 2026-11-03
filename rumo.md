@@ -60,6 +60,11 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Estação de Bipagem Laser Split:** Foco ótico hands-free para expedição rápida de caixas.
 - **Dossiê 360° Dark Fashion Luxury:** Modal dark `#0E1626` com dados unificados do pedido Vnda, NF Linx, rastreio e botões diretos de DANFE, SEFAZ e Impressão de Etiqueta Térmica.
 
+### 2.6. Automação e Resumo Contínuo da Remessa Bancária (03/11/2026)
+- **Consolidação de Todas as Guias:** A geração de remessa não fica mais restrita ao último lote. Ao solicitar a remessa diária (`todos`), o sistema busca 100% das guias emitidas e pendentes da BOAH, garantindo que nenhuma guia com código de barras fique de fora do arquivo `.TXT`.
+- **Rota em Tempo Real `/api/remessa/resumo`:** Criado endpoint dedicado que alimenta instantaneamente o Card 5 do Hub e o Modal de Remessa ao carregar a página inicial.
+- **Download em 1 Clique:** O botão "Baixar TXT" no Hub agora funciona de imediato com dados reais do banco de dados.
+
 ---
 
 ## 3. Rumo Estratégico & Próximos Passos (Roadmap de Evolução)
