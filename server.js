@@ -6033,14 +6033,15 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             pedidosAprovados: 206,
             pedidosCancelados: 13,
             totalPedidosRecebidos: 219,
-            gmvAprovado: 128915.00,
-            ticketMedioOlist: 588.65,
+            gmvAprovado: 117628.84,
+            gmvBrutoTotal: 128915.00,
+            ticketMedioOlist: 571.01,
             totalPecasOlist: 312,
             pecasPorPedido: 1.5,
             taxaCancelamentoPct: '5.9',
             taxaAprovacaoPct: '94.1',
             freteMedio: 24.50,
-            canais: { ecommerce: 128915.00 },
+            canais: { ecommerce: 117628.84 },
             lojaVirtual: req.tenant.vnda_shop_host || 'www.boah.com.br',
             conectado: true
         };
