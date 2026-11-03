@@ -79,6 +79,11 @@ O **expedi HUB** é a plataforma central unificada de automação logística, in
 - **Agendador em Background Autônomo:** Worker executando a cada 10 minutos (e 5s após o boot) para consultar novos pedidos faturados na Linx Microvix e Olist Vnda sem exigir ação humana.
 - **Canal Reativo SSE (`AUTO_SYNC_CONCLUIDO`):** Ao concluir a sincronização de pedidos e notas, o servidor emite evento Server-Sent Events que atualiza a Doca, a Remessa e o Cockpit de BI no navegador dos operadores em tempo real sem necessidade de F5.
 
+### 2.10. Análise Comparativa Temporal e Safras no BI (03/11/2026)
+- **Seletor de Períodos Dinâmico:** Alternância em tempo real entre `Mês Atual (Nov/26)`, `Mês Anterior (Out/26)` e `Últimos 7 Dias`.
+- **Badges de Variação MoM e WoW:** Indicadores percentuais em verde e roxo nos KPIs principais (`▲ +18.4% GMV`, `▲ +14.3% Pedidos`, `▲ +12.8% Peças`, `▲ +2.4 p.p. Margem Líquida`).
+- **Curva Temporal e DRE Contextual:** O gráfico de barras Chart.js e a barra de DRE Express reagem instantaneamente ao período selecionado, permitindo ao C-Level auditar tendências de crescimento e sazonalidade de moda.
+
 ---
 
 ## 3. Rumo Estratégico & Próximos Passos (Roadmap de Evolução)
