@@ -7351,25 +7351,38 @@ window.processarArquivoRetornoModal = processarArquivoRetornoModal;
 function alternarTabRelatorios(tab) {
     const tabs = ['difal', 'vendedoras', 'cupons', 'logistica', 'estados', 'fechamento'];
     tabs.forEach(t => {
-        const btn = document.getElementById(`tab-rel-btn-${t}`);
         const cont = document.getElementById(`tab-rel-conteudo-${t}`);
-        if (btn) {
-            if (t === tab) {
-                btn.style.background = '#1E293B';
-                btn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-                btn.style.color = '#38BDF8';
-                btn.classList.add('active');
-            } else {
-                btn.style.background = 'transparent';
-                btn.style.borderColor = 'transparent';
-                btn.style.color = '#94A3B8';
-                btn.classList.remove('active');
-            }
-        }
         if (cont) {
             cont.style.display = (t === tab) ? 'block' : 'none';
         }
     });
+
+    // Sincroniza o dropdown executivo
+    const select = document.getElementById('seletor-relatorio-executivo');
+    if (select && select.value !== tab) {
+        select.value = tab;
+    }
+
+    // Atualiza o badge da Gerência Ativa
+    const badge = document.getElementById('badge-gerencia-ativa');
+    if (badge) {
+        if (tab === 'difal' || tab === 'estados' || tab === 'fechamento') {
+            badge.style.background = 'rgba(56, 189, 248, 0.12)';
+            badge.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+            badge.style.color = '#38BDF8';
+            badge.innerHTML = '<span style="width: 7px; height: 7px; border-radius: 50%; background: #38BDF8;"></span><span>Visão: Fiscal &amp; Controladoria</span>';
+        } else if (tab === 'vendedoras' || tab === 'cupons') {
+            badge.style.background = 'rgba(236, 72, 153, 0.12)';
+            badge.style.borderColor = 'rgba(236, 72, 153, 0.3)';
+            badge.style.color = '#EC4899';
+            badge.innerHTML = '<span style="width: 7px; height: 7px; border-radius: 50%; background: #EC4899;"></span><span>Visão: Gerência Comercial &amp; Vendas</span>';
+        } else if (tab === 'logistica') {
+            badge.style.background = 'rgba(52, 211, 153, 0.12)';
+            badge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+            badge.style.color = '#34D399';
+            badge.innerHTML = '<span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399;"></span><span>Visão: E-commerce &amp; Logística</span>';
+        }
+    }
 
     if (tab === 'difal') carregarRelatorioAnaliticoDifal();
     else if (tab === 'vendedoras') carregarRelatorioVendedoras();
@@ -7440,7 +7453,7 @@ async function carregarRelatorioVendedoras() {
             const tm = v.ticketMedio || (v.pedidos > 0 ? (v.valorTotal / v.pedidos) : 0);
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                <tr onclick="abrirModalDossieVendedora('${v.nome}')" title="Clique para abrir o Dossiê Comercial da Vendedora" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
                     <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${v.nome}</td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${v.canal || 'Social Selling'}</td>
@@ -7543,7 +7556,7 @@ async function carregarRelatorioCupons() {
             const canal = c.cupom.includes('MILA') ? 'Parceria Mila' : (c.cupom.includes('BEMVINDA') ? 'Primeira Compra' : 'Campanha de Desconto');
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.04)'" onmouseout="this.style.background='transparent'">
+                <tr onclick="abrirModalDossieCupom('${c.cupom}')" title="Clique para abrir o Dossiê da Campanha / Cupom" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
                     <td style="padding: 12px 16px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace;">${c.cupom}</td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${canal}</td>
@@ -7645,7 +7658,7 @@ async function carregarRelatorioLogistica() {
             const btnCor = isTotal ? '#0284C7' : '#D97706';
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onclick="abrirModalDossieVendedora('${v.nome}')" style="cursor: pointer;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: ${isTotal ? '#38BDF8' : '#F59E0B'};"></span>
                         ${c.nome}
@@ -7735,7 +7748,7 @@ async function carregarRelatorioEstados() {
             const aliq = e.faturamento > 0 ? ((e.difal / e.faturamento) * 100).toFixed(1) : '8.0';
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onclick="abrirModalDossieVendedora('${v.nome}')" style="cursor: pointer;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center;">
                         <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 3px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace;">
                             ${e.uf}
@@ -8523,7 +8536,7 @@ function renderizarTabelaDifal() {
                </div>`;
 
         html += `
-            <tr onclick="abrirModalDossieDifal('${g.nf}')" title="Clique para ver o Dossiê e detalhes da Guia DIFAL" style="border-bottom: 1px solid #1E293B; cursor: pointer; transition: background 0.12s ease;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+            <tr onclick="abrirModalDossieDifal('${g.nf}')" title="Clique para ver o Dossiê e detalhes da Guia DIFAL" style="border-bottom: 1px solid #1E293B; cursor: pointer; transition: background 0.12s ease;" onclick="abrirModalDossieVendedora('${v.nome}')" style="cursor: pointer;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                 <td style="padding: 12px 16px;">${badgeStatus}</td>
                 <td style="padding: 12px 14px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
                     <a href="/api/difal/danfe/${g.nf}" target="_blank" onclick="event.stopPropagation()" title="Abrir DANFE (PDF da NF ${g.nf}) em nova aba" style="color: #38BDF8; font-weight: 700; text-decoration: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.textDecoration='underline'; this.style.color='#7DD3FC';" onmouseout="this.style.textDecoration='none'; this.style.color='#38BDF8';">
@@ -8901,3 +8914,153 @@ window.abrirModalDossieDifal = abrirModalDossieDifal;
 window.fecharModalDossieDifal = fecharModalDossieDifal;
 window.abrirDanfePdfModal = abrirDanfePdfModal;
 window.copiarChaveNfeModal = copiarChaveNfeModal;
+
+
+// ==============================================================
+// MODAL POP-UP DOS 3 GERENTES: DOSSIÊS INTERATIVOS
+// ==============================================================
+function fecharModalDossieGerencial() {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    if (modal) modal.style.display = 'none';
+}
+window.fecharModalDossieGerencial = fecharModalDossieGerencial;
+
+function abrirModalDossieVendedora(nome) {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    const biData = window._dadosBiCache;
+    const ranking = (biData && biData.rankingVendedoras) || [];
+    const v = ranking.find(x => x.nome.toLowerCase() === (nome || '').toLowerCase()) || ranking[0];
+    if (!modal || !v) return;
+
+    const elIcon = document.getElementById('modal-ger-badge-icon');
+    const elTitulo = document.getElementById('modal-ger-titulo');
+    const elSubBadge = document.getElementById('modal-ger-sub-badge');
+    const elSubtitulo = document.getElementById('modal-ger-subtitulo');
+    const elConteudo = document.getElementById('modal-ger-conteudo');
+
+    if (elIcon) {
+        elIcon.style.color = '#38BDF8';
+        elIcon.style.background = 'rgba(56, 189, 248, 0.15)';
+        elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>';
+    }
+    if (elTitulo) elTitulo.textContent = v.nome;
+    if (elSubBadge) {
+        elSubBadge.textContent = v.badge || 'Consultora Oficial';
+        elSubBadge.style.color = '#38BDF8';
+        elSubBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+    }
+    if (elSubtitulo) elSubtitulo.textContent = `${v.canal || 'Social Selling'} · Linx Microvix ERP`;
+
+    const gmv = parseFloat(v.valorTotal || 0);
+    const ped = parseInt(v.pedidos || 0);
+    const tm = v.ticketMedio || (ped > 0 ? gmv / ped : 0);
+    const comissao = gmv * 0.03; // Projeção comissão 3%
+
+    if (elConteudo) {
+        elConteudo.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">GMV Faturado</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pedidos Concluídos</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${ped} un</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Ticket Médio</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(tm)}</div>
+                </div>
+            </div>
+
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Desempenho Comercial &amp; Comissionamento</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">% Participação nas Vendas da Marca (Share)</span>
+                    <strong style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">${v.sharePct || 0}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Projeção de Comissão da Consultora (3,0%)</span>
+                    <strong style="color: #34D399; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(comissao)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Status do Cadastro Linx Microvix</span>
+                    <span style="color: #10B981; font-weight: 700;">Ativo e Conciliado</span>
+                </div>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalDossieVendedora = abrirModalDossieVendedora;
+
+function abrirModalDossieCupom(cupomCodigo) {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    const biData = window._dadosBiCache;
+    const ranking = (biData && biData.resumoCupons && biData.resumoCupons.ranking) || [];
+    const c = ranking.find(x => x.cupom.toUpperCase() === (cupomCodigo || '').toUpperCase()) || ranking[0];
+    if (!modal || !c) return;
+
+    const elIcon = document.getElementById('modal-ger-badge-icon');
+    const elTitulo = document.getElementById('modal-ger-titulo');
+    const elSubBadge = document.getElementById('modal-ger-sub-badge');
+    const elSubtitulo = document.getElementById('modal-ger-subtitulo');
+    const elConteudo = document.getElementById('modal-ger-conteudo');
+
+    if (elIcon) {
+        elIcon.style.color = '#EC4899';
+        elIcon.style.background = 'rgba(236, 72, 153, 0.15)';
+        elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
+    }
+    if (elTitulo) elTitulo.textContent = `Cupom: ${c.cupom}`;
+    if (elSubBadge) {
+        elSubBadge.textContent = 'CAMPANHA ATIVA';
+        elSubBadge.style.color = '#EC4899';
+        elSubBadge.style.background = 'rgba(236, 72, 153, 0.15)';
+    }
+    if (elSubtitulo) elSubtitulo.textContent = 'Auditoria de Receita Convertida e Vouchers Promocionais';
+
+    const gmv = parseFloat(c.totalGmv || 0);
+    const ped = parseInt(c.pedidos || 0);
+    const tm = c.ticketMedio || (ped > 0 ? gmv / ped : 0);
+    const descontoEstimado = gmv * 0.15; // Média 15% de desconto
+
+    if (elConteudo) {
+        elConteudo.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #0E1626; border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Receita Gerada</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Compras Convertidas</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${ped} pedidos</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Ticket Médio</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(tm)}</div>
+                </div>
+            </div>
+
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Análise de Margem &amp; Desconto</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">% do Faturamento Promocional (Share)</span>
+                    <strong style="color: #EC4899; font-family: 'JetBrains Mono', monospace;">${c.sharePct || 0}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Volume Estimado de Desconto Concedido</span>
+                    <strong style="color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(descontoEstimado)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Tipo de Regra de Promoção</span>
+                    <span style="color: #38BDF8; font-weight: 700;">Desconto Direto no Checkout Vnda</span>
+                </div>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalDossieCupom = abrirModalDossieCupom;

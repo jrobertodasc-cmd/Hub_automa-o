@@ -2424,37 +2424,39 @@
             </div>
 
             <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS (DARK LUXURY SEGMENTED CONTROL) -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
-                <div style="display: inline-flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px; flex-wrap: wrap;">
-                    <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <span>1. Anal&iacute;tico DIFAL</span>
-                    </button>
-                    <button type="button" id="tab-rel-btn-vendedoras" class="tab-rel-btn" onclick="alternarTabRelatorios('vendedoras')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>2. Vendedoras &amp; Comercial</span>
-                    </button>
-                    <button type="button" id="tab-rel-btn-cupons" class="tab-rel-btn" onclick="alternarTabRelatorios('cupons')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                        <span>3. Cupons &amp; Campanhas</span>
-                    </button>
-                    <button type="button" id="tab-rel-btn-logistica" class="tab-rel-btn" onclick="alternarTabRelatorios('logistica')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                        <span>4. Log&iacute;stica &amp; Romaneios</span>
-                    </button>
-                    <button type="button" id="tab-rel-btn-estados" class="tab-rel-btn" onclick="alternarTabRelatorios('estados')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
-                        <span>5. Vendas por Regi&atilde;o (UF)</span>
-                    </button>
-                    <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                        <span>6. Fechamento Cont&aacute;bil</span>
-                    </button>
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    <!-- LISTA SUSPENSA EXECUTIVA DOS RELATÓRIOS (3 GERÊNCIAS) -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;">Relat&oacute;rio:</span>
+                        <select id="seletor-relatorio-executivo" onchange="alternarTabRelatorios(this.value)" style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 9px; cursor: pointer; outline: none; min-width: 310px; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.15);">
+                            <optgroup label="📑 GERÊNCIA FISCAL &amp; CONTROLADORIA" style="background: #0E1626; color: #38BDF8; font-weight: 800;">
+                                <option value="difal" selected>📊 1. Anal&iacute;tico DIFAL (Nota a Nota &amp; SEFAZ)</option>
+                                <option value="estados">🗺️ 5. Vendas por Regi&atilde;o &amp; UFs (Heatmap)</option>
+                                <option value="fechamento">📑 6. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</option>
+                            </optgroup>
+                            <optgroup label="👩‍💼 GERÊNCIA COMERCIAL &amp; VENDAS" style="background: #0E1626; color: #EC4899; font-weight: 800;">
+                                <option value="vendedoras">👩‍💼 2. Ranking de Vendedoras (Linx Microvix ERP)</option>
+                                <option value="cupons">🎟️ 3. Performance de Cupons &amp; Campanhas</option>
+                            </optgroup>
+                            <optgroup label="🚚 GERÊNCIA DE E-COMMERCE &amp; LOGÍSTICA" style="background: #0E1626; color: #34D399; font-weight: 800;">
+                                <option value="logistica">🚚 4. Log&iacute;stica, Fretes &amp; Romaneios (A4)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- BADGE DINÂMICO DA GERÊNCIA -->
+                    <span id="badge-gerencia-ativa" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 11.5px; font-weight: 800; padding: 5px 12px; border-radius: 7px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #38BDF8;"></span>
+                        <span>Vis&atilde;o: Fiscal &amp; Controladoria</span>
+                    </span>
                 </div>
-                
-                <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);"></span>
-                    Hub Intelligence &middot; Relat&oacute;rios Integrados
+
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);"></span>
+                        Linx Microvix &middot; Vnda API &middot; SEFAZ
+                    </div>
                 </div>
             </div>
 
@@ -4217,6 +4219,43 @@
     <!-- ============================================================== -->
     <!-- MODAL DOSSIÊ DETALHADO DA GUIA DIFAL / SEFAZ                   -->
     <!-- ============================================================== -->
+        <!-- ============================================================== -->
+    <!-- MODAL DOSSIÊ GERENCIAL (POP-UP DOS 3 GERENTES: VENDEDORAS, CUPONS, LOGÍSTICA) -->
+    <!-- ============================================================== -->
+    <div id="modal-dossie-gerencial" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;" onclick="if(event.target === this) fecharModalDossieGerencial()">
+        <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; width: 100%; max-width: 650px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.6); animation: fadeIn 0.15s ease;">
+            <!-- Header do Modal -->
+            <div style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span id="modal-ger-badge-icon" style="width: 36px; height: 36px; border-radius: 9px; background: rgba(56, 189, 248, 0.15); display: grid; place-items: center; color: #38BDF8;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    </span>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3 id="modal-ger-titulo" style="margin: 0; font-size: 18px; font-weight: 800; color: #FFFFFF;">Dossi&ecirc; Executivo</h3>
+                            <span id="modal-ger-sub-badge" style="font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">OFICIAL</span>
+                        </div>
+                        <div id="modal-ger-subtitulo" style="font-size: 12px; color: #94A3B8; margin-top: 2px;">Detalhamento de métricas auditadas</div>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalDossieGerencial()" style="background: transparent; border: none; color: #94A3B8; font-size: 22px; cursor: pointer; padding: 4px; line-height: 1; border-radius: 6px;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#94A3B8'">&times;</button>
+            </div>
+
+            <!-- Corpo Dinâmico do Modal -->
+            <div id="modal-ger-conteudo" style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+                <!-- Preenchido dinamicamente via JS -->
+            </div>
+
+            <!-- Rodapé do Modal -->
+            <div style="background: #0E1626; border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;">
+                <span id="modal-ger-rodape-info" style="font-size: 11.5px; color: #64748B;">Sincronizado em tempo real com a operação BOAH</span>
+                <button type="button" onclick="fecharModalDossieGerencial()" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12.5px; font-weight: 700; padding: 8px 18px; border-radius: 8px; cursor: pointer;">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-dossie-difal" style="display: none; position: fixed; inset: 0; background: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;" onclick="if(event.target === this) fecharModalDossieDifal()">
         <div style="background: #0B1220; border: 1px solid #29374E; border-radius: 20px; max-width: 680px; width: 100%; box-shadow: 0 25px 65px rgba(0,0,0,0.7); overflow: hidden; animation: modalFadeIn 0.2s ease-out; font-family: 'Inter', -apple-system, sans-serif;">
             
