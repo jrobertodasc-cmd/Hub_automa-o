@@ -7348,7 +7348,48 @@ window.processarArquivoRetornoModal = processarArquivoRetornoModal;
 // ----------------------------------------------------------------------------
 // 3. CENTRAL DE RELATÓRIOS 2.0 (DIFAL NOTA A NOTA, ROMANEIOS E FECHAMENTO)
 // ----------------------------------------------------------------------------
+window._relatorioTabAtiva = 'difal';
+
+function toggleDropdownRelatorios(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('menu-dropdown-relatorios');
+    const arrow = document.getElementById('dropdown-relatorios-arrow');
+    if (!menu) return;
+    const isVisible = menu.style.display === 'block';
+    menu.style.display = isVisible ? 'none' : 'block';
+    if (arrow) arrow.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+window.toggleDropdownRelatorios = toggleDropdownRelatorios;
+
+function fecharDropdownRelatorios() {
+    const menu = document.getElementById('menu-dropdown-relatorios');
+    const arrow = document.getElementById('dropdown-relatorios-arrow');
+    if (menu) menu.style.display = 'none';
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+}
+window.fecharDropdownRelatorios = fecharDropdownRelatorios;
+
+// Fecha menu ao clicar fora
+document.addEventListener('click', function(e) {
+    const container = document.getElementById('dropdown-relatorios-container');
+    if (container && !container.contains(e.target)) {
+        fecharDropdownRelatorios();
+    }
+});
+
+function selecionarRelatorioDropdown(tab, label, icone, gerencia) {
+    const lblEl = document.getElementById('dropdown-relatorios-label');
+    const iconeEl = document.getElementById('dropdown-relatorios-icon');
+    if (lblEl) lblEl.textContent = label;
+    if (iconeEl) iconeEl.textContent = icone;
+
+    fecharDropdownRelatorios();
+    alternarTabRelatorios(tab);
+}
+window.selecionarRelatorioDropdown = selecionarRelatorioDropdown;
+
 function alternarTabRelatorios(tab) {
+    window._relatorioTabAtiva = tab;
     const tabs = ['difal', 'vendedoras', 'cupons', 'logistica', 'estados', 'fechamento'];
     tabs.forEach(t => {
         const cont = document.getElementById(`tab-rel-conteudo-${t}`);
@@ -7357,10 +7398,26 @@ function alternarTabRelatorios(tab) {
         }
     });
 
-    // Sincroniza o dropdown executivo
+    // Sincroniza o select oculto para compatibilidade
     const select = document.getElementById('seletor-relatorio-executivo');
     if (select && select.value !== tab) {
         select.value = tab;
+    }
+
+    // Atualiza o label do dropdown executivo
+    const labelsMap = {
+        'difal': { label: '1. Analítico DIFAL (Nota a Nota & SEFAZ)', icon: '📊' },
+        'vendedoras': { label: '2. Ranking de Vendedoras (Linx Microvix)', icon: '👩‍💼' },
+        'cupons': { label: '3. Performance de Cupons & Campanhas', icon: '🎟️' },
+        'logistica': { label: '4. Logística, Fretes & Romaneios A4', icon: '🚚' },
+        'estados': { label: '5. Vendas por Região & UFs (Heatmap)', icon: '🗺️' },
+        'fechamento': { label: '6. Fechamento Contábil & Arquivos Oficiais', icon: '📑' }
+    };
+    if (labelsMap[tab]) {
+        const lblEl = document.getElementById('dropdown-relatorios-label');
+        const iconeEl = document.getElementById('dropdown-relatorios-icon');
+        if (lblEl) lblEl.textContent = labelsMap[tab].label;
+        if (iconeEl) iconeEl.textContent = labelsMap[tab].icon;
     }
 
     // Atualiza o badge da Gerência Ativa
@@ -7391,6 +7448,18 @@ function alternarTabRelatorios(tab) {
     else if (tab === 'estados') carregarRelatorioEstados();
 }
 window.alternarTabRelatorios = alternarTabRelatorios;
+
+function abrirModalDossieGerenteAtivo() {
+    const tab = window._relatorioTabAtiva || 'difal';
+    if (tab === 'vendedoras' || tab === 'cupons') {
+        abrirModalDossieGerente('comercial');
+    } else if (tab === 'logistica') {
+        abrirModalDossieGerente('logistica');
+    } else {
+        abrirModalDossieGerente('fiscal');
+    }
+}
+window.abrirModalDossieGerenteAtivo = abrirModalDossieGerenteAtivo;
 
 async function obterDadosBiParaRelatorios() {
     if (window._dadosBiCache && window._dadosBiCache.rankingVendedoras) {
@@ -7447,13 +7516,13 @@ async function carregarRelatorioVendedoras() {
 
         tbody.innerHTML = ranking.map((v, idx) => {
             const pos = idx + 1;
-            const badgeCor = pos === 1 ? '#F59E0B' : (pos === 2 ? '#94A3B8' : (pos === 3 ? '#CD7F32' : '#64748B'));
             const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
             const share = v.sharePct !== undefined ? v.sharePct : (totalGmv > 0 ? ((v.valorTotal / totalGmv) * 100).toFixed(1) : 0);
             const tm = v.ticketMedio || (v.pedidos > 0 ? (v.valorTotal / v.pedidos) : 0);
+            const nomeEscapado = (v.nome || '').replace(/'/g, "\'");
 
             return `
-                <tr onclick="abrirModalDossieVendedora('${v.nome}')" title="Clique para abrir o Dossiê Comercial da Vendedora" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                <tr onclick="abrirModalDossieVendedora('${nomeEscapado}')" title="Clique para abrir o Dossiê Comercial da Vendedora" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
                     <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${v.nome}</td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${v.canal || 'Social Selling'}</td>
@@ -7501,7 +7570,8 @@ function exportarCsvRelatorioVendedoras() {
         v.sharePct || 0
     ].join(';'));
 
-    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
+');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7523,7 +7593,7 @@ async function carregarRelatorioCupons() {
     try {
         const biData = await obterDadosBiParaRelatorios();
         const resumo = biData.resumoCupons || {};
-        const ranking = resumo.ranking || [];
+        const ranking = resumo.topCupons || resumo.ranking || [];
 
         const elGmv = document.getElementById('rel-kpi-cupom-receita');
         const elPed = document.getElementById('rel-kpi-cupom-pedidos');
@@ -7533,14 +7603,17 @@ async function carregarRelatorioCupons() {
 
         const gmvCupons = parseFloat(resumo.gmvComCupom || 0);
         const pedidosCupons = parseInt(resumo.totalComCupom || 0);
-        const sharePct = resumo.shareGmvPct || 0;
+        const sharePct = resumo.taxaPenetracaoPct !== undefined ? resumo.taxaPenetracaoPct : (resumo.shareGmvPct || 0);
         const lider = ranking.length > 0 ? ranking[0] : null;
 
         if (elGmv) elGmv.textContent = formatarMoedaBRL(gmvCupons);
         if (elPed) elPed.textContent = pedidosCupons;
         if (elShare) elShare.textContent = `${sharePct}%`;
-        if (elLider && lider) elLider.textContent = lider.cupom;
-        if (elLiderSub && lider) elLiderSub.textContent = `${lider.pedidos} pedidos (${formatarMoedaBRL(lider.totalGmv)})`;
+        if (elLider && lider) elLider.textContent = lider.codigo || lider.cupom || '-';
+        if (elLiderSub && lider) {
+            const lidVal = parseFloat(lider.valorTotal || lider.totalGmv || 0);
+            elLiderSub.textContent = `${lider.pedidos || 0} pedidos (${formatarMoedaBRL(lidVal)})`;
+        }
 
         if (!tbody) return;
         if (ranking.length === 0) {
@@ -7549,19 +7622,24 @@ async function carregarRelatorioCupons() {
         }
 
         tbody.innerHTML = ranking.map((c, idx) => {
-            const pos = idx + 1;
+            const pos = c.posicao || (idx + 1);
             const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
-            const share = c.sharePct !== undefined ? c.sharePct : (gmvCupons > 0 ? ((c.totalGmv / gmvCupons) * 100).toFixed(1) : 0);
-            const tm = c.ticketMedio || (c.pedidos > 0 ? (c.totalGmv / c.pedidos) : 0);
-            const canal = c.cupom.includes('MILA') ? 'Parceria Mila' : (c.cupom.includes('BEMVINDA') ? 'Primeira Compra' : 'Campanha de Desconto');
+            const cupomCod = c.codigo || c.cupom || 'CUPOM';
+            const totalVal = parseFloat(c.valorTotal || c.totalGmv || 0);
+            const pedidos = parseInt(c.pedidos || 0);
+            const tm = c.ticketMedio || (pedidos > 0 ? (totalVal / pedidos) : 0);
+            const share = c.sharePct !== undefined ? c.sharePct : (gmvCupons > 0 ? ((totalVal / gmvCupons) * 100).toFixed(1) : 0);
+            const badge = c.badge || (cupomCod.includes('MILA') ? 'Influencer' : (cupomCod.includes('BEMVINDA') ? 'Boas-Vindas' : 'Ativo'));
+            const canal = c.tipo || (cupomCod.includes('MILA') ? 'Influencer Mila (Sócia)' : (cupomCod.includes('BEMVINDA') ? '1ª Compra / Onboarding' : 'Campanha de Desconto'));
+            const codEscapado = cupomCod.replace(/'/g, "\'");
 
             return `
-                <tr onclick="abrirModalDossieCupom('${c.cupom}')" title="Clique para abrir o Dossiê da Campanha / Cupom" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.06)'" onmouseout="this.style.background='transparent'">
+                <tr onclick="abrirModalDossieCupom('${codEscapado}')" title="Clique para abrir o Dossiê da Campanha / Cupom" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
-                    <td style="padding: 12px 16px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace;">${c.cupom}</td>
+                    <td style="padding: 12px 16px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace;">${cupomCod}</td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${canal}</td>
-                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${c.pedidos}</td>
-                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(c.totalGmv)}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(totalVal)}</td>
                     <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(tm)}</td>
                     <td style="padding: 12px 16px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -7573,7 +7651,7 @@ async function carregarRelatorioCupons() {
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
                         <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(236, 72, 153, 0.12); color: #EC4899; border: 1px solid rgba(236, 72, 153, 0.25);">
-                            ${c.badge || 'Ativo'}
+                            ${badge}
                         </span>
                     </td>
                 </tr>
@@ -7588,22 +7666,30 @@ window.carregarRelatorioCupons = carregarRelatorioCupons;
 
 function exportarCsvRelatorioCupons() {
     const biData = window._dadosBiCache;
-    const ranking = (biData && biData.resumoCupons && biData.resumoCupons.ranking) || [];
+    const ranking = (biData && biData.resumoCupons && (biData.resumoCupons.topCupons || biData.resumoCupons.ranking)) || [];
     if (!ranking.length) {
         alert('Nenhum dado de cupom para exportar.');
         return;
     }
-    const cabecalho = ['Posicao', 'Cupom', 'Pedidos', 'GMV_Total_BRL', 'Ticket_Medio_BRL', 'Share_Promocional_Pct'];
-    const linhas = ranking.map((c, i) => [
-        i + 1,
-        `"${(c.cupom || '').replace(/"/g, '""')}"`,
-        c.pedidos || 0,
-        (parseFloat(c.totalGmv) || 0).toFixed(2).replace('.', ','),
-        (parseFloat(c.ticketMedio || (c.pedidos > 0 ? c.totalGmv / c.pedidos : 0))).toFixed(2).replace('.', ','),
-        c.sharePct || 0
-    ].join(';'));
+    const cabecalho = ['Posicao', 'Cupom', 'Tipo_Campanha', 'Pedidos', 'GMV_Total_BRL', 'Ticket_Medio_BRL', 'Share_Promocional_Pct'];
+    const linhas = ranking.map((c, i) => {
+        const cod = c.codigo || c.cupom || '';
+        const val = parseFloat(c.valorTotal || c.totalGmv || 0);
+        const ped = c.pedidos || 0;
+        const tm = c.ticketMedio || (ped > 0 ? val / ped : 0);
+        return [
+            i + 1,
+            `"${cod.replace(/"/g, '""')}"`,
+            `"${(c.tipo || 'Campanha').replace(/"/g, '""')}"`,
+            ped,
+            val.toFixed(2).replace('.', ','),
+            tm.toFixed(2).replace('.', ','),
+            c.sharePct || 0
+        ].join(';');
+    });
 
-    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
+');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7628,12 +7714,22 @@ async function carregarRelatorioLogistica() {
 
         let totalPacotes = 0;
         let totalGmv = 0;
+        const tmPadrao = (biData.olist && biData.olist.ticketMedioOlist) || 571.01;
+
         carriers.forEach(c => {
-            totalPacotes += (parseInt(c.pedidos) || 0);
-            totalGmv += (parseFloat(c.faturamento) || 0);
+            const ped = parseInt(c.total || c.pedidos || 0);
+            const valVenda = parseFloat(c.faturamento || c.totalVenda || (ped * tmPadrao));
+            c._pedidos = ped;
+            c._faturamento = valVenda;
+            totalPacotes += ped;
+            totalGmv += valVenda;
         });
 
         const lider = carriers.length > 0 ? carriers[0] : null;
+        const liderNome = lider ? (lider.carrier || lider.nome || 'Total Express') : '-';
+        const liderPedidos = lider ? (lider._pedidos || 0) : 0;
+        const liderShare = totalPacotes > 0 ? ((liderPedidos / totalPacotes) * 100).toFixed(1) : 0;
+
         const elPed = document.getElementById('rel-kpi-log-pedidos');
         const elGmv = document.getElementById('rel-kpi-log-gmv');
         const elSla = document.getElementById('rel-kpi-log-sla');
@@ -7643,8 +7739,8 @@ async function carregarRelatorioLogistica() {
         if (elPed) elPed.textContent = totalPacotes;
         if (elGmv) elGmv.textContent = formatarMoedaBRL(totalGmv);
         if (elSla) elSla.textContent = '3,4 dias';
-        if (elLider && lider) elLider.textContent = lider.nome;
-        if (elLiderSub && lider) elLiderSub.textContent = `${lider.sharePct || 0}% dos envios`;
+        if (elLider) elLider.textContent = liderNome;
+        if (elLiderSub) elLiderSub.textContent = `${liderShare}% dos envios`;
 
         if (!tbody) return;
         if (carriers.length === 0) {
@@ -7653,30 +7749,36 @@ async function carregarRelatorioLogistica() {
         }
 
         tbody.innerHTML = carriers.map(c => {
-            const isTotal = c.nome.toLowerCase().includes('total');
-            const romaneioUrl = `/api/expedicao/romaneio?carrier=${encodeURIComponent(isTotal ? 'Total Express' : 'Correios')}`;
+            const rawNome = c.carrier || c.nome || 'Transportadora';
+            const isTotal = rawNome.toLowerCase().includes('total') || rawNome.toLowerCase().includes('tex');
+            const carrierClean = isTotal ? 'Total Express' : (rawNome.toLowerCase().includes('correio') ? 'Correios' : rawNome);
+            const romaneioUrl = `/api/expedicao/romaneio?carrier=${encodeURIComponent(carrierClean)}`;
             const btnCor = isTotal ? '#0284C7' : '#D97706';
+            const pedidos = c._pedidos || parseInt(c.total || c.pedidos || 0);
+            const faturamento = c._faturamento || parseFloat(c.faturamento || c.totalVenda || 0);
+            const share = totalPacotes > 0 ? ((pedidos / totalPacotes) * 100).toFixed(1) : (c.sharePct || 0);
+            const nomeEscapado = rawNome.replace(/'/g, "\'");
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onclick="abrirModalDossieVendedora('${v.nome}')" style="cursor: pointer;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s; cursor: pointer;" onclick="abrirModalDossieTransportadora('${nomeEscapado}')" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: ${isTotal ? '#38BDF8' : '#F59E0B'};"></span>
-                        ${c.nome}
+                        ${rawNome}
                     </td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${isTotal ? 'Coleta Diária / Rodoviário' : 'Postagem PLP SEDEX/PAC'}</td>
-                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${c.pedidos}</td>
-                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(c.faturamento)}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(faturamento)}</td>
                     <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #34D399;">${c.prazoMedio || '3 a 5 dias'}</td>
                     <td style="padding: 12px 16px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
-                                <div style="width: ${c.sharePct || 0}%; height: 100%; background: ${isTotal ? '#38BDF8' : '#F59E0B'}; border-radius: 3px;"></div>
+                                <div style="width: ${share}%; height: 100%; background: ${isTotal ? '#38BDF8' : '#F59E0B'}; border-radius: 3px;"></div>
                             </div>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${c.sharePct || 0}%</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${share}%</span>
                         </div>
                     </td>
                     <td style="padding: 12px 16px; text-align: center;">
-                        <a href="${romaneioUrl}" target="_blank" style="background: ${btnCor}; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                        <a href="${romaneioUrl}" target="_blank" onclick="event.stopPropagation()" style="background: ${btnCor}; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                             Romaneio A4 &rarr;
                         </a>
                     </td>
@@ -7689,6 +7791,49 @@ async function carregarRelatorioLogistica() {
     }
 }
 window.carregarRelatorioLogistica = carregarRelatorioLogistica;
+
+function exportarCsvRelatorioLogistica() {
+    const biData = window._dadosBiCache;
+    const carriers = (biData && biData.carriers) || [];
+    if (!carriers.length) {
+        alert('Nenhum dado logístico para exportar.');
+        return;
+    }
+    const tmPadrao = (biData.olist && biData.olist.ticketMedioOlist) || 571.01;
+    const totalPacotes = carriers.reduce((acc, c) => acc + parseInt(c.total || c.pedidos || 0), 0);
+
+    const cabecalho = ['Posicao', 'Transportadora', 'Modalidade', 'Pacotes_Despachados', 'GMV_Transportado_BRL', 'DIFAL_Retido_BRL', 'Share_Volume_Pct'];
+    const linhas = carriers.map((c, i) => {
+        const rawNome = c.carrier || c.nome || 'Transportadora';
+        const isTotal = rawNome.toLowerCase().includes('total') || rawNome.toLowerCase().includes('tex');
+        const pedidos = parseInt(c.total || c.pedidos || 0);
+        const faturamento = parseFloat(c.faturamento || c.totalVenda || (pedidos * tmPadrao));
+        const difal = parseFloat(c.totalDifal || 0);
+        const share = totalPacotes > 0 ? ((pedidos / totalPacotes) * 100).toFixed(1) : 0;
+
+        return [
+            i + 1,
+            `"${rawNome.replace(/"/g, '""')}"`,
+            `"${isTotal ? 'Coleta Diária / Rodoviário' : 'Postagem PLP SEDEX/PAC'}"`,
+            pedidos,
+            faturamento.toFixed(2).replace('.', ','),
+            difal.toFixed(2).replace('.', ','),
+            share
+        ].join(';');
+    });
+
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
+');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Logistica_Transportadoras_BOAH_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarCsvRelatorioLogistica = exportarCsvRelatorioLogistica;
 
 // -------------------------------------------------------------
 // RELATÓRIO 5: VENDAS POR REGIÃO (UF)
@@ -7704,13 +7849,13 @@ async function carregarRelatorioEstados() {
         let totalGmv = 0;
         let totalDifal = 0;
         heatmap.forEach(e => {
-            totalGmv += (parseFloat(e.faturamento) || 0);
-            totalDifal += (parseFloat(e.difal) || 0);
+            totalGmv += (parseFloat(e.totalVenda || e.faturamento || 0));
+            totalDifal += (parseFloat(e.totalDifal || e.difal || 0));
         });
 
         const lider = heatmap.length > 0 ? heatmap[0] : null;
         let top3Gmv = 0;
-        heatmap.slice(0, 3).forEach(e => top3Gmv += (parseFloat(e.faturamento) || 0));
+        heatmap.slice(0, 3).forEach(e => top3Gmv += (parseFloat(e.totalVenda || e.faturamento || 0)));
         const top3Share = totalGmv > 0 ? ((top3Gmv / totalGmv) * 100).toFixed(1) : 0;
 
         const elUfs = document.getElementById('rel-kpi-geo-ufs');
@@ -7720,8 +7865,15 @@ async function carregarRelatorioEstados() {
         const elTop3 = document.getElementById('rel-kpi-geo-top3');
 
         if (elUfs) elUfs.textContent = heatmap.length;
-        if (elLider && lider) elLider.textContent = `${lider.uf} &middot; ${formatarMoedaBRL(lider.faturamento)}`;
-        if (elLiderSub && lider) elLiderSub.textContent = `${lider.sharePct || 0}% do faturamento nacional`;
+        if (elLider && lider) {
+            const lidVal = parseFloat(lider.totalVenda || lider.faturamento || 0);
+            elLider.innerHTML = `<span style="color: #38BDF8; font-weight: 800;">${lider.uf}</span> &middot; ${formatarMoedaBRL(lidVal)}`;
+        }
+        if (elLiderSub && lider) {
+            const lidVal = parseFloat(lider.totalVenda || lider.faturamento || 0);
+            const lidShare = totalGmv > 0 ? ((lidVal / totalGmv) * 100).toFixed(1) : (lider.sharePct || 0);
+            elLiderSub.textContent = `${lidShare}% do faturamento nacional`;
+        }
         if (elDifal) elDifal.textContent = formatarMoedaBRL(totalDifal);
         if (elTop3) elTop3.textContent = `${top3Share}%`;
 
@@ -7745,10 +7897,14 @@ async function carregarRelatorioEstados() {
         tbody.innerHTML = heatmap.map(e => {
             const nomeEst = nomesEstados[e.uf] || e.uf;
             const regiao = regioes[e.uf] || 'Brasil';
-            const aliq = e.faturamento > 0 ? ((e.difal / e.faturamento) * 100).toFixed(1) : '8.0';
+            const faturamento = parseFloat(e.totalVenda || e.faturamento || 0);
+            const difal = parseFloat(e.totalDifal || e.difal || 0);
+            const pedidos = parseInt(e.totalGuias || e.pedidos || 0);
+            const aliq = faturamento > 0 ? ((difal / faturamento) * 100).toFixed(1) : '8.0';
+            const share = totalGmv > 0 ? ((faturamento / totalGmv) * 100).toFixed(1) : (e.sharePct || 0);
 
             return `
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onclick="abrirModalDossieVendedora('${v.nome}')" style="cursor: pointer;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s; cursor: pointer;" onclick="abrirModalDossieEstado('${e.uf}')" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 12px 16px; text-align: center;">
                         <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 3px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace;">
                             ${e.uf}
@@ -7756,16 +7912,16 @@ async function carregarRelatorioEstados() {
                     </td>
                     <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${nomeEst}</td>
                     <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${regiao}</td>
-                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(e.faturamento)}</td>
-                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #F59E0B;">${formatarMoedaBRL(e.difal)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(faturamento)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #F59E0B;">${formatarMoedaBRL(difal)}</td>
                     <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; color: #34D399; font-weight: 700;">${aliq}%</td>
-                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${e.pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${pedidos}</td>
                     <td style="padding: 12px 16px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
-                                <div style="width: ${e.sharePct || 0}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                                <div style="width: ${share}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
                             </div>
-                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${e.sharePct || 0}%</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${share}%</span>
                         </div>
                     </td>
                 </tr>
@@ -7785,16 +7941,25 @@ function exportarCsvRelatorioEstados() {
         alert('Nenhum dado de estado para exportar.');
         return;
     }
-    const cabecalho = ['UF', 'Faturamento_BRL', 'DIFAL_BRL', 'Pedidos', 'Share_Nacional_Pct'];
-    const linhas = heatmap.map(e => [
-        e.uf,
-        (parseFloat(e.faturamento) || 0).toFixed(2).replace('.', ','),
-        (parseFloat(e.difal) || 0).toFixed(2).replace('.', ','),
-        e.pedidos || 0,
-        e.sharePct || 0
-    ].join(';'));
+    const cabecalho = ['UF', 'Faturamento_BRL', 'DIFAL_BRL', 'Guias_Pedidos', 'Share_Nacional_Pct'];
+    const totalGmv = heatmap.reduce((acc, e) => acc + (parseFloat(e.totalVenda || e.faturamento || 0)), 0);
 
-    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const linhas = heatmap.map(e => {
+        const fat = parseFloat(e.totalVenda || e.faturamento || 0);
+        const difal = parseFloat(e.totalDifal || e.difal || 0);
+        const guias = parseInt(e.totalGuias || e.pedidos || 0);
+        const share = totalGmv > 0 ? ((fat / totalGmv) * 100).toFixed(1) : (e.sharePct || 0);
+        return [
+            e.uf,
+            fat.toFixed(2).replace('.', ','),
+            difal.toFixed(2).replace('.', ','),
+            guias,
+            share
+        ].join(';');
+    });
+
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
+');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7805,6 +7970,9 @@ function exportarCsvRelatorioEstados() {
     document.body.removeChild(link);
 }
 window.exportarCsvRelatorioEstados = exportarCsvRelatorioEstados;
+
+
+
 
 async function carregarRelatorioAnaliticoDifal() {
     const tbody = document.getElementById('tabela-relatorio-difal-body');
@@ -8954,7 +9122,7 @@ function abrirModalDossieVendedora(nome) {
     const gmv = parseFloat(v.valorTotal || 0);
     const ped = parseInt(v.pedidos || 0);
     const tm = v.ticketMedio || (ped > 0 ? gmv / ped : 0);
-    const comissao = gmv * 0.03; // Projeção comissão 3%
+    const comissao = gmv * 0.03;
 
     if (elConteudo) {
         elConteudo.innerHTML = `
@@ -8998,9 +9166,15 @@ window.abrirModalDossieVendedora = abrirModalDossieVendedora;
 function abrirModalDossieCupom(cupomCodigo) {
     const modal = document.getElementById('modal-dossie-gerencial');
     const biData = window._dadosBiCache;
-    const ranking = (biData && biData.resumoCupons && biData.resumoCupons.ranking) || [];
-    const c = ranking.find(x => x.cupom.toUpperCase() === (cupomCodigo || '').toUpperCase()) || ranking[0];
+    const ranking = (biData && biData.resumoCupons && (biData.resumoCupons.topCupons || biData.resumoCupons.ranking)) || [];
+    const c = ranking.find(x => (x.codigo || x.cupom || '').toUpperCase() === (cupomCodigo || '').toUpperCase()) || ranking[0];
     if (!modal || !c) return;
+
+    const cod = c.codigo || c.cupom || 'CUPOM';
+    const totalGmv = parseFloat(c.valorTotal || c.totalGmv || 0);
+    const ped = parseInt(c.pedidos || 0);
+    const tm = c.ticketMedio || (ped > 0 ? totalGmv / ped : 0);
+    const descontoEstimado = totalGmv * 0.15;
 
     const elIcon = document.getElementById('modal-ger-badge-icon');
     const elTitulo = document.getElementById('modal-ger-titulo');
@@ -9013,25 +9187,20 @@ function abrirModalDossieCupom(cupomCodigo) {
         elIcon.style.background = 'rgba(236, 72, 153, 0.15)';
         elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
     }
-    if (elTitulo) elTitulo.textContent = `Cupom: ${c.cupom}`;
+    if (elTitulo) elTitulo.textContent = `Cupom: ${cod}`;
     if (elSubBadge) {
-        elSubBadge.textContent = 'CAMPANHA ATIVA';
+        elSubBadge.textContent = c.badge || 'CAMPANHA ATIVA';
         elSubBadge.style.color = '#EC4899';
         elSubBadge.style.background = 'rgba(236, 72, 153, 0.15)';
     }
     if (elSubtitulo) elSubtitulo.textContent = 'Auditoria de Receita Convertida e Vouchers Promocionais';
-
-    const gmv = parseFloat(c.totalGmv || 0);
-    const ped = parseInt(c.pedidos || 0);
-    const tm = c.ticketMedio || (ped > 0 ? gmv / ped : 0);
-    const descontoEstimado = gmv * 0.15; // Média 15% de desconto
 
     if (elConteudo) {
         elConteudo.innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
                 <div style="background: #0E1626; border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 12px; padding: 14px 16px;">
                     <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Receita Gerada</span>
-                    <div style="font-size: 20px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                    <div style="font-size: 20px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(totalGmv)}</div>
                 </div>
                 <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px;">
                     <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Compras Convertidas</span>
@@ -9055,7 +9224,7 @@ function abrirModalDossieCupom(cupomCodigo) {
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 12.5px;">
                     <span style="color: #94A3B8;">Tipo de Regra de Promoção</span>
-                    <span style="color: #38BDF8; font-weight: 700;">Desconto Direto no Checkout Vnda</span>
+                    <span style="color: #38BDF8; font-weight: 700;">${c.tipo || 'Desconto Checkout Vnda'}</span>
                 </div>
             </div>
         `;
@@ -9064,3 +9233,294 @@ function abrirModalDossieCupom(cupomCodigo) {
     modal.style.display = 'flex';
 }
 window.abrirModalDossieCupom = abrirModalDossieCupom;
+
+function abrirModalDossieTransportadora(carrierNome) {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    const biData = window._dadosBiCache;
+    const carriers = (biData && biData.carriers) || [];
+    const c = carriers.find(x => (x.carrier || x.nome || '').toLowerCase().includes((carrierNome || '').toLowerCase())) || carriers[0];
+    if (!modal || !c) return;
+
+    const nome = c.carrier || c.nome || 'Transportadora';
+    const isTotal = nome.toLowerCase().includes('total') || nome.toLowerCase().includes('tex');
+    const carrierClean = isTotal ? 'Total Express' : (nome.toLowerCase().includes('correio') ? 'Correios' : nome);
+    const pedidos = parseInt(c.total || c.pedidos || 0);
+    const tm = (biData.olist && biData.olist.ticketMedioOlist) || 571.01;
+    const gmv = parseFloat(c.faturamento || c.totalVenda || (pedidos * tm));
+    const difal = parseFloat(c.totalDifal || 0);
+
+    const elIcon = document.getElementById('modal-ger-badge-icon');
+    const elTitulo = document.getElementById('modal-ger-titulo');
+    const elSubBadge = document.getElementById('modal-ger-sub-badge');
+    const elSubtitulo = document.getElementById('modal-ger-subtitulo');
+    const elConteudo = document.getElementById('modal-ger-conteudo');
+
+    if (elIcon) {
+        elIcon.style.color = isTotal ? '#38BDF8' : '#F59E0B';
+        elIcon.style.background = isTotal ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+        elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+    }
+    if (elTitulo) elTitulo.textContent = carrierClean;
+    if (elSubBadge) {
+        elSubBadge.textContent = isTotal ? 'COLETA DIÁRIA' : 'POSTAGEM PLP';
+        elSubBadge.style.color = isTotal ? '#38BDF8' : '#F59E0B';
+        elSubBadge.style.background = isTotal ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+    }
+    if (elSubtitulo) elSubtitulo.textContent = 'Dossiê Operacional de Fretes, Cargas e Romaneios de Expedição';
+
+    if (elConteudo) {
+        elConteudo.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pacotes Despachados</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${pedidos} un</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">GMV Transportado</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL de Carga</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(difal)}</div>
+                </div>
+            </div>
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Manifesto de Carga &amp; Romaneio de Doca</h4>
+                <p style="font-size: 12.5px; color: #94A3B8; line-height: 1.6; margin: 0 0 16px 0;">
+                    Documento impresso em formato padrão A4 com lista completa de remessas, dados de rastreamento e protocolo formal para conferência do motorista da transportadora.
+                </p>
+                <a href="/api/expedicao/romaneio?carrier=${encodeURIComponent(carrierClean)}" target="_blank" style="background: ${isTotal ? '#0284C7' : '#D97706'}; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 10px 18px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Imprimir Romaneio Oficial A4 (${carrierClean})</span>
+                </a>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalDossieTransportadora = abrirModalDossieTransportadora;
+
+function abrirModalDossieEstado(uf) {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    const biData = window._dadosBiCache;
+    const heatmap = (biData && biData.heatmap) || [];
+    const e = heatmap.find(x => x.uf.toUpperCase() === (uf || '').toUpperCase()) || heatmap[0];
+    if (!modal || !e) return;
+
+    const gmv = parseFloat(e.totalVenda || e.faturamento || 0);
+    const difal = parseFloat(e.totalDifal || e.difal || 0);
+    const pedidos = parseInt(e.totalGuias || e.pedidos || 0);
+    const aliq = gmv > 0 ? ((difal / gmv) * 100).toFixed(1) : '8.0';
+
+    const elIcon = document.getElementById('modal-ger-badge-icon');
+    const elTitulo = document.getElementById('modal-ger-titulo');
+    const elSubBadge = document.getElementById('modal-ger-sub-badge');
+    const elSubtitulo = document.getElementById('modal-ger-subtitulo');
+    const elConteudo = document.getElementById('modal-ger-conteudo');
+
+    if (elIcon) {
+        elIcon.style.color = '#38BDF8';
+        elIcon.style.background = 'rgba(56, 189, 248, 0.15)';
+        elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+    }
+    if (elTitulo) elTitulo.textContent = `Estado: ${e.uf}`;
+    if (elSubBadge) {
+        elSubBadge.textContent = 'DESTINO TRIBUTÁRIO';
+        elSubBadge.style.color = '#38BDF8';
+        elSubBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+    }
+    if (elSubtitulo) elSubtitulo.textContent = 'Dossiê Geográfico e Tributário Interestadual';
+
+    if (elConteudo) {
+        elConteudo.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturamento no Estado</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL Interestadual</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(difal)}</div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px 16px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Alíquota Efetiva</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${aliq}%</div>
+                </div>
+            </div>
+            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
+                <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Auditoria de Conformidade SEFAZ</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Guias de DIFAL Emitidas</span>
+                    <strong style="color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${pedidos} guias</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Participação no Faturamento Total</span>
+                    <strong style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">${e.sharePct || 0}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 12.5px;">
+                    <span style="color: #94A3B8;">Status Tributário SEFAZ/${e.uf}</span>
+                    <span style="color: #10B981; font-weight: 700;">Em Conformidade Fiscal</span>
+                </div>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalDossieEstado = abrirModalDossieEstado;
+
+function abrirModalDossieGerente(tipo) {
+    const modal = document.getElementById('modal-dossie-gerencial');
+    const biData = window._dadosBiCache || {};
+    if (!modal) return;
+
+    const elIcon = document.getElementById('modal-ger-badge-icon');
+    const elTitulo = document.getElementById('modal-ger-titulo');
+    const elSubBadge = document.getElementById('modal-ger-sub-badge');
+    const elSubtitulo = document.getElementById('modal-ger-subtitulo');
+    const elConteudo = document.getElementById('modal-ger-conteudo');
+
+    if (tipo === 'fiscal') {
+        if (elIcon) {
+            elIcon.style.color = '#38BDF8';
+            elIcon.style.background = 'rgba(56, 189, 248, 0.15)';
+            elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>';
+        }
+        if (elTitulo) elTitulo.textContent = 'Dossiê do Gerente Fiscal & Tributário';
+        if (elSubBadge) {
+            elSubBadge.textContent = 'SEFAZ & LINX';
+            elSubBadge.style.color = '#38BDF8';
+            elSubBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+        }
+        if (elSubtitulo) elSubtitulo.textContent = 'Apuração de DIFAL, conformidade fiscal e alíquotas interestaduais';
+
+        const totalDifal = (biData.kpis && biData.kpis.totalDifal) || 0;
+        const totalNotas = (biData.kpis && biData.kpis.totalGuias) || 0;
+        const totalPagas = (biData.kpis && biData.kpis.totalPagas) || 0;
+        const taxaLib = (biData.kpis && biData.kpis.taxaLiberacao) || '0.0';
+
+        if (elConteudo) {
+            elConteudo.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #0E1626; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL Total Apurado</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(totalDifal)}</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Guias Liquidadas</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${totalPagas} / ${totalNotas}</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Taxa de Regularidade</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${taxaLib}%</div>
+                    </div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Diretrizes da Controladoria Fiscal</h4>
+                    <p style="font-size: 12.5px; color: #94A3B8; line-height: 1.6; margin: 0 0 12px 0;">
+                        Todas as guias interestaduais são calculadas conforme a EC 87/2015 e Lei Complementar 190/2022. As pendências tributárias são baixadas via conciliação automática com comprovantes Itaú e SEFAZ.
+                    </p>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="fecharModalDossieGerencial(); alternarTabRelatorios('difal');" style="background: #0284C7; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer;">Ver Analítico Nota a Nota &rarr;</button>
+                        <button type="button" onclick="fecharModalDossieGerencial(); alternarTabRelatorios('estados');" style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Ver Mapa de Estados &rarr;</button>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (tipo === 'comercial') {
+        if (elIcon) {
+            elIcon.style.color = '#EC4899';
+            elIcon.style.background = 'rgba(236, 72, 153, 0.15)';
+            elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>';
+        }
+        if (elTitulo) elTitulo.textContent = 'Dossiê do Gerente Comercial & Growth';
+        if (elSubBadge) {
+            elSubBadge.textContent = 'VNDAS & LINX';
+            elSubBadge.style.color = '#EC4899';
+            elSubBadge.style.background = 'rgba(236, 72, 153, 0.15)';
+        }
+        if (elSubtitulo) elSubtitulo.textContent = 'Social Selling, conversão de cupons de consultoras e comissionamento';
+
+        const gmv = (biData.kpis && biData.kpis.totalFaturamento) || 117628.84;
+        const gmvCupons = (biData.resumoCupons && biData.resumoCupons.gmvComCupom) || 53904.34;
+        const shareProm = (biData.resumoCupons && (biData.resumoCupons.taxaPenetracaoPct || biData.resumoCupons.shareGmvPct)) || 41.7;
+
+        if (elConteudo) {
+            elConteudo.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">GMV Aprovado</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmv)}</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Vendas com Cupom</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${formatarMoedaBRL(gmvCupons)}</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Penetração de Vouchers</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #C084FC; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${shareProm}%</div>
+                    </div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Estratégia de Vendas &amp; Canais</h4>
+                    <p style="font-size: 12.5px; color: #94A3B8; line-height: 1.6; margin: 0 0 12px 0;">
+                        As vendas estão alavancadas pelas consultoras de Social Selling conectadas ao ERP Linx Microvix e cupons de influenciadoras na plataforma Vnda. Camila (Mila) atua com seu cupom exclusivo de alta conversão.
+                    </p>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="fecharModalDossieGerencial(); alternarTabRelatorios('vendedoras');" style="background: #EC4899; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer;">Ver Ranking de Vendedoras &rarr;</button>
+                        <button type="button" onclick="fecharModalDossieGerencial(); alternarTabRelatorios('cupons');" style="background: rgba(236, 72, 153, 0.12); color: #EC4899; border: 1px solid rgba(236, 72, 153, 0.3); font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; cursor: pointer;">Ver Desempenho de Cupons &rarr;</button>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (tipo === 'logistica') {
+        if (elIcon) {
+            elIcon.style.color = '#34D399';
+            elIcon.style.background = 'rgba(16, 185, 129, 0.15)';
+            elIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+        }
+        if (elTitulo) elTitulo.textContent = 'Dossiê do Gerente de E-commerce & Logística';
+        if (elSubBadge) {
+            elSubBadge.textContent = 'SUPPLY & EXPEDIÇÃO';
+            elSubBadge.style.color = '#34D399';
+            elSubBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+        }
+        if (elSubtitulo) elSubtitulo.textContent = 'Despacho de cargas, romaneios A4 oficiais e auditoria de transportadoras';
+
+        const totalGuias = (biData.kpis && biData.kpis.totalGuias) || 0;
+
+        if (elConteudo) {
+            elConteudo.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Volumes Despachados</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">${totalGuias} volumes</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">SLA Médio de Trânsito</span>
+                        <div style="font-size: 20px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 3px;">3,4 dias</div>
+                    </div>
+                    <div style="background: #0E1626; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 14px 16px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Líder de Coleta</span>
+                        <div style="font-size: 18px; font-weight: 800; color: #F59E0B; margin-top: 5px;">Total Express</div>
+                    </div>
+                </div>
+                <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">Operação de Doca &amp; Manifestos A4</h4>
+                    <p style="font-size: 12.5px; color: #94A3B8; line-height: 1.6; margin: 0 0 12px 0;">
+                        Todas as coletas de rodoviário da Total Express e postagens de Correios PLP geram romaneios homologados em folha A4 com relação de AWBs, chaves e canhoto de entrega.
+                    </p>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; text-decoration: none;">Romaneio Total Express (A4) &rarr;</a>
+                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="background: #D97706; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 6px; text-decoration: none;">Romaneio Correios (A4) &rarr;</a>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    modal.style.display = 'flex';
+}
+window.abrirModalDossieGerente = abrirModalDossieGerente;
+

@@ -2426,30 +2426,120 @@
             <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS (DARK LUXURY SEGMENTED CONTROL) -->
             <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <!-- LISTA SUSPENSA EXECUTIVA DOS RELATÓRIOS (3 GERÊNCIAS) -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;">Relat&oacute;rio:</span>
-                        <select id="seletor-relatorio-executivo" onchange="alternarTabRelatorios(this.value)" style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 9px; cursor: pointer; outline: none; min-width: 310px; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.15);">
-                            <optgroup label="📑 GERÊNCIA FISCAL &amp; CONTROLADORIA" style="background: #0E1626; color: #38BDF8; font-weight: 800;">
-                                <option value="difal" selected>📊 1. Anal&iacute;tico DIFAL (Nota a Nota &amp; SEFAZ)</option>
-                                <option value="estados">🗺️ 5. Vendas por Regi&atilde;o &amp; UFs (Heatmap)</option>
-                                <option value="fechamento">📑 6. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</option>
-                            </optgroup>
-                            <optgroup label="👩‍💼 GERÊNCIA COMERCIAL &amp; VENDAS" style="background: #0E1626; color: #EC4899; font-weight: 800;">
-                                <option value="vendedoras">👩‍💼 2. Ranking de Vendedoras (Linx Microvix ERP)</option>
-                                <option value="cupons">🎟️ 3. Performance de Cupons &amp; Campanhas</option>
-                            </optgroup>
-                            <optgroup label="🚚 GERÊNCIA DE E-COMMERCE &amp; LOGÍSTICA" style="background: #0E1626; color: #34D399; font-weight: 800;">
-                                <option value="logistica">🚚 4. Log&iacute;stica, Fretes &amp; Romaneios (A4)</option>
-                            </optgroup>
+                    <!-- CUSTOM DARK LUXURY DROPDOWN (3 GERÊNCIAS) -->
+                    <div id="dropdown-relatorios-container" style="position: relative; min-width: 330px;">
+                        <button type="button" id="btn-dropdown-relatorios" onclick="toggleDropdownRelatorios(event)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 9px 16px; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.25); transition: all 0.2s;">
+                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <span id="dropdown-relatorios-icon" style="font-size: 16px;">📊</span>
+                                <span id="dropdown-relatorios-label" style="color: #38BDF8; font-weight: 800;">1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)</span>
+                            </div>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5" id="dropdown-relatorios-arrow" style="transition: transform 0.2s; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+
+                        <!-- FLOATING MENU POPUP -->
+                        <div id="menu-dropdown-relatorios" style="display: none; position: absolute; top: calc(100% + 8px); left: 0; min-width: 390px; background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 20px rgba(56, 189, 248, 0.1); backdrop-filter: blur(16px); z-index: 9999; padding: 10px; animation: fadeIn 0.15s ease;">
+                            
+                            <!-- GRUPO 1: GERÊNCIA FISCAL -->
+                            <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                                <span>📑 GERÊNCIA FISCAL &amp; CONTROLADORIA</span>
+                                <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('fiscal')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('difal', '1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)', '📊', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">📊</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Apuração individual, status GNRE e alíquotas</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 10px; font-weight: 800; color: #38BDF8; background: rgba(56, 189, 248, 0.15); padding: 2px 6px; border-radius: 4px;">OFICIAL</span>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('estados', '5. Vendas por Região &amp; UFs (Heatmap)', '🗺️', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">🗺️</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">5. Vendas por Região &amp; UFs (Heatmap)</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Concentração geográfica nacional e partilhas</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('fechamento', '6. Fechamento Contábil &amp; Arquivos Oficiais', '📑', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">📑</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">6. Fechamento Contábil &amp; Arquivos Oficiais</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Pacotes ZIP XMLs, conciliação Itaú e remessas</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.07); margin: 6px 0;"></div>
+
+                            <!-- GRUPO 2: GERÊNCIA COMERCIAL -->
+                            <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #EC4899; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                                <span>👩‍💼 GERÊNCIA COMERCIAL &amp; GROWTH</span>
+                                <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('comercial')" style="background: rgba(236, 72, 153, 0.12); border: 1px solid rgba(236, 72, 153, 0.3); color: #EC4899; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('vendedoras', '2. Ranking de Vendedoras (Linx Microvix)', '👩‍💼', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">👩‍💼</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">2. Ranking de Vendedoras (Linx Microvix)</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Social selling, comissionamento e ticket médio</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('cupons', '3. Performance de Cupons &amp; Campanhas', '🎟️', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">🎟️</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">3. Performance de Cupons &amp; Campanhas</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">MILA15, primeira compra e vouchers promocionais</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.07); margin: 6px 0;"></div>
+
+                            <!-- GRUPO 3: GERÊNCIA LOGÍSTICA -->
+                            <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #34D399; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                                <span>🚚 GERÊNCIA DE LOGÍSTICA &amp; E-COMMERCE</span>
+                                <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('logistica')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
+                            </div>
+                            <div onclick="selecionarRelatorioDropdown('logistica', '4. Logística, Fretes &amp; Romaneios A4', '🚚', 'logistica')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(52, 211, 153, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">🚚</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">4. Logística, Fretes &amp; Romaneios A4</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Total Express vs. Correios e manifestos de doca</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Fallback / sync hidden select -->
+                        <select id="seletor-relatorio-executivo" style="display: none;">
+                            <option value="difal">1. Analítico DIFAL</option>
+                            <option value="vendedoras">2. Ranking Vendedoras</option>
+                            <option value="cupons">3. Cupons &amp; Campanhas</option>
+                            <option value="logistica">4. Logística</option>
+                            <option value="estados">5. Estados</option>
+                            <option value="fechamento">6. Fechamento</option>
                         </select>
                     </div>
 
                     <!-- BADGE DINÂMICO DA GERÊNCIA -->
                     <span id="badge-gerencia-ativa" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 11.5px; font-weight: 800; padding: 5px 12px; border-radius: 7px; display: inline-flex; align-items: center; gap: 6px;">
                         <span style="width: 7px; height: 7px; border-radius: 50%; background: #38BDF8;"></span>
-                        <span>Vis&atilde;o: Fiscal &amp; Controladoria</span>
+                        <span>Visão: Fiscal &amp; Controladoria</span>
                     </span>
+
+                    <!-- BOTÃO POP-UP DOSSIÊ EXECUTIVO DA GERÊNCIA ATIVA -->
+                    <button type="button" id="btn-popup-gerencial-atalho" onclick="abrirModalDossieGerenteAtivo()" title="Abrir Dossiê Executivo 360° em Pop-up" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>Dossiê da Gerência &rarr;</span>
+                    </button>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -2775,7 +2865,11 @@
                         <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Volume faturado e despachado por transportadora (Total Express vs. Correios) com emissão de Manifestos A4.</p>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" onclick="exportarCsvRelatorioLogistica()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Logística (.CSV)</span>
+                        </button>
                         <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Romaneio Total Express (A4)</span>
