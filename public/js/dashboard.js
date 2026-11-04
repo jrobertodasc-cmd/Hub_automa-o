@@ -6157,8 +6157,65 @@ function formatarMoedaBRL(val) {
 let _biPeriodoAtivo = 'mes_atual';
 window._biPeriodoAtivo = _biPeriodoAtivo;
 
+function togglePeriodoPersonalizadoBI() {
+    const box = document.getElementById('bi-box-datas-personalizadas');
+    if (!box) return;
+    if (box.style.display === 'none' || !box.style.display) {
+        box.style.display = 'inline-flex';
+        ['mes_atual', 'mes_anterior', '7dias'].forEach(p => {
+            const btn = document.getElementById(`btn-periodo-${p}`);
+            if (btn) {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'transparent';
+                btn.style.color = '#94A3B8';
+            }
+        });
+        const btnPers = document.getElementById('btn-periodo-personalizado');
+        if (btnPers) {
+            btnPers.style.background = '#1E293B';
+            btnPers.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+            btnPers.style.color = '#38BDF8';
+        }
+    } else {
+        box.style.display = 'none';
+    }
+}
+window.togglePeriodoPersonalizadoBI = togglePeriodoPersonalizadoBI;
+
+function aplicarPeriodoPersonalizadoBI() {
+    const dtIni = document.getElementById('bi-input-data-ini')?.value || '2026-11-01';
+    const dtFim = document.getElementById('bi-input-data-fim')?.value || '2026-11-04';
+    window._biPeriodoAtivo = 'personalizado';
+    window._biDataInicioPersonalizada = dtIni;
+    window._biDataFimPersonalizada = dtFim;
+
+    const badge = document.getElementById('bi-periodo-badge-ativo');
+    if (badge) {
+        badge.textContent = `PERSONALIZADO (${dtIni.split('-').reverse().join('/')} A ${dtFim.split('-').reverse().join('/')})`;
+    }
+
+    carregarDadosBI(true, 'personalizado');
+}
+window.aplicarPeriodoPersonalizadoBI = aplicarPeriodoPersonalizadoBI;
+
 function selecionarPeriodoBI(periodo) {
     window._biPeriodoAtivo = periodo;
+    const box = document.getElementById('bi-box-datas-personalizadas');
+    if (box) box.style.display = 'none';
+    const btnPers = document.getElementById('btn-periodo-personalizado');
+    if (btnPers) {
+        btnPers.style.background = 'transparent';
+        btnPers.style.borderColor = 'transparent';
+        btnPers.style.color = '#94A3B8';
+    }
+
+    const badge = document.getElementById('bi-periodo-badge-ativo');
+    if (badge) {
+        if (periodo === 'mes_anterior') badge.textContent = 'MÊS ANTERIOR (OUT/2026)';
+        else if (periodo === '7dias') badge.textContent = 'ÚLTIMOS 7 DIAS';
+        else badge.textContent = 'MÊS ATUAL (NOV/2026)';
+    }
+
     ['mes_atual', 'mes_anterior', '7dias'].forEach(p => {
         const btn = document.getElementById(`btn-periodo-${p}`);
         if (btn) {
@@ -6578,6 +6635,74 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
     } catch (err) {
         console.error('[BI] Erro ao carregar métricas:', err);
     } finally {
+        
+        // 1.8 Carregar e Renderizar Tabela de Vendas por Período no Painel BI
+        try {
+            let pUrl = `/api/relatorios/vendas-periodo?periodo=${encodeURIComponent(periodo)}`;
+            if (periodo === 'personalizado' && window._biDataInicioPersonalizada && window._biDataFimPersonalizada) {
+                pUrl += `&dataInicial=${encodeURIComponent(window._biDataInicioPersonalizada)}&dataFim=${encodeURIComponent(window._biDataFimPersonalizada)}`;
+            }
+            const resPeriodo = await fetch(pUrl, { headers });
+            if (resPeriodo.ok) {
+                const dataP = await resPeriodo.json();
+                window._dadosPeriodoCache = dataP;
+                const resP = dataP.resumo || {};
+                const diasP = dataP.dias || [];
+
+                const elFatP = document.getElementById('bi-periodo-kpi-fat');
+                const elPedP = document.getElementById('bi-periodo-kpi-ped');
+                const elTmP = document.getElementById('bi-periodo-kpi-tm');
+                const elMedP = document.getElementById('bi-periodo-kpi-med');
+                if (elFatP) elFatP.textContent = formatarMoedaBRL(resP.totalFaturamento || 0);
+                if (elPedP) elPedP.textContent = resP.totalPedidos || 0;
+                if (elTmP) elTmP.textContent = formatarMoedaBRL(resP.ticketMedio || 0);
+                if (elMedP) elMedP.textContent = formatarMoedaBRL(resP.mediaDiaria || 0);
+
+                const footPedP = document.getElementById('bi-foot-periodo-ped');
+                const footGmvP = document.getElementById('bi-foot-periodo-gmv');
+                const footTmP = document.getElementById('bi-foot-periodo-tm');
+                if (footPedP) footPedP.textContent = resP.totalPedidos || 0;
+                if (footGmvP) footGmvP.textContent = formatarMoedaBRL(resP.totalFaturamento || 0);
+                if (footTmP) footTmP.textContent = formatarMoedaBRL(resP.ticketMedio || 0);
+
+                const tbodyBiPeriodo = document.getElementById('bi-tabela-vendas-periodo-body');
+                if (tbodyBiPeriodo) {
+                    if (diasP.length === 0) {
+                        tbodyBiPeriodo.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #94A3B8;">Nenhuma venda registrada no período selecionado.</td></tr>';
+                    } else {
+                        tbodyBiPeriodo.innerHTML = diasP.map(d => {
+                            const share = d.sharePct !== undefined ? d.sharePct : 0;
+                            return `
+                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                                    <td style="padding: 10px 14px; text-align: center; font-family: 'JetBrains Mono', monospace; color: #94A3B8;">${String(d.posicao).padStart(2, '0')}</td>
+                                    <td style="padding: 10px 14px; font-weight: 700; color: #FFFFFF;">${d.dataFormatada}</td>
+                                    <td style="padding: 10px 14px; color: #94A3B8; font-size: 11.5px;">${d.diaSemana}</td>
+                                    <td style="padding: 10px 14px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${d.pedidos}</td>
+                                    <td style="padding: 10px 14px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(d.faturamento)}</td>
+                                    <td style="padding: 10px 14px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(d.ticketMedio)}</td>
+                                    <td style="padding: 10px 14px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: ${share}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                                            </div>
+                                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 36px;">${share}%</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 10px 14px; text-align: center;">
+                                        <span style="font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                            ${d.status || 'Conciliado'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            }
+        } catch (eBiP) {
+            console.warn('[BI] Aviso ao carregar vendas por período:', eBiP.message);
+        }
+
         if (refreshIcon) refreshIcon.style.animation = 'none';
     }
 }
@@ -8191,6 +8316,74 @@ async function carregarRelatorioAnaliticoDifal() {
         console.error('[Relatório Analítico] Erro:', err);
         if (tbody) tbody.innerHTML = `<tr><td colspan="9" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar dados: ${err.message}</td></tr>`;
     } finally {
+        
+        // 1.8 Carregar e Renderizar Tabela de Vendas por Período no Painel BI
+        try {
+            let pUrl = `/api/relatorios/vendas-periodo?periodo=${encodeURIComponent(periodo)}`;
+            if (periodo === 'personalizado' && window._biDataInicioPersonalizada && window._biDataFimPersonalizada) {
+                pUrl += `&dataInicial=${encodeURIComponent(window._biDataInicioPersonalizada)}&dataFim=${encodeURIComponent(window._biDataFimPersonalizada)}`;
+            }
+            const resPeriodo = await fetch(pUrl, { headers });
+            if (resPeriodo.ok) {
+                const dataP = await resPeriodo.json();
+                window._dadosPeriodoCache = dataP;
+                const resP = dataP.resumo || {};
+                const diasP = dataP.dias || [];
+
+                const elFatP = document.getElementById('bi-periodo-kpi-fat');
+                const elPedP = document.getElementById('bi-periodo-kpi-ped');
+                const elTmP = document.getElementById('bi-periodo-kpi-tm');
+                const elMedP = document.getElementById('bi-periodo-kpi-med');
+                if (elFatP) elFatP.textContent = formatarMoedaBRL(resP.totalFaturamento || 0);
+                if (elPedP) elPedP.textContent = resP.totalPedidos || 0;
+                if (elTmP) elTmP.textContent = formatarMoedaBRL(resP.ticketMedio || 0);
+                if (elMedP) elMedP.textContent = formatarMoedaBRL(resP.mediaDiaria || 0);
+
+                const footPedP = document.getElementById('bi-foot-periodo-ped');
+                const footGmvP = document.getElementById('bi-foot-periodo-gmv');
+                const footTmP = document.getElementById('bi-foot-periodo-tm');
+                if (footPedP) footPedP.textContent = resP.totalPedidos || 0;
+                if (footGmvP) footGmvP.textContent = formatarMoedaBRL(resP.totalFaturamento || 0);
+                if (footTmP) footTmP.textContent = formatarMoedaBRL(resP.ticketMedio || 0);
+
+                const tbodyBiPeriodo = document.getElementById('bi-tabela-vendas-periodo-body');
+                if (tbodyBiPeriodo) {
+                    if (diasP.length === 0) {
+                        tbodyBiPeriodo.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #94A3B8;">Nenhuma venda registrada no período selecionado.</td></tr>';
+                    } else {
+                        tbodyBiPeriodo.innerHTML = diasP.map(d => {
+                            const share = d.sharePct !== undefined ? d.sharePct : 0;
+                            return `
+                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                                    <td style="padding: 10px 14px; text-align: center; font-family: 'JetBrains Mono', monospace; color: #94A3B8;">${String(d.posicao).padStart(2, '0')}</td>
+                                    <td style="padding: 10px 14px; font-weight: 700; color: #FFFFFF;">${d.dataFormatada}</td>
+                                    <td style="padding: 10px 14px; color: #94A3B8; font-size: 11.5px;">${d.diaSemana}</td>
+                                    <td style="padding: 10px 14px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${d.pedidos}</td>
+                                    <td style="padding: 10px 14px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(d.faturamento)}</td>
+                                    <td style="padding: 10px 14px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(d.ticketMedio)}</td>
+                                    <td style="padding: 10px 14px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: ${share}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                                            </div>
+                                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 36px;">${share}%</span>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 10px 14px; text-align: center;">
+                                        <span style="font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                            ${d.status || 'Conciliado'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            }
+        } catch (eBiP) {
+            console.warn('[BI] Aviso ao carregar vendas por período:', eBiP.message);
+        }
+
         if (refreshIcon) refreshIcon.style.animation = 'none';
     }
 }

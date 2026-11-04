@@ -6623,6 +6623,20 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                 { data: '2026-11-02', faturamento: 410.00, difal: 17.20, guias: 1 },
                 { data: '2026-11-03', faturamento: 680.00, difal: 29.80, guias: 2 }
             ];
+        } else if (periodo === 'personalizado' || (req.query.dataInicial && req.query.dataFim)) {
+            const dtIni = req.query.dataInicial || '2026-11-01';
+            const dtFim = req.query.dataFim || '2026-11-04';
+            multPeriodo = 0.65;
+            comparativo = {
+                periodo: 'personalizado',
+                labelPeriodo: `Período: ${dtIni.split('-').reverse().join('/')} a ${dtFim.split('-').reverse().join('/')}`,
+                labelComparativo: 'Recorte Selecionado',
+                gmvVarPct: '+15.4%',
+                pedidosVarPct: '+12.1%',
+                pecasVarPct: '+10.8%',
+                ticketMedioVarPct: '+2.4%',
+                margemVarPp: '+1.9 p.p.'
+            };
         }
 
                 // Enriquecimento multidimensional da Timeline (Vendas, DIFAL, Cupons, Pedidos, Ticket Médio para Power BI Switcher)
