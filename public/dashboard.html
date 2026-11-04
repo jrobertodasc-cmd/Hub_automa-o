@@ -2425,24 +2425,36 @@
 
             <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS (DARK LUXURY SEGMENTED CONTROL) -->
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
-                <div style="display: inline-flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px;">
-                    <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <span>1. Anal&iacute;tico de DIFAL (Nota a Nota)</span>
+                <div style="display: inline-flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px; flex-wrap: wrap;">
+                    <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>1. Anal&iacute;tico DIFAL</span>
                     </button>
-                    <button type="button" id="tab-rel-btn-romaneios" class="tab-rel-btn" onclick="alternarTabRelatorios('romaneios')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                        <span>2. Manifestos &amp; Romaneios (A4)</span>
+                    <button type="button" id="tab-rel-btn-vendedoras" class="tab-rel-btn" onclick="alternarTabRelatorios('vendedoras')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>2. Vendedoras &amp; Comercial</span>
                     </button>
-                    <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                        <span>3. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</span>
+                    <button type="button" id="tab-rel-btn-cupons" class="tab-rel-btn" onclick="alternarTabRelatorios('cupons')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <span>3. Cupons &amp; Campanhas</span>
+                    </button>
+                    <button type="button" id="tab-rel-btn-logistica" class="tab-rel-btn" onclick="alternarTabRelatorios('logistica')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span>4. Log&iacute;stica &amp; Romaneios</span>
+                    </button>
+                    <button type="button" id="tab-rel-btn-estados" class="tab-rel-btn" onclick="alternarTabRelatorios('estados')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                        <span>5. Vendas por Regi&atilde;o (UF)</span>
+                    </button>
+                    <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                        <span>6. Fechamento Cont&aacute;bil</span>
                     </button>
                 </div>
                 
                 <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
                     <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);"></span>
-                    Base Fiscal Sincronizada com Linx Microvix ERP
+                    Hub Intelligence &middot; Relat&oacute;rios Integrados
                 </div>
             </div>
 
@@ -2595,71 +2607,352 @@
                 </div>
             </div>
 
-            <!-- CONTEÚDO TAB 2: MANIFESTOS & ROMANEIOS -->
-            <div id="tab-rel-conteudo-romaneios" class="tab-rel-conteudo" style="display: none;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- CARD MANIFESTO TOTAL EXPRESS -->
-                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: grid; place-items: center; color: #38BDF8;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    </span>
-                                    <div>
-                                        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Romaneio de Cargas &middot; Total Express</h3>
-                                        <span style="font-size: 11px; color: #94A3B8;">Documento oficial para coleta rodovi&aacute;ria e fiscaliza&ccedil;&atilde;o</span>
-                                    </div>
-                                </div>
-                                <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">PRONTO P/ IMPRESS&Atilde;O</span>
-                            </div>
-                            <p style="font-size: 12.5px; color: #CBD5E1; line-height: 1.5; margin: 0 0 16px 0;">
-                                Romaneio impresso em formato padrão A4 com relação completa de AWB, chave de acesso da NF-e, destinatário, endereço de entrega e campo para assinatura do motorista na doca.
-                            </p>
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #94A3B8;">
-                                <div>Ve&iacute;culo / Transportador: <strong style="color: #FFFFFF;">Total Express Coleta Di&aacute;ria</strong></div>
-                                <div style="margin-top: 4px;">Tipo de Emiss&atilde;o: <strong style="color: #FFFFFF;">A4 com C&oacute;digo de Barras Code 128</strong></div>
-                            </div>
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 2: VENDEDORAS & COMERCIAL -->
+            <!-- ============================================================== -->
+            <div id="tab-rel-conteudo-vendedoras" class="tab-rel-conteudo" style="display: none;">
+                <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO COMERCIAL -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Desempenho Comercial &amp; Ranking de Vendedoras</h3>
+                            <span style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.25);">LINX MICROVIX ERP</span>
                         </div>
-                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#0369A1'" onmouseout="this.style.background='#0284C7'">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            <span>Imprimir Romaneio Total Express (A4)</span>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Relatório auditado das consultoras e vendas da loja online com volume faturado, pedidos e ticket médio.</p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="exportarCsvRelatorioVendedoras()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Ranking (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Imprimir / PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPIS COMERCIAIS -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">GMV Vendedoras</span>
+                        <div id="rel-kpi-vend-faturamento" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Volume de Social Selling</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pedidos Atendidos</span>
+                        <div id="rel-kpi-vend-pedidos" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Convertidos por vendedoras</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Ticket M&eacute;dio Comercial</span>
+                        <div id="rel-kpi-vend-ticket" style="font-size: 22px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">M&eacute;dia por atendimento</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">L&iacute;der de Vendas</span>
+                        <div id="rel-kpi-vend-lider" style="font-size: 17px; font-weight: 800; color: #F59E0B; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</div>
+                        <div id="rel-kpi-vend-lider-sub" style="font-size: 11px; color: #64748B; margin-top: 4px;">Top 1 do m&ecirc;s</div>
+                    </div>
+                </div>
+
+                <!-- TABELA DE VENDEDORAS -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 60px; text-align: center;">Pos.</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Consultora / Vendedora</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Canal &middot; C&oacute;digo Linx</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Pedidos</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">GMV Faturado</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Ticket M&eacute;dio</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 180px;">% Share de Vendas</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-rel-vendedoras-body">
+                                <tr>
+                                    <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio comercial...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 3: CUPONS & CAMPANHAS PROMOCIONAIS -->
+            <!-- ============================================================== -->
+            <div id="tab-rel-conteudo-cupons" class="tab-rel-conteudo" style="display: none;">
+                <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO DE CUPONS -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Performance de Cupons, Campanhas &amp; Parcerias</h3>
+                            <span style="background: rgba(236, 72, 153, 0.12); color: #EC4899; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(236, 72, 153, 0.25);">PROMOÇÕES BOAH</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Receita convertida via vouchers, influenciadoras parceiras (Mila, Carol, Clara) e campanhas especiais.</p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="exportarCsvRelatorioCupons()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Cupons (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Imprimir / PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPIS DE CUPONS -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(236, 72, 153, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Receita c/ Cupons</span>
+                        <div id="rel-kpi-cupom-receita" style="font-size: 22px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Vendas com vouchers</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pedidos Promocionais</span>
+                        <div id="rel-kpi-cupom-pedidos" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Compras que usaram cupons</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Share Promocional</span>
+                        <div id="rel-kpi-cupom-share" style="font-size: 22px; font-weight: 800; color: #A855F7; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0%</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">% do faturamento da marca</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Cupom L&iacute;der</span>
+                        <div id="rel-kpi-cupom-lider" style="font-size: 18px; font-weight: 800; color: #F59E0B; margin-top: 4px; font-family: 'JetBrains Mono', monospace;">-</div>
+                        <div id="rel-kpi-cupom-lider-sub" style="font-size: 11px; color: #64748B; margin-top: 4px;">Maior convers&atilde;o</div>
+                    </div>
+                </div>
+
+                <!-- TABELA DE CUPONS -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 60px; text-align: center;">Pos.</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">C&oacute;digo do Cupom</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Canal &middot; Origem da Campanha</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Pedidos</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Receita Convertida</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Ticket M&eacute;dio</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 180px;">% Share Promocional</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-rel-cupons-body">
+                                <tr>
+                                    <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio de cupons...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 4: LOGÍSTICA, FRETES & ROMANEIOS -->
+            <!-- ============================================================== -->
+            <div id="tab-rel-conteudo-logistica" class="tab-rel-conteudo" style="display: none;">
+                <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO DE LOGÍSTICA -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Expedi&ccedil;&atilde;o Log&iacute;stica, Transportadoras &amp; Romaneios</h3>
+                            <span style="background: rgba(16, 185, 129, 0.12); color: #34D399; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.25);">DOCA &amp; EXPEDIÇÃO</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Volume faturado e despachado por transportadora (Total Express vs. Correios) com emissão de Manifestos A4.</p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Romaneio Total Express (A4)</span>
+                        </a>
+                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="background: #D97706; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Romaneio Correios (A4)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 4 KPIS LOGÍSTICOS -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pacotes Despachados</span>
+                        <div id="rel-kpi-log-pedidos" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Total de volumes expedidos</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Receita Transportada</span>
+                        <div id="rel-kpi-log-gmv" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Valor de carga sob custódia</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">SLA M&eacute;dio de Entrega</span>
+                        <div id="rel-kpi-log-sla" style="font-size: 22px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">-</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Prazo estimado de tr&acirc;nsito</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Transportadora Principal</span>
+                        <div id="rel-kpi-log-lider" style="font-size: 17px; font-weight: 800; color: #F59E0B; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</div>
+                        <div id="rel-kpi-log-lider-sub" style="font-size: 11px; color: #64748B; margin-top: 4px;">Maior fatia da expedi&ccedil;&atilde;o</div>
+                    </div>
+                </div>
+
+                <!-- TABELA COMPARATIVA DE TRANSPORTADORAS -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3); margin-bottom: 24px;">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                    <th style="padding: 12px 16px; font-weight: 700;">Transportadora</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Modalidade de Coleta</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Pacotes Despachados</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">GMV Transportado</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Prazo M&eacute;dio (SLA)</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 180px;">% Fatia do Volume</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Documento Oficial</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-rel-logistica-body">
+                                <tr>
+                                    <td colspan="7" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando dados log&iacute;sticos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CARDS DE MANIFESTOS A4 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                Romaneio Oficial Total Express (A4)
+                            </div>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">PRONTO</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px 0;">Contém relação de AWBs, chaves das notas fiscais e canhoto para assinatura na doca.</p>
+                        <a href="/api/expedicao/romaneio?carrier=Total%20Express" target="_blank" style="background: #0284C7; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 10px 18px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>Imprimir Romaneio A4 Total Express</span>
                         </a>
                     </div>
 
-                    <!-- CARD MANIFESTO CORREIOS -->
-                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: grid; place-items: center; color: #F59E0B;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    </span>
-                                    <div>
-                                        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Romaneio de Postagem &middot; Correios</h3>
-                                        <span style="font-size: 11px; color: #94A3B8;">Lista de Postagem PLP para ag&ecirc;ncia ou coleta</span>
-                                    </div>
-                                </div>
-                                <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">SEDEX / PAC</span>
+                    <div style="background: #0E1626; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 14px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                Romaneio Oficial Correios PLP (A4)
                             </div>
-                            <p style="font-size: 12.5px; color: #CBD5E1; line-height: 1.5; margin: 0 0 16px 0;">
-                                Relação com códigos de rastreio Correios dos pacotes faturados e liberados, pesos aferidos e chaves de NF-e para conferência na unidade de triagem postal.
-                            </p>
-                            <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #94A3B8;">
-                                <div>Modalidade: <strong style="color: #FFFFFF;">Sedex &amp; PAC Comercial</strong></div>
-                                <div style="margin-top: 4px;">Tipo de Emiss&atilde;o: <strong style="color: #FFFFFF;">Formato A4 Padr&atilde;o Correios</strong></div>
-                            </div>
+                            <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">SEDEX / PAC</span>
                         </div>
-                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="background: #D97706; color: #FFFFFF; font-size: 13px; font-weight: 700; padding: 12px 20px; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#B45309'" onmouseout="this.style.background='#D97706'">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            <span>Imprimir Romaneio Correios (A4)</span>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 0 0 16px 0;">Contém relação de rastreios dos pacotes faturados e pesos aferidos para a triagem postal.</p>
+                        <a href="/api/expedicao/romaneio?carrier=Correios" target="_blank" style="background: #D97706; color: #FFFFFF; font-size: 12.5px; font-weight: 700; padding: 10px 18px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>Imprimir Romaneio A4 Correios</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- CONTEÚDO TAB 3: FECHAMENTO CONTÁBIL -->
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 5: VENDAS POR REGIÃO & UFS -->
+            <!-- ============================================================== -->
+            <div id="tab-rel-conteudo-estados" class="tab-rel-conteudo" style="display: none;">
+                <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO GEOGRÁFICO -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Intelig&ecirc;ncia Geogr&aacute;fica de Vendas &amp; Reten&ccedil;&atilde;o DIFAL</h3>
+                            <span style="background: rgba(56, 189, 248, 0.12); color: #38BDF8; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.25);">HEATMAP NACIONAL</span>
+                        </div>
+                        <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Demonstrativo interestadual com volume de receita por Unidade Federativa, DIFAL devido e al&iacute;quotas.</p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="exportarCsvRelatorioEstados()" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar UFs (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Imprimir / PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPIS GEOGRÁFICOS -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">UFs Atendidas</span>
+                        <div id="rel-kpi-geo-ufs" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Estados com compras aprovadas</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Estado Top 1 (GMV)</span>
+                        <div id="rel-kpi-geo-lider" style="font-size: 20px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">-</div>
+                        <div id="rel-kpi-geo-lider-sub" style="font-size: 11px; color: #64748B; margin-top: 4px;">Maior pra&ccedil;a compradora</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL Interestadual Total</span>
+                        <div id="rel-kpi-geo-difal" style="font-size: 22px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Reten&ccedil;&atilde;o tribut&aacute;ria total</div>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Concentra&ccedil;&atilde;o Top 3 UFs</span>
+                        <div id="rel-kpi-geo-top3" style="font-size: 22px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0%</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Share das 3 maiores pra&ccedil;as</div>
+                    </div>
+                </div>
+
+                <!-- TABELA DE ESTADOS -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 60px; text-align: center;">UF</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Estado &middot; Unidade Federativa</th>
+                                    <th style="padding: 12px 16px; font-weight: 700;">Regi&atilde;o</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Faturamento Bruto</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">DIFAL Retido</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Al&iacute;quota M&eacute;dia</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Pedidos</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 180px;">% Share Nacional</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-rel-estados-body">
+                                <tr>
+                                    <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando dados geogr&aacute;ficos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 6: FECHAMENTO CONTÁBIL & ARQUIVOS FISCAIS -->
+            <!-- ============================================================== -->
             <div id="tab-rel-conteudo-fechamento" class="tab-rel-conteudo" style="display: none;">
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #FFFFFF;">Central de Fechamento Cont&aacute;bil &amp; Arquivos Oficiais</h3>
+                        <span style="background: rgba(165, 180, 252, 0.15); color: #A5B4FC; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">CONTROLADORIA</span>
+                    </div>
+                    <p style="font-size: 12px; color: #94A3B8; margin: 3px 0 0 0;">Downloads diretos dos pacotes fiscais mensais da SEFAZ, conciliação bancária do Itaú e remessas bancárias.</p>
+                </div>
+
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                     <!-- PACOTE ZIP XMLs -->
                     <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between;">

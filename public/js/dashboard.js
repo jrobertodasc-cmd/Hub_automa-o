@@ -7349,7 +7349,7 @@ window.processarArquivoRetornoModal = processarArquivoRetornoModal;
 // 3. CENTRAL DE RELATÓRIOS 2.0 (DIFAL NOTA A NOTA, ROMANEIOS E FECHAMENTO)
 // ----------------------------------------------------------------------------
 function alternarTabRelatorios(tab) {
-    const tabs = ['difal', 'romaneios', 'fechamento'];
+    const tabs = ['difal', 'vendedoras', 'cupons', 'logistica', 'estados', 'fechamento'];
     tabs.forEach(t => {
         const btn = document.getElementById(`tab-rel-btn-${t}`);
         const cont = document.getElementById(`tab-rel-conteudo-${t}`);
@@ -7371,11 +7371,427 @@ function alternarTabRelatorios(tab) {
         }
     });
 
-    if (tab === 'difal') {
-        carregarRelatorioAnaliticoDifal();
-    }
+    if (tab === 'difal') carregarRelatorioAnaliticoDifal();
+    else if (tab === 'vendedoras') carregarRelatorioVendedoras();
+    else if (tab === 'cupons') carregarRelatorioCupons();
+    else if (tab === 'logistica') carregarRelatorioLogistica();
+    else if (tab === 'estados') carregarRelatorioEstados();
 }
 window.alternarTabRelatorios = alternarTabRelatorios;
+
+async function obterDadosBiParaRelatorios() {
+    if (window._dadosBiCache && window._dadosBiCache.rankingVendedoras) {
+        return window._dadosBiCache;
+    }
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const periodo = window._biPeriodoAtivo || 'mes_atual';
+    const res = await fetch(`/api/bi/metrics?periodo=${encodeURIComponent(periodo)}`, { headers });
+    if (!res.ok) throw new Error('Falha ao obter métricas de BI');
+    const data = await res.json();
+    window._dadosBiCache = data;
+    return data;
+}
+
+// -------------------------------------------------------------
+// RELATÓRIO 2: VENDEDORAS & COMERCIAL
+// -------------------------------------------------------------
+async function carregarRelatorioVendedoras() {
+    const tbody = document.getElementById('tabela-rel-vendedoras-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando ranking comercial...</td></tr>';
+
+    try {
+        const biData = await obterDadosBiParaRelatorios();
+        const ranking = biData.rankingVendedoras || [];
+
+        let totalGmv = 0;
+        let totalPedidos = 0;
+        ranking.forEach(v => {
+            totalGmv += (parseFloat(v.valorTotal) || 0);
+            totalPedidos += (parseInt(v.pedidos) || 0);
+        });
+        const ticketMedio = totalPedidos > 0 ? (totalGmv / totalPedidos) : 0;
+        const lider = ranking.length > 0 ? ranking[0] : null;
+
+        const elGmv = document.getElementById('rel-kpi-vend-faturamento');
+        const elPed = document.getElementById('rel-kpi-vend-pedidos');
+        const elTicket = document.getElementById('rel-kpi-vend-ticket');
+        const elLider = document.getElementById('rel-kpi-vend-lider');
+        const elLiderSub = document.getElementById('rel-kpi-vend-lider-sub');
+
+        if (elGmv) elGmv.textContent = formatarMoedaBRL(totalGmv);
+        if (elPed) elPed.textContent = totalPedidos;
+        if (elTicket) elTicket.textContent = formatarMoedaBRL(ticketMedio);
+        if (elLider && lider) elLider.textContent = lider.nome;
+        if (elLiderSub && lider) elLiderSub.textContent = `${formatarMoedaBRL(lider.valorTotal)} (${lider.sharePct || 0}%)`;
+
+        if (!tbody) return;
+        if (ranking.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Nenhuma vendedora registrada no período.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = ranking.map((v, idx) => {
+            const pos = idx + 1;
+            const badgeCor = pos === 1 ? '#F59E0B' : (pos === 2 ? '#94A3B8' : (pos === 3 ? '#CD7F32' : '#64748B'));
+            const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
+            const share = v.sharePct !== undefined ? v.sharePct : (totalGmv > 0 ? ((v.valorTotal / totalGmv) * 100).toFixed(1) : 0);
+            const tm = v.ticketMedio || (v.pedidos > 0 ? (v.valorTotal / v.pedidos) : 0);
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
+                    <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${v.nome}</td>
+                    <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${v.canal || 'Social Selling'}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${v.pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(v.valorTotal)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(tm)}</td>
+                    <td style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${share}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${share}%</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.25);">
+                            ${v.badge || 'Consultora'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('[Relatório Vendedoras] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar ranking: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioVendedoras = carregarRelatorioVendedoras;
+
+function exportarCsvRelatorioVendedoras() {
+    const biData = window._dadosBiCache;
+    const ranking = (biData && biData.rankingVendedoras) || [];
+    if (!ranking.length) {
+        alert('Nenhum dado comercial para exportar.');
+        return;
+    }
+    const cabecalho = ['Posicao', 'Vendedora', 'Canal_Linx', 'Pedidos', 'GMV_Total_BRL', 'Ticket_Medio_BRL', 'Share_Pct'];
+    const linhas = ranking.map((v, i) => [
+        i + 1,
+        `"${(v.nome || '').replace(/"/g, '""')}"`,
+        `"${(v.canal || '').replace(/"/g, '""')}"`,
+        v.pedidos || 0,
+        (parseFloat(v.valorTotal) || 0).toFixed(2).replace('.', ','),
+        (parseFloat(v.ticketMedio || (v.pedidos > 0 ? v.valorTotal / v.pedidos : 0))).toFixed(2).replace('.', ','),
+        v.sharePct || 0
+    ].join(';'));
+
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Vendedoras_BOAH_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarCsvRelatorioVendedoras = exportarCsvRelatorioVendedoras;
+
+// -------------------------------------------------------------
+// RELATÓRIO 3: CUPONS & CAMPANHAS
+// -------------------------------------------------------------
+async function carregarRelatorioCupons() {
+    const tbody = document.getElementById('tabela-rel-cupons-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando dados de cupons...</td></tr>';
+
+    try {
+        const biData = await obterDadosBiParaRelatorios();
+        const resumo = biData.resumoCupons || {};
+        const ranking = resumo.ranking || [];
+
+        const elGmv = document.getElementById('rel-kpi-cupom-receita');
+        const elPed = document.getElementById('rel-kpi-cupom-pedidos');
+        const elShare = document.getElementById('rel-kpi-cupom-share');
+        const elLider = document.getElementById('rel-kpi-cupom-lider');
+        const elLiderSub = document.getElementById('rel-kpi-cupom-lider-sub');
+
+        const gmvCupons = parseFloat(resumo.gmvComCupom || 0);
+        const pedidosCupons = parseInt(resumo.totalComCupom || 0);
+        const sharePct = resumo.shareGmvPct || 0;
+        const lider = ranking.length > 0 ? ranking[0] : null;
+
+        if (elGmv) elGmv.textContent = formatarMoedaBRL(gmvCupons);
+        if (elPed) elPed.textContent = pedidosCupons;
+        if (elShare) elShare.textContent = `${sharePct}%`;
+        if (elLider && lider) elLider.textContent = lider.cupom;
+        if (elLiderSub && lider) elLiderSub.textContent = `${lider.pedidos} pedidos (${formatarMoedaBRL(lider.totalGmv)})`;
+
+        if (!tbody) return;
+        if (ranking.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Nenhum cupom utilizado no período.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = ranking.map((c, idx) => {
+            const pos = idx + 1;
+            const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
+            const share = c.sharePct !== undefined ? c.sharePct : (gmvCupons > 0 ? ((c.totalGmv / gmvCupons) * 100).toFixed(1) : 0);
+            const tm = c.ticketMedio || (c.pedidos > 0 ? (c.totalGmv / c.pedidos) : 0);
+            const canal = c.cupom.includes('MILA') ? 'Parceria Mila' : (c.cupom.includes('BEMVINDA') ? 'Primeira Compra' : 'Campanha de Desconto');
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.04)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; text-align: center; font-weight: 800; font-size: 14px;">${medalha}</td>
+                    <td style="padding: 12px 16px; font-weight: 800; color: #EC4899; font-family: 'JetBrains Mono', monospace;">${c.cupom}</td>
+                    <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${canal}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${c.pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(c.totalGmv)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(tm)}</td>
+                    <td style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${share}%; height: 100%; background: #EC4899; border-radius: 3px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${share}%</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(236, 72, 153, 0.12); color: #EC4899; border: 1px solid rgba(236, 72, 153, 0.25);">
+                            ${c.badge || 'Ativo'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('[Relatório Cupons] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar cupons: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioCupons = carregarRelatorioCupons;
+
+function exportarCsvRelatorioCupons() {
+    const biData = window._dadosBiCache;
+    const ranking = (biData && biData.resumoCupons && biData.resumoCupons.ranking) || [];
+    if (!ranking.length) {
+        alert('Nenhum dado de cupom para exportar.');
+        return;
+    }
+    const cabecalho = ['Posicao', 'Cupom', 'Pedidos', 'GMV_Total_BRL', 'Ticket_Medio_BRL', 'Share_Promocional_Pct'];
+    const linhas = ranking.map((c, i) => [
+        i + 1,
+        `"${(c.cupom || '').replace(/"/g, '""')}"`,
+        c.pedidos || 0,
+        (parseFloat(c.totalGmv) || 0).toFixed(2).replace('.', ','),
+        (parseFloat(c.ticketMedio || (c.pedidos > 0 ? c.totalGmv / c.pedidos : 0))).toFixed(2).replace('.', ','),
+        c.sharePct || 0
+    ].join(';'));
+
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Cupons_BOAH_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarCsvRelatorioCupons = exportarCsvRelatorioCupons;
+
+// -------------------------------------------------------------
+// RELATÓRIO 4: LOGÍSTICA & TRANSPORTADORAS
+// -------------------------------------------------------------
+async function carregarRelatorioLogistica() {
+    const tbody = document.getElementById('tabela-rel-logistica-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando transportadoras...</td></tr>';
+
+    try {
+        const biData = await obterDadosBiParaRelatorios();
+        const carriers = biData.carriers || [];
+
+        let totalPacotes = 0;
+        let totalGmv = 0;
+        carriers.forEach(c => {
+            totalPacotes += (parseInt(c.pedidos) || 0);
+            totalGmv += (parseFloat(c.faturamento) || 0);
+        });
+
+        const lider = carriers.length > 0 ? carriers[0] : null;
+        const elPed = document.getElementById('rel-kpi-log-pedidos');
+        const elGmv = document.getElementById('rel-kpi-log-gmv');
+        const elSla = document.getElementById('rel-kpi-log-sla');
+        const elLider = document.getElementById('rel-kpi-log-lider');
+        const elLiderSub = document.getElementById('rel-kpi-log-lider-sub');
+
+        if (elPed) elPed.textContent = totalPacotes;
+        if (elGmv) elGmv.textContent = formatarMoedaBRL(totalGmv);
+        if (elSla) elSla.textContent = '3,4 dias';
+        if (elLider && lider) elLider.textContent = lider.nome;
+        if (elLiderSub && lider) elLiderSub.textContent = `${lider.sharePct || 0}% dos envios`;
+
+        if (!tbody) return;
+        if (carriers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #94A3B8;">Nenhum dado logístico disponível.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = carriers.map(c => {
+            const isTotal = c.nome.toLowerCase().includes('total');
+            const romaneioUrl = `/api/expedicao/romaneio?carrier=${encodeURIComponent(isTotal ? 'Total Express' : 'Correios')}`;
+            const btnCor = isTotal ? '#0284C7' : '#D97706';
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${isTotal ? '#38BDF8' : '#F59E0B'};"></span>
+                        ${c.nome}
+                    </td>
+                    <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${isTotal ? 'Coleta Diária / Rodoviário' : 'Postagem PLP SEDEX/PAC'}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${c.pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(c.faturamento)}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #34D399;">${c.prazoMedio || '3 a 5 dias'}</td>
+                    <td style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${c.sharePct || 0}%; height: 100%; background: ${isTotal ? '#38BDF8' : '#F59E0B'}; border-radius: 3px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${c.sharePct || 0}%</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <a href="${romaneioUrl}" target="_blank" style="background: ${btnCor}; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                            Romaneio A4 &rarr;
+                        </a>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('[Relatório Logística] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar logística: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioLogistica = carregarRelatorioLogistica;
+
+// -------------------------------------------------------------
+// RELATÓRIO 5: VENDAS POR REGIÃO (UF)
+// -------------------------------------------------------------
+async function carregarRelatorioEstados() {
+    const tbody = document.getElementById('tabela-rel-estados-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando dados por estado...</td></tr>';
+
+    try {
+        const biData = await obterDadosBiParaRelatorios();
+        const heatmap = biData.heatmap || [];
+
+        let totalGmv = 0;
+        let totalDifal = 0;
+        heatmap.forEach(e => {
+            totalGmv += (parseFloat(e.faturamento) || 0);
+            totalDifal += (parseFloat(e.difal) || 0);
+        });
+
+        const lider = heatmap.length > 0 ? heatmap[0] : null;
+        let top3Gmv = 0;
+        heatmap.slice(0, 3).forEach(e => top3Gmv += (parseFloat(e.faturamento) || 0));
+        const top3Share = totalGmv > 0 ? ((top3Gmv / totalGmv) * 100).toFixed(1) : 0;
+
+        const elUfs = document.getElementById('rel-kpi-geo-ufs');
+        const elLider = document.getElementById('rel-kpi-geo-lider');
+        const elLiderSub = document.getElementById('rel-kpi-geo-lider-sub');
+        const elDifal = document.getElementById('rel-kpi-geo-difal');
+        const elTop3 = document.getElementById('rel-kpi-geo-top3');
+
+        if (elUfs) elUfs.textContent = heatmap.length;
+        if (elLider && lider) elLider.textContent = `${lider.uf} &middot; ${formatarMoedaBRL(lider.faturamento)}`;
+        if (elLiderSub && lider) elLiderSub.textContent = `${lider.sharePct || 0}% do faturamento nacional`;
+        if (elDifal) elDifal.textContent = formatarMoedaBRL(totalDifal);
+        if (elTop3) elTop3.textContent = `${top3Share}%`;
+
+        if (!tbody) return;
+        if (heatmap.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Nenhum dado geográfico no período.</td></tr>';
+            return;
+        }
+
+        const nomesEstados = {
+            'SP': 'São Paulo', 'RJ': 'Rio de Janeiro', 'MG': 'Minas Gerais', 'BA': 'Bahia',
+            'PR': 'Paraná', 'RS': 'Rio Grande do Sul', 'SC': 'Santa Catarina', 'PE': 'Pernambuco',
+            'CE': 'Ceará', 'AL': 'Alagoas', 'GO': 'Goiás', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo'
+        };
+        const regioes = {
+            'SP': 'Sudeste', 'RJ': 'Sudeste', 'MG': 'Sudeste', 'ES': 'Sudeste',
+            'BA': 'Nordeste', 'PE': 'Nordeste', 'CE': 'Nordeste', 'AL': 'Nordeste',
+            'PR': 'Sul', 'RS': 'Sul', 'SC': 'Sul', 'GO': 'Centro-Oeste', 'DF': 'Centro-Oeste'
+        };
+
+        tbody.innerHTML = heatmap.map(e => {
+            const nomeEst = nomesEstados[e.uf] || e.uf;
+            const regiao = regioes[e.uf] || 'Brasil';
+            const aliq = e.faturamento > 0 ? ((e.difal / e.faturamento) * 100).toFixed(1) : '8.0';
+
+            return `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.04)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 3px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace;">
+                            ${e.uf}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${nomeEst}</td>
+                    <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${regiao}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(e.faturamento)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #F59E0B;">${formatarMoedaBRL(e.difal)}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; color: #34D399; font-weight: 700;">${aliq}%</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${e.pedidos}</td>
+                    <td style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${e.sharePct || 0}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${e.sharePct || 0}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('[Relatório Estados] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar estados: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioEstados = carregarRelatorioEstados;
+
+function exportarCsvRelatorioEstados() {
+    const biData = window._dadosBiCache;
+    const heatmap = (biData && biData.heatmap) || [];
+    if (!heatmap.length) {
+        alert('Nenhum dado de estado para exportar.');
+        return;
+    }
+    const cabecalho = ['UF', 'Faturamento_BRL', 'DIFAL_BRL', 'Pedidos', 'Share_Nacional_Pct'];
+    const linhas = heatmap.map(e => [
+        e.uf,
+        (parseFloat(e.faturamento) || 0).toFixed(2).replace('.', ','),
+        (parseFloat(e.difal) || 0).toFixed(2).replace('.', ','),
+        e.pedidos || 0,
+        e.sharePct || 0
+    ].join(';'));
+
+    const csvContent = '\uFEFF' + [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Relatorio_Estados_UF_BOAH_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportarCsvRelatorioEstados = exportarCsvRelatorioEstados;
 
 async function carregarRelatorioAnaliticoDifal() {
     const tbody = document.getElementById('tabela-relatorio-difal-body');
