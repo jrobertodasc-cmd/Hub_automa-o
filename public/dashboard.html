@@ -2702,6 +2702,16 @@
                                 <span>👩‍💼 GERÊNCIA COMERCIAL &amp; GROWTH</span>
                                 <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('comercial')" style="background: rgba(236, 72, 153, 0.12); border: 1px solid rgba(236, 72, 153, 0.3); color: #EC4899; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
                             </div>
+                            <div onclick="selecionarRelatorioDropdown('periodo', '0. Vendas por Período (Evolução Diária)', '📅', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 15px;">📅</span>
+                                    <div>
+                                        <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">0. Vendas por Período (Evolução Diária)</div>
+                                        <div style="font-size: 11px; color: #94A3B8;">Faturamento diário, safra do mês e ticket médio</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 10px; font-weight: 800; color: #EC4899; background: rgba(236, 72, 153, 0.15); padding: 2px 6px; border-radius: 4px;">NOVO</span>
+                            </div>
                             <div onclick="selecionarRelatorioDropdown('vendedoras', '2. Ranking de Vendedoras (Linx Microvix)', '👩‍💼', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <span style="font-size: 15px;">👩‍💼</span>
@@ -2742,6 +2752,7 @@
 
                         <!-- Fallback / sync hidden select -->
                         <select id="seletor-relatorio-executivo" style="display: none;">
+                            <option value="periodo">0. Vendas por Período</option>
                             <option value="difal">1. Analítico DIFAL</option>
                             <option value="vendedoras">2. Ranking Vendedoras</option>
                             <option value="cupons">3. Cupons &amp; Campanhas</option>
@@ -2924,6 +2935,122 @@
             <!-- ============================================================== -->
             <!-- CONTEÚDO TAB 2: VENDEDORAS & COMERCIAL -->
             <!-- ============================================================== -->
+            
+            <!-- ============================================================== -->
+            <!-- CONTEÚDO TAB 0: VENDAS POR PERÍODO (NOVO!) -->
+            <!-- ============================================================== -->
+            <div id="tab-rel-conteudo-periodo" class="tab-rel-conteudo" style="display: none;">
+
+                <!-- BARRA DE FILTROS & AÇÕES INTELIGENTE DO PERÍODO -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <!-- Presets de Período -->
+                        <div>
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Recorte Temporal</label>
+                            <select id="filtro-rel-periodo-preset" onchange="aoMudarPresetPeriodo()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 170px;">
+                                <option value="mes_atual" selected>Mês Atual (Novembro/2026)</option>
+                                <option value="7dias">Últimos 7 Dias</option>
+                                <option value="mes_anterior">Mês Anterior (Outubro/2026)</option>
+                                <option value="personalizado">Personalizado (Datas)</option>
+                            </select>
+                        </div>
+
+                        <!-- Data Inicial -->
+                        <div id="wrapper-rel-periodo-inicio">
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Data Inicial</label>
+                            <input type="date" id="filtro-rel-periodo-inicio" value="2026-11-01" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 7px 10px; border-radius: 8px; outline: none;">
+                        </div>
+
+                        <!-- Data Final -->
+                        <div id="wrapper-rel-periodo-fim">
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Data Final</label>
+                            <input type="date" id="filtro-rel-periodo-fim" value="2026-11-30" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 7px 10px; border-radius: 8px; outline: none;">
+                        </div>
+
+                        <div style="align-self: flex-end;">
+                            <button type="button" onclick="carregarRelatorioPeriodo()" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                <span>Filtrar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" onclick="exportarCsvRelatorioPeriodo()" title="Baixar planilha CSV oficial do período" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Excel (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="abrirRelatorioImpressao('periodo')" title="Abrir página oficial limpa para impressão ou PDF" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span>Visualizar / PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 KPIS EXECUTIVOS DO PERÍODO -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturamento Total</span>
+                        <div id="rel-kpi-periodo-fat" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin: 4px 0;">R$ 0,00</div>
+                        <span style="font-size: 11px; color: #64748B;">Volume faturado no período</span>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Pedidos Faturados</span>
+                        <div id="rel-kpi-periodo-ped" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 4px 0;">0</div>
+                        <span style="font-size: 11px; color: #64748B;">Total de compras convertidas</span>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Ticket Médio</span>
+                        <div id="rel-kpi-periodo-ticket" style="font-size: 22px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin: 4px 0;">R$ 0,00</div>
+                        <span style="font-size: 11px; color: #64748B;">Média por pedido</span>
+                    </div>
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Média Diária</span>
+                        <div id="rel-kpi-periodo-media" style="font-size: 22px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 4px 0;">R$ 0,00</div>
+                        <span style="font-size: 11px; color: #64748B;">Receita média por dia ativo</span>
+                    </div>
+                </div>
+
+                <!-- TABELA DE VENDAS POR PERÍODO -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.25);">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                            <thead>
+                                <tr style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: #94A3B8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    <th style="padding: 12px 16px; text-align: center; width: 50px;">#</th>
+                                    <th style="padding: 12px 16px; width: 130px;">Data</th>
+                                    <th style="padding: 12px 16px; width: 120px;">Dia Sem.</th>
+                                    <th style="padding: 12px 16px; text-align: center; width: 90px;">Pedidos</th>
+                                    <th style="padding: 12px 16px; text-align: right; width: 140px;">Faturamento (BRL)</th>
+                                    <th style="padding: 12px 16px; text-align: right; width: 130px;">Ticket Médio</th>
+                                    <th style="padding: 12px 16px; width: 150px;">% Share</th>
+                                    <th style="padding: 12px 16px; text-align: center; width: 100px;">Status ERP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-rel-periodo-body">
+                                <tr>
+                                    <td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando histórico do período...</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #0B1322; border-top: 2px solid rgba(56, 189, 248, 0.4); font-weight: 800; color: #FFFFFF;">
+                                    <td colspan="3" style="padding: 14px 16px; text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.05em;">TOTAL GERAL DO PERÍODO</td>
+                                    <td id="rel-total-periodo-ped" style="padding: 14px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #FFFFFF;">0</td>
+                                    <td id="rel-total-periodo-gmv" style="padding: 14px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #38BDF8;">R$ 0,00</td>
+                                    <td id="rel-total-periodo-tm" style="padding: 14px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #34D399;">R$ 0,00</td>
+                                    <td style="padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #CBD5E1;">100,0% Share</td>
+                                    <td style="padding: 14px 16px; text-align: center;">
+                                        <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3);">CONCILIADO</span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
             <div id="tab-rel-conteudo-vendedoras" class="tab-rel-conteudo" style="display: none;">
 
                 <!-- CABEÇALHO TIMBRADO CORPORATIVO OFICIAL BOAH -->

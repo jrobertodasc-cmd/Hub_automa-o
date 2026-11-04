@@ -1,11 +1,23 @@
-function imprimirRelatorioOficial() {
-    const tabAtiva = window._relatorioTabAtiva || 'difal';
-    document.querySelectorAll('.tab-rel-conteudo').forEach(el => el.classList.remove('ativa-print'));
-    const cont = document.getElementById(`tab-rel-conteudo-${tabAtiva}`);
-    if (cont) {
-        cont.classList.add('ativa-print');
+function abrirRelatorioImpressao(tipo) {
+    const tabAtiva = tipo || window._relatorioTabAtiva || 'periodo';
+    let url = `/relatorio.html?tipo=${encodeURIComponent(tabAtiva)}`;
+    if (tabAtiva === 'periodo') {
+        const pPreset = document.getElementById('filtro-rel-periodo-preset');
+        const pIni = document.getElementById('filtro-rel-periodo-inicio');
+        const pFim = document.getElementById('filtro-rel-periodo-fim');
+        if (pPreset && pPreset.value) url += `&periodo=${encodeURIComponent(pPreset.value)}`;
+        if (pIni && pIni.value) url += `&dataInicio=${encodeURIComponent(pIni.value)}`;
+        if (pFim && pFim.value) url += `&dataFim=${encodeURIComponent(pFim.value)}`;
+    } else if (tabAtiva === 'difal') {
+        const ufEl = document.getElementById('filtro-rel-uf');
+        if (ufEl && ufEl.value) url += `&uf=${encodeURIComponent(ufEl.value)}`;
     }
-    window.print();
+    window.open(url, '_blank');
+}
+window.abrirRelatorioImpressao = abrirRelatorioImpressao;
+
+function imprimirRelatorioOficial() {
+    abrirRelatorioImpressao(window._relatorioTabAtiva);
 }
 window.imprimirRelatorioOficial = imprimirRelatorioOficial;
 
@@ -7401,7 +7413,7 @@ window.selecionarRelatorioDropdown = selecionarRelatorioDropdown;
 
 function alternarTabRelatorios(tab) {
     window._relatorioTabAtiva = tab;
-    const tabs = ['difal', 'vendedoras', 'cupons', 'logistica', 'estados', 'fechamento'];
+    const tabs = ['periodo', 'difal', 'vendedoras', 'cupons', 'logistica', 'estados', 'fechamento'];
     tabs.forEach(t => {
         const cont = document.getElementById(`tab-rel-conteudo-${t}`);
         if (cont) {
@@ -7417,6 +7429,7 @@ function alternarTabRelatorios(tab) {
 
     // Atualiza o label do dropdown executivo
     const labelsMap = {
+        'periodo': { label: '0. Vendas por Período (Evolução Diária)', icon: '📅' },
         'difal': { label: '1. Analítico DIFAL (Nota a Nota & SEFAZ)', icon: '📊' },
         'vendedoras': { label: '2. Ranking de Vendedoras (Linx Microvix)', icon: '👩‍💼' },
         'cupons': { label: '3. Performance de Cupons & Campanhas', icon: '🎟️' },
@@ -7439,7 +7452,7 @@ function alternarTabRelatorios(tab) {
             badge.style.borderColor = 'rgba(56, 189, 248, 0.3)';
             badge.style.color = '#38BDF8';
             badge.innerHTML = '<span style="width: 7px; height: 7px; border-radius: 50%; background: #38BDF8;"></span><span>Visão: Fiscal &amp; Controladoria</span>';
-        } else if (tab === 'vendedoras' || tab === 'cupons') {
+        } else if (tab === 'periodo' || tab === 'vendedoras' || tab === 'cupons') {
             badge.style.background = 'rgba(236, 72, 153, 0.12)';
             badge.style.borderColor = 'rgba(236, 72, 153, 0.3)';
             badge.style.color = '#EC4899';
@@ -7462,7 +7475,7 @@ window.alternarTabRelatorios = alternarTabRelatorios;
 
 function abrirModalDossieGerenteAtivo() {
     const tab = window._relatorioTabAtiva || 'difal';
-    if (tab === 'vendedoras' || tab === 'cupons') {
+    if (tab === 'periodo' || tab === 'vendedoras' || tab === 'cupons') {
         abrirModalDossieGerente('comercial');
     } else if (tab === 'logistica') {
         abrirModalDossieGerente('logistica');
@@ -7486,6 +7499,142 @@ async function obterDadosBiParaRelatorios() {
     window._dadosBiCache = data;
     return data;
 }
+
+
+// -------------------------------------------------------------
+// RELATÓRIO 0: VENDAS POR PERÍODO (NOVO!)
+// -------------------------------------------------------------
+window._dadosPeriodoCache = null;
+
+function aoMudarPresetPeriodo() {
+    const preset = document.getElementById('filtro-rel-periodo-preset')?.value || 'mes_atual';
+    const elIni = document.getElementById('filtro-rel-periodo-inicio');
+    const elFim = document.getElementById('filtro-rel-periodo-fim');
+
+    if (preset === 'mes_atual') {
+        if (elIni) elIni.value = '2026-11-01';
+        if (elFim) elFim.value = '2026-11-30';
+    } else if (preset === '7dias') {
+        if (elIni) elIni.value = '2026-10-28';
+        if (elFim) elFim.value = '2026-11-04';
+    } else if (preset === 'mes_anterior') {
+        if (elIni) elIni.value = '2026-10-01';
+        if (elFim) elFim.value = '2026-10-31';
+    }
+    carregarRelatorioPeriodo();
+}
+window.aoMudarPresetPeriodo = aoMudarPresetPeriodo;
+
+async function carregarRelatorioPeriodo() {
+    const tbody = document.getElementById('tabela-rel-periodo-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando histórico do período...</td></tr>';
+
+    const preset = document.getElementById('filtro-rel-periodo-preset')?.value || 'mes_atual';
+    const dtIni = document.getElementById('filtro-rel-periodo-inicio')?.value || '2026-11-01';
+    const dtFim = document.getElementById('filtro-rel-periodo-fim')?.value || '2026-11-30';
+
+    try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        let url = `/api/relatorios/vendas-periodo?periodo=${encodeURIComponent(preset)}&dataInicial=${encodeURIComponent(dtIni)}&dataFim=${encodeURIComponent(dtFim)}`;
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error('Falha ao obter histórico de vendas por período');
+        const data = await res.json();
+        window._dadosPeriodoCache = data;
+
+        const resumo = data.resumo || {};
+        const elFat = document.getElementById('rel-kpi-periodo-fat');
+        const elPed = document.getElementById('rel-kpi-periodo-ped');
+        const elTm = document.getElementById('rel-kpi-periodo-ticket');
+        const elMed = document.getElementById('rel-kpi-periodo-media');
+
+        if (elFat) elFat.textContent = formatarMoedaBRL(resumo.totalFaturamento || 0);
+        if (elPed) elPed.textContent = resumo.totalPedidos || 0;
+        if (elTm) elTm.textContent = formatarMoedaBRL(resumo.ticketMedio || 0);
+        if (elMed) elMed.textContent = formatarMoedaBRL(resumo.mediaDiaria || 0);
+
+        // Footer totais
+        const footPed = document.getElementById('rel-total-periodo-ped');
+        const footGmv = document.getElementById('rel-total-periodo-gmv');
+        const footTm = document.getElementById('rel-total-periodo-tm');
+        if (footPed) footPed.textContent = resumo.totalPedidos || 0;
+        if (footGmv) footGmv.textContent = formatarMoedaBRL(resumo.totalFaturamento || 0);
+        if (footTm) footTm.textContent = formatarMoedaBRL(resumo.ticketMedio || 0);
+
+        const dias = data.dias || [];
+        if (!tbody) return;
+        if (dias.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Nenhuma venda registrada no período selecionado.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = dias.map(d => {
+            const share = d.sharePct !== undefined ? d.sharePct : 0;
+            return `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.06)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; color: #94A3B8;">${String(d.posicao).padStart(2, '0')}</td>
+                    <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF;">${d.dataFormatada}</td>
+                    <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${d.diaSemana}</td>
+                    <td style="padding: 12px 16px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #FFFFFF;">${d.pedidos}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #38BDF8;">${formatarMoedaBRL(d.faturamento)}</td>
+                    <td style="padding: 12px 16px; text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #34D399;">${formatarMoedaBRL(d.ticketMedio)}</td>
+                    <td style="padding: 12px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; background: #0E1626; height: 6px; border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${share}%; height: 100%; background: #38BDF8; border-radius: 3px;"></div>
+                            </div>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #CBD5E1; min-width: 38px;">${share}%</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.25);">
+                            ${d.status || 'Conciliado'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('[Relatório Período] Erro:', err);
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar dados do período: ${err.message}</td></tr>`;
+    }
+}
+window.carregarRelatorioPeriodo = carregarRelatorioPeriodo;
+
+function exportarCsvRelatorioPeriodo() {
+    if (!window._dadosPeriodoCache || !window._dadosPeriodoCache.dias) {
+        alert("Aguarde o carregamento dos dados do período para exportar.");
+        return;
+    }
+    const data = window._dadosPeriodoCache;
+    const desc = data.periodo?.descricao || "Periodo";
+    const linhas = [
+        "expedi HUB · Boah Brasil",
+        "Relatório de Vendas por Período (Evolução Diária)",
+        `Período: ${desc}`,
+        "",
+        "#;Data;Dia da Semana;Pedidos;Faturamento (R$);Ticket Médio (R$);% Part.;Status"
+    ];
+    data.dias.forEach(d => {
+        linhas.push(`${d.posicao};${d.dataFormatada};${d.diaSemana};${d.pedidos};${d.faturamento.toFixed(2).replace('.', ',')};${d.ticketMedio.toFixed(2).replace('.', ',')};${d.sharePct}%;${d.status}`);
+    });
+    const res = data.resumo || {};
+    linhas.push(`TOTAL;TOTAL CONSOLIDADO;;${res.totalPedidos || 0};${(res.totalFaturamento || 0).toFixed(2).replace('.', ',')};${(res.ticketMedio || 0).toFixed(2).replace('.', ',')};100,0%;OK`);
+
+    const blob = new Blob(["\uFEFF" + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Relatorio_Vendas_Periodo_${desc.replace(/[^0-9a-zA-Z]/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+window.exportarCsvRelatorioPeriodo = exportarCsvRelatorioPeriodo;
+
 
 // -------------------------------------------------------------
 // RELATÓRIO 2: VENDEDORAS & COMERCIAL
