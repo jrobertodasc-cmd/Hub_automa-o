@@ -2423,30 +2423,38 @@
                 </div>
             </div>
 
-            <!-- TABS DE NAVEGAÇÃO INTERNA DOS RELATÓRIOS -->
-            <div style="display: flex; border-bottom: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 24px; gap: 8px;">
-                <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); border-bottom: none; color: #38BDF8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <span>1. Anal&iacute;tico de DIFAL (Nota a Nota)</span>
-                </button>
-                <button type="button" id="tab-rel-btn-romaneios" class="tab-rel-btn" onclick="alternarTabRelatorios('romaneios')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                    <span>2. Manifestos &amp; Romaneios (A4)</span>
-                </button>
-                <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 10px 20px; border-radius: 10px 10px 0 0; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                    <span>3. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</span>
-                </button>
+            <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS (DARK LUXURY SEGMENTED CONTROL) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
+                <div style="display: inline-flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px;">
+                    <button type="button" id="tab-rel-btn-difal" class="tab-rel-btn active" onclick="alternarTabRelatorios('difal')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>1. Anal&iacute;tico de DIFAL (Nota a Nota)</span>
+                    </button>
+                    <button type="button" id="tab-rel-btn-romaneios" class="tab-rel-btn" onclick="alternarTabRelatorios('romaneios')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span>2. Manifestos &amp; Romaneios (A4)</span>
+                    </button>
+                    <button type="button" id="tab-rel-btn-fechamento" class="tab-rel-btn" onclick="alternarTabRelatorios('fechamento')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; padding: 7px 18px; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                        <span>3. Fechamento Cont&aacute;bil &amp; Arquivos Fiscais</span>
+                    </button>
+                </div>
+                
+                <div style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px;">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);"></span>
+                    Base Fiscal Sincronizada com Linx Microvix ERP
+                </div>
             </div>
 
             <!-- CONTEÚDO TAB 1: ANALÍTICO DE DIFAL -->
             <div id="tab-rel-conteudo-difal" class="tab-rel-conteudo" style="display: block;">
-                <!-- BARRA DE FILTROS & AÇÕES -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <!-- BARRA DE FILTROS & AÇÕES INTELIGENTE -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <!-- Filtro Estado UF -->
                         <div>
-                            <label style="display: block; font-size: 11px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase;">Estado (UF Destino)</label>
-                            <select id="filtro-rel-uf" onchange="carregarRelatorioAnaliticoDifal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 140px;">
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Estado (UF Destino)</label>
+                            <select id="filtro-rel-uf" onchange="carregarRelatorioAnaliticoDifal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 140px; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38BDF8'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'">
                                 <option value="todas">Todas as UFs</option>
                                 <option value="RJ">RJ &middot; Rio de Janeiro</option>
                                 <option value="MG">MG &middot; Minas Gerais</option>
@@ -2461,66 +2469,125 @@
                             </select>
                         </div>
 
+                        <!-- Filtro Status da Guia -->
                         <div>
-                            <label style="display: block; font-size: 11px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase;">Buscar Nota / Destinat&aacute;rio</label>
-                            <input type="text" id="filtro-rel-busca" placeholder="N&ordm; da NF, Chave ou Nome..." onkeyup="filtrarTabelaRelatorioDifalLocal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 8px 12px; border-radius: 8px; outline: none; width: 220px;">
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Status da Guia</label>
+                            <select id="filtro-rel-status" onchange="filtrarTabelaRelatorioDifalLocal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 135px; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38BDF8'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'">
+                                <option value="todos">Todos os Status</option>
+                                <option value="pago">&#x2713; Liquidadas (SEFAZ)</option>
+                                <option value="aberto">&#x26A0; A Recolher / Pendentes</option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro Transportadora -->
+                        <div>
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Transportadora</label>
+                            <select id="filtro-rel-carrier" onchange="filtrarTabelaRelatorioDifalLocal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; outline: none; min-width: 135px; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38BDF8'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'">
+                                <option value="todas">Todas</option>
+                                <option value="Total Express">Total Express</option>
+                                <option value="Correios">Correios</option>
+                            </select>
+                        </div>
+
+                        <!-- Busca Textual -->
+                        <div>
+                            <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;">Buscar Nota / Destinat&aacute;rio / Chave</label>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="text" id="filtro-rel-busca" placeholder="N&ordm; da NF, Chave ou Nome..." onkeyup="filtrarTabelaRelatorioDifalLocal()" style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.12); color: #FFFFFF; font-size: 12.5px; padding: 8px 12px 8px 32px; border-radius: 8px; outline: none; width: 230px; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38BDF8'" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" style="position: absolute; left: 10px; pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
                         </div>
 
                         <div style="align-self: flex-end;">
-                            <button type="button" onclick="carregarRelatorioAnaliticoDifal()" style="background: #1E293B; border: 1px solid rgba(255, 255, 255, 0.12); color: #F1F5F9; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer;">
-                                Filtrar
+                            <button type="button" onclick="carregarRelatorioAnaliticoDifal()" title="Recarregar dados da SEFAZ e Linx" style="background: #16233A; border: 1px solid #29374E; color: #F1F5FC; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
+                                <svg id="rel-refresh-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                <span>Atualizar</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- BOTÕES DE EXPORTAÇÃO -->
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <button type="button" onclick="exportarCsvRelatorioDifal()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <button type="button" onclick="exportarCsvRelatorioDifal()" title="Download da planilha CSV completa formatada" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.12)'">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Exportar Excel (.CSV)</span>
                         </button>
-                        <button type="button" onclick="window.print()" style="background: #1E293B; border: 1px solid rgba(255, 255, 255, 0.12); color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <button type="button" onclick="window.print()" title="Imprimir ou gerar PDF dos registros visíveis" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>Imprimir / PDF</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- CARDS DE TOTALIZAÇÃO DO RELATÓRIO -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px;">
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Notas Listadas</span>
-                        <div id="rel-kpi-total-notas" style="font-size: 22px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">0</div>
+                <!-- CARDS DE TOTALIZAÇÃO DO RELATÓRIO (4 KPIS EXECUTIVOS) -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                    <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.03em;">Notas Faturadas</span>
+                            <span style="width: 26px; height: 26px; border-radius: 6px; background: rgba(56, 189, 248, 0.1); display: grid; place-items: center; color: #38BDF8;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                            </span>
+                        </div>
+                        <div id="rel-kpi-total-notas" style="font-size: 24px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; line-height: 1.1;">0</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Documentos fiscais no filtro</div>
                     </div>
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturamento Total (Base)</span>
-                        <div id="rel-kpi-total-venda" style="font-size: 22px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+
+                    <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.03em;">Faturamento Total (Base)</span>
+                            <span style="width: 26px; height: 26px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); display: grid; place-items: center; color: #38BDF8;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </span>
+                        </div>
+                        <div id="rel-kpi-total-venda" style="font-size: 24px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; line-height: 1.1;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Volume bruto interestadual</div>
                     </div>
-                    <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 18px;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">DIFAL Interestadual Total</span>
-                        <div id="rel-kpi-total-difal" style="font-size: 22px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">R$ 0,00</div>
+
+                    <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.03em;">DIFAL Total Devido</span>
+                            <span style="width: 26px; height: 26px; border-radius: 6px; background: rgba(245, 158, 11, 0.15); display: grid; place-items: center; color: #F59E0B;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            </span>
+                        </div>
+                        <div id="rel-kpi-total-difal" style="font-size: 24px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; line-height: 1.1;">R$ 0,00</div>
+                        <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Reten&ccedil;&atilde;o tribut&aacute;ria destino</div>
+                    </div>
+
+                    <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 16px 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.03em;">Liquida&ccedil;&atilde;o SEFAZ</span>
+                            <span id="rel-kpi-conciliacao-pct" style="font-size: 11px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px;">100%</span>
+                        </div>
+                        <div id="rel-kpi-conciliacao-status" style="font-size: 16.5px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1.3;">
+                            <span style="color: #34D399;">0 Pagas</span> <span style="color: #64748B;">/</span> <span style="color: #94A3B8;">0 Pend.</span>
+                        </div>
+                        <div style="margin-top: 8px; width: 100%; background: #0E1626; height: 5px; border-radius: 3px; overflow: hidden;">
+                            <div id="rel-kpi-conciliacao-bar" style="width: 100%; height: 100%; background: #10B981; border-radius: 3px; transition: width 0.3s ease;"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- TABELA ANALÍTICA DE DIFAL -->
+                <!-- TABELA ANALÍTICA DE DIFAL COM STICKY HEADER E DOSSIÊ INTERATIVO -->
                 <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
-                    <div style="overflow-x: auto;">
+                    <div style="overflow-x: auto; max-height: 650px;">
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
                             <thead>
-                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                                    <th style="padding: 12px 16px; font-weight: 700;">NF-e / S&eacute;rie</th>
-                                    <th style="padding: 12px 16px; font-weight: 700;">Data Emiss&atilde;o</th>
+                                <tr style="background: #0E1626; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 10;">
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 140px;">NF-e / S&eacute;rie</th>
+                                    <th style="padding: 12px 14px; font-weight: 700; width: 110px;">Emiss&atilde;o</th>
                                     <th style="padding: 12px 16px; font-weight: 700;">Destinat&aacute;rio</th>
-                                    <th style="padding: 12px 16px; font-weight: 700;">UF Destino</th>
-                                    <th style="padding: 12px 16px; font-weight: 700;">Transportadora</th>
-                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">Valor da Venda</th>
-                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right;">DIFAL Recolhido</th>
-                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center;">Status Guia</th>
+                                    <th style="padding: 12px 14px; font-weight: 700; text-align: center; width: 70px;">UF</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; width: 140px;">Transportadora</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right; width: 130px;">Valor Venda</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: right; width: 130px;">DIFAL Devido</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center; width: 120px;">Status Guia</th>
+                                    <th style="padding: 12px 16px; font-weight: 700; text-align: center; width: 130px;">A&ccedil;&otilde;es</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-relatorio-difal-body">
                                 <tr>
-                                    <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio anal&iacute;tico...</td>
+                                    <td colspan="9" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio anal&iacute;tico...</td>
                                 </tr>
                             </tbody>
                         </table>

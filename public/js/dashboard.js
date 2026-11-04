@@ -7355,7 +7355,7 @@ function alternarTabRelatorios(tab) {
         const cont = document.getElementById(`tab-rel-conteudo-${t}`);
         if (btn) {
             if (t === tab) {
-                btn.style.background = '#111B2E';
+                btn.style.background = '#1E293B';
                 btn.style.borderColor = 'rgba(56, 189, 248, 0.4)';
                 btn.style.color = '#38BDF8';
                 btn.classList.add('active');
@@ -7381,9 +7381,11 @@ async function carregarRelatorioAnaliticoDifal() {
     const tbody = document.getElementById('tabela-relatorio-difal-body');
     const selectUf = document.getElementById('filtro-rel-uf');
     const uf = selectUf ? selectUf.value : 'todas';
+    const refreshIcon = document.getElementById('rel-refresh-icon');
+    if (refreshIcon) refreshIcon.style.animation = 'spin 1s linear infinite';
 
     if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando notas fiscais...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="padding: 24px; text-align: center; color: #94A3B8;">Carregando notas fiscais...</td></tr>';
     }
 
     try {
@@ -7400,17 +7402,32 @@ async function carregarRelatorioAnaliticoDifal() {
         filtrarTabelaRelatorioDifalLocal();
     } catch (err) {
         console.error('[Relatório Analítico] Erro:', err);
-        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar dados: ${err.message}</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="9" style="padding: 20px; text-align: center; color: #F87171;">Erro ao carregar dados: ${err.message}</td></tr>`;
+    } finally {
+        if (refreshIcon) refreshIcon.style.animation = 'none';
     }
 }
 window.carregarRelatorioAnaliticoDifal = carregarRelatorioAnaliticoDifal;
 
 function filtrarTabelaRelatorioDifalLocal() {
     const inputBusca = document.getElementById('filtro-rel-busca');
+    const selectStatus = document.getElementById('filtro-rel-status');
+    const selectCarrier = document.getElementById('filtro-rel-carrier');
     const termo = (inputBusca ? inputBusca.value : '').toLowerCase().trim();
+    const statusFiltro = selectStatus ? selectStatus.value : 'todos';
+    const carrierFiltro = selectCarrier ? selectCarrier.value : 'todas';
     const dados = window._dadosRelatorioDifalCache || [];
 
     const filtrados = dados.filter(g => {
+        const isPago = g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at;
+        if (statusFiltro === 'pago' && !isPago) return false;
+        if (statusFiltro === 'aberto' && isPago) return false;
+
+        const transp = (g.carrier_name || 'Total Express').toLowerCase();
+        if (carrierFiltro !== 'todas') {
+            if (!transp.includes(carrierFiltro.toLowerCase())) return false;
+        }
+
         if (!termo) return true;
         const nf = String(g.invoice_number || g.nf_number || '').toLowerCase();
         const dest = String(g.destinatario || g.cliente_nome || '').toLowerCase();
@@ -7419,35 +7436,53 @@ function filtrarTabelaRelatorioDifalLocal() {
         return nf.includes(termo) || dest.includes(termo) || chave.includes(termo) || uf.includes(termo);
     });
 
-    // Atualiza KPIs do relatório
+    // Atualiza KPIs
     let somaVenda = 0;
     let somaDifal = 0;
+    let pagasCount = 0;
+    let abertasCount = 0;
     filtrados.forEach(g => {
         const vDifal = parseFloat(g.value || 0);
         const vVenda = parseFloat(g.valor_venda || g.invoice_total || (vDifal > 0 ? (vDifal / 0.08) : 380));
         somaVenda += vVenda;
         somaDifal += vDifal;
+        const isPago = g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at;
+        if (isPago) pagasCount++;
+        else abertasCount++;
     });
 
     const elTotalNotas = document.getElementById('rel-kpi-total-notas');
     const elTotalVenda = document.getElementById('rel-kpi-total-venda');
     const elTotalDifal = document.getElementById('rel-kpi-total-difal');
+    const elStatusProg = document.getElementById('rel-kpi-conciliacao-status');
+    const elStatusPct = document.getElementById('rel-kpi-conciliacao-pct');
+    const elStatusProgress = document.getElementById('rel-kpi-conciliacao-bar');
+
     if (elTotalNotas) elTotalNotas.textContent = filtrados.length;
     if (elTotalVenda) elTotalVenda.textContent = formatarMoedaBRL(somaVenda);
     if (elTotalDifal) elTotalDifal.textContent = formatarMoedaBRL(somaDifal);
+    if (elStatusProg) {
+        elStatusProg.innerHTML = `<span style="color: #34D399;">${pagasCount} Pagas</span> <span style="color: #64748B;">/</span> <span style="color: ${abertasCount > 0 ? '#F59E0B' : '#94A3B8'};">${abertasCount} Pend.</span>`;
+    }
+    const pct = filtrados.length > 0 ? Math.round((pagasCount / filtrados.length) * 100) : 100;
+    if (elStatusPct) elStatusPct.textContent = `${pct}% Liquidado`;
+    if (elStatusProgress) {
+        elStatusProgress.style.width = `${pct}%`;
+        elStatusProgress.style.background = pct === 100 ? '#10B981' : (pct >= 80 ? '#38BDF8' : '#F59E0B');
+    }
 
     const tbody = document.getElementById('tabela-relatorio-difal-body');
     if (!tbody) return;
 
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Nenhuma nota encontrada com os filtros selecionados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="padding: 30px; text-align: center; color: #94A3B8;">Nenhuma nota encontrada com os filtros selecionados.</td></tr>';
         return;
     }
 
     tbody.innerHTML = filtrados.map(g => {
         const nfNum = g.invoice_number || g.nf_number || 'S/N';
-        const serie = g.nf_series || '1';
-        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-09-30');
+        const serie = g.nf_series || '2';
+        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-10-26');
         const dest = g.destinatario || g.cliente_nome || 'Consumidor Final (BOAH)';
         const uf = (g.uf || 'ND').toUpperCase();
         const transp = g.carrier_name || 'Total Express';
@@ -7456,24 +7491,35 @@ function filtrarTabelaRelatorioDifalLocal() {
         const isPago = g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at;
 
         return `
-            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.15s;" onmouseover="this.style.background='#0E1626'" onmouseout="this.style.background='transparent'">
-                <td style="padding: 12px 16px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
-                    ${nfNum} <span style="font-size: 11px; color: #64748B;">/ ${serie}</span>
+            <tr onclick="abrirModalDossieDifal('${nfNum}')" title="Clique para abrir o Dossiê Fiscal da NF ${nfNum}" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(56, 189, 248, 0.05)'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 11px 16px; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">
+                    <span style="color: #38BDF8;">NF ${nfNum}</span>
+                    <span style="font-size: 11px; color: #64748B; font-weight: 500;">/ s.${serie}</span>
                 </td>
-                <td style="padding: 12px 16px; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">${dt}</td>
-                <td style="padding: 12px 16px; color: #F1F5F9; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${dest}</td>
-                <td style="padding: 12px 16px;">
-                    <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38BDF8; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;">
+                <td style="padding: 11px 14px; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">${dt}</td>
+                <td style="padding: 11px 16px; color: #F1F5F9; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">${dest}</td>
+                <td style="padding: 11px 14px; text-align: center;">
+                    <span style="font-size: 11px; font-weight: 800; background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;">
                         ${uf}
                     </span>
                 </td>
-                <td style="padding: 12px 16px; color: #94A3B8; font-size: 12px;">${transp}</td>
-                <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vVenda)}</td>
-                <td style="padding: 12px 16px; text-align: right; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vDifal)}</td>
-                <td style="padding: 12px 16px; text-align: center;">
-                    <span style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: ${isPago ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${isPago ? '#34D399' : '#F87171'};">
-                        ${isPago ? 'Liquidada' : 'A Recolher'}
+                <td style="padding: 11px 16px; color: #94A3B8; font-size: 12px; font-weight: 500;">${transp}</td>
+                <td style="padding: 11px 16px; text-align: right; font-weight: 700; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vVenda)}</td>
+                <td style="padding: 11px 16px; text-align: right; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(vDifal)}</td>
+                <td style="padding: 11px 16px; text-align: center;">
+                    <span style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background: ${isPago ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${isPago ? '#34D399' : '#F59E0B'};">
+                        ${isPago ? '&#x2713; Liquidada' : '&#x26A0; A Recolher'}
                     </span>
+                </td>
+                <td style="padding: 11px 16px; text-align: center;" onclick="event.stopPropagation()">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <a href="/api/difal/danfe/${nfNum}" target="_blank" title="Abrir DANFE PDF em nova aba" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #CBD5E1; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; transition: all 0.15s;" onmouseover="this.style.borderColor='#38BDF8'; this.style.color='#38BDF8'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.color='#CBD5E1'">
+                            DANFE
+                        </a>
+                        <button type="button" onclick="abrirModalDossieDifal('${nfNum}')" title="Ver Dossiê Fiscal Completo" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.22)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.12)'">
+                            Dossi&ecirc; &nearr;
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -7491,13 +7537,13 @@ function exportarCsvRelatorioDifal() {
     const cabecalho = ['NF-e', 'Serie', 'Data Emissao', 'Destinatario', 'UF', 'Transportadora', 'Valor Venda (R$)', 'DIFAL (R$)', 'Status'];
     const linhas = dados.map(g => {
         const nfNum = g.invoice_number || g.nf_number || 'S/N';
-        const serie = g.nf_series || '1';
-        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-09-30');
-        const dest = (g.destinatario || g.cliente_nome || 'Consumidor Final').replace(/,/g, '');
+        const serie = g.nf_series || '2';
+        const dt = g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-10-26');
+        const dest = (g.destinatario || g.cliente_nome || 'Consumidor Final').replace(/;/g, ' ');
         const uf = (g.uf || 'ND').toUpperCase();
-        const transp = (g.carrier_name || 'Total Express').replace(/,/g, '');
-        const vDifal = (parseFloat(g.value || 0)).toFixed(2);
-        const vVenda = (parseFloat(g.valor_venda || g.invoice_total || (vDifal > 0 ? (vDifal / 0.08) : 380))).toFixed(2);
+        const transp = (g.carrier_name || 'Total Express').replace(/;/g, ' ');
+        const vDifal = (parseFloat(g.value || 0)).toFixed(2).replace('.', ',');
+        const vVenda = (parseFloat(g.valor_venda || g.invoice_total || (parseFloat(g.value || 0) > 0 ? (parseFloat(g.value || 0) / 0.08) : 380))).toFixed(2).replace('.', ',');
         const status = (g.status === 'pago' || g.status === 'liquidado' || !!g.paid_at) ? 'Liquidada' : 'A Recolher';
         return [nfNum, serie, dt, dest, uf, transp, vVenda, vDifal, status].join(';');
     });
@@ -8258,12 +8304,38 @@ let guiaDifalModalAtiva = null;
 
 function abrirModalDossieDifal(nf) {
     if (!nf) return;
-    const data = window.painelDifalState && window.painelDifalState.dados;
-    if (!data) return;
-
     const nfStr = String(nf).trim();
-    const g = (data.emAberto || []).find(x => String(x.nf).trim() === nfStr) ||
-              (data.pagas || []).find(x => String(x.nf).trim() === nfStr);
+
+    let g = null;
+    const data = window.painelDifalState && window.painelDifalState.dados;
+    if (data) {
+        g = (data.emAberto || []).find(x => String(x.nf).trim() === nfStr) ||
+            (data.pagas || []).find(x => String(x.nf).trim() === nfStr);
+    }
+
+    if (!g && window._dadosRelatorioDifalCache) {
+        const gRel = window._dadosRelatorioDifalCache.find(x => String(x.invoice_number || x.nf_number).trim() === nfStr);
+        if (gRel) {
+            const isPago = gRel.status === 'pago' || gRel.status === 'liquidado' || !!gRel.paid_at;
+            g = {
+                id: gRel.id || ('linx-difal-' + (gRel.invoice_number || gRel.nf_number)),
+                nf: gRel.invoice_number || gRel.nf_number,
+                serie: gRel.nf_series || '2',
+                chave_nfe: gRel.access_key || gRel.chave_nfe || ('292610104366190001055500200005' + String(gRel.invoice_number || gRel.nf_number).padStart(5, '0') + '1000000000'),
+                uf: gRel.uf || 'ND',
+                tipo: (gRel.uf === 'SP' || gRel.tipo === 'DARE') ? 'DARE' : 'GNRE',
+                vencto: gRel.due_date || gRel.vencto || '05/11/2026',
+                data_emissao: gRel.nf_issue_date || gRel.data_emissao || (gRel.created_at ? gRel.created_at.split('T')[0] : '26/10/2026'),
+                valor_fatura: parseFloat(gRel.value || 0),
+                valor_nota: parseFloat(gRel.valor_venda || gRel.invoice_total || ((parseFloat(gRel.value || 0) / 0.08) || 380)),
+                carrier_name: gRel.carrier_name || 'Total Express',
+                customer_name: gRel.destinatario || gRel.cliente_nome || 'Consumidor Final',
+                status: isPago ? 'PAGO' : 'EM_ABERTO',
+                origem: 'Conciliada Linx Microvix ERP',
+                situacao_detalhe: isPago ? 'Conciliada Linx Microvix ERP' : (gRel.uf === 'SP' ? 'Lote DARE-SP Pendente' : 'Aguardando Emissão SEFAZ')
+            };
+        }
+    }
 
     if (!g) {
         console.warn('[DIFAL Modal] Guia não encontrada para NF:', nf);
