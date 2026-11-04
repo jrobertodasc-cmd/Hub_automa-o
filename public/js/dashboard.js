@@ -6395,6 +6395,63 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
             }).join('');
         }
 
+                // 1.3.1 Renderizar Quadro Estratégico: Performance de Cupons & Promoções
+        const cuponsListEl = document.getElementById('bi-cupons-list');
+        if (cuponsListEl && data.resumoCupons) {
+            const rc = data.resumoCupons;
+            const taxaEl = document.getElementById('bi-cupons-taxa');
+            const gmvEl = document.getElementById('bi-cupons-gmv');
+            const semEl = document.getElementById('bi-cupons-sem');
+            if (taxaEl) taxaEl.textContent = `${rc.taxaPenetracaoPct}%`;
+            if (gmvEl) gmvEl.textContent = formatarMoedaBRL(rc.gmvComCupom || 0);
+            if (semEl) semEl.textContent = formatarMoedaBRL(rc.gmvSemCupom || 0);
+
+            const cupons = rc.topCupons || [];
+            cuponsListEl.innerHTML = cupons.slice(0, 5).map((cp, idx) => {
+                let badgeColor = '#EC4899';
+                let badgeBg = 'rgba(236, 72, 153, 0.15)';
+                let badgeBorder = 'rgba(236, 72, 153, 0.35)';
+
+                if (cp.badge === 'Boas-Vindas') {
+                    badgeColor = '#38BDF8';
+                    badgeBg = 'rgba(56, 189, 248, 0.15)';
+                    badgeBorder = 'rgba(56, 189, 248, 0.35)';
+                } else if (cp.badge === 'Branding') {
+                    badgeColor = '#F59E0B';
+                    badgeBg = 'rgba(245, 158, 11, 0.15)';
+                    badgeBorder = 'rgba(245, 158, 11, 0.35)';
+                } else if (cp.badge === 'Consultora') {
+                    badgeColor = '#A855F7';
+                    badgeBg = 'rgba(168, 85, 247, 0.15)';
+                    badgeBorder = 'rgba(168, 85, 247, 0.35)';
+                }
+
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 10px 14px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'">
+                        <div style="display: flex; align-items: center; gap: 11px;">
+                            <span style="font-size: 11px; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 3px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">#${idx + 1}</span>
+                            <div>
+                                <div style="font-size: 13px; font-weight: 700; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-family: 'JetBrains Mono', monospace; color: #FDFDFD; font-weight: 800; letter-spacing: 0.02em;">${cp.codigo}</span>
+                                    <span style="font-size: 9.5px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 1px 6px; border-radius: 4px; text-transform: uppercase;">${cp.badge}</span>
+                                    <span style="font-size: 9.5px; font-weight: 700; background: rgba(245, 194, 104, 0.12); color: #F5C268; padding: 1px 5px; border-radius: 3px;">${cp.sharePct}%</span>
+                                </div>
+                                <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+                                    <span style="color: #94A3B8;">${cp.tipo}</span> &middot;
+                                    <span>${cp.pedidos} pedidos</span> &middot;
+                                    <span>TM: <strong style="color: #CBD5E1;">${formatarMoedaBRL(cp.ticketMedio || 0)}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 14px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">${formatarMoedaBRL(cp.valorTotal)}</div>
+                            <span style="font-size: 9.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturado</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // 1.4 Renderizar Quadro Estratégico: Top Clientes VIP (LTV & Fidelidade)
         const topCliEl = document.getElementById('bi-top-clientes-list');
         if (topCliEl) {

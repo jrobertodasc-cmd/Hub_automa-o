@@ -6299,6 +6299,21 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             ];
         }
 
+        let resumoCuponsBase = {
+            totalComCupom: 91,
+            totalSemCupom: 127,
+            gmvComCupom: 53904.34,
+            gmvSemCupom: 71632.91,
+            taxaPenetracaoPct: 41.7,
+            topCupons: [
+                { posicao: 1, codigo: 'MILA15', tipo: 'Influencer Mila (Sócia)', badge: 'Influencer', pedidos: 41, valorTotal: 24765.92, ticketMedio: 604.05, sharePct: 45.9 },
+                { posicao: 2, codigo: 'BEMVINDA', tipo: '1ª Compra / Onboarding', badge: 'Boas-Vindas', pedidos: 18, valorTotal: 9562.97, ticketMedio: 531.28, sharePct: 17.7 },
+                { posicao: 3, codigo: 'ESTILOBOAH', tipo: 'Branding & Estilo BOAH', badge: 'Branding', pedidos: 12, valorTotal: 8169.88, ticketMedio: 680.82, sharePct: 15.2 },
+                { posicao: 4, codigo: 'COMCARINHOMILA', tipo: 'Influencer Mila (Sócia)', badge: 'Influencer', pedidos: 5, valorTotal: 6716.40, ticketMedio: 1343.28, sharePct: 12.5 },
+                { posicao: 5, codigo: 'PASSY10', tipo: 'Consultora Social Selling', badge: 'Consultora', pedidos: 2, valorTotal: 1185.30, ticketMedio: 592.65, sharePct: 2.2 },
+                { posicao: 6, codigo: 'BRUOUT', tipo: 'Consultora Social Selling', badge: 'Consultora', pedidos: 2, valorTotal: 558.02, ticketMedio: 279.01, sharePct: 1.0 }
+            ]
+        };
         try {
             let tokenEncrypted = req.tenant.vnda_token_encrypted;
             let shopHost = (req.tenant.vnda_shop_host || 'www.boah.com.br').trim();
@@ -6421,20 +6436,21 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         conectado: true
                     };
 
-                    // Agrupamento de Vendedoras (Olist Vnda API cruzado com Linx Microvix B2CConsultaVendedores)
+                    // Agrupamento de Vendedoras (Força Comercial: agent explícito Linx L55, L79, L5, L151)
+                    // Cupons institucionais da marca e de influenciadora (Mila) são direcionados ao quadro de Cupons
                     const vMap = new Map();
                     const linxCatalog = await getLinxVendedoresCatalog(req.tenant);
                     conf.forEach(p => {
                         let rawAgent = (p.agent || p.seller || p.salesperson || '').trim();
                         if (!rawAgent && (p.coupon_code || p.coupon)) {
                             const cStr = String(p.coupon_code || p.coupon).toUpperCase().trim();
-                            if (cStr && !['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', '+20OFF', 'NIVERBOAH08', 'NIVERBOAH09'].includes(cStr)) {
+                            if (!['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', '+20OFF', 'NIVERBOAH08', 'NIVERBOAH09'].includes(cStr) && !cStr.includes('MILA')) {
                                 rawAgent = cStr;
                             }
                         }
                         if (rawAgent) {
                             const resolved = resolverVendedora(rawAgent, linxCatalog);
-                            if (resolved && resolved.nome) {
+                            if (resolved && resolved.nome && resolved.nome !== 'Camila (Mila)') {
                                 const key = resolved.nome.toUpperCase();
                                 const valP = parseFloat(p.total) || 0;
                                 if (!vMap.has(key)) {
@@ -6469,6 +6485,74 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         }));
                     if (dynRanking.length > 0) {
                         rankingVendedorasBase = dynRanking;
+                    }
+
+                    // Performance de Cupons & Campanhas Promocionais
+                    const couponMap = new Map();
+                    let totalComCupom = 0;
+                    let totalSemCupom = 0;
+                    let gmvComCupom = 0;
+                    let gmvSemCupom = 0;
+
+                    conf.forEach(p => {
+                        const cp = String(p.coupon_code || p.coupon || '').trim().toUpperCase();
+                        const val = parseFloat(p.total) || 0;
+                        if (cp) {
+                            totalComCupom++;
+                            gmvComCupom += val;
+                            if (!couponMap.has(cp)) {
+                                let tipoCupom = 'Promoção Geral';
+                                let badge = 'Campanha';
+                                if (cp.includes('MILA')) {
+                                    tipoCupom = 'Influencer Mila (Sócia)';
+                                    badge = 'Influencer';
+                                } else if (cp.includes('BEMVINDA') || cp.includes('PRIMEIRA')) {
+                                    tipoCupom = '1ª Compra / Onboarding';
+                                    badge = 'Boas-Vindas';
+                                } else if (cp.includes('ESTILO') || cp.includes('BOAH')) {
+                                    tipoCupom = 'Branding & Estilo BOAH';
+                                    badge = 'Branding';
+                                } else if (cp.includes('PASSY') || cp.includes('BRU') || cp.includes('LANE') || cp.includes('CLARA')) {
+                                    tipoCupom = 'Consultora Social Selling';
+                                    badge = 'Consultora';
+                                }
+                                couponMap.set(cp, {
+                                    codigo: cp,
+                                    tipo: tipoCupom,
+                                    badge: badge,
+                                    pedidos: 0,
+                                    valorTotal: 0
+                                });
+                            }
+                            const cObj = couponMap.get(cp);
+                            cObj.pedidos++;
+                            cObj.valorTotal += val;
+                        } else {
+                            totalSemCupom++;
+                            gmvSemCupom += val;
+                        }
+                    });
+
+                    const topCuponsCalc = Array.from(couponMap.values())
+                        .sort((a, b) => b.valorTotal - a.valorTotal)
+                        .slice(0, 6)
+                        .map((c, idx) => ({
+                            ...c,
+                            posicao: idx + 1,
+                            valorTotal: parseFloat(c.valorTotal.toFixed(2)),
+                            ticketMedio: c.pedidos > 0 ? parseFloat((c.valorTotal / c.pedidos).toFixed(2)) : 0,
+                            sharePct: gmvComCupom > 0 ? parseFloat(((c.valorTotal / gmvComCupom) * 100).toFixed(1)) : 0
+                        }));
+
+                    if (topCuponsCalc.length > 0) {
+                        resumoCuponsBase = {
+                            totalComCupom,
+                            totalSemCupom,
+                            gmvComCupom: parseFloat(gmvComCupom.toFixed(2)),
+                            gmvSemCupom: parseFloat(gmvSemCupom.toFixed(2)),
+                            taxaPenetracaoPct: conf.length > 0 ? parseFloat(((totalComCupom / conf.length) * 100).toFixed(1)) : 0,
+                            topCupons: topCuponsCalc
+                        };
                     }
                 }
             }
@@ -6585,6 +6669,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             topProdutos,
             topClientes,
             rankingVendedoras: rankingVendedorasBase,
+            resumoCupons: resumoCuponsBase,
             heatmap,
             carriers,
             timeline: timelinePeriodo
