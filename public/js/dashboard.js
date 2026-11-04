@@ -1,3 +1,14 @@
+function imprimirRelatorioOficial() {
+    const tabAtiva = window._relatorioTabAtiva || 'difal';
+    document.querySelectorAll('.tab-rel-conteudo').forEach(el => el.classList.remove('ativa-print'));
+    const cont = document.getElementById(`tab-rel-conteudo-${tabAtiva}`);
+    if (cont) {
+        cont.classList.add('ativa-print');
+    }
+    window.print();
+}
+window.imprimirRelatorioOficial = imprimirRelatorioOficial;
+
 
 window._DIFAL_ABERTAS_FALLBACK = [
   { "id": "linx-difal-54010", "nf": "54010", "serie": "2", "chave_nfe": "29261010436619000105550020000540101007890327", "uf": "AL", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "26/10/2026", "valor_fatura": 27.86, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Mariana Braga Lages", "status": "EM_ABERTO" },
@@ -7485,7 +7496,8 @@ async function carregarRelatorioVendedoras() {
 
     try {
         const biData = await obterDadosBiParaRelatorios();
-        const ranking = biData.rankingVendedoras || [];
+        // Filtra pedidos de teste (< R$ 10) ou tokens técnicos hexadecimais (ex: 5c9e60b0ca)
+        const ranking = (biData.rankingVendedoras || []).filter(v => (parseFloat(v.valorTotal) || 0) >= 10 && !/^[a-f0-9]{8,}$/i.test(v.nome));
 
         let totalGmv = 0;
         let totalPedidos = 0;
@@ -7507,6 +7519,14 @@ async function carregarRelatorioVendedoras() {
         if (elTicket) elTicket.textContent = formatarMoedaBRL(ticketMedio);
         if (elLider && lider) elLider.textContent = lider.nome;
         if (elLiderSub && lider) elLiderSub.textContent = `${formatarMoedaBRL(lider.valorTotal)} (${lider.sharePct || 0}%)`;
+
+        // Totalizadores do Rodapé da Tabela de Vendedoras (tfoot)
+        const footPed = document.getElementById('rel-total-vend-pedidos');
+        const footGmv = document.getElementById('rel-total-vend-gmv');
+        const footTm = document.getElementById('rel-total-vend-tm');
+        if (footPed) footPed.textContent = totalPedidos;
+        if (footGmv) footGmv.textContent = formatarMoedaBRL(totalGmv);
+        if (footTm) footTm.textContent = formatarMoedaBRL(ticketMedio);
 
         if (!tbody) return;
         if (ranking.length === 0) {
@@ -7613,6 +7633,15 @@ async function carregarRelatorioCupons() {
             const lidVal = parseFloat(lider.valorTotal || lider.totalGmv || 0);
             elLiderSub.textContent = `${lider.pedidos || 0} pedidos (${formatarMoedaBRL(lidVal)})`;
         }
+
+        // Totalizadores do Rodapé da Tabela de Cupons (tfoot)
+        const footCupPed = document.getElementById('rel-total-cup-pedidos');
+        const footCupGmv = document.getElementById('rel-total-cup-gmv');
+        const footCupTm = document.getElementById('rel-total-cup-tm');
+        const tmCupons = pedidosCupons > 0 ? (gmvCupons / pedidosCupons) : 0;
+        if (footCupPed) footCupPed.textContent = pedidosCupons;
+        if (footCupGmv) footCupGmv.textContent = formatarMoedaBRL(gmvCupons);
+        if (footCupTm) footCupTm.textContent = formatarMoedaBRL(tmCupons);
 
         if (!tbody) return;
         if (ranking.length === 0) {
@@ -7739,6 +7768,12 @@ async function carregarRelatorioLogistica() {
         if (elSla) elSla.textContent = '3,4 dias';
         if (elLider) elLider.textContent = liderNome;
         if (elLiderSub) elLiderSub.textContent = `${liderShare}% dos envios`;
+
+        // Totalizadores do Rodapé da Tabela de Logística (tfoot)
+        const footLogPed = document.getElementById('rel-total-log-pedidos');
+        const footLogGmv = document.getElementById('rel-total-log-gmv');
+        if (footLogPed) footLogPed.textContent = totalPacotes;
+        if (footLogGmv) footLogGmv.textContent = formatarMoedaBRL(totalGmv);
 
         if (!tbody) return;
         if (carriers.length === 0) {
@@ -7873,6 +7908,16 @@ async function carregarRelatorioEstados() {
         }
         if (elDifal) elDifal.textContent = formatarMoedaBRL(totalDifal);
         if (elTop3) elTop3.textContent = `${top3Share}%`;
+
+        // Totalizadores do Rodapé da Tabela de Estados (tfoot)
+        const footGeoPed = document.getElementById('rel-total-geo-pedidos');
+        const footGeoGmv = document.getElementById('rel-total-geo-gmv');
+        const footGeoDifal = document.getElementById('rel-total-geo-difal');
+        let totalPedidosGeo = 0;
+        heatmap.forEach(e => totalPedidosGeo += parseInt(e.totalGuias || e.pedidos || 0));
+        if (footGeoPed) footGeoPed.textContent = totalPedidosGeo;
+        if (footGeoGmv) footGeoGmv.textContent = formatarMoedaBRL(totalGmv);
+        if (footGeoDifal) footGeoDifal.textContent = formatarMoedaBRL(totalDifal);
 
         if (!tbody) return;
         if (heatmap.length === 0) {

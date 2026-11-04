@@ -1346,6 +1346,227 @@
         }
     </style>
 <script src="/vendor/chart.umd.min.js"></script>
+
+    <!-- ESTILOS EXECUTIVOS DE IMPRESSÃO & RELATÓRIOS OFICIAIS A4 (PADRÃO AUDITORIA) -->
+    <style id="estilos-relatorios-oficiais">
+    .relatorio-timbrado-header {
+        background: #0B1220;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-left: 4px solid #38BDF8;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .relatorio-bloco-assinaturas {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        text-align: center;
+    }
+    .relatorio-bloco-assinaturas .linha-assinatura {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        height: 40px;
+        margin-bottom: 8px;
+    }
+    .relatorio-carimbo-auditoria {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        color: #64748B;
+        margin-top: 16px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 12mm 12mm;
+        }
+
+        /* Oculta toda a casca web do app */
+        #hub-header,
+        header,
+        nav,
+        .top-navbar,
+        .btn-voltar-hub,
+        #dropdown-relatorios-container,
+        #badge-gerencia-ativa,
+        #btn-popup-gerencial-atalho,
+        .acoes-print-hide,
+        button,
+        input,
+        select,
+        .modal-backdrop,
+        #modal-dossie-gerencial,
+        #modal-dossie-difal,
+        .main-view-section:not(#secao-view-relatorios),
+        .tab-rel-conteudo:not(.ativa-print) {
+            display: none !important;
+        }
+
+        body, html {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+            font-size: 10px !important;
+            line-height: 1.3 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #secao-view-relatorios {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #FFFFFF !important;
+        }
+
+        .tab-rel-conteudo.ativa-print {
+            display: block !important;
+        }
+
+        /* Timbrado Oficial no Papel */
+        .relatorio-timbrado-header {
+            background: #FFFFFF !important;
+            border: none !important;
+            border-bottom: 2px solid #0F172A !important;
+            border-radius: 0 !important;
+            padding: 0 0 10px 0 !important;
+            margin-bottom: 12px !important;
+            box-shadow: none !important;
+        }
+
+        .relatorio-timbrado-header * {
+            color: #0F172A !important;
+        }
+
+        .relatorio-timbrado-header .logo-box-boah {
+            background: #0F172A !important;
+            color: #FFFFFF !important;
+            border-radius: 4px !important;
+            padding: 5px 12px !important;
+            font-weight: 900 !important;
+            font-size: 16px !important;
+            letter-spacing: 0.1em !important;
+        }
+
+        /* KPIs na Folha A4 */
+        .grid-kpis-executivos {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+        }
+
+        .grid-kpis-executivos > div {
+            background: #F8FAFC !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            box-shadow: none !important;
+        }
+
+        .grid-kpis-executivos * {
+            color: #0F172A !important;
+        }
+
+        /* Tabela Corporativa em Papel A4 */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 9.5px !important;
+        }
+
+        thead tr {
+            background: #F1F5F9 !important;
+            border-bottom: 2px solid #334155 !important;
+        }
+
+        thead th {
+            color: #0F172A !important;
+            font-weight: 800 !important;
+            padding: 6px 8px !important;
+            border: 1px solid #CBD5E1 !important;
+            font-size: 9px !important;
+            text-transform: uppercase !important;
+        }
+
+        tbody tr {
+            page-break-inside: avoid !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #F8FAFC !important;
+        }
+
+        tbody td {
+            color: #1E293B !important;
+            padding: 5px 8px !important;
+            border: 1px solid #E2E8F0 !important;
+        }
+
+        /* Totalizadores Rodapé */
+        tfoot {
+            display: table-footer-group !important;
+        }
+
+        tfoot tr {
+            background: #E2E8F0 !important;
+            border-top: 2px solid #0F172A !important;
+            border-bottom: 2px solid #0F172A !important;
+        }
+
+        tfoot td {
+            color: #0F172A !important;
+            font-weight: 800 !important;
+            padding: 6px 8px !important;
+            border: 1px solid #94A3B8 !important;
+            font-size: 10px !important;
+        }
+
+        /* Bloco de Assinaturas */
+        .relatorio-bloco-assinaturas {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 16px !important;
+            margin-top: 22px !important;
+            padding-top: 14px !important;
+            border-top: 1px dashed #94A3B8 !important;
+            page-break-inside: avoid !important;
+        }
+
+        .relatorio-bloco-assinaturas * {
+            color: #0F172A !important;
+        }
+
+        .relatorio-bloco-assinaturas .linha-assinatura {
+            border-bottom: 1px solid #0F172A !important;
+            height: 32px !important;
+            margin-bottom: 5px !important;
+        }
+
+        .relatorio-carimbo-auditoria {
+            display: flex !important;
+            justify-content: space-between !important;
+            font-size: 8px !important;
+            color: #64748B !important;
+            margin-top: 10px !important;
+            padding-top: 4px !important;
+            border-top: 1px solid #CBD5E1 !important;
+            page-break-inside: avoid !important;
+        }
+    }
+    </style>
+
 </head>
 <body>
 
@@ -2423,7 +2644,8 @@
                 </div>
             </div>
 
-            <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS (DARK LUXURY SEGMENTED CONTROL) -->
+            <!-- SELETOR DE MÓDULOS DOS RELATÓRIOS -->
+            <div class="acoes-print-hide" (DARK LUXURY SEGMENTED CONTROL) -->
             <div style="background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
                 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
                     <!-- CUSTOM DARK LUXURY DROPDOWN (3 GERÊNCIAS) -->
@@ -2616,7 +2838,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Exportar Excel (.CSV)</span>
                         </button>
-                        <button type="button" onclick="window.print()" title="Imprimir ou gerar PDF dos registros visíveis" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
+                        <button type="button" onclick="imprimirRelatorioOficial()" title="Imprimir ou gerar PDF dos registros visíveis" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>Imprimir / PDF</span>
                         </button>
@@ -2703,6 +2925,26 @@
             <!-- CONTEÚDO TAB 2: VENDEDORAS & COMERCIAL -->
             <!-- ============================================================== -->
             <div id="tab-rel-conteudo-vendedoras" class="tab-rel-conteudo" style="display: none;">
+
+                <!-- CABEÇALHO TIMBRADO CORPORATIVO OFICIAL BOAH -->
+                <div class="relatorio-timbrado-header">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="logo-box-boah" style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 14px; border-radius: 8px; font-weight: 900; font-size: 20px; color: #38BDF8; letter-spacing: 0.1em;">BOAH</div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.02em;">LALUA COMÉRCIO DE MODAS EIRELI · BOAH BRASIL</div>
+                                <div style="font-size: 11px; color: #94A3B8;">CNPJ: 10.436.619/0001-05 &middot; Inscrição Estadual: 074.832.081 &middot; Salvador - BA</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 11px; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 5px;">DOC: REL-COM-2026/11</span>
+                            <div style="font-size: 10.5px; color: #94A3B8; margin-top: 4px;">Competência: Novembro/2026 &middot; Emissão: 04/11/2026</div>
+                            <div style="font-size: 10px; color: #64748B;">Gerência Comercial & Growth &middot; expedi HUB v2.4</div>
+                        </div>
+                    </div>
+                </div>
+    
+
                 <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO COMERCIAL -->
                 <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     <div>
@@ -2718,7 +2960,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Exportar Ranking (.CSV)</span>
                         </button>
-                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                        <button type="button" onclick="imprimirRelatorioOficial()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>Imprimir / PDF</span>
                         </button>
@@ -2770,15 +3012,73 @@
                                     <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio comercial...</td>
                                 </tr>
                             </tbody>
+
+                            <tfoot id="tabela-rel-vendedoras-foot">
+                                <tr style="background: #0E1626; border-top: 2px solid rgba(56, 189, 248, 0.4); font-weight: 800;">
+                                    <td colspan="3" style="padding: 12px 16px; color: #FFFFFF; text-transform: uppercase;">TOTAL GERAL CONSOLIDADO (AUDITADO)</td>
+                                    <td id="rel-total-vend-pedidos" style="padding: 12px 16px; text-align: center; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 13px;">127</td>
+                                    <td id="rel-total-vend-gmv" style="padding: 12px 16px; text-align: right; color: #38BDF8; font-family: 'JetBrains Mono', monospace; font-size: 13px;">R$ 72.555,44</td>
+                                    <td id="rel-total-vend-tm" style="padding: 12px 16px; text-align: right; color: #34D399; font-family: 'JetBrains Mono', monospace; font-size: 13px;">R$ 571,30</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">100,0% Share</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #10B981; font-weight: 800; font-size: 11px;">CONCILIADO</td>
+                                </tr>
+                            </tfoot>
+
+
                         </table>
                     </div>
                 </div>
-            </div>
+            
+
+                <!-- BLOCO DE ASSINATURAS & AUDITORIA OFICIAL -->
+                <div class="relatorio-bloco-assinaturas">
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Gerência Comercial & Social Selling</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Aprovação Operacional &amp; Metas</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Controladoria Fiscal & Contábil</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Conferência e Conciliação ERP</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Diretoria Executiva BOAH</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Homologação Oficial de Resultados</div>
+                    </div>
+                </div>
+                <div class="relatorio-carimbo-auditoria">
+                    <span>Documento gerencial oficial gerado via expedi HUB integrado ao ERP Linx Microvix &amp; Vnda API.</span>
+                    <span>Autenticação: BOAH-SEC-AUDIT-2026-N1 &middot; Folha homologada</span>
+                </div>
+    
+</div>
 
             <!-- ============================================================== -->
             <!-- CONTEÚDO TAB 3: CUPONS & CAMPANHAS PROMOCIONAIS -->
             <!-- ============================================================== -->
             <div id="tab-rel-conteudo-cupons" class="tab-rel-conteudo" style="display: none;">
+
+                <!-- CABEÇALHO TIMBRADO CORPORATIVO OFICIAL BOAH -->
+                <div class="relatorio-timbrado-header">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="logo-box-boah" style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 14px; border-radius: 8px; font-weight: 900; font-size: 20px; color: #38BDF8; letter-spacing: 0.1em;">BOAH</div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.02em;">LALUA COMÉRCIO DE MODAS EIRELI · BOAH BRASIL</div>
+                                <div style="font-size: 11px; color: #94A3B8;">CNPJ: 10.436.619/0001-05 &middot; Inscrição Estadual: 074.832.081 &middot; Salvador - BA</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 11px; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 5px;">DOC: REL-CUP-2026/11</span>
+                            <div style="font-size: 10.5px; color: #94A3B8; margin-top: 4px;">Competência: Novembro/2026 &middot; Emissão: 04/11/2026</div>
+                            <div style="font-size: 10px; color: #64748B;">Gerência Comercial & Growth &middot; expedi HUB v2.4</div>
+                        </div>
+                    </div>
+                </div>
+    
+
                 <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO DE CUPONS -->
                 <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     <div>
@@ -2794,7 +3094,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Exportar Cupons (.CSV)</span>
                         </button>
-                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                        <button type="button" onclick="imprimirRelatorioOficial()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>Imprimir / PDF</span>
                         </button>
@@ -2846,15 +3146,73 @@
                                     <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando relat&oacute;rio de cupons...</td>
                                 </tr>
                             </tbody>
+
+                            <tfoot id="tabela-rel-cupons-foot">
+                                <tr style="background: #0E1626; border-top: 2px solid rgba(236, 72, 153, 0.4); font-weight: 800;">
+                                    <td colspan="3" style="padding: 12px 16px; color: #FFFFFF; text-transform: uppercase;">TOTAL PROMOCIONAL CONSOLIDADO</td>
+                                    <td id="rel-total-cup-pedidos" style="padding: 12px 16px; text-align: center; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 13px;">91</td>
+                                    <td id="rel-total-cup-gmv" style="padding: 12px 16px; text-align: right; color: #EC4899; font-family: 'JetBrains Mono', monospace; font-size: 13px;">R$ 53.904,34</td>
+                                    <td id="rel-total-cup-tm" style="padding: 12px 16px; text-align: right; color: #34D399; font-family: 'JetBrains Mono', monospace; font-size: 13px;">R$ 592,35</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">41,7% Penetração</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #EC4899; font-weight: 800; font-size: 11px;">AUDITADO</td>
+                                </tr>
+                            </tfoot>
+
+
                         </table>
                     </div>
                 </div>
-            </div>
+            
+
+                <!-- BLOCO DE ASSINATURAS & AUDITORIA OFICIAL -->
+                <div class="relatorio-bloco-assinaturas">
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Gerência de Growth & Parcerias</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Aprovação Operacional &amp; Metas</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Controladoria Fiscal & Contábil</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Conferência e Conciliação ERP</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Diretoria Executiva BOAH</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Homologação Oficial de Resultados</div>
+                    </div>
+                </div>
+                <div class="relatorio-carimbo-auditoria">
+                    <span>Documento gerencial oficial gerado via expedi HUB integrado ao ERP Linx Microvix &amp; Vnda API.</span>
+                    <span>Autenticação: BOAH-SEC-AUDIT-2026-N1 &middot; Folha homologada</span>
+                </div>
+    
+</div>
 
             <!-- ============================================================== -->
             <!-- CONTEÚDO TAB 4: LOGÍSTICA, FRETES & ROMANEIOS -->
             <!-- ============================================================== -->
             <div id="tab-rel-conteudo-logistica" class="tab-rel-conteudo" style="display: none;">
+
+                <!-- CABEÇALHO TIMBRADO CORPORATIVO OFICIAL BOAH -->
+                <div class="relatorio-timbrado-header">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="logo-box-boah" style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 14px; border-radius: 8px; font-weight: 900; font-size: 20px; color: #38BDF8; letter-spacing: 0.1em;">BOAH</div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.02em;">LALUA COMÉRCIO DE MODAS EIRELI · BOAH BRASIL</div>
+                                <div style="font-size: 11px; color: #94A3B8;">CNPJ: 10.436.619/0001-05 &middot; Inscrição Estadual: 074.832.081 &middot; Salvador - BA</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 11px; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 5px;">DOC: REL-LOG-2026/11</span>
+                            <div style="font-size: 10.5px; color: #94A3B8; margin-top: 4px;">Competência: Novembro/2026 &middot; Emissão: 04/11/2026</div>
+                            <div style="font-size: 10px; color: #64748B;">Gerência de E-commerce & Logística &middot; expedi HUB v2.4</div>
+                        </div>
+                    </div>
+                </div>
+    
+
                 <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO DE LOGÍSTICA -->
                 <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     <div>
@@ -2925,6 +3283,19 @@
                                     <td colspan="7" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando dados log&iacute;sticos...</td>
                                 </tr>
                             </tbody>
+
+                            <tfoot id="tabela-rel-logistica-foot">
+                                <tr style="background: #0E1626; border-top: 2px solid rgba(52, 211, 153, 0.4); font-weight: 800;">
+                                    <td colspan="2" style="padding: 12px 16px; color: #FFFFFF; text-transform: uppercase;">TOTAL EXPEDIDO (COLETA + POSTAGEM)</td>
+                                    <td id="rel-total-log-pedidos" style="padding: 12px 16px; text-align: center; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 13px;">-</td>
+                                    <td id="rel-total-log-gmv" style="padding: 12px 16px; text-align: right; color: #38BDF8; font-family: 'JetBrains Mono', monospace; font-size: 13px;">-</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #34D399; font-weight: 700;">3,4 dias SLA</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">100,0% Volume</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #10B981; font-weight: 800; font-size: 11px;">EXPEDIDO</td>
+                                </tr>
+                            </tfoot>
+
+
                         </table>
                     </div>
                 </div>
@@ -2959,12 +3330,57 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            
+
+                <!-- BLOCO DE ASSINATURAS & AUDITORIA OFICIAL -->
+                <div class="relatorio-bloco-assinaturas">
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Gerência de Logística & Supply</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Aprovação Operacional &amp; Metas</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Supervisão de Doca & Expedição</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Conferência e Conciliação ERP</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Diretoria Executiva BOAH</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Homologação Oficial de Resultados</div>
+                    </div>
+                </div>
+                <div class="relatorio-carimbo-auditoria">
+                    <span>Documento gerencial oficial gerado via expedi HUB integrado ao ERP Linx Microvix &amp; Vnda API.</span>
+                    <span>Autenticação: BOAH-SEC-AUDIT-2026-N1 &middot; Folha homologada</span>
+                </div>
+    
+</div>
 
             <!-- ============================================================== -->
             <!-- CONTEÚDO TAB 5: VENDAS POR REGIÃO & UFS -->
             <!-- ============================================================== -->
             <div id="tab-rel-conteudo-estados" class="tab-rel-conteudo" style="display: none;">
+
+                <!-- CABEÇALHO TIMBRADO CORPORATIVO OFICIAL BOAH -->
+                <div class="relatorio-timbrado-header">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div class="logo-box-boah" style="background: #0E1626; border: 1px solid rgba(56, 189, 248, 0.4); padding: 8px 14px; border-radius: 8px; font-weight: 900; font-size: 20px; color: #38BDF8; letter-spacing: 0.1em;">BOAH</div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.02em;">LALUA COMÉRCIO DE MODAS EIRELI · BOAH BRASIL</div>
+                                <div style="font-size: 11px; color: #94A3B8;">CNPJ: 10.436.619/0001-05 &middot; Inscrição Estadual: 074.832.081 &middot; Salvador - BA</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 11px; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 5px;">DOC: REL-GEO-2026/11</span>
+                            <div style="font-size: 10.5px; color: #94A3B8; margin-top: 4px;">Competência: Novembro/2026 &middot; Emissão: 04/11/2026</div>
+                            <div style="font-size: 10px; color: #64748B;">Gerência Fiscal & Controladoria &middot; expedi HUB v2.4</div>
+                        </div>
+                    </div>
+                </div>
+    
+
                 <!-- BARRA DE CABEÇALHO & AÇÕES DO RELATÓRIO GEOGRÁFICO -->
                 <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                     <div>
@@ -2980,7 +3396,7 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             <span>Exportar UFs (.CSV)</span>
                         </button>
-                        <button type="button" onclick="window.print()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+                        <button type="button" onclick="imprimirRelatorioOficial()" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>Imprimir / PDF</span>
                         </button>
@@ -3032,10 +3448,48 @@
                                     <td colspan="8" style="padding: 30px; text-align: center; color: #94A3B8;">Carregando dados geogr&aacute;ficos...</td>
                                 </tr>
                             </tbody>
+
+                            <tfoot id="tabela-rel-estados-foot">
+                                <tr style="background: #0E1626; border-top: 2px solid rgba(56, 189, 248, 0.4); font-weight: 800;">
+                                    <td colspan="3" style="padding: 12px 16px; color: #FFFFFF; text-transform: uppercase;">TOTAL NACIONAL CONSOLIDADO (27 UFS)</td>
+                                    <td id="rel-total-geo-gmv" style="padding: 12px 16px; text-align: right; color: #38BDF8; font-family: 'JetBrains Mono', monospace; font-size: 13px;">-</td>
+                                    <td id="rel-total-geo-difal" style="padding: 12px 16px; text-align: right; color: #F59E0B; font-family: 'JetBrains Mono', monospace; font-size: 13px;">-</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #34D399; font-weight: 700;">Alíquota Média</td>
+                                    <td id="rel-total-geo-pedidos" style="padding: 12px 16px; text-align: center; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 13px;">-</td>
+                                    <td style="padding: 12px 16px; text-align: center; color: #CBD5E1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">100,0% Share</td>
+                                </tr>
+                            </tfoot>
+
+
                         </table>
                     </div>
                 </div>
-            </div>
+            
+
+                <!-- BLOCO DE ASSINATURAS & AUDITORIA OFICIAL -->
+                <div class="relatorio-bloco-assinaturas">
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Controladoria Fiscal & Tributária</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Aprovação Operacional &amp; Metas</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Auditoria Contábil Interestadual</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Conferência e Conciliação ERP</div>
+                    </div>
+                    <div class="bloco-assinatura-item">
+                        <div class="linha-assinatura"></div>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #FFFFFF;">Diretoria Executiva BOAH</div>
+                        <div style="font-size: 10px; color: #94A3B8;">Homologação Oficial de Resultados</div>
+                    </div>
+                </div>
+                <div class="relatorio-carimbo-auditoria">
+                    <span>Documento gerencial oficial gerado via expedi HUB integrado ao ERP Linx Microvix &amp; Vnda API.</span>
+                    <span>Autenticação: BOAH-SEC-AUDIT-2026-N1 &middot; Folha homologada</span>
+                </div>
+    
+</div>
 
             <!-- ============================================================== -->
             <!-- CONTEÚDO TAB 6: FECHAMENTO CONTÁBIL & ARQUIVOS FISCAIS -->

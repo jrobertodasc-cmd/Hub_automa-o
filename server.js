@@ -6110,6 +6110,11 @@ function resolverVendedora(rawIdentifier, linxCatalog) {
     }
 
     // 4. Fallback inteligente para cupons nominais de consultoras (ex: LANESANTOS, FLAVIAPEREIRA, JEUANDRADE, PASSY10, LORI10)
+    // Ignora tokens técnicos, hashes hexadecimais (ex: 5c9e60b0ca) ou sequências sem vogais
+    if (/^[a-f0-9]{8,}$/i.test(raw) || (/^[0-9a-z_]{8,}$/i.test(raw) && !/[aeiouy]/i.test(raw))) {
+        return null;
+    }
+
     // Remove sufixos de desconto (ex: 10, 15, 20, 20OFF, OFF)
     let nomeLimpo = up.replace(/(\d+OFF|\d+|OFF)$/, '').trim();
     const cuponsInstitucionais = ['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', 'NIVERBOAH', 'TROCA', 'LANDY', 'SERRANO', 'JBATALHA'];
@@ -6471,6 +6476,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                     });
 
                     const dynRanking = Array.from(vMap.values())
+                        .filter(v => v.valorTotal >= 10 && !/^[a-f0-9]{8,}$/i.test(v.nome))
                         .sort((a, b) => b.valorTotal - a.valorTotal)
                         .map((v, idx) => ({
                             posicao: idx + 1,
