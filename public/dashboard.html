@@ -2072,82 +2072,94 @@
                     Métricas consolidadas do recorte selecionado nos seletores acima
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 16px;">
                 <!-- KPI 1: GMV E-COMMERCE APROVADO -->
-                <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.6)'" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.25)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Vendas no Período (GMV)</span>
-                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">VNDA ONLINE</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">Vendas (GMV)</span>
+                        <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">VNDA</span>
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-faturamento" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace;">R$ 117.628,84</div><span id="bi-kpi-faturamento-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +18.4%</span></div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Ticket M&eacute;dio:</span>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px; margin: 6px 0 2px 0;">
+                        <div id="bi-kpi-faturamento" style="font-size: 18px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">R$ 117.628,84</div>
+                        <span id="bi-kpi-faturamento-var" style="font-size: 9.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +18.4%</span>
+                    </div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>TM:</span>
                         <strong id="bi-kpi-ticket-medio" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 571,01</strong>
                     </div>
                 </div>
 
                 <!-- KPI 2: CESTA & PEÇAS VENDIDAS -->
-                <div style="background: #111B2E; border: 1px solid rgba(195, 172, 255, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="background: #111B2E; border: 1px solid rgba(195, 172, 255, 0.25); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(195, 172, 255, 0.6)'" onmouseout="this.style.borderColor='rgba(195, 172, 255, 0.25)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pe&ccedil;as Vendidas</span>
-                        <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">CESTA ONLINE</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">Peças Vendidas</span>
+                        <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">CESTA</span>
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-olist-pecas-total" style="font-size: 26px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace;">312 pe&ccedil;as</div><span id="bi-kpi-pecas-var" style="font-size: 10.5px; font-weight: 800; color: #C3ACFF; background: rgba(195, 172, 255, 0.15); border: 1px solid rgba(195, 172, 255, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +12.8%</span></div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>PA (Pe&ccedil;as/Ped):</span>
-                        <strong id="bi-kpi-olist-pa" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">1.5 pe&ccedil;as</strong>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px; margin: 6px 0 2px 0;">
+                        <div id="bi-kpi-olist-pecas-total" style="font-size: 18px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">312 peças</div>
+                        <span id="bi-kpi-pecas-var" style="font-size: 9.5px; font-weight: 800; color: #C3ACFF; background: rgba(195, 172, 255, 0.15); border: 1px solid rgba(195, 172, 255, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +12.8%</span>
+                    </div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>PA:</span>
+                        <strong id="bi-kpi-olist-pa" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">1.5 peças</strong>
                     </div>
                 </div>
 
                 <!-- KPI 3: PEDIDOS & CONVERSÃO -->
-                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(16, 185, 129, 0.6)'" onmouseout="this.style.borderColor='rgba(16, 185, 129, 0.25)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Pedidos no Período</span>
-                        <span id="bi-kpi-conversao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">94.1% APROVADOS</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">Pedidos no Período</span>
+                        <span id="bi-kpi-conversao-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">94% APROV</span>
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-olist-pedidos" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">206 pedidos</div><span id="bi-kpi-pedidos-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +14.3%</span></div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Cancelados:</span>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px; margin: 6px 0 2px 0;">
+                        <div id="bi-kpi-olist-pedidos" style="font-size: 18px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">206 pedidos</div>
+                        <span id="bi-kpi-pedidos-var" style="font-size: 9.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +14.3%</span>
+                    </div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>Canc:</span>
                         <strong id="bi-kpi-cancelados" style="color: #F87171; font-family: 'JetBrains Mono', monospace;">13 (5.9%)</strong>
                     </div>
                 </div>
 
-                <!-- KPI 4: MARGEM DE CONTRIBUIÇÃO (LUCRO OPERACIONAL) -->
-                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <!-- KPI 4: MARGEM DE CONTRIBUIÇÃO -->
+                <div style="background: #111B2E; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(16, 185, 129, 0.7)'" onmouseout="this.style.borderColor='rgba(16, 185, 129, 0.35)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Margem Contribui&ccedil;&atilde;o</span>
-                        <span id="bi-kpi-margem-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">60.5% L&Iacute;QUIDO</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">Margem Contribuição</span>
+                        <span id="bi-kpi-margem-badge" style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">60.5% LÍQ</span>
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 10px 0 4px 0;"><div id="bi-kpi-margem-valor" style="font-size: 26px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">R$ 71.165,45</div><span id="bi-kpi-margem-var" style="font-size: 10.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 6px; border-radius: 4px;">▲ +2.4 p.p.</span></div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>CMV Est. (33%):</span>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px; margin: 6px 0 2px 0;">
+                        <div id="bi-kpi-margem-valor" style="font-size: 18px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">R$ 71.165,45</div>
+                        <span id="bi-kpi-margem-var" style="font-size: 9.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +2.4pp</span>
+                    </div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>CMV:</span>
                         <strong id="bi-kpi-cmv-valor" style="color: #F59E0B; font-family: 'JetBrains Mono', monospace;">R$ 38.817,52</strong>
                     </div>
                 </div>
 
-                <!-- KPI 5: FRETE & LOGÍSTICA D2C -->
-                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <!-- KPI 5: FRETE MÉDIO -->
+                <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(255, 255, 255, 0.25)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Frete M&eacute;dio</span>
-                        <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">LOG&Iacute;STICA</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">Frete Médio</span>
+                        <span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">LOG</span>
                     </div>
-                    <div id="bi-kpi-frete-medio" style="font-size: 26px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 5,39</div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Parceiro l&iacute;der:</span>
-                        <strong style="color: #38BDF8;">Total Express (90%)</strong>
+                    <div id="bi-kpi-frete-medio" style="font-size: 18px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; margin: 6px 0 2px 0; white-space: nowrap;">R$ 5,39</div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>Líder:</span>
+                        <strong style="color: #38BDF8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Express (90%)</strong>
                     </div>
                 </div>
 
                 <!-- KPI 6: CARGA DIFAL INTERESTADUAL -->
-                <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                <div style="background: #111B2E; border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(245, 158, 11, 0.6)'" onmouseout="this.style.borderColor='rgba(245, 158, 11, 0.25)'">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">DIFAL Interestadual</span>
-                        <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px;">IMPOSTO</span>
+                        <span style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.04em;">DIFAL Interestadual</span>
+                        <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">IMPOSTO</span>
                     </div>
-                    <div id="bi-kpi-difal" style="font-size: 26px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 10px 0 4px 0;">R$ 0,00</div>
-                    <div style="font-size: 11.5px; color: #64748B; display: flex; align-items: center; gap: 6px;">
-                        <span>Carga M&eacute;dia:</span>
-                        <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 7.8%</strong>
+                    <div id="bi-kpi-difal" style="font-size: 18px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin: 6px 0 2px 0; white-space: nowrap;">R$ 0,00</div>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
+                        <span>Carga:</span>
+                        <strong id="bi-kpi-taxa-difal" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">~ 3.3%</strong>
                     </div>
                 </div>
             </div>
@@ -4931,7 +4943,7 @@
         </div>
     </div>
 
-    <script src="/js/dashboard.js?v=20261104_1445"></script>
+    <script src="/js/dashboard.js?v=20261104_1455"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->

@@ -6302,7 +6302,6 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
 
         // KPI 1: GMV E-commerce Aprovado & Ticket Médio
         const elFat = document.getElementById('bi-kpi-faturamento');
-        window.ultimoGmvVnda = olist.gmvAprovado || 117628.84;
         const gmvAtivo = com.gmv || olist.gmvAprovado || kpis.totalFaturamento || 117628.84;
         window.ultimoGmvVnda = gmvAtivo;
         if (elFat) elFat.textContent = formatarMoedaBRL(gmvAtivo);
@@ -6312,15 +6311,14 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
 
         // KPI 2: Cesta Online & Peças por Atendimento (PA)
         const elPecasTotal = document.getElementById('bi-kpi-olist-pecas-total');
-        if (elPecasTotal) elPecasTotal.textContent = `${olist.totalPecasOlist || 53} peças`;
+        if (elPecasTotal) elPecasTotal.textContent = `${(olist.totalPecasOlist || 312).toLocaleString('pt-BR')} peças`;
 
         const elPa = document.getElementById('bi-kpi-olist-pa');
         if (elPa) elPa.textContent = `${olist.pecasPorPedido || 1.3} peças`;
 
         // KPI 3: Pedidos Online & Taxa de Aprovação vs Cancelamento
         const elOlistPed = document.getElementById('bi-kpi-olist-pedidos');
-        if (elOlistPed) elOlistPed.textContent = `${olist.pedidosAprovados || 40} pedidos`;
-
+        if (elOlistPed) elOlistPed.textContent = `${(olist.pedidosAprovados || 206).toLocaleString('pt-BR')} pedidos`;
         const elConversaoBadge = document.getElementById('bi-kpi-conversao-badge');
         if (elConversaoBadge) elConversaoBadge.textContent = `${olist.taxaAprovacaoPct || '80.0'}% APROVADOS`;
 
