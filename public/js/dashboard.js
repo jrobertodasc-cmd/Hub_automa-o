@@ -7570,8 +7570,7 @@ function exportarCsvRelatorioVendedoras() {
         v.sharePct || 0
     ].join(';'));
 
-    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
-');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7688,8 +7687,7 @@ function exportarCsvRelatorioCupons() {
         ].join(';');
     });
 
-    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
-');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7822,8 +7820,7 @@ function exportarCsvRelatorioLogistica() {
         ].join(';');
     });
 
-    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
-');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -7958,8 +7955,7 @@ function exportarCsvRelatorioEstados() {
         ].join(';');
     });
 
-    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('
-');
+    const csvContent = '﻿' + [cabecalho.join(';'), ...linhas].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
