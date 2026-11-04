@@ -10800,3 +10800,92 @@ function exportarBaseCompletaPowerBI() {
     URL.revokeObjectURL(url);
 }
 window.exportarBaseCompletaPowerBI = exportarBaseCompletaPowerBI;
+
+
+// ==============================================================
+// NAVEGAÇÃO ENTRE AS 4 VISÕES GERENCIAIS DO E-COMMERCE
+// ==============================================================
+window._visaoGerencialAtiva = 'tudo';
+
+function alternarVisaoGerencial(persona) {
+    window._visaoGerencialAtiva = persona;
+
+    // Atualiza visual dos botões
+    document.querySelectorAll('.btn-persona-bi').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.borderColor = 'rgba(255,255,255,0.08)';
+        b.style.color = '#94A3B8';
+    });
+    const btnAtivo = document.getElementById(`btn-persona-${persona}`);
+    if (btnAtivo) {
+        btnAtivo.style.background = '#2563EB';
+        btnAtivo.style.borderColor = '#3B82F6';
+        btnAtivo.style.color = '#FFFFFF';
+    }
+
+    const tagline = document.getElementById('bi-persona-tagline');
+    
+    // Elementos das seções
+    const elReguaPlanejamento = document.getElementById('bi-regua-planejamento');
+    const elSecaoPeriodo = document.getElementById('bi-tabela-vendas-periodo-body')?.closest('div[style*="padding: 22px"]');
+    const elCurvaAbc = document.getElementById('bi-curva-abc-tbody')?.closest('div[style*="padding: 22px"]');
+    const elOperacoes = document.getElementById('secao-bi-operacoes');
+    const elCeo = document.getElementById('secao-bi-ceo');
+    const elDRE = document.getElementById('bi-dre-gmv')?.closest('div[style*="padding: 14px 20px"]');
+    const elHeatmap = document.getElementById('bi-heatmap-grid')?.closest('div[style*="display: grid"]');
+    const elRankingVend = document.getElementById('bi-ranking-vendedoras-list')?.closest('div[style*="display: grid"]');
+
+    if (persona === 'comercial') {
+        if (tagline) tagline.textContent = 'Visão Comercial: faturamento diário, ritmo de meta, mix de produtos e força de vendas (Social Selling).';
+        if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
+        if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
+        if (elCurvaAbc) elCurvaAbc.style.display = 'block';
+        if (elRankingVend) elRankingVend.style.display = 'grid';
+        if (elOperacoes) elOperacoes.style.display = 'none';
+        if (elCeo) elCeo.style.display = 'none';
+        if (elHeatmap) elHeatmap.style.display = 'none';
+        if (elDRE) elDRE.style.display = 'none';
+    } else if (persona === 'operacoes') {
+        if (tagline) tagline.textContent = 'Visão Operacional & Estoque: cobertura de dias, SLA de expedição, transportadoras e prevenção de ruptura.';
+        if (elOperacoes) elOperacoes.style.display = 'block';
+        if (elCurvaAbc) elCurvaAbc.style.display = 'block';
+        if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
+        if (elHeatmap) elHeatmap.style.display = 'grid';
+        if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'none';
+        if (elCeo) elCeo.style.display = 'none';
+        if (elRankingVend) elRankingVend.style.display = 'none';
+        if (elDRE) elDRE.style.display = 'none';
+    } else if (persona === 'ceo') {
+        if (tagline) tagline.textContent = 'Visão Estratégica (CEO): saúde do negócio, LTV, recompra, novos vs recorrentes e o tripé de sustentabilidade.';
+        if (elCeo) elCeo.style.display = 'block';
+        if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
+        if (elCurvaAbc) elCurvaAbc.style.display = 'block';
+        if (elRankingVend) elRankingVend.style.display = 'grid';
+        if (elDRE) elDRE.style.display = 'flex';
+        if (elOperacoes) elOperacoes.style.display = 'none';
+        if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'none';
+        if (elHeatmap) elHeatmap.style.display = 'none';
+    } else if (persona === 'financeiro') {
+        if (tagline) tagline.textContent = 'Visão Financeira & Margem: DRE operacional, MC1, MC2 líquida, taxas de gateway, frete e DIFAL.';
+        if (elDRE) elDRE.style.display = 'flex';
+        if (elHeatmap) elHeatmap.style.display = 'grid';
+        if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
+        if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
+        if (elCurvaAbc) elCurvaAbc.style.display = 'none';
+        if (elRankingVend) elRankingVend.style.display = 'none';
+        if (elOperacoes) elOperacoes.style.display = 'none';
+        if (elCeo) elCeo.style.display = 'none';
+    } else {
+        // 'tudo' / Consolidada
+        if (tagline) tagline.textContent = 'Visão 360° Consolidada: todos os indicadores integrados Olist + Linx.';
+        if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
+        if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
+        if (elCurvaAbc) elCurvaAbc.style.display = 'block';
+        if (elOperacoes) elOperacoes.style.display = 'block';
+        if (elCeo) elCeo.style.display = 'block';
+        if (elDRE) elDRE.style.display = 'flex';
+        if (elHeatmap) elHeatmap.style.display = 'grid';
+        if (elRankingVend) elRankingVend.style.display = 'grid';
+    }
+}
+window.alternarVisaoGerencial = alternarVisaoGerencial;

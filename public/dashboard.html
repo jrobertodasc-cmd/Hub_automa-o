@@ -2061,6 +2061,37 @@
                 </div>
             </div>
 
+            <!-- ============================================================== -->
+            <!-- BARRA DE NAVEGAÇÃO EXECUTIVA POR PERFIL (4 VISÕES DO E-COMMERCE) -->
+            <!-- ============================================================== -->
+            <div id="bi-personas-nav" style="background: linear-gradient(90deg, #0E1626 0%, #090E17 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px;">Visão Gerencial:</span>
+                    <button type="button" class="btn-persona-bi active" id="btn-persona-tudo" onclick="alternarVisaoGerencial('tudo')" style="background: #2563EB; border: 1px solid #3B82F6; color: #FFFFFF; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span>🌐 Visão 360° Consolidada</span>
+                    </button>
+                    <button type="button" class="btn-persona-bi" id="btn-persona-comercial" onclick="alternarVisaoGerencial('comercial')" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span>🛒 1. Comercial</span>
+                        <span style="font-size: 10px; opacity: 0.65;">"Estamos vendendo?"</span>
+                    </button>
+                    <button type="button" class="btn-persona-bi" id="btn-persona-operacoes" onclick="alternarVisaoGerencial('operacoes')" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span>📦 2. Operações &amp; Estoque</span>
+                        <span style="font-size: 10px; opacity: 0.65;">"Vamos entregar?"</span>
+                    </button>
+                    <button type="button" class="btn-persona-bi" id="btn-persona-ceo" onclick="alternarVisaoGerencial('ceo')" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span>👑 3. Estratégico &amp; CEO</span>
+                        <span style="font-size: 10px; opacity: 0.65;">"Negócio saudável?"</span>
+                    </button>
+                    <button type="button" class="btn-persona-bi" id="btn-persona-financeiro" onclick="alternarVisaoGerencial('financeiro')" style="background: transparent; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <span>💵 4. Financeiro &amp; Margem</span>
+                        <span style="font-size: 10px; opacity: 0.65;">"Dinheiro no bolso?"</span>
+                    </button>
+                </div>
+                <div style="font-size: 11px; color: #64748B; font-weight: 600;" id="bi-persona-tagline">
+                    Exibindo todos os indicadores e cruzamentos unificados Olist + Linx
+                </div>
+            </div>
+
             <!-- TÍTULO & CARDS DE VENDAS POR PERÍODO (TOPO BI) -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -2541,6 +2572,92 @@
                             <!-- Injetado dinamicamente via JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+
+            <!-- ============================================================== -->
+            <!-- BLOCO EXECUTIVO 2: COCKPIT DE OPERAÇÕES, ESTOQUE & SLA -->
+            <!-- ============================================================== -->
+            <div id="secao-bi-operacoes" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">📦</span>
+                            <span>Cockpit de Operações, Demanda &amp; Estoque</span>
+                            <span style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 5px;">VISÃO OPERACIONAL</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Previsibilidade logística, tempo de faturamento, cobertura de estoque e prevenção de ruptura.</div>
+                    </div>
+                    <span style="font-size: 11px; color: #34D399; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700;">CD Operando a 94.8% de SLA</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div style="background: #0B1322; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">SLA Pedido &rarr; NF Linx</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">2h 18min</div>
+                        <div style="font-size: 10.5px; color: #34D399; margin-top: 2px;">95% faturado no mesmo dia</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">OTIF / Cargas no Prazo</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">94.8%</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Conformidade de entrega</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(195, 172, 255, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Cobertura de Estoque</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">34 dias</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Saldo ERP ÷ Média Diária</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Taxa de Ruptura (Out-of-Stock)</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">3.2%</div>
+                        <div style="font-size: 10.5px; color: #34D399; margin-top: 2px;">96.8% do catálogo disponível</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Faturamento Represado</div>
+                        <div style="font-size: 17px; font-weight: 800; color: #F87171; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">3 pedidos</div>
+                        <div style="font-size: 10.5px; color: #F87171; margin-top: 2px;">R$ 1.713,00 aguardando NF</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- BLOCO EXECUTIVO 3: COCKPIT ESTRATÉGICO, CEO & CLIENTES (LTV) -->
+            <!-- ============================================================== -->
+            <div id="secao-bi-ceo" style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">👑</span>
+                            <span>Cockpit Estratégico, CEO &amp; Saúde do Negócio</span>
+                            <span style="background: rgba(245, 158, 11, 0.15); color: #F59E0B; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 5px;">VISÃO DO DIRETOR</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Retenção, valor de vida do cliente (LTV), novos vs recorrentes e o tripé de sustentabilidade.</div>
+                    </div>
+                    <span style="font-size: 11px; color: #38BDF8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700;">Relação LTV / CAC: 3.4x (Saudável)</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div style="background: #0B1322; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">LTV Médio (Lifetime Value)</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #F5C268; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">R$ 1.842,50</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Receita média por CPF na base</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Novos vs. Recorrentes</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">68% / 32%</div>
+                        <div style="font-size: 10.5px; color: #34D399; margin-top: 2px;">32% de recompra orgânica</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Dependência de Canal</div>
+                        <div style="font-size: 18px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">58% Social</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">58% Vendedoras · 42% Loja</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(195, 172, 255, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Tripé da Sobrevivência</div>
+                        <div style="font-size: 14px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">LTV/CAC 3.4x &middot; MC2 60%</div>
+                        <div style="font-size: 10.5px; color: #34D399; margin-top: 2px;">Zona de alta lucratividade</div>
+                    </div>
                 </div>
             </div>
 
@@ -5081,7 +5198,7 @@
         </div>
     </div>
 
-    <script src="/js/dashboard.js?v=20261104_1630"></script>
+    <script src="/js/dashboard.js?v=20261104_1700"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
