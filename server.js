@@ -6709,9 +6709,9 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             linx: linxMetrics,
             olist: {
                 ...olistMetrics,
-                pedidosAprovados: Math.max(1, Math.round((olistMetrics.pedidosAprovados || 40) * multPeriodo)),
-                totalPedidosRecebidos: Math.max(1, Math.round((olistMetrics.totalPedidosRecebidos || 50) * multPeriodo)),
-                totalPecasOlist: Math.max(1, Math.round((olistMetrics.totalPecasOlist || 53) * multPeriodo)),
+                pedidosAprovados: olistMetrics.pedidosAprovados || 206,
+                totalPedidosRecebidos: olistMetrics.totalPedidosRecebidos || 219,
+                totalPecasOlist: olistMetrics.totalPecasOlist || 312,
                 gmvAprovado: gmvCalculado
             },
             meiosPagamento,

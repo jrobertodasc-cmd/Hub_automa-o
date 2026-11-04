@@ -2072,6 +2072,33 @@
                     Métricas consolidadas do recorte selecionado nos seletores acima
                 </div>
             </div>
+
+            <!-- RÉGUA EXECUTIVA DE PLANEJAMENTO & PACING DO MÊS (RUN RATE) -->
+            <div id="bi-regua-planejamento" style="background: linear-gradient(90deg, rgba(18, 28, 48, 0.85) 0%, rgba(11, 18, 32, 0.95) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 10px; padding: 10px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 16px;">🎯</span>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 12.5px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.01em;">Pacing de Planejamento &middot; Projeção do Mês (Run Rate)</span>
+                            <span id="bi-planejamento-dias-badge" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 4px;">DIA 04 DE 30 (13,3% DECORRIDO)</span>
+                        </div>
+                        <div style="font-size: 11px; color: #94A3B8; margin-top: 2px;">
+                            Ritmo diário de vendas: <strong id="bi-planejamento-ritmo-dia" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 29.407,21 / dia</strong>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 18px;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Projeção Fechamento Mês</div>
+                        <div id="bi-planejamento-projecao-mes" style="font-size: 16px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace;">R$ 882.216,30</div>
+                    </div>
+                    <div style="border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 16px; text-align: right;">
+                        <div style="font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Meta Comercial Mês</div>
+                        <div id="bi-planejamento-meta-valor" style="font-size: 13.5px; font-weight: 700; color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">R$ 150.000,00 <span id="bi-planejamento-meta-pct" style="color: #38BDF8; font-size: 11px;">(78.4%)</span></div>
+                    </div>
+                </div>
+            </div>
+
             <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 16px;">
                 <!-- KPI 1: GMV E-COMMERCE APROVADO -->
                 <div style="background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(56, 189, 248, 0.6)'" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.25)'">
@@ -2083,9 +2110,9 @@
                         <div id="bi-kpi-faturamento" style="font-size: 18px; font-weight: 800; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">R$ 117.628,84</div>
                         <span id="bi-kpi-faturamento-var" style="font-size: 9.5px; font-weight: 800; color: #34D399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +18.4%</span>
                     </div>
-                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
-                        <span>TM:</span>
-                        <strong id="bi-kpi-ticket-medio" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 571,01</strong>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                        <span>TM: <strong id="bi-kpi-ticket-medio" style="color: #38BDF8; font-family: 'JetBrains Mono', monospace;">R$ 571,01</strong></span>
+                        <span>PMP: <strong id="bi-kpi-pmp" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;" title="Preço Médio por Peça">R$ 284,13</strong></span>
                     </div>
                 </div>
 
@@ -2099,9 +2126,9 @@
                         <div id="bi-kpi-olist-pecas-total" style="font-size: 18px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; white-space: nowrap;">312 peças</div>
                         <span id="bi-kpi-pecas-var" style="font-size: 9.5px; font-weight: 800; color: #C3ACFF; background: rgba(195, 172, 255, 0.15); border: 1px solid rgba(195, 172, 255, 0.3); padding: 1px 5px; border-radius: 4px; white-space: nowrap;">▲ +12.8%</span>
                     </div>
-                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; gap: 4px;">
-                        <span>PA:</span>
-                        <strong id="bi-kpi-olist-pa" style="color: #CBD5E1; font-family: 'JetBrains Mono', monospace;">1.5 peças</strong>
+                    <div style="font-size: 11px; color: #64748B; display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                        <span>PA: <strong id="bi-kpi-olist-pa" style="color: #C3ACFF; font-family: 'JetBrains Mono', monospace;" title="Peças por Atendimento">1.51 pçs/ped</strong></span>
+                        <span style="color: #94A3B8; font-size: 10px;">Itens/ped</span>
                     </div>
                 </div>
 
@@ -2280,9 +2307,13 @@
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <button type="button" onclick="exportarCsvRelatorioPeriodo()" title="Exportar planilha CSV formatada deste período" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <button type="button" onclick="exportarBaseCompletaPowerBI()" title="Exportar base analítica completa com itens, SKUs e dados Linx/Olist para Excel ou Power BI" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.25)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.15)'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <span>Base Power BI / Excel (.CSV)</span>
+                        </button>
+                        <button type="button" onclick="exportarCsvRelatorioPeriodo()" title="Exportar resumo diário em CSV" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #34D399; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            <span>Baixar Planilha (.CSV)</span>
+                            <span>Resumo Diário (.CSV)</span>
                         </button>
                         <button type="button" onclick="abrirRelatorioImpressao('periodo')" title="Abrir página oficial A4 para impressão ou PDF" style="background: #16233A; border: 1px solid #29374E; color: #CBD5E1; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.borderColor='#38BDF8'" onmouseout="this.style.borderColor='#29374E'">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
@@ -2406,6 +2437,77 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ============================================================== -->
+            <!-- SEÇÃO BI: CURVA ABC DE PRODUTOS & GIRO DE ESTOQUE (CONSOLIDADO) -->
+            <!-- ============================================================== -->
+            <div style="background: #111B2E; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">👗</span>
+                            <span>Curva ABC de Produtos &middot; Mix de Vendas &amp; Giro de Estoque</span>
+                            <span style="background: rgba(195, 172, 255, 0.15); color: #C3ACFF; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 5px;">MÊS CONSOLIDADO</span>
+                        </div>
+                        <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Classificação por relevância de faturamento, volume de peças vendidas e preço médio por peça (PMP).</div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" id="bi-busca-abc-input" placeholder="🔍 Filtrar produto ou SKU..." oninput="filtrarTabelaCurvaABC(this.value)" style="background: #0B1322; border: 1px solid rgba(255, 255, 255, 0.15); color: #FFFFFF; font-size: 12px; padding: 6px 12px; border-radius: 8px; outline: none; width: 220px;">
+                        <button type="button" onclick="exportarCurvaABCCsv()" title="Exportar ranking Curva ABC em CSV" style="background: rgba(195, 172, 255, 0.15); border: 1px solid rgba(195, 172, 255, 0.35); color: #C3ACFF; font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(195, 172, 255, 0.25)'" onmouseout="this.style.background='rgba(195, 172, 255, 0.15)'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exportar Curva ABC (.CSV)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARDS DE RESUMO DA CURVA ABC -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div style="background: #0B1322; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Curva A (80% Faturamento)</div>
+                        <div id="bi-abc-kpi-curva-a" style="font-size: 17px; font-weight: 800; color: #34D399; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">4 SKUs (80.2%)</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Carros-chefes de faturamento</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Curva B (15% Faturamento)</div>
+                        <div id="bi-abc-kpi-curva-b" style="font-size: 17px; font-weight: 800; color: #38BDF8; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">3 SKUs (14.5%)</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Volume intermediário</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(195, 172, 255, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Curva C (5% Faturamento)</div>
+                        <div id="bi-abc-kpi-curva-c" style="font-size: 17px; font-weight: 800; color: #C3ACFF; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">3 SKUs (5.3%)</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Cauda longa de catálogo</div>
+                    </div>
+                    <div style="background: #0B1322; border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 12px 14px;">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Preço Médio Mix (PMP)</div>
+                        <div id="bi-abc-kpi-pmp-mix" style="font-size: 17px; font-weight: 800; color: #F59E0B; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">R$ 284,13</div>
+                        <div style="font-size: 10.5px; color: #64748B; margin-top: 2px;">Valor médio por peça faturada</div>
+                    </div>
+                </div>
+
+                <!-- TABELA ANALÍTICA DE PRODUTOS ABC -->
+                <div style="overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; background: #0E1626;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+                        <thead>
+                            <tr style="background: #090E17; color: #94A3B8; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">
+                                <th style="padding: 10px 14px; text-align: center; width: 50px;">Pos</th>
+                                <th style="padding: 10px 14px;">Classe</th>
+                                <th style="padding: 10px 14px;">SKU</th>
+                                <th style="padding: 10px 14px;">Produto / Descrição</th>
+                                <th style="padding: 10px 14px;">Categoria</th>
+                                <th style="padding: 10px 14px; text-align: center;">Peças Vendidas</th>
+                                <th style="padding: 10px 14px; text-align: right;">Faturamento Total</th>
+                                <th style="padding: 10px 14px; text-align: right;">PMP (Médio)</th>
+                                <th style="padding: 10px 14px; width: 140px;">Share % Receita</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bi-curva-abc-tbody">
+                            <!-- Injetado dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
 <!-- SEÇÃO INFERIOR: MAPA DE CALOR POR UF & FUNIL OPERACIONAL -->
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 20px;">
                 
@@ -4943,7 +5045,7 @@
         </div>
     </div>
 
-    <script src="/js/dashboard.js?v=20261104_1455"></script>
+    <script src="/js/dashboard.js?v=20261104_1530"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
