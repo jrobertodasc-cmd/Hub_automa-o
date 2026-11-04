@@ -1332,6 +1332,18 @@
         .status-dot.amber { background-color: #F59E0B; box-shadow: 0 0 4px rgba(245, 158, 11, 0.5); }
         .status-dot.purple { background-color: #A855F7; box-shadow: 0 0 4px rgba(168, 85, 247, 0.5); }
 
+
+        .btn-chart-bi-toggle {
+            outline: none;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: none;
+            font-family: inherit;
+        }
+        .btn-chart-bi-toggle:hover:not(.active) {
+            color: #FFFFFF !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+        }
     </style>
 <script src="/vendor/chart.umd.min.js"></script>
 </head>
@@ -1943,17 +1955,17 @@
 
                         <!-- SLICER / ALTERNADOR DE MÉTRICAS ESTILO POWER BI -->
                         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                            <div style="display: inline-flex; background: #0A101D; padding: 3px; border-radius: 9px; border: 1px solid rgba(255, 255, 255, 0.08); gap: 2px;">
-                                <button type="button" class="btn-chart-bi-toggle active" id="btn-chart-mode-vendas-difal" onclick="alternarModoGraficoBI('vendas_difal')" title="Exibir Vendas vs. DIFAL">
+                            <div style="display: flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 3px; gap: 4px;">
+                                <button type="button" class="btn-chart-bi-toggle active" id="btn-chart-mode-vendas-difal" onclick="alternarModoGraficoBI('vendas_difal')" title="Exibir Vendas vs. DIFAL" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
                                     Vendas vs. DIFAL
                                 </button>
-                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-vendas-cupons" onclick="alternarModoGraficoBI('vendas_cupons')" title="Exibir Vendas com Cupons &amp; Campanhas">
+                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-vendas-cupons" onclick="alternarModoGraficoBI('vendas_cupons')" title="Exibir Vendas com Cupons &amp; Campanhas" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
                                     Vendas vs. Cupons
                                 </button>
-                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-pedidos" onclick="alternarModoGraficoBI('pedidos')" title="Exibir Quantidade de Pedidos">
+                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-pedidos" onclick="alternarModoGraficoBI('pedidos')" title="Exibir Quantidade de Pedidos" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
                                     Qtd. Pedidos
                                 </button>
-                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-ticket" onclick="alternarModoGraficoBI('ticket_medio')" title="Exibir Ticket Médio Diário">
+                                <button type="button" class="btn-chart-bi-toggle" id="btn-chart-mode-ticket" onclick="alternarModoGraficoBI('ticket_medio')" title="Exibir Ticket Médio Diário" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
                                     Ticket M&eacute;dio
                                 </button>
                             </div>

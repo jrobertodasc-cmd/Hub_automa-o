@@ -6568,16 +6568,25 @@ function alternarModoGraficoBI(modo) {
     window._modoGraficoBI = modo;
 
     const botoes = [
-        { id: 'btn-chart-mode-vendas-difal', modo: 'vendas_difal' },
-        { id: 'btn-chart-mode-vendas-cupons', modo: 'vendas_cupons' },
-        { id: 'btn-chart-mode-pedidos', modo: 'pedidos' },
-        { id: 'btn-chart-mode-ticket', modo: 'ticket_medio' }
+        { id: 'btn-chart-mode-vendas-difal', modo: 'vendas_difal', corAtiva: '#38BDF8', bordaAtiva: 'rgba(56, 189, 248, 0.4)' },
+        { id: 'btn-chart-mode-vendas-cupons', modo: 'vendas_cupons', corAtiva: '#EC4899', bordaAtiva: 'rgba(236, 72, 153, 0.4)' },
+        { id: 'btn-chart-mode-pedidos', modo: 'pedidos', corAtiva: '#818CF8', bordaAtiva: 'rgba(129, 140, 248, 0.4)' },
+        { id: 'btn-chart-mode-ticket', modo: 'ticket_medio', corAtiva: '#34D399', bordaAtiva: 'rgba(52, 211, 153, 0.4)' }
     ];
     botoes.forEach(b => {
         const el = document.getElementById(b.id);
         if (el) {
-            if (b.modo === modo) el.classList.add('active');
-            else el.classList.remove('active');
+            if (b.modo === modo) {
+                el.classList.add('active');
+                el.style.background = '#1E293B';
+                el.style.borderColor = b.bordaAtiva;
+                el.style.color = b.corAtiva;
+            } else {
+                el.classList.remove('active');
+                el.style.background = 'transparent';
+                el.style.borderColor = 'transparent';
+                el.style.color = '#94A3B8';
+            }
         }
     });
 
