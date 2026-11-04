@@ -6741,6 +6741,19 @@ app.get('/api/relatorios/analitico-difal', requireAuth, async (req, res) => {
             .eq('tenant_id', tenantId)
             .order('nf_issue_date', { ascending: false });
 
+        if (uf && uf !== 'todas' && uf !== 'todos') query = query.eq('uf', uf.toUpperCase());
+        if (dataInicial) query = query.gte('nf_issue_date', dataInicial);
+        if (dataFim) query = query.lte('nf_issue_date', dataFim);
+
+        const { data: guides, error } = await query;
+        if (error) throw error;
+
+        return res.json({ guias: guides || [] });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
 // Relatório Gerencial: Vendas por Período (Evolução Diária / Mensal)
 app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
     try {
@@ -7037,19 +7050,6 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
     }
 });
 
-
-        if (uf && uf !== 'todas' && uf !== 'todos') query = query.eq('uf', uf.toUpperCase());
-        if (dataInicial) query = query.gte('nf_issue_date', dataInicial);
-        if (dataFim) query = query.lte('nf_issue_date', dataFim);
-
-        const { data: guides, error } = await query;
-        if (error) throw error;
-
-        return res.json({ guias: guides || [] });
-    } catch (e) {
-        return res.status(500).json({ error: e.message });
-    }
-});
 
 // ==========================================
 // MÓDULO: PAINEL FISCAL & SEFAZ (MARCO ZERO CONCILIADO)

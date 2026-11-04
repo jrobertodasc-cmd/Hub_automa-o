@@ -6298,6 +6298,7 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
         const kpis = data.kpis || {};
         const linx = data.linx || {};
         const olist = data.olist || {};
+        const com = data.comercial || {};
 
         // KPI 1: GMV E-commerce Aprovado & Ticket Médio
         const elFat = document.getElementById('bi-kpi-faturamento');
@@ -6343,7 +6344,6 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
         if (elHubTopo) elHubTopo.textContent = `Hoje, em todos os canais: ${olist.pedidosAprovados || 206} pedidos confirmados · ${formatarMoedaBRL(olist.gmvAprovado || 117628.84)} · Olist VNDA + Linx`;
 
         // KPI 4: Margem de Contribuição e CMV
-        const com = data.comercial || {};
         const elMargemVal = document.getElementById('bi-kpi-margem-valor');
         if (elMargemVal) elMargemVal.textContent = formatarMoedaBRL(com.margem ?? kpis.margemContribuicao ?? 6808.65);
 
