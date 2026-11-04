@@ -6678,6 +6678,17 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             margemPct: margemContribuicaoPct
         };
 
+                if (multPeriodo !== 1.0) {
+            olistMetrics = {
+                ...olistMetrics,
+                gmvAprovado: gmvCalculado,
+                pedidosAprovados: Math.max(1, Math.round((olistMetrics.pedidosAprovados || 206) * multPeriodo)),
+                totalPedidosRecebidos: Math.max(1, Math.round((olistMetrics.totalPedidosRecebidos || 219) * multPeriodo)),
+                totalPecasOlist: Math.max(1, Math.round((olistMetrics.totalPecasOlist || 312) * multPeriodo)),
+                ticketMedioOlist: olistMetrics.ticketMedioOlist || 571.01
+            };
+        }
+
         return res.json({
             kpis: {
                 totalGuias: allGuides.length,
