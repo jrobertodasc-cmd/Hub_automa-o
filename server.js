@@ -6051,58 +6051,79 @@ function resolverVendedora(rawIdentifier, linxCatalog) {
     const raw = String(rawIdentifier || '').trim();
     if (!raw) return null;
 
-    // 1. Busca por código direto ou prefixado com L (ex: L55, 55, L79, 79, L3, 3, L5, 5)
-    let match = linxCatalog.byCode.get(raw) || linxCatalog.byCode.get(raw.toUpperCase());
-    if (!match) {
-        const digitsOnly = raw.replace(/^L(OJA)?/i, '').replace(/[^0-9]/g, '');
-        if (digitsOnly) {
-            match = linxCatalog.byCode.get(digitsOnly);
-        }
-    }
+    const up = raw.toUpperCase();
 
-    // 2. Mapeamento de apelidos e canais notáveis
-    if (!match) {
-        const up = raw.toUpperCase();
-        if (up === 'MILA' || up.includes('MILA') || up.includes('CAMILA')) {
-            match = linxCatalog.byCode.get('66') || { cod_vendedor: '66', nome_vendedor: 'Camila (Mila)', ativo: '1' };
-        }
-    }
-
-    if (match) {
-        let nomeLimpo = formatarNomePessoa(match.nome_vendedor);
-        if (match.cod_vendedor === '3') {
-            return {
-                nome: 'Venda Online',
-                codigoLinx: '3',
-                canal: 'Loja Online (Linx #3)',
-                ativo: match.ativo === '1'
-            };
-        }
-        if (match.cod_vendedor === '66' && !nomeLimpo.includes('Mila')) {
-            nomeLimpo = 'Camila (Mila)';
-        }
+    // 1. Cupons e identificadores de Mila / Camila (ex: MILA, MILA15, COMCARINHOMILA)
+    // Devem ser verificados antes de extrair dígitos, para que o desconto de 15% (MILA15) não seja confundido com o código do vendedor 15!
+    if (up.includes('MILA') || up.includes('CAMILA')) {
         return {
-            nome: nomeLimpo,
-            codigoLinx: match.cod_vendedor,
-            canal: `Social Selling (Linx #${match.cod_vendedor})`,
-            ativo: match.ativo === '1'
+            nome: 'Camila (Mila)',
+            codigoLinx: '66',
+            canal: 'Social Selling (Linx #66)',
+            ativo: true
         };
     }
 
-    // 3. Fallback inteligente para cupons nominais (ex: LANESANTOS -> Lane Santos)
-    let nomeFallback = raw;
-    if (/^[A-Z]+$/.test(raw) && raw.length > 4) {
-        nomeFallback = formatarNomePessoa(raw.replace(/[0-9]/g, ''));
-    } else {
-        nomeFallback = formatarNomePessoa(raw);
+    // 2. Clara Coelho (Vendedora online ativa na Linx: Cod 151 Clara Coelho de Carvalho)
+    if (up.includes('CLARACOELHO') || up.includes('CLARA_COELHO') || up === 'CLARA' || up.startsWith('CLARA') || up.includes('COELHO')) {
+        const v151 = linxCatalog.byCode.get('151');
+        return {
+            nome: v151 ? formatarNomePessoa(v151.nome_vendedor) : 'Clara Coelho de Carvalho',
+            codigoLinx: '151',
+            canal: 'Social Selling (Linx #151)',
+            ativo: true
+        };
     }
 
-    return {
-        nome: nomeFallback,
-        codigoLinx: null,
-        canal: 'Social Selling VNDA',
-        ativo: true
-    };
+    // 3. Busca por código de vendedor estrito no Linx Microvix
+    // Aceita apenas padrões de código como: L55, L79, L3, L151, ou dígitos puros (55, 79, 151)
+    const matchCode = raw.match(/^L?(\d+)$/i);
+    if (matchCode) {
+        const codStr = matchCode[1];
+        const match = linxCatalog.byCode.get(codStr);
+
+        if (match) {
+            // Filtro de segurança: Ignora funcionários puramente administrativos (tipo 'A') inativos (ativo = '0'), como Maria Clara (#15 - Marketing inativa)
+            if (match.tipo === 'A' && match.ativo === '0' && codStr !== '66') {
+                return null;
+            }
+
+            let nomeLimpo = formatarNomePessoa(match.nome_vendedor);
+            if (codStr === '3') {
+                return {
+                    nome: 'Venda Online',
+                    codigoLinx: '3',
+                    canal: 'Loja Online (Linx #3)',
+                    ativo: match.ativo === '1'
+                };
+            }
+            if (codStr === '66' && !nomeLimpo.includes('Mila')) {
+                nomeLimpo = 'Camila (Mila)';
+            }
+            return {
+                nome: nomeLimpo,
+                codigoLinx: match.cod_vendedor,
+                canal: `Social Selling (Linx #${match.cod_vendedor})`,
+                ativo: match.ativo === '1'
+            };
+        }
+    }
+
+    // 4. Fallback inteligente para cupons nominais de consultoras (ex: LANESANTOS, FLAVIAPEREIRA, JEUANDRADE, PASSY10, LORI10)
+    // Remove sufixos de desconto (ex: 10, 15, 20, 20OFF, OFF)
+    let nomeLimpo = up.replace(/(\d+OFF|\d+|OFF)$/, '').trim();
+    const cuponsInstitucionais = ['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', 'NIVERBOAH', 'TROCA', 'LANDY', 'SERRANO', 'JBATALHA'];
+    
+    if (nomeLimpo.length >= 3 && !cuponsInstitucionais.some(c => nomeLimpo.includes(c))) {
+        return {
+            nome: formatarNomePessoa(nomeLimpo),
+            codigoLinx: null,
+            canal: 'Social Selling VNDA',
+            ativo: true
+        };
+    }
+
+    return null;
 }
 
 app.get('/api/bi/metrics', requireAuth, async (req, res) => {
@@ -6407,7 +6428,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         let rawAgent = (p.agent || p.seller || p.salesperson || '').trim();
                         if (!rawAgent && (p.coupon_code || p.coupon)) {
                             const cStr = String(p.coupon_code || p.coupon).toUpperCase().trim();
-                            if (cStr && !['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY'].includes(cStr)) {
+                            if (cStr && !['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', '+20OFF', 'NIVERBOAH08', 'NIVERBOAH09'].includes(cStr)) {
                                 rawAgent = cStr;
                             }
                         }
