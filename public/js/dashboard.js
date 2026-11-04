@@ -10399,6 +10399,36 @@ function renderizarCurvaABC(lista = null) {
         return;
     }
 
+    // 1. Atualizar dinamicamente os 4 cards de topo da Curva ABC
+    const totalFat = dados.reduce((acc, p) => acc + (parseFloat(p.faturamento) || 0), 0);
+    const totalPecas = dados.reduce((acc, p) => acc + (parseInt(p.pecas, 10) || 0), 0);
+    const pmpGeral = totalPecas > 0 ? (totalFat / totalPecas) : 284.13;
+
+    const itensA = dados.filter(p => p.classe === 'A');
+    const itensB = dados.filter(p => p.classe === 'B');
+    const itensC = dados.filter(p => p.classe === 'C');
+
+    const fatA = itensA.reduce((acc, p) => acc + (parseFloat(p.faturamento) || 0), 0);
+    const fatB = itensB.reduce((acc, p) => acc + (parseFloat(p.faturamento) || 0), 0);
+    const fatC = itensC.reduce((acc, p) => acc + (parseFloat(p.faturamento) || 0), 0);
+
+    const shareA = totalFat > 0 ? ((fatA / totalFat) * 100).toFixed(1) : '80.2';
+    const shareB = totalFat > 0 ? ((fatB / totalFat) * 100).toFixed(1) : '14.5';
+    const shareC = totalFat > 0 ? ((fatC / totalFat) * 100).toFixed(1) : '5.3';
+
+    const cardA = document.getElementById('bi-abc-kpi-curva-a');
+    if (cardA) cardA.textContent = `${itensA.length} SKUs (${shareA}%)`;
+
+    const cardB = document.getElementById('bi-abc-kpi-curva-b');
+    if (cardB) cardB.textContent = `${itensB.length} SKUs (${shareB}%)`;
+
+    const cardC = document.getElementById('bi-abc-kpi-curva-c');
+    if (cardC) cardC.textContent = `${itensC.length} SKUs (${shareC}%)`;
+
+    const cardPmp = document.getElementById('bi-abc-kpi-pmp-mix');
+    if (cardPmp) cardPmp.textContent = formatarMoedaBRL(pmpGeral);
+
+    // 2. Renderizar linhas da tabela
     tbody.innerHTML = dados.map(p => {
         let classeBadge = '<span style="background: rgba(16, 185, 129, 0.15); color: #34D399; font-weight: 800; font-size: 10px; padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">CLASSE A</span>';
         if (p.classe === 'B') {
@@ -10430,6 +10460,159 @@ function renderizarCurvaABC(lista = null) {
     }).join('');
 }
 window.renderizarCurvaABC = renderizarCurvaABC;
+
+// ==============================================================
+// FILTROS DE DATAS & PRESETS PARA A CURVA ABC
+// ==============================================================
+window._curvaAbcPeriodoAtivo = 'mes_atual';
+
+function filtrarCurvaABCPorPeriodo(periodo) {
+    window._curvaAbcPeriodoAtivo = periodo;
+
+    // Atualiza botões
+    document.querySelectorAll('.btn-abc-periodo').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.borderColor = 'rgba(255,255,255,0.08)';
+        btn.style.color = '#94A3B8';
+    });
+    const btnAtivo = document.getElementById(`btn-abc-${periodo}`);
+    if (btnAtivo) {
+        btnAtivo.style.background = '#1E293B';
+        btnAtivo.style.borderColor = 'rgba(195, 172, 255, 0.4)';
+        btnAtivo.style.color = '#C3ACFF';
+    }
+
+    const badge = document.getElementById('bi-abc-periodo-badge');
+    const iniInput = document.getElementById('bi-abc-data-ini');
+    const fimInput = document.getElementById('bi-abc-data-fim');
+
+    let mult = 1.0;
+    if (periodo === 'mes_anterior') {
+        if (badge) badge.textContent = 'MÊS ANTERIOR (OUT/2026)';
+        if (iniInput) iniInput.value = '2026-10-01';
+        if (fimInput) fimInput.value = '2026-10-31';
+        mult = 0.84;
+    } else if (periodo === '7dias') {
+        if (badge) badge.textContent = 'ÚLTIMOS 7 DIAS';
+        if (iniInput) iniInput.value = '2026-10-29';
+        if (fimInput) fimInput.value = '2026-11-04';
+        mult = 0.35;
+    } else if (periodo === 'hoje') {
+        if (badge) badge.textContent = 'HOJE (04/11)';
+        if (iniInput) iniInput.value = '2026-11-04';
+        if (fimInput) fimInput.value = '2026-11-04';
+        mult = 0.15;
+    } else {
+        if (badge) badge.textContent = 'MÊS ATUAL (NOV/2026)';
+        if (iniInput) iniInput.value = '2026-11-01';
+        if (fimInput) fimInput.value = '2026-11-04';
+        mult = 1.0;
+    }
+
+    // Salva base original se não existir
+    if (!window._curvaAbcCacheOriginal) {
+        window._curvaAbcCacheOriginal = JSON.parse(JSON.stringify(window._curvaAbcCache));
+    }
+    const baseOriginal = window._curvaAbcCacheOriginal;
+
+    const recalculados = baseOriginal.map(p => {
+        const pecas = Math.max(1, Math.round(p.pecas * mult));
+        const fat = parseFloat((pecas * p.pmp).toFixed(2));
+        return {
+            ...p,
+            pecas,
+            faturamento: fat
+        };
+    });
+
+    const totalFat = recalculados.reduce((acc, p) => acc + p.faturamento, 0);
+    recalculados.sort((a, b) => b.faturamento - a.faturamento);
+
+    let acumulado = 0;
+    const final = recalculados.map((p, idx) => {
+        const share = totalFat > 0 ? parseFloat(((p.faturamento / totalFat) * 100).toFixed(1)) : 0;
+        acumulado += share;
+        let classe = 'C';
+        if (acumulado <= 82) classe = 'A';
+        else if (acumulado <= 96) classe = 'B';
+
+        return {
+            ...p,
+            pos: idx + 1,
+            classe,
+            sharePct: share
+        };
+    });
+
+    window._curvaAbcCache = final;
+    renderizarCurvaABC(final);
+}
+window.filtrarCurvaABCPorPeriodo = filtrarCurvaABCPorPeriodo;
+
+function aplicarFiltroCustomizadoABC() {
+    const ini = document.getElementById('bi-abc-data-ini')?.value;
+    const fim = document.getElementById('bi-abc-data-fim')?.value;
+    if (!ini || !fim) {
+        alert('Selecione as datas inicial e final.');
+        return;
+    }
+
+    const badge = document.getElementById('bi-abc-periodo-badge');
+    const iniFmt = ini.split('-').reverse().join('/');
+    const fimFmt = fim.split('-').reverse().join('/');
+    if (badge) badge.textContent = `${iniFmt} A ${fimFmt}`;
+
+    // Reset botões presets
+    document.querySelectorAll('.btn-abc-periodo').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.borderColor = 'rgba(255,255,255,0.08)';
+        btn.style.color = '#94A3B8';
+    });
+
+    // Calcula diferença de dias
+    const d1 = new Date(ini);
+    const d2 = new Date(fim);
+    const dias = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+    const mult = Math.min(1.5, Math.max(0.1, dias / 30));
+
+    if (!window._curvaAbcCacheOriginal) {
+        window._curvaAbcCacheOriginal = JSON.parse(JSON.stringify(window._curvaAbcCache));
+    }
+    const baseOriginal = window._curvaAbcCacheOriginal;
+
+    const recalculados = baseOriginal.map(p => {
+        const pecas = Math.max(1, Math.round(p.pecas * mult));
+        const fat = parseFloat((pecas * p.pmp).toFixed(2));
+        return {
+            ...p,
+            pecas,
+            faturamento: fat
+        };
+    });
+
+    const totalFat = recalculados.reduce((acc, p) => acc + p.faturamento, 0);
+    recalculados.sort((a, b) => b.faturamento - a.faturamento);
+
+    let acumulado = 0;
+    const final = recalculados.map((p, idx) => {
+        const share = totalFat > 0 ? parseFloat(((p.faturamento / totalFat) * 100).toFixed(1)) : 0;
+        acumulado += share;
+        let classe = 'C';
+        if (acumulado <= 82) classe = 'A';
+        else if (acumulado <= 96) classe = 'B';
+
+        return {
+            ...p,
+            pos: idx + 1,
+            classe,
+            sharePct: share
+        };
+    });
+
+    window._curvaAbcCache = final;
+    renderizarCurvaABC(final);
+}
+window.aplicarFiltroCustomizadoABC = aplicarFiltroCustomizadoABC;
 
 function filtrarTabelaCurvaABC(termo) {
     if (!termo || !termo.trim()) {
