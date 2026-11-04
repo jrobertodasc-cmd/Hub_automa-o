@@ -6190,8 +6190,12 @@ function aplicarPeriodoPersonalizadoBI() {
     window._biDataFimPersonalizada = dtFim;
 
     const badge = document.getElementById('bi-periodo-badge-ativo');
+    const topoBadge = document.getElementById('bi-topo-periodo-badge');
     if (badge) {
         badge.textContent = `PERSONALIZADO (${dtIni.split('-').reverse().join('/')} A ${dtFim.split('-').reverse().join('/')})`;
+    }
+    if (topoBadge) {
+        topoBadge.textContent = `PERSONALIZADO (${dtIni.split('-').reverse().join('/')} A ${dtFim.split('-').reverse().join('/')})`;
     }
 
     carregarDadosBI(true, 'personalizado');
@@ -6210,11 +6214,10 @@ function selecionarPeriodoBI(periodo) {
     }
 
     const badge = document.getElementById('bi-periodo-badge-ativo');
-    if (badge) {
-        if (periodo === 'mes_anterior') badge.textContent = 'MÊS ANTERIOR (OUT/2026)';
-        else if (periodo === '7dias') badge.textContent = 'ÚLTIMOS 7 DIAS';
-        else badge.textContent = 'MÊS ATUAL (NOV/2026)';
-    }
+    const topoBadge = document.getElementById('bi-topo-periodo-badge');
+    const labelTxt = (periodo === 'mes_anterior') ? 'MÊS ANTERIOR (OUT/2026)' : (periodo === '7dias' ? 'ÚLTIMOS 7 DIAS' : 'MÊS ATUAL (NOV/2026)');
+    if (badge) badge.textContent = labelTxt;
+    if (topoBadge) topoBadge.textContent = labelTxt;
 
     ['mes_atual', 'mes_anterior', '7dias'].forEach(p => {
         const btn = document.getElementById(`btn-periodo-${p}`);
