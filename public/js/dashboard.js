@@ -6514,17 +6514,17 @@ async function carregarDadosBI(forcar = false, periodoParam = null) {
                 let badgeColor = '#F59E0B';
                 let badgeBg = 'rgba(245, 158, 11, 0.15)';
                 let badgeBorder = 'rgba(245, 158, 11, 0.35)';
-                let medalha = '🥇';
+                let medalha = '#1';
                 if (idx === 1) {
                     badgeColor = '#38BDF8';
                     badgeBg = 'rgba(56, 189, 248, 0.15)';
                     badgeBorder = 'rgba(56, 189, 248, 0.35)';
-                    medalha = '🥈';
+                    medalha = '#2';
                 } else if (idx === 2) {
                     badgeColor = '#C084FC';
                     badgeBg = 'rgba(192, 132, 252, 0.15)';
                     badgeBorder = 'rgba(192, 132, 252, 0.35)';
-                    medalha = '🥉';
+                    medalha = '#3';
                 } else {
                     badgeColor = '#94A3B8';
                     badgeBg = 'rgba(255, 255, 255, 0.06)';
@@ -8342,7 +8342,7 @@ async function carregarRelatorioVendedoras() {
 
         tbody.innerHTML = ranking.map((v, idx) => {
             const pos = idx + 1;
-            const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
+            const medalha = `#${pos}`;
             const share = v.sharePct !== undefined ? v.sharePct : (totalGmv > 0 ? ((v.valorTotal / totalGmv) * 100).toFixed(1) : 0);
             const tm = v.ticketMedio || (v.pedidos > 0 ? (v.valorTotal / v.pedidos) : 0);
             const nomeEscapado = (v.nome || '').replace(/'/g, "\'");
@@ -8457,7 +8457,7 @@ async function carregarRelatorioCupons() {
 
         tbody.innerHTML = ranking.map((c, idx) => {
             const pos = c.posicao || (idx + 1);
-            const medalha = pos === 1 ? '🥇' : (pos === 2 ? '🥈' : (pos === 3 ? '🥉' : `${pos}º`));
+            const medalha = `#${pos}`;
             const cupomCod = c.codigo || c.cupom || 'CUPOM';
             const totalVal = parseFloat(c.valorTotal || c.totalGmv || 0);
             const pedidos = parseInt(c.pedidos || 0);
