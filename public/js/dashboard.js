@@ -10836,7 +10836,7 @@ function alternarVisaoGerencial(persona) {
     const elRankingVend = document.getElementById('bi-ranking-vendedoras-list')?.closest('div[style*="display: grid"]');
 
     if (persona === 'comercial') {
-        if (tagline) tagline.textContent = 'Visão Comercial: faturamento diário, ritmo de meta, mix de produtos e força de vendas (Social Selling).';
+        if (tagline) tagline.textContent = 'Métricas Comerciais: Faturamento diário, ritmo de metas, mix de produtos e vendas por consultora (Social Selling Linx).';
         if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
         if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
         if (elCurvaAbc) elCurvaAbc.style.display = 'block';
@@ -10846,7 +10846,7 @@ function alternarVisaoGerencial(persona) {
         if (elHeatmap) elHeatmap.style.display = 'none';
         if (elDRE) elDRE.style.display = 'none';
     } else if (persona === 'operacoes') {
-        if (tagline) tagline.textContent = 'Visão Operacional & Estoque: cobertura de dias, SLA de expedição, transportadoras e prevenção de ruptura.';
+        if (tagline) tagline.textContent = 'Métricas de Operações & Logística: Cobertura de estoque em dias, SLA de expedição, transporte e prevenção de ruptura.';
         if (elOperacoes) elOperacoes.style.display = 'block';
         if (elCurvaAbc) elCurvaAbc.style.display = 'block';
         if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
@@ -10866,7 +10866,7 @@ function alternarVisaoGerencial(persona) {
         if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'none';
         if (elHeatmap) elHeatmap.style.display = 'none';
     } else if (persona === 'financeiro') {
-        if (tagline) tagline.textContent = 'Visão Financeira & Margem: DRE operacional, MC1, MC2 líquida, taxas de gateway, frete e DIFAL.';
+        if (tagline) tagline.textContent = 'Métricas de Controladoria & Finanças: DRE operacional, margens MC1 e MC2, conciliação tributária DIFAL e custos de gateway.';
         if (elDRE) elDRE.style.display = 'flex';
         if (elHeatmap) elHeatmap.style.display = 'grid';
         if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
@@ -10877,7 +10877,7 @@ function alternarVisaoGerencial(persona) {
         if (elCeo) elCeo.style.display = 'none';
     } else {
         // 'tudo' / Consolidada
-        if (tagline) tagline.textContent = 'Visão 360° Consolidada: todos os indicadores integrados Olist + Linx.';
+        if (tagline) tagline.textContent = 'Visão Consolidada: Todos os indicadores transacionais integrados Olist Vnda + Linx Microvix ERP.';
         if (elReguaPlanejamento) elReguaPlanejamento.style.display = 'flex';
         if (elSecaoPeriodo) elSecaoPeriodo.style.display = 'block';
         if (elCurvaAbc) elCurvaAbc.style.display = 'block';
