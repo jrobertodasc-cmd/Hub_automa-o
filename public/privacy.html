@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/expedi.css">
+    <title>Política de Privacidade e Proteção de Dados (LGPD) — expedi HUB</title>
+</head>
+<body style="background:var(--bg)">
+    <nav class="nav">
+        <div class="brand">
+            <i><svg class="ico" viewBox="0 0 24 24" style="color:#fff"><path d="M5 12l5 5 9-10"/></svg></i>
+            <span>expedi HUB <small>SAAS</small></span>
+        </div>
+        <div>
+            <a href="plans.html">Planos</a>
+            <a href="terms.html">Termos de Uso</a>
+            <a class="btn" href="login.html">Entrar</a>
+        </div>
+    </nav>
+
+    <main style="max-width:860px;margin:40px auto;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:40px 48px;line-height:1.7">
+        <div class="hint" style="color:var(--primary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Conformidade com a Lei Federal 13.709/2018</div>
+        <h1 style="font-size:28px;font-weight:600;margin:8px 0 24px">Política de Privacidade e Proteção de Dados</h1>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:32px">Última atualização: Novembro de 2026 • Versão 2.0</p>
+
+        <section style="margin-bottom:28px">
+            <h2 style="font-size:18px;margin-bottom:10px">1. Compromisso com a Privacidade</h2>
+            <p>O <strong>expedi HUB</strong> adota as melhores práticas de governança em privacidade e segurança da informação, assegurando a proteção integral dos dados de nossos clientes (lojistas) e dos clientes finais (destinatários das mercadorias) em estrita conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD).</p>
+        </section>
+
+        <section style="margin-bottom:28px">
+            <h2 style="font-size:18px;margin-bottom:10px">2. Papéis e Agentes de Tratamento</h2>
+            <p>Para fins da legislação aplicável:</p>
+            <ul style="padding-left:20px;margin:8px 0">
+                <li><strong>Controlador:</strong> O Lojista Contratante, responsável pela coleta primária dos dados em sua plataforma de e-commerce e pela definição da base legal;</li>
+                <li><strong>Operador:</strong> O expedi HUB, que realiza o tratamento automatizado dos dados em nome do Controlador para execução estrita das obrigações fiscais e logísticas de expedição;</li>
+                <li><strong>Encarregado pelo Tratamento de Dados (DPO):</strong> O canal direto para comunicação sobre privacidade pode ser acionado em <code>dpo@expedihub.com.br</code>.</li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom:28px">
+            <h2 style="font-size:18px;margin-bottom:10px">3. Dados Pessoais Coletados e Finalidade</h2>
+            <p>Os dados processados na plataforma limitam-se ao estritamente necessário para cumprimento de obrigação legal e execução de contrato:</p>
+            <ul style="padding-left:20px;margin:8px 0">
+                <li><strong>Dados do Lojista:</strong> Nome do operador, e-mail corporativo, CNPJ, Razão Social e credenciais de acesso autenticadas por JWT;</li>
+                <li><strong>Dados dos Destinatários:</strong> Nome completo, CPF, endereço de entrega e telefone (contidos na NF-e), utilizados para emissão da guia GNRE/DIFAL e despacho logístico perante as transportadoras conveniadas;</li>
+                <li><strong>Mascaramento em Telas:</strong> Todas as visualizações públicas e logs operacionais realizam o mascaramento de CPFs (ex: <code>***.123.456-**</code>) para mitigar exposição indevida.</li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom:28px">
+            <h2 style="font-size:18px;margin-bottom:10px">4. Medidas de Segurança da Informação</h2>
+            <ul style="padding-left:20px;margin:8px 0">
+                <li>Criptografia <strong>AES-256-GCM</strong> para chaves de API, senhas de certificado A1 e tokens de webhook;</li>
+                <li>Isolamento lógico absoluto (Multi-Tenancy) via chaves relacionais indexadas por empresa;</li>
+                <li>Conexões protegidas via TLS 1.3 com cabeçalhos de segurança contra injeção e clickjacking;</li>
+                <li>Registro imutável de eventos (Audit Trail) de auditoria com IP, operador, ação e data/hora.</li>
+            </ul>
+        </section>
+
+        <section style="margin-bottom:28px">
+            <h2 style="font-size:18px;margin-bottom:10px">5. Retenção e Descarte de Dados</h2>
+            <p>Os documentos fiscais eletrônicos (XMLs de NF-e, DANFEs e comprovantes de liquidação bancária) são conservados pelo prazo legal prescricional de 5 (cinco) anos, conforme exigência do Código Tributário Nacional. Findo o prazo, ou mediante solicitação justificada do Controlador, os dados não sujeitos a retenção legal são definitivamente expurgados.</p>
+        </section>
+
+        <div style="text-align:center;margin-top:40px;border-top:1px solid var(--line);padding-top:24px">
+            <a class="btn pri" href="register.html">Voltar para o Cadastro</a>
+        </div>
+    </main>
+
+    <footer class="foot" style="max-width:860px;margin:auto;padding-bottom:40px">
+        <span>© 2026 expedi HUB. Todos os direitos reservados.</span>
+        <span>
+            <a href="privacy.html">Política de Privacidade</a>
+            <a href="terms.html">Termos de Uso</a>
+        </span>
+    </footer>
+</body>
+</html>

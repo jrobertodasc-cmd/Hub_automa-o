@@ -814,6 +814,11 @@ async function carregarDadosDashboard() {
             const adminLink = document.getElementById('admin-nav-link');
             if (adminLink) adminLink.classList.remove('d-none');
         }
+
+        // Assistente de Onboarding e Franquia de Assinatura SaaS
+        if (typeof window.iniciarOnboardingDashboard === 'function') {
+            window.iniciarOnboardingDashboard(tenant);
+        }
     } catch (e) {
         showToast("Erro ao carregar dados do dashboard: " + e.message, 'error');
     }
