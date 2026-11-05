@@ -4918,7 +4918,7 @@ function renderizarCards360(data) {
             return `<span class="tag-status" style="background:rgba(245,158,11,0.18); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); font-weight:700;"><span class="status-dot amber"></span>A Pagar (Pendente)</span>`;
         }
         if (g.status_bancario === 'sp_manual') {
-            return `<span class="tag-status" style="background:rgba(20,184,166,0.18); color:#2DD4BF; border:1px solid rgba(20,184,166,0.4); font-weight:700;">📦 SP · A Pagar Manual</span>`;
+            return `<span class="tag-status" style="background:rgba(20,184,166,0.18); color:#2DD4BF; border:1px solid rgba(20,184,166,0.4); font-weight:700;"> SP · A Pagar Manual</span>`;
         }
         if (g.status_bancario === 'rejeitada') {
             return `<span class="tag-status" style="background:rgba(239,68,68,0.18); color:#F87171; border:1px solid rgba(239,68,68,0.4); font-weight:700;">⚠ Rejeitada / Divergência</span>`;
@@ -5961,7 +5961,7 @@ async function rastrearTotalExpress(guideId, nfNumber, awb) {
         if (items.length === 0) {
             corpo.innerHTML = `
                 <div style="text-align: center; padding: 40px 20px;">
-                    <div style="font-size: 28px; margin-bottom: 8px;">📦</div>
+                    <div style="margin-bottom: 8px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
                     <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;">Encomenda ainda não processada na Total Express</div>
                     <p style="font-size: 12.5px; color: #94A3B8; margin-top: 6px; line-height: 1.5;">
                         Esta carga ainda está aguardando a primeira bipagem no centro de triagem de Salvador ou foi registrada recentemente via EDI.
@@ -5980,7 +5980,7 @@ async function rastrearTotalExpress(guideId, nfNumber, awb) {
         }
 
         if (previsaoEl && enc.previsaoEntregaAtualizada) {
-            previsaoEl.innerHTML = `📅 Previsão de Entrega: <strong>${formatarDataBR(enc.previsaoEntregaAtualizada)}</strong>`;
+            previsaoEl.innerHTML = `Previsão de Entrega: <strong>${formatarDataBR(enc.previsaoEntregaAtualizada)}</strong>`;
         }
 
         // Card do Comprovante de Entrega se disponível
@@ -6000,7 +6000,7 @@ async function rastrearTotalExpress(guideId, nfNumber, awb) {
                     </div>
                     ${compUrl ? `
                         <a href="${escapeHtml(compUrl)}" target="_blank" style="background: #10B981; color: #FFFFFF; text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-                            <span>📸 Ver Comprovante</span>
+                            <span>Ver Comprovante</span>
                         </a>
                     ` : ''}
                 </div>
@@ -6028,7 +6028,7 @@ async function rastrearTotalExpress(guideId, nfNumber, awb) {
                             </div>
                             ${(ev.cidade || ev.uf) ? `
                                 <div style="font-size: 11.5px; color: #64748B; margin-top: 2px;">
-                                    📍 ${escapeHtml(ev.cidade || '')}${ev.uf ? ` - ${escapeHtml(ev.uf)}` : ''}
+                                    ${escapeHtml(ev.cidade || '')}${ev.uf ? ` - ${escapeHtml(ev.uf)}` : ''}
                                 </div>
                             ` : ''}
                         </div>
@@ -8086,13 +8086,13 @@ function alternarTabRelatorios(tab) {
 
     // Atualiza o label do dropdown executivo
     const labelsMap = {
-        'periodo': { label: '0. Vendas por Período (Evolução Diária)', icon: '📅' },
-        'difal': { label: '1. Analítico DIFAL (Nota a Nota & SEFAZ)', icon: '📊' },
-        'vendedoras': { label: '2. Ranking de Vendedoras (Linx Microvix)', icon: '👩‍💼' },
-        'cupons': { label: '3. Performance de Cupons & Campanhas', icon: '🎟️' },
-        'logistica': { label: '4. Logística, Fretes & Romaneios A4', icon: '🚚' },
-        'estados': { label: '5. Vendas por Região & UFs (Heatmap)', icon: '🗺️' },
-        'fechamento': { label: '6. Fechamento Contábil & Arquivos Oficiais', icon: '📑' }
+        'periodo': { label: '0. Vendas por Período (Evolução Diária)', icon: '' },
+        'difal': { label: '1. Analítico DIFAL (Nota a Nota & SEFAZ)', icon: '' },
+        'vendedoras': { label: '2. Ranking de Vendedoras (Linx Microvix)', icon: '' },
+        'cupons': { label: '3. Performance de Cupons & Campanhas', icon: '' },
+        'logistica': { label: '4. Logística, Fretes & Romaneios A4', icon: '' },
+        'estados': { label: '5. Vendas por Região & UFs (Heatmap)', icon: '' },
+        'fechamento': { label: '6. Fechamento Contábil & Arquivos Oficiais', icon: '' }
     };
     if (labelsMap[tab]) {
         const lblEl = document.getElementById('dropdown-relatorios-label');

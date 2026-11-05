@@ -2037,7 +2037,7 @@
                             &Uacute;ltimos 7 Dias
                         </button>
                         <button type="button" class="btn-periodo-bi" id="btn-periodo-personalizado" onclick="togglePeriodoPersonalizadoBI()" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.2s;">
-                            📅 Personalizado
+                            Personalizado
                         </button>
                     </div>
                     <!-- BOX EXPANSÍVEL DE DATAS PERSONALIZADAS NO BI -->
@@ -3084,7 +3084,7 @@
                     <div id="dropdown-relatorios-container" style="position: relative; min-width: 330px;">
                         <button type="button" id="btn-dropdown-relatorios" onclick="toggleDropdownRelatorios(event)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #111B2E; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 9px 16px; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.25); transition: all 0.2s;">
                             <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                <span id="dropdown-relatorios-icon" style="font-size: 16px;">📊</span>
+                                <span id="dropdown-relatorios-icon" style="display:inline-flex;align-items:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
                                 <span id="dropdown-relatorios-label" style="color: #38BDF8; font-weight: 800;">1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)</span>
                             </div>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5" id="dropdown-relatorios-arrow" style="transition: transform 0.2s; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -3095,12 +3095,12 @@
                             
                             <!-- GRUPO 1: GERÊNCIA FISCAL -->
                             <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
-                                <span>📑 GERÊNCIA FISCAL &amp; CONTROLADORIA</span>
+                                <span>CONTROLADORIA &amp; FISCAL</span>
                                 <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('fiscal')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38BDF8; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
                             </div>
                             <div onclick="selecionarRelatorioDropdown('difal', '1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)', '📊', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">📊</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">1. Analítico DIFAL (Nota a Nota &amp; SEFAZ)</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Apuração individual, status GNRE e alíquotas</div>
@@ -3110,7 +3110,7 @@
                             </div>
                             <div onclick="selecionarRelatorioDropdown('estados', '5. Vendas por Região &amp; UFs (Heatmap)', '🗺️', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">🗺️</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">5. Vendas por Região &amp; UFs (Heatmap)</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Concentração geográfica nacional e partilhas</div>
@@ -3119,7 +3119,7 @@
                             </div>
                             <div onclick="selecionarRelatorioDropdown('fechamento', '6. Fechamento Contábil &amp; Arquivos Oficiais', '📑', 'fiscal')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(56, 189, 248, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">📑</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">6. Fechamento Contábil &amp; Arquivos Oficiais</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Pacotes ZIP XMLs, conciliação Itaú e remessas</div>
@@ -3131,12 +3131,12 @@
 
                             <!-- GRUPO 2: GERÊNCIA COMERCIAL -->
                             <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #EC4899; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
-                                <span>👩‍💼 GERÊNCIA COMERCIAL &amp; GROWTH</span>
+                                <span>COMERCIAL &amp; CRESCIMENTO</span>
                                 <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('comercial')" style="background: rgba(236, 72, 153, 0.12); border: 1px solid rgba(236, 72, 153, 0.3); color: #EC4899; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
                             </div>
                             <div onclick="selecionarRelatorioDropdown('periodo', '0. Vendas por Período (Evolução Diária)', '📅', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">📅</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">0. Vendas por Período (Evolução Diária)</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Faturamento diário, safra do mês e ticket médio</div>
@@ -3146,7 +3146,7 @@
                             </div>
                             <div onclick="selecionarRelatorioDropdown('vendedoras', '2. Ranking de Vendedoras (Linx Microvix)', '👩‍💼', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">👩‍💼</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">2. Ranking de Vendedoras (Linx Microvix)</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Social selling, comissionamento e ticket médio</div>
@@ -3155,7 +3155,7 @@
                             </div>
                             <div onclick="selecionarRelatorioDropdown('cupons', '3. Performance de Cupons &amp; Campanhas', '🎟️', 'comercial')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">🎟️</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">3. Performance de Cupons &amp; Campanhas</div>
                                         <div style="font-size: 11px; color: #94A3B8;">MILA15, primeira compra e vouchers promocionais</div>
@@ -3167,12 +3167,12 @@
 
                             <!-- GRUPO 3: GERÊNCIA LOGÍSTICA -->
                             <div style="padding: 6px 10px 4px 10px; font-size: 10.5px; font-weight: 800; color: #34D399; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
-                                <span>🚚 GERÊNCIA DE LOGÍSTICA &amp; E-COMMERCE</span>
+                                <span>LOGÍSTICA &amp; EXPEDIÇÃO</span>
                                 <button type="button" onclick="event.stopPropagation(); fecharDropdownRelatorios(); abrirModalDossieGerente('logistica')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; cursor: pointer;">Pop-up 360°</button>
                             </div>
                             <div onclick="selecionarRelatorioDropdown('logistica', '4. Logística, Fretes &amp; Romaneios A4', '🚚', 'logistica')" style="padding: 9px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.15s;" onmouseover="this.style.background='rgba(52, 211, 153, 0.08)'" onmouseout="this.style.background='transparent'">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 15px;">🚚</span>
+                                    <span style="display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
                                     <div>
                                         <div style="font-size: 12.5px; font-weight: 700; color: #FFFFFF;">4. Logística, Fretes &amp; Romaneios A4</div>
                                         <div style="font-size: 11px; color: #94A3B8;">Total Express vs. Correios e manifestos de doca</div>
@@ -5055,7 +5055,7 @@
             <!-- Header -->
             <div style="padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02);">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 20px;">🚚</span>
+                    <span style="display:inline-flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
                     <div>
                         <div style="font-size: 15px; font-weight: 700; color: #FFFFFF;" id="modal-rastreio-titulo">Rastreamento Total Express</div>
                         <div style="font-size: 11.5px; color: #94A3B8; font-family: 'JetBrains Mono', monospace;" id="modal-rastreio-sub">Consultando API oficial...</div>
@@ -5089,7 +5089,7 @@
             <div style="background: #0E1626; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <span style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: grid; place-items: center; color: #38BDF8; font-size: 18px;">
-                        📦
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                     </span>
                     <div>
                         <h2 style="margin: 0; font-size: 17px; font-weight: 800; color: #FFFFFF; display: flex; align-items: center; gap: 8px;">
@@ -5127,10 +5127,10 @@
             <div style="padding: 12px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; background: #0E1626; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 3px; gap: 4px;">
                     <button type="button" id="modal-tab-btn-pedidos" onclick="alternarAbaModalPedidos('pedidos')" style="background: #1E293B; border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; font-size: 11.5px; font-weight: 700; padding: 5px 14px; border-radius: 6px; cursor: pointer;">
-                        🛒 Pedidos do Recorte
+                        Pedidos do Recorte
                     </button>
                     <button type="button" id="modal-tab-btn-produtos" onclick="alternarAbaModalPedidos('produtos')" style="background: transparent; border: 1px solid transparent; color: #94A3B8; font-size: 11.5px; font-weight: 700; padding: 5px 14px; border-radius: 6px; cursor: pointer;">
-                        👗 Mix de Produtos Vendidos
+                        Mix de Produtos Vendidos
                     </button>
                 </div>
 
@@ -5196,7 +5196,7 @@
         </div>
     </div>
 
-    <script src="/js/dashboard.js?v=20261104_1800"></script>
+    <script src="/js/dashboard.js?v=20261105_0920"></script>
     <!-- ============================================================== -->
     <!-- MODAL OPERACIONAL: REMESSA BANCÁRIA ITAÚ SISPAG (CNAB 240)        -->
     <!-- ============================================================== -->
