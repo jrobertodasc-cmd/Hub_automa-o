@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/isolamento.test.js && node tests/total_express.test.js"
+    "test": "node tests/isolamento.test.js && node tests/total_express.test.js && node tests/billing_and_routes.test.js"
   },
   "dependencies": {
     "@mmachadosantos/nfe-danfe-pdf": "^1.0.6",
