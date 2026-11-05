@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Gerencial · expedi HUB</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 15mm 15mm 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #F1F5F9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #111827;
+            font-size: 11px;
+            line-height: 1.35;
+            padding: 24px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* BARRA SUPERIOR DE CONTROLE (NÃO IMPRIME) */
+        .no-print-toolbar {
+            width: 210mm;
+            max-width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 8px 14px;
+            background: #1E293B;
+            border-radius: 6px;
+            color: #F8FAFC;
+        }
+
+        .no-print-toolbar span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-acao {
+            background: #2563EB;
+            color: #FFFFFF;
+            border: none;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-acao:hover {
+            background: #1D4ED8;
+        }
+
+        .btn-secundario {
+            background: #334155;
+            color: #E2E8F0;
+            margin-left: 8px;
+        }
+
+        .btn-secundario:hover {
+            background: #475569;
+        }
+
+        /* FOLHA DE RELATÓRIO A4 */
+        .folha-relatorio {
+            width: 210mm;
+            min-height: 297mm;
+            background: #FFFFFF;
+            padding: 16mm 18mm;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+            border: 1px solid #CBD5E1;
+            position: relative;
+        }
+
+        /* CABEÇALHO SUCINTO DO RELATÓRIO */
+        .cabecalho-sucinto {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #0F172A;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .cabecalho-sistema {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #0F172A;
+            text-transform: uppercase;
+        }
+
+        .cabecalho-empresa {
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 2px;
+        }
+
+        .cabecalho-meta {
+            text-align: right;
+            font-size: 10px;
+            color: #475569;
+            line-height: 1.45;
+        }
+
+        .cabecalho-meta strong {
+            color: #0F172A;
+        }
+
+        /* TÍTULO E PARÂMETROS DO RELATÓRIO */
+        .secao-titulo {
+            margin-bottom: 14px;
+        }
+
+        .titulo-relatorio {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0F172A;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .parametros-relatorio {
+            font-size: 10.5px;
+            color: #64748B;
+            margin-top: 3px;
+        }
+
+        /* FAIXA SUCINTA DE RESUMO / TOTALIZADORES */
+        .faixa-resumo {
+            display: flex;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 14px;
+            justify-content: space-between;
+        }
+
+        .item-resumo {
+            font-size: 10.5px;
+            color: #475569;
+        }
+
+        .item-resumo strong {
+            font-size: 12px;
+            color: #0F172A;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+
+        /* TABELA DE DADOS CONTÁBIL / SUCINTA */
+        table.relatorio-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+
+        table.relatorio-tabela th {
+            background: #F1F5F9;
+            color: #0F172A;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 9.5px;
+            letter-spacing: 0.03em;
+            padding: 6px 8px;
+            border-top: 1px solid #CBD5E1;
+            border-bottom: 1.5px solid #0F172A;
+            text-align: left;
+        }
+
+        table.relatorio-tabela td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #E2E8F0;
+            color: #1E293B;
+        }
+
+        table.relatorio-tabela tbody tr:nth-child(even) {
+            background-color: #FAFAFA;
+        }
+
+        .col-mono {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+
+        .col-num {
+            text-align: right;
+        }
+
+        .col-centro {
+            text-align: center;
+        }
+
+        /* TOTALIZADOR FINAL */
+        table.relatorio-tabela tfoot tr td {
+            background: #F1F5F9;
+            border-top: 2px solid #0F172A;
+            border-bottom: 2px solid #0F172A;
+            font-weight: 800;
+            color: #0F172A;
+            padding: 8px 8px;
+            font-size: 11px;
+        }
+
+        /* RODAPÉ SUCINTO */
+        .rodape-sucinto {
+            margin-top: 24px;
+            padding-top: 8px;
+            border-top: 1px solid #CBD5E1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9.5px;
+            color: #64748B;
+        }
+
+        /* REGRAS DE IMPRESSÃO / PDF */
+        @media print {
+            body {
+                background: #FFFFFF !important;
+                padding: 0 !important;
+            }
+            .no-print-toolbar {
+                display: none !important;
+            }
+            .folha-relatorio {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                width: 100% !important;
+                min-height: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR (OCULTADA AUTOMATICAMENTE NA IMPRESSÃO / PDF) -->
+    <div class="no-print-toolbar">
+        <span>Visualização para Impressão / PDF</span>
+        <div>
+            <button class="btn-acao btn-secundario" onclick="window.close()">✕ Fechar</button>
+            <button class="btn-acao" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
+        </div>
+    </div>
+
+    <!-- FOLHA DO RELATÓRIO LIMPO E SUCINTO -->
+    <div class="folha-relatorio">
+
+        <!-- CABEÇALHO DO SISTEMA E DATA -->
+        <header class="cabecalho-sucinto">
+            <div>
+                <div class="cabecalho-sistema">expedi HUB &middot; Boah Brasil</div>
+                <div class="cabecalho-empresa">Lalua Comércio de Modas Eireli &middot; CNPJ: 10.436.619/0001-05</div>
+            </div>
+            <div class="cabecalho-meta">
+                <div><strong>Emissão:</strong> 04/11/2026 às 11:30</div>
+                <div><strong>Período:</strong> 01/11/2026 a 30/11/2026 (Safra Vigente)</div>
+                <div><strong>Página:</strong> 1 de 1</div>
+            </div>
+        </header>
+
+        <!-- NOME DO RELATÓRIO E FILTROS -->
+        <div class="secao-titulo">
+            <h1 class="titulo-relatorio">Relatório de Desempenho de Vendedoras (Social Selling)</h1>
+            <div class="parametros-relatorio">Base de dados: Linx Microvix &middot; Status: Faturado &middot; Ordenação: Maior Faturamento</div>
+        </div>
+
+        <!-- FAIXA RESUMO SUCINTA -->
+        <div class="faixa-resumo">
+            <div class="item-resumo">Pedidos Faturados: <strong>127</strong></div>
+            <div class="item-resumo">Faturamento Consolidado: <strong>R$ 72.555,44</strong></div>
+            <div class="item-resumo">Ticket Médio: <strong>R$ 571,30</strong></div>
+            <div class="item-resumo">Consultoras Ativas: <strong>18</strong></div>
+        </div>
+
+        <!-- TABELA DE DADOS -->
+        <table class="relatorio-tabela">
+            <thead>
+                <tr>
+                    <th class="col-centro" style="width: 35px;">#</th>
+                    <th>Vendedora / Consultora</th>
+                    <th>Canal / Cód. Linx</th>
+                    <th class="col-num" style="width: 70px;">Pedidos</th>
+                    <th class="col-num" style="width: 110px;">Faturamento (R$)</th>
+                    <th class="col-num" style="width: 100px;">Ticket Médio (R$)</th>
+                    <th class="col-num" style="width: 70px;">% Part.</th>
+                    <th class="col-centro" style="width: 75px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-centro col-mono">01</td>
+                    <td><strong>Bruna Melo da Silva</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #55)</td>
+                    <td class="col-num col-mono">53</td>
+                    <td class="col-num col-mono">31.713,20</td>
+                    <td class="col-num col-mono">598,36</td>
+                    <td class="col-num col-mono">24,9%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">02</td>
+                    <td><strong>Venda Online (Checkout Direto)</strong></td>
+                    <td style="color: #64748B;">Loja Virtual (Linx #3)</td>
+                    <td class="col-num col-mono">23</td>
+                    <td class="col-num col-mono">12.184,89</td>
+                    <td class="col-num col-mono">529,78</td>
+                    <td class="col-num col-mono">9,6%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">03</td>
+                    <td><strong>Ana Beatriz Silva dos Santos</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #5)</td>
+                    <td class="col-num col-mono">11</td>
+                    <td class="col-num col-mono">6.116,46</td>
+                    <td class="col-num col-mono">556,04</td>
+                    <td class="col-num col-mono">4,8%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">04</td>
+                    <td><strong>Waillyn Vieira Teles</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #79)</td>
+                    <td class="col-num col-mono">9</td>
+                    <td class="col-num col-mono">5.083,90</td>
+                    <td class="col-num col-mono">564,88</td>
+                    <td class="col-num col-mono">4,0%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">05</td>
+                    <td><strong>Monalisa Carvalho de Sousa Rosa</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #148)</td>
+                    <td class="col-num col-mono">4</td>
+                    <td class="col-num col-mono">3.133,95</td>
+                    <td class="col-num col-mono">783,49</td>
+                    <td class="col-num col-mono">2,5%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">06</td>
+                    <td><strong>Mirian de Souza Vieira</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #90)</td>
+                    <td class="col-num col-mono">5</td>
+                    <td class="col-num col-mono">2.827,20</td>
+                    <td class="col-num col-mono">565,44</td>
+                    <td class="col-num col-mono">2,2%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">07</td>
+                    <td><strong>Cindia Silva</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #133)</td>
+                    <td class="col-num col-mono">4</td>
+                    <td class="col-num col-mono">2.690,81</td>
+                    <td class="col-num col-mono">672,70</td>
+                    <td class="col-num col-mono">2,1%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">08</td>
+                    <td><strong>Loja Shopping da Bahia</strong></td>
+                    <td style="color: #64748B;">Social Selling (Linx #39)</td>
+                    <td class="col-num col-mono">2</td>
+                    <td class="col-num col-mono">2.232,90</td>
+                    <td class="col-num col-mono">1.116,45</td>
+                    <td class="col-num col-mono">1,8%</td>
+                    <td class="col-centro">Conciliado</td>
+                </tr>
+                <tr>
+                    <td class="col-centro col-mono">...</td>
+                    <td colspan="7" style="color: #64748B; font-style: italic;">Demais 10 consultoras consolidadas no totalizador geral.</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">TOTAL GERAL CONSOLIDADO</td>
+                    <td class="col-num col-mono">127</td>
+                    <td class="col-num col-mono">R$ 72.555,44</td>
+                    <td class="col-num col-mono">R$ 571,30</td>
+                    <td class="col-num col-mono">100,0%</td>
+                    <td class="col-centro" style="font-size: 10px;">OK</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- RODAPÉ SUCINTO -->
+        <footer class="rodape-sucinto">
+            <div>Documento gerado por: <strong>expedi HUB</strong> &middot; Módulo Relatórios</div>
+            <div>Autenticação: Linx Microvix API &middot; 04/11/2026 11:30:00</div>
+        </footer>
+
+    </div>
+
+</body>
+</html>

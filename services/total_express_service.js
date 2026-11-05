@@ -368,8 +368,11 @@ async function consultarStatusEntrega(params, config = {}) {
 
     const ambiente = (config.environment || 'producao').toLowerCase();
     const endpointUrl = ambiente === 'homologacao' ? ENDPOINTS.tracking.homologacao : ENDPOINTS.tracking.producao;
-    const user = config.user || process.env.TOTAL_EXPRESS_USER || 'clara50276';
-    const password = config.password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010';
+    const user = config.user || '';
+    const password = config.password || '';
+    if (!user || !password) {
+        throw new Error('Credenciais da Total Express não configuradas para esta empresa.');
+    }
     const authHeader = getBasicAuthHeader(user, password);
 
     const payload = {};

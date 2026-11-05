@@ -27,3 +27,16 @@ scratch_*.js
 EXPEDI/
 *.bak
 
+
+# Dados Fiscais de Clientes e Arquivos Temporários
+guias_em_aberto_linx.json
+guias_pagas_oficiais_microvix.json
+GNRE/
+
+*.txt
+*.xml
+*.png
+render_test.py
+diagnostico_completo_*.md
+sample.html
+outputs/

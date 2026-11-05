@@ -898,7 +898,7 @@ app.post('/api/batch/authorize-payment/:batchId', requireAuth, requireRole(['dir
                 status: 'pagamento_autorizado',
                 paid_at: new Date().toISOString()
             })
-            .in('id', ids);
+            .in('id', ids).eq('tenant_id', tenant.id);
 
         return res.status(200).json({
             message: `Pagamento de ${guiasValidas.length} guia(s) autorizado com sucesso!`,
@@ -1090,7 +1090,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                             await supabase.from('guides').update({
                                 barcode: auto.codigoBarras,
                                 line_digitizable: auto.linhaDigitavel
-                            }).eq('id', g.id);
+                            }).eq('id', g.id).eq('tenant_id', tenant.id);
                         }
                     }
                 }
@@ -1222,7 +1222,7 @@ app.post('/api/batch/authorize-payment-asaas/:batchId', requireAuth, requireRole
                 approved_at: agora,
                 approval_status: 'aprovado'
             })
-            .eq('id', batchId);
+            .eq('id', batchId).eq('tenant_id', tenant.id);
 
         const totalSucesso = resultados.filter(r => r.sucesso).length;
         const totalFalha = resultados.filter(r => !r.sucesso).length;
@@ -1277,7 +1277,7 @@ app.post('/api/guide/authorize-payment-asaas/:guideId', requireAuth, requireRole
                 await supabase.from('guides').update({
                     barcode: auto.codigoBarras,
                     line_digitizable: auto.linhaDigitavel
-                }).eq('id', guia.id);
+                }).eq('id', guia.id).eq('tenant_id', tenant.id);
             }
         }
 
@@ -1433,19 +1433,67 @@ app.get('/api/guide/comprovante/:guideId', requireAuth, async (req, res) => {
 /**
  * 6. WEBHOOK DO ASAAS: Notificação assíncrona de Liquidação (BILL_PAID / BILL_FAILED / PIX)
  */
-app.post('/api/webhooks/asaas', async (req, res) => {
+async function validarTokenAsaasTenant(receivedToken, targetTenantId = null, billPayload = null) {
+    if (!receivedToken) return { valid: false, tenant: null };
+    const globalToken = process.env.ASAAS_WEBHOOK_TOKEN;
+
+    // 1. Se especificado tenantId direto na rota/query
+    if (targetTenantId) {
+        const { data: tenant } = await supabase.from('tenants').select('*').eq('id', targetTenantId).maybeSingle();
+        if (tenant) {
+            const tenantToken = tenant.asaas_webhook_token || tenant.settings?.asaas_webhook_token || globalToken;
+            if (tenantToken && safeCompareTokens(receivedToken, tenantToken)) {
+                return { valid: true, tenant };
+            }
+        }
+    }
+
+    // 2. Se bate com o token global da plataforma (retrocompatibilidade e conta padrão)
+    if (globalToken && safeCompareTokens(receivedToken, globalToken)) {
+        return { valid: true, tenant: null };
+    }
+
+    // 3. Resolução dinâmica pelo objeto da cobrança/guia (se token for personalizado por tenant)
+    if (billPayload) {
+        const billId = billPayload.id;
+        const extRef = billPayload.externalReference;
+        let tenantIdFromGuide = null;
+        if (extRef) {
+            const guideId = extRef.startsWith('guia_') ? extRef.replace('guia_', '') : extRef;
+            const { data: g } = await supabase.from('guides').select('tenant_id').eq('id', guideId).maybeSingle();
+            if (g) tenantIdFromGuide = g.tenant_id;
+        }
+        if (!tenantIdFromGuide && billId) {
+            const { data: g } = await supabase.from('guides').select('tenant_id').eq('asaas_bill_id', billId).maybeSingle();
+            if (g) tenantIdFromGuide = g.tenant_id;
+        }
+        if (tenantIdFromGuide) {
+            const { data: tenant } = await supabase.from('tenants').select('*').eq('id', tenantIdFromGuide).maybeSingle();
+            if (tenant) {
+                const tenantToken = tenant.asaas_webhook_token || tenant.settings?.asaas_webhook_token;
+                if (tenantToken && safeCompareTokens(receivedToken, tenantToken)) {
+                    return { valid: true, tenant };
+                }
+            }
+        }
+    }
+
+    return { valid: false, tenant: null };
+}
+
+app.post(['/api/webhooks/asaas', '/api/webhooks/asaas/:tenantId'], async (req, res) => {
     try {
-        // Validação estrita de segurança de origem do webhook via timingSafeEqual (fail-closed)
-        const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
         const receivedToken = req.headers['asaas-access-token'];
-        if (!expectedToken || !safeCompareTokens(receivedToken, expectedToken)) {
-            console.warn("[Webhook Asaas] Acesso rejeitado: token ausente ou inválido.");
+        const targetTenantId = req.params?.tenantId || req.query?.tenantId || null;
+        const bill = req.body?.bill || req.body?.payment;
+
+        const authResult = await validarTokenAsaasTenant(receivedToken, targetTenantId, bill);
+        if (!authResult.valid) {
+            console.warn("[Webhook Asaas] Acesso rejeitado: token ausente, incorreto ou tenant divergente.");
             return res.status(401).json({ error: "Token de webhook não autorizado." });
         }
 
         const event = req.body?.event;
-        const bill = req.body?.bill || req.body?.payment;
-
         console.log(`[Webhook Asaas] Recebido evento: ${event} para ID: ${bill?.id}`);
 
         if (!event || !bill) {
@@ -1862,7 +1910,7 @@ app.post('/api/batch/query-receipt', requireAuth, async (req, res) => {
             await supabase
                 .from('batches')
                 .update({ status: 'sucesso', receipt: `${uf}:${receipt}` })
-                .eq('id', batchId);
+                .eq('id', batchId).eq('tenant_id', tenant.id);
         } else {
             // Cria um novo lote
             const { data: newBatch } = await supabase
@@ -1923,7 +1971,7 @@ app.post('/api/batch/query-receipt', requireAuth, async (req, res) => {
             await supabase
                 .from('guides')
                 .delete()
-                .eq('batch_id', batchId);
+                .eq('batch_id', batchId).eq('tenant_id', tenant.id);
         }
 
         // Salva as guias importadas
@@ -1937,7 +1985,7 @@ app.post('/api/batch/query-receipt', requireAuth, async (req, res) => {
         const { data: allGuides, error: fetchGuidesError } = await supabase
             .from('guides')
             .select('*')
-            .eq('batch_id', batchId);
+            .eq('batch_id', batchId).eq('tenant_id', tenant.id);
 
         if (fetchGuidesError) {
             console.error("Erro ao buscar guias do lote para gerar remessa:", fetchGuidesError.message);
@@ -2294,7 +2342,7 @@ app.get('/api/remessa/resumo', requireAuth, async (req, res) => {
     try {
         const paymentDateChosen = req.query.dataPagamento || req.query.paymentDate || null;
         let tenant = req.tenant;
-        if (tenant.cnpj === '00000000000191' || !tenant.microvix_key) {
+        if (tenant.cnpj === HOLDING_CNPJ) {
             try {
                 const { data: lalua } = await supabase.from('tenants').select('*').eq('cnpj', '10436619000105').limit(1);
                 if (lalua && lalua.length > 0) {
@@ -2771,8 +2819,8 @@ app.get('/api/expedicao/cargas-ativas', requireAuth, async (req, res) => {
                     paid_at: g.paid_at || null,
                     bank_authentication: g.bank_authentication || null,
                     situacao_pagamento: sit,
-                    return_nf_reference: g.return_nf_reference || (globalTotalTrackingCache[g.nf_number]?.awb) || null,
-                    tracking: globalTotalTrackingCache[g.nf_number] || null
+                    return_nf_reference: g.return_nf_reference || (globalTotalTrackingCache[req.tenant.id + ':' + g.nf_number]?.awb) || null,
+                    tracking: globalTotalTrackingCache[req.tenant.id + ':' + g.nf_number] || null
                 };
             }).sort((a, b) => {
                 // Prioridade máxima para cargas que precisam de ação imediata:
@@ -4384,10 +4432,8 @@ app.post('/api/total-express/despachar/:guideId', requireAuth, requireActiveSubs
         // Configuração da conta da Total Express
         const totalConfig = {
             environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
-            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
-            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
-            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276,
-            cnpj: tenant.cnpj || '10436619000105',
+            ...credenciaisTotalExpress(tenant),
+            cnpj: tenant.cnpj || '',
             servicoTipo: tenant.total_express_servico || 1 // 1 = Standard
         };
 
@@ -4483,10 +4529,8 @@ app.get('/api/total-express/etiqueta/:guideId', requireAuth, async (req, res) =>
 
             const totalConfig = {
                 environment: req.tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
-                user: req.tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
-                password: req.tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
-                remetenteId: req.tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276,
-                cnpj: req.tenant.cnpj || '10436619000105',
+                ...credenciaisTotalExpress(req.tenant),
+                cnpj: req.tenant.cnpj || '',
                 servicoTipo: req.tenant.total_express_servico || 1
             };
 
@@ -4557,9 +4601,7 @@ app.post('/api/total-express/tracking', requireAuth, async (req, res) => {
 
         const config = {
             environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
-            user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
-            password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
-            remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276
+            ...credenciaisTotalExpress(tenant)
         };
 
         let params = {};
@@ -4634,16 +4676,14 @@ app.post('/api/total-express/sync-tracking-batch', requireAuth, async (req, res)
         // Verifica cache se não for forçado (TTL de 2 minutos)
         const now = Date.now();
         const nfsPendentes = force ? nfsToQuery : nfsToQuery.filter(nf => {
-            const c = globalTotalTrackingCache[nf];
+            const c = globalTotalTrackingCache[tenant.id + ':' + nf];
             return !c || (now - c.syncedAt > 120000); // 2 min
         });
 
         if (nfsPendentes.length > 0) {
             const config = {
                 environment: tenant.total_express_env || process.env.TOTAL_EXPRESS_ENV || 'producao',
-                user: tenant.total_express_user || process.env.TOTAL_EXPRESS_USER || 'clara50276',
-                password: tenant.total_express_password || process.env.TOTAL_EXPRESS_PASSWORD || '@Online1010',
-                remetenteId: tenant.total_express_remetente_id || process.env.TOTAL_EXPRESS_REMETENTE_ID || 50276
+                ...credenciaisTotalExpress(tenant)
             };
 
             try {
@@ -4670,7 +4710,7 @@ app.post('/api/total-express/sync-tracking-batch', requireAuth, async (req, res)
 
                     const recebedor = enc.dadosRecebedor;
 
-                    globalTotalTrackingCache[nf] = {
+                    globalTotalTrackingCache[tenant.id + ':' + nf] = {
                         nf: nf,
                         awb: enc.awb || null,
                         rota: enc.rota || null,
@@ -4711,8 +4751,8 @@ app.post('/api/total-express/sync-tracking-batch', requireAuth, async (req, res)
         // Monta o mapa de retorno apenas para as NFs solicitadas
         const trackingMap = {};
         nfsToQuery.forEach(nf => {
-            if (globalTotalTrackingCache[nf]) {
-                trackingMap[nf] = globalTotalTrackingCache[nf];
+            if (globalTotalTrackingCache[tenant.id + ':' + nf]) {
+                trackingMap[nf] = globalTotalTrackingCache[tenant.id + ':' + nf];
             }
         });
 
@@ -5391,7 +5431,7 @@ app.post('/api/microvix/sync', requireAuth, requireActiveSubscription, async (re
         }
 
         const credentials = {
-            user:     tenant.microvix_user     || 'linx_b2c',
+            user: getTenantMicrovixUser(tenant),
             password: microvixPassword,
             chave:    tenant.microvix_key,
             cnpjEmp:  tenant.microvix_cnpj
@@ -5590,7 +5630,7 @@ app.post('/api/microvix/credentials', requireAuth, requireRole(['admin', 'supera
             .from('tenants')
             .update({
                 microvix_key,
-                microvix_user:               microvix_user || 'linx_b2c',
+                microvix_user: microvix_user || ((req.tenant.cnpj === BOAH_CNPJ || req.tenant.cnpj === HOLDING_CNPJ) ? 'linx_b2c' : ''),
                 microvix_password_encrypted: encryptedPassword,
                 microvix_cnpj:               microvix_cnpj.replace(/[^0-9]/g, '')
             })
@@ -5946,8 +5986,8 @@ app.get('/api/vnda/auditoria-custos', requireAuth, async (req, res) => {
                 municipio: 'Osasco / SP'
             },
             tomador: {
-                razaoSocial: req.tenant.razao_social || 'LALUA COMERCIO DE MODAS EIRELI',
-                cnpj: req.tenant.cnpj || '10.436.619/0001-05'
+                razaoSocial: req.tenant.razao_social || '',
+                cnpj: req.tenant.cnpj || ''
             }
         });
     } catch (e) {
@@ -5961,6 +6001,40 @@ app.get('/api/vnda/auditoria-custos', requireAuth, async (req, res) => {
 // ==========================================
 // Cache em memória de vendedores Linx Microvix por tenant (TTL: 1 hora)
 const linxVendedoresCache = new Map();
+
+// Tenant "holding/admin" que opera visualizando a conta operacional da BOAH.
+// Nenhum outro tenant herda credenciais de outro cliente.
+
+function getTenantMicrovixUser(tenant) {
+    const t = tenant || {};
+    if (t.microvix_user) return t.microvix_user;
+    if (t.cnpj === BOAH_CNPJ || t.cnpj === HOLDING_CNPJ) return 'linx_b2c';
+    return '';
+}
+const HOLDING_CNPJ = '00000000000191';
+const BOAH_CNPJ = '10436619000105';
+
+// Credenciais da Total Express: sempre do proprio tenant. As variaveis de ambiente da plataforma
+// (conta da BOAH) so valem para a BOAH/holding; nenhum outro cliente herda essa conta.
+function credenciaisTotalExpress(tenant) {
+    const t = tenant || {};
+    const usaEnv = t.cnpj === BOAH_CNPJ || t.cnpj === HOLDING_CNPJ;
+    return {
+        user: t.total_express_user || (usaEnv ? process.env.TOTAL_EXPRESS_USER : '') || '',
+        password: t.total_express_password || (usaEnv ? process.env.TOTAL_EXPRESS_PASSWORD : '') || '',
+        remetenteId: t.total_express_remetente_id || (usaEnv ? process.env.TOTAL_EXPRESS_REMETENTE_ID : '') || ''
+    };
+}
+
+function periodoParaDatas(periodo, q) {
+    const fmt = d => d.toISOString().slice(0, 10);
+    const agora = new Date(Date.now() - 3 * 3600 * 1000); // Horario de Brasilia
+    const y = agora.getUTCFullYear(), m = agora.getUTCMonth();
+    if (q && q.dataInicial && q.dataFim) return { ini: String(q.dataInicial), fim: String(q.dataFim) };
+    if (periodo === 'mes_anterior') return { ini: fmt(new Date(Date.UTC(y, m - 1, 1))), fim: fmt(new Date(Date.UTC(y, m, 0))) };
+    if (periodo === '7dias') return { ini: fmt(new Date(agora.getTime() - 6 * 86400000)), fim: fmt(agora) };
+    return { ini: fmt(new Date(Date.UTC(y, m, 1))), fim: fmt(agora) };
+}
 
 function formatarNomePessoa(str) {
     if (!str) return '';
@@ -5986,10 +6060,10 @@ async function getLinxVendedoresCatalog(tenant) {
     try {
         let chave = tenant.microvix_key;
         let cnpj = tenant.microvix_cnpj || tenant.cnpj;
-        let user = tenant.microvix_user || 'linx_b2c';
+        let user = tenant.microvix_user || '';
         let pass = tenant.microvix_password_encrypted || '';
 
-        if (!chave && tenant.cnpj !== '10436619000105') {
+        if (!chave && tenant.cnpj === HOLDING_CNPJ) {
             const { data: boah } = await supabase
                 .from('tenants')
                 .select('*')
@@ -6047,32 +6121,131 @@ async function getLinxVendedoresCatalog(tenant) {
     return catalog;
 }
 
-function resolverVendedora(rawIdentifier, linxCatalog) {
+// ==========================================
+// CONFIGURACAO COMERCIAL POR TENANT (cupons e vendedoras)
+// Armazenada em tenants.settings.comercial (JSONB). Sem configuracao, vale o padrao generico;
+// a BOAH mantem suas regras historicas ate gravar a propria configuracao.
+// ==========================================
+const CONFIG_COMERCIAL_PADRAO = {
+    // Cupons que NAO identificam uma vendedora/consultora (campanhas da marca)
+    cuponsInstitucionais: ['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'TROCA'],
+    // Cupons ligados a uma pessoa especifica: { termos:[contem], prefixos:[comeca com], nome, codigoLinx, ocultarNoRanking }
+    aliasesVendedora: [],
+    // Classificacao dos cupons no quadro de campanhas (a ordem define a precedencia)
+    tiposCupom: [
+        { termos: ['BEMVINDA', 'PRIMEIRA'], tipo: '1ª Compra / Onboarding', badge: 'Boas-Vindas' }
+    ],
+    // Codigo do vendedor do ERP usado para vendas do site (ex.: '3'); null se nao houver
+    codigoVendaOnline: null
+};
+
+const CONFIG_COMERCIAL_BOAH = {
+    cuponsInstitucionais: ['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', 'NIVERBOAH', '+20OFF', 'TROCA', 'LANDY', 'SERRANO', 'JBATALHA'],
+    aliasesVendedora: [
+        { termos: ['MILA', 'CAMILA'], nome: 'Camila (Mila)', codigoLinx: '66', ocultarNoRanking: true },
+        { termos: ['CLARACOELHO', 'CLARA_COELHO', 'COELHO'], prefixos: ['CLARA'], nome: 'Clara Coelho de Carvalho', codigoLinx: '151' }
+    ],
+    tiposCupom: [
+        { termos: ['MILA'], tipo: 'Influencer Mila (Sócia)', badge: 'Influencer' },
+        { termos: ['BEMVINDA', 'PRIMEIRA'], tipo: '1ª Compra / Onboarding', badge: 'Boas-Vindas' },
+        { termos: ['ESTILO', 'BOAH'], tipo: 'Branding & Estilo BOAH', badge: 'Branding' },
+        { termos: ['PASSY', 'BRU', 'LANE', 'CLARA'], tipo: 'Consultora Social Selling', badge: 'Consultora' }
+    ],
+    codigoVendaOnline: '3'
+};
+
+function getConfigComercial(tenant) {
+    const t = tenant || {};
+    const base = (t.cnpj === BOAH_CNPJ || t.cnpj === HOLDING_CNPJ) ? CONFIG_COMERCIAL_BOAH : CONFIG_COMERCIAL_PADRAO;
+    const custom = t.settings && t.settings.comercial;
+    if (!custom || typeof custom !== 'object') return base;
+    const merged = { ...base, ...custom };
+    // Cupons institucionais proprios somam-se aos genericos (nunca viram vendedora por engano)
+    if (Array.isArray(custom.cuponsInstitucionais)) {
+        merged.cuponsInstitucionais = Array.from(new Set([...CONFIG_COMERCIAL_PADRAO.cuponsInstitucionais, ...custom.cuponsInstitucionais]));
+    }
+    return merged;
+}
+
+function aliasCasa(alias, textoUpper) {
+    return (alias.termos || []).some(x => textoUpper.includes(String(x).toUpperCase())) ||
+        (alias.prefixos || []).some(x => textoUpper.startsWith(String(x).toUpperCase()));
+}
+
+function aliasPorCodigo(cfg, cod) {
+    return (cfg.aliasesVendedora || []).find(a => String(a.codigoLinx) === String(cod)) || null;
+}
+
+function sanitizarConfigComercial(body) {
+    const listaTxt = (v, max = 200, len = 60) => (Array.isArray(v) ? v : [])
+        .map(x => String(x || '').trim().toUpperCase().slice(0, len)).filter(Boolean).slice(0, max);
+    const txt = (v, len = 80) => String(v || '').trim().slice(0, len);
+    const out = {};
+    if (body.cuponsInstitucionais !== undefined) out.cuponsInstitucionais = listaTxt(body.cuponsInstitucionais);
+    if (body.aliasesVendedora !== undefined) {
+        out.aliasesVendedora = (Array.isArray(body.aliasesVendedora) ? body.aliasesVendedora : []).slice(0, 100).map(a => ({
+            termos: listaTxt(a.termos, 20),
+            prefixos: listaTxt(a.prefixos, 20),
+            nome: txt(a.nome),
+            codigoLinx: a.codigoLinx ? txt(a.codigoLinx, 20) : null,
+            ocultarNoRanking: !!a.ocultarNoRanking
+        })).filter(a => a.nome && (a.termos.length || a.prefixos.length));
+    }
+    if (body.tiposCupom !== undefined) {
+        out.tiposCupom = (Array.isArray(body.tiposCupom) ? body.tiposCupom : []).slice(0, 100).map(t => ({
+            termos: listaTxt(t.termos, 20), tipo: txt(t.tipo), badge: txt(t.badge, 30) || 'Campanha'
+        })).filter(t => t.tipo && t.termos.length);
+    }
+    if (body.codigoVendaOnline !== undefined) out.codigoVendaOnline = body.codigoVendaOnline ? txt(body.codigoVendaOnline, 20) : null;
+    return out;
+}
+
+app.get('/api/tenant/comercial-config', requireAuth, requireAdmin, (req, res) => {
+    return res.json({ config: getConfigComercial(req.tenant), personalizada: !!(req.tenant.settings && req.tenant.settings.comercial) });
+});
+
+app.post('/api/tenant/comercial-config', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const novo = sanitizarConfigComercial(req.body || {});
+        const atual = (req.tenant.settings && typeof req.tenant.settings === 'object') ? req.tenant.settings : {};
+        const comercial = { ...getConfigComercial(req.tenant), ...novo };
+        const { error } = await supabase
+            .from('tenants')
+            .update({ settings: { ...atual, comercial } })
+            .eq('id', req.tenant.id);
+        if (error) {
+            const faltaColuna = /settings/i.test(error.message || '');
+            return res.status(500).json({
+                error: faltaColuna
+                    ? "A coluna 'settings' não existe na tabela tenants. Execute: ALTER TABLE tenants ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb;"
+                    : error.message
+            });
+        }
+        return res.json({ success: true, config: comercial });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+function resolverVendedora(rawIdentifier, linxCatalog, cfg = CONFIG_COMERCIAL_PADRAO) {
     const raw = String(rawIdentifier || '').trim();
     if (!raw) return null;
 
     const up = raw.toUpperCase();
 
-    // 1. Cupons e identificadores de Mila / Camila (ex: MILA, MILA15, COMCARINHOMILA)
-    // Devem ser verificados antes de extrair dígitos, para que o desconto de 15% (MILA15) não seja confundido com o código do vendedor 15!
-    if (up.includes('MILA') || up.includes('CAMILA')) {
-        return {
-            nome: 'Camila (Mila)',
-            codigoLinx: '66',
-            canal: 'Social Selling (Linx #66)',
-            ativo: true
-        };
-    }
-
-    // 2. Clara Coelho (Vendedora online ativa na Linx: Cod 151 Clara Coelho de Carvalho)
-    if (up.includes('CLARACOELHO') || up.includes('CLARA_COELHO') || up === 'CLARA' || up.startsWith('CLARA') || up.includes('COELHO')) {
-        const v151 = linxCatalog.byCode.get('151');
-        return {
-            nome: v151 ? formatarNomePessoa(v151.nome_vendedor) : 'Clara Coelho de Carvalho',
-            codigoLinx: '151',
-            canal: 'Social Selling (Linx #151)',
-            ativo: true
-        };
+    // 1. Cupons ligados a uma pessoa especifica (configuravel por tenant). Verificados antes de extrair digitos,
+    // para que um desconto (ex.: MILA15) nao seja confundido com o codigo do vendedor 15.
+    for (const alias of (cfg.aliasesVendedora || [])) {
+        if (aliasCasa(alias, up)) {
+            const cat = alias.codigoLinx ? linxCatalog.byCode.get(String(alias.codigoLinx)) : null;
+            return {
+                nome: cat && cat.nome_vendedor ? formatarNomePessoa(cat.nome_vendedor) : alias.nome,
+                codigoLinx: alias.codigoLinx || null,
+                canal: alias.codigoLinx ? `Social Selling (Linx #${alias.codigoLinx})` : 'Social Selling VNDA',
+                ativo: true,
+                ocultarNoRanking: !!alias.ocultarNoRanking
+            };
+        }
     }
 
     // 3. Busca por código de vendedor estrito no Linx Microvix
@@ -6084,12 +6257,12 @@ function resolverVendedora(rawIdentifier, linxCatalog) {
 
         if (match) {
             // Filtro de segurança: Ignora funcionários puramente administrativos (tipo 'A') inativos (ativo = '0'), como Maria Clara (#15 - Marketing inativa)
-            if (match.tipo === 'A' && match.ativo === '0' && codStr !== '66') {
+            if (match.tipo === 'A' && match.ativo === '0' && !aliasPorCodigo(cfg, codStr)) {
                 return null;
             }
 
             let nomeLimpo = formatarNomePessoa(match.nome_vendedor);
-            if (codStr === '3') {
+            if (cfg.codigoVendaOnline && codStr === String(cfg.codigoVendaOnline)) {
                 return {
                     nome: 'Venda Online',
                     codigoLinx: '3',
@@ -6097,14 +6270,16 @@ function resolverVendedora(rawIdentifier, linxCatalog) {
                     ativo: match.ativo === '1'
                 };
             }
-            if (codStr === '66' && !nomeLimpo.includes('Mila')) {
-                nomeLimpo = 'Camila (Mila)';
+            const aliasCod = aliasPorCodigo(cfg, codStr);
+            if (aliasCod) {
+                nomeLimpo = aliasCod.nome;
             }
             return {
                 nome: nomeLimpo,
                 codigoLinx: match.cod_vendedor,
                 canal: `Social Selling (Linx #${match.cod_vendedor})`,
-                ativo: match.ativo === '1'
+                ativo: match.ativo === '1',
+                ocultarNoRanking: !!(aliasCod && aliasCod.ocultarNoRanking)
             };
         }
     }
@@ -6117,7 +6292,7 @@ function resolverVendedora(rawIdentifier, linxCatalog) {
 
     // Remove sufixos de desconto (ex: 10, 15, 20, 20OFF, OFF)
     let nomeLimpo = up.replace(/(\d+OFF|\d+|OFF)$/, '').trim();
-    const cuponsInstitucionais = ['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', 'NIVERBOAH', 'TROCA', 'LANDY', 'SERRANO', 'JBATALHA'];
+    const cuponsInstitucionais = (cfg.cuponsInstitucionais || []).map(c => String(c).toUpperCase());
     
     if (nomeLimpo.length >= 3 && !cuponsInstitucionais.some(c => nomeLimpo.includes(c))) {
         return {
@@ -6161,7 +6336,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             if (isPaga) totalPagas++;
             else totalPendentes++;
 
-            const valVenda = parseFloat(g.valor_venda || g.invoice_total || (valDifal > 0 ? (valDifal / 0.08) : 380));
+            const valVenda = parseFloat(g.valor_venda || g.invoice_total || (valDifal > 0 ? (valDifal / 0.08) : 0));
             totalFaturamentoEst += valVenda;
 
             // Heatmap UF
@@ -6187,7 +6362,7 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             else cObj.pendentes++;
 
             // Timeline
-            const dt = (g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : '2026-09-30'));
+            const dt = (g.nf_issue_date || (g.created_at ? g.created_at.split('T')[0] : ''));
             if (!timelineMap.has(dt)) {
                 timelineMap.set(dt, { data: dt, faturamento: 0, difal: 0, guias: 0 });
             }
@@ -6219,49 +6394,31 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             notasComXml,
             clientesAtendidos: clientesSet.size,
             faturamentoLinx: totalFaturadoLinx > 0 ? parseFloat(totalFaturadoLinx.toFixed(2)) : parseFloat(totalFaturamentoEst.toFixed(2)),
-            grupoLinx: req.tenant.microvix_group || 'Boah - B2C',
-            usuarioLinx: req.tenant.microvix_user || 'linx_b2c',
-            statusSync: 'Conectado · Sincronização Ativa'
+            grupoLinx: req.tenant.microvix_group || '',
+            usuarioLinx: req.tenant.microvix_user || '',
+            statusSync: req.tenant.microvix_key ? 'Conectado · Sincronização Ativa' : 'Não configurado'
         };
 
         let olistMetrics = {
-            pedidosAprovados: 206,
-            pedidosCancelados: 13,
-            totalPedidosRecebidos: 219,
-            gmvAprovado: 117628.84,
-            gmvBrutoTotal: 128915.00,
-            ticketMedioOlist: 571.01,
-            totalPecasOlist: 312,
-            pecasPorPedido: 1.5,
-            taxaCancelamentoPct: '5.9',
-            taxaAprovacaoPct: '94.1',
-            freteMedio: 24.50,
-            canais: { ecommerce: 117628.84 },
-            lojaVirtual: req.tenant.vnda_shop_host || 'www.boah.com.br',
-            conectado: true
+            pedidosAprovados: 0,
+            pedidosCancelados: 0,
+            totalPedidosRecebidos: 0,
+            gmvAprovado: 0,
+            gmvBrutoTotal: 0,
+            ticketMedioOlist: 0,
+            totalPecasOlist: 0,
+            pecasPorPedido: 0,
+            taxaCancelamentoPct: '0.0',
+            taxaAprovacaoPct: '0.0',
+            freteMedio: 0,
+            canais: {},
+            lojaVirtual: req.tenant.vnda_shop_host || '',
+            conectado: !!(req.tenant.vnda_token_encrypted || req.tenant.cnpj === HOLDING_CNPJ)
         };
 
-        let meiosPagamento = [
-            { metodo: 'Cartão de Crédito', count: 34, pct: 68.0, valor: 7686.78, color: '#38BDF8' },
-            { metodo: 'Boleto Bancário', count: 15, pct: 30.0, valor: 3391.23, color: '#F59E0B' },
-            { metodo: 'PIX Online', count: 1, pct: 2.0, valor: 226.08, color: '#10B981' }
-        ];
-
-        let rankingVendedorasBase = [
-            { posicao: 1, nome: 'Bruna Melo da Silva', canal: 'Social Selling (Linx #55)', pedidos: 52, valorTotal: 31480.00, ticketMedio: 605.38, sharePct: 26.8, badge: 'Top 1 Líder' },
-            { posicao: 2, nome: 'Camila (Mila)', canal: 'Social Selling (Linx #66)', pedidos: 44, valorTotal: 25890.50, ticketMedio: 588.42, sharePct: 22.0, badge: 'Top 2 Destaque' },
-            { posicao: 3, nome: 'Waillyn Vieira Teles', canal: 'Social Selling (Linx #79)', pedidos: 38, valorTotal: 21740.00, ticketMedio: 572.10, sharePct: 18.5, badge: 'Top 3 Bronze' },
-            { posicao: 4, nome: 'Ana Beatriz Silva', canal: 'Social Selling (Linx #5)', pedidos: 29, valorTotal: 16820.00, ticketMedio: 580.00, sharePct: 14.3, badge: 'Consultora' },
-            { posicao: 5, nome: 'Venda Online', canal: 'Loja Online (Linx #3)', pedidos: 23, valorTotal: 12940.00, ticketMedio: 562.61, sharePct: 11.0, badge: 'Consultora' }
-        ];
-
-        let topProdutos = [
-            { nome: 'Vestido Midi Floral Boah', sku: 'VEST-MIDI-FLR', qtd: 14, valor: 3766.00, sharePct: 26.4 },
-            { nome: 'Calça Alfaiataria Linho Cru', sku: 'CALC-ALF-LNH', qtd: 11, valor: 2959.00, sharePct: 20.8 },
-            { nome: 'Regata Seda Pura Vanilla', sku: 'REG-SEDA-VAN', qtd: 9, valor: 2061.00, sharePct: 17.0 },
-            { nome: 'Blazer Linho Rústico Off-White', sku: 'BLZ-LNH-RST', qtd: 7, valor: 1883.00, sharePct: 13.2 },
-            { nome: 'Saia Evasê Linho Terracota', sku: 'SAIA-EVA-TER', qtd: 6, valor: 1494.00, sharePct: 11.3 }
-        ];
+        let meiosPagamento = [];
+        let rankingVendedorasBase = [];
+        let topProdutos = [];
 
         // Agrupamento de Top Clientes VIP (LTV & Recompra)
         const clientesMap = new Map();
@@ -6269,11 +6426,11 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             const rawNome = (g.customer_name || '').trim();
             if (rawNome && rawNome.toUpperCase() !== 'CONSUMIDOR FINAL') {
                 const key = rawNome.toUpperCase();
-                const valV = parseFloat(g.valor_venda || g.invoice_total || (parseFloat(g.value || 0) / 0.08) || 380);
+                const valV = parseFloat(g.valor_venda || g.invoice_total || (parseFloat(g.value || 0) / 0.08) || 0);
                 if (!clientesMap.has(key)) {
                     clientesMap.set(key, {
                         nome: rawNome,
-                        uf: (g.uf || 'BA').toUpperCase(),
+                        uf: (g.uf || 'ND').toUpperCase(),
                         pedidos: 0,
                         totalGasto: 0
                     });
@@ -6294,36 +6451,19 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                 nivelVip: idx === 0 ? 'VIP Ouro' : (idx <= 2 ? 'VIP Prata' : 'VIP Bronze')
             }));
 
-        if (topClientes.length === 0) {
-            topClientes = [
-                { nome: 'Yasmin Rego', uf: 'SP', pedidos: 17, totalGasto: 8748.04, ticketMedio: 514.59, nivelVip: 'VIP Ouro' },
-                { nome: 'Luana Santos de Jesus', uf: 'BA', pedidos: 3, totalGasto: 2140.80, ticketMedio: 713.60, nivelVip: 'VIP Prata' },
-                { nome: 'Mabel Meira Mota', uf: 'BA', pedidos: 2, totalGasto: 872.40, ticketMedio: 436.20, nivelVip: 'VIP Prata' },
-                { nome: 'Caroline Santos', uf: 'SP', pedidos: 2, totalGasto: 798.00, ticketMedio: 399.00, nivelVip: 'VIP Bronze' },
-                { nome: 'Livia Ballester', uf: 'BA', pedidos: 1, totalGasto: 502.80, ticketMedio: 502.80, nivelVip: 'VIP Bronze' }
-            ];
-        }
-
         let resumoCuponsBase = {
-            totalComCupom: 91,
-            totalSemCupom: 127,
-            gmvComCupom: 53904.34,
-            gmvSemCupom: 71632.91,
-            taxaPenetracaoPct: 41.7,
-            topCupons: [
-                { posicao: 1, codigo: 'MILA15', tipo: 'Influencer Mila (Sócia)', badge: 'Influencer', pedidos: 41, valorTotal: 24765.92, ticketMedio: 604.05, sharePct: 45.9 },
-                { posicao: 2, codigo: 'BEMVINDA', tipo: '1ª Compra / Onboarding', badge: 'Boas-Vindas', pedidos: 18, valorTotal: 9562.97, ticketMedio: 531.28, sharePct: 17.7 },
-                { posicao: 3, codigo: 'ESTILOBOAH', tipo: 'Branding & Estilo BOAH', badge: 'Branding', pedidos: 12, valorTotal: 8169.88, ticketMedio: 680.82, sharePct: 15.2 },
-                { posicao: 4, codigo: 'COMCARINHOMILA', tipo: 'Influencer Mila (Sócia)', badge: 'Influencer', pedidos: 5, valorTotal: 6716.40, ticketMedio: 1343.28, sharePct: 12.5 },
-                { posicao: 5, codigo: 'PASSY10', tipo: 'Consultora Social Selling', badge: 'Consultora', pedidos: 2, valorTotal: 1185.30, ticketMedio: 592.65, sharePct: 2.2 },
-                { posicao: 6, codigo: 'BRUOUT', tipo: 'Consultora Social Selling', badge: 'Consultora', pedidos: 2, valorTotal: 558.02, ticketMedio: 279.01, sharePct: 1.0 }
-            ]
+            totalComCupom: 0,
+            totalSemCupom: 0,
+            gmvComCupom: 0,
+            gmvSemCupom: 0,
+            taxaPenetracaoPct: 0,
+            topCupons: []
         };
         try {
             let tokenEncrypted = req.tenant.vnda_token_encrypted;
-            let shopHost = (req.tenant.vnda_shop_host || 'www.boah.com.br').trim();
+            let shopHost = (req.tenant.vnda_shop_host || '').trim();
 
-            if (!tokenEncrypted) {
+            if (!tokenEncrypted && req.tenant.cnpj === HOLDING_CNPJ) {
                 const { data: boahT } = await supabase
                     .from('tenants')
                     .select('vnda_token_encrypted, vnda_shop_host')
@@ -6338,13 +6478,20 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             if (tokenEncrypted) {
                 const key = getEncryptionKey(process.env.ENCRYPTION_KEY);
                 const token = decrypt(tokenEncrypted, key);
-                const pedidos = await vndaService.listarPedidosRecentes(token, shopHost, 250).catch(() => null);
+                const pedidosBrutos = await vndaService.listarPedidosRecentes(token, shopHost, 250).catch(() => null);
+                const { ini: periodoIni, fim: periodoFim } = periodoParaDatas(periodo, req.query);
+                const pedidos = Array.isArray(pedidosBrutos) ? pedidosBrutos.filter(p => {
+                    const t = Date.parse(p.received_at);
+                    if (isNaN(t)) return false;
+                    const d = new Date(t - 3 * 3600 * 1000).toISOString().slice(0, 10);
+                    return d >= periodoIni && d <= periodoFim;
+                }) : null;
                 if (Array.isArray(pedidos) && pedidos.length > 0) {
                     const conf = pedidos.filter(p => p.status === 'confirmed');
                     const canc = pedidos.filter(p => p.status === 'canceled');
                     const gmv = conf.reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0);
                     const totalFrete = conf.reduce((acc, p) => acc + (parseFloat(p.shipping_price) || 0), 0);
-                    const freteMedio = conf.length > 0 ? parseFloat((totalFrete / conf.length).toFixed(2)) : 5.39;
+                    const freteMedio = conf.length > 0 ? parseFloat((totalFrete / conf.length).toFixed(2)) : 0;
 
                     // Itens e peças
                     let pecasCount = 0;
@@ -6354,11 +6501,11 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         items.forEach(it => {
                             const qtd = parseInt(it.quantity, 10) || 1;
                             pecasCount += qtd;
-                            const key = (it.product_name || it.name || it.sku || 'Peça BOAH').trim();
+                            const key = (it.product_name || it.name || it.sku || 'Produto sem nome').trim();
                             if (!prodAgg[key]) {
                                 prodAgg[key] = {
                                     nome: key,
-                                    sku: it.sku || 'SKU-BOAH',
+                                    sku: it.sku || '',
                                     qtd: 0,
                                     valor: 0
                                 };
@@ -6431,8 +6578,8 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                         totalPedidosRecebidos: pedidos.length,
                         gmvAprovado: parseFloat(gmv.toFixed(2)),
                         ticketMedioOlist: conf.length > 0 ? parseFloat((gmv / conf.length).toFixed(2)) : 0,
-                        totalPecasOlist: pecasCount || 53,
-                        pecasPorPedido: conf.length > 0 ? parseFloat(((pecasCount || 53) / conf.length).toFixed(1)) : 1.3,
+                        totalPecasOlist: pecasCount,
+                        pecasPorPedido: conf.length > 0 ? parseFloat((pecasCount / conf.length).toFixed(1)) : 0,
                         taxaCancelamentoPct: taxaCanc,
                         taxaAprovacaoPct: taxaAprov,
                         freteMedio,
@@ -6445,17 +6592,20 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                     // Cupons institucionais da marca e de influenciadora (Mila) são direcionados ao quadro de Cupons
                     const vMap = new Map();
                     const linxCatalog = await getLinxVendedoresCatalog(req.tenant);
+                    const cfgCom = getConfigComercial(req.tenant);
                     conf.forEach(p => {
                         let rawAgent = (p.agent || p.seller || p.salesperson || '').trim();
                         if (!rawAgent && (p.coupon_code || p.coupon)) {
                             const cStr = String(p.coupon_code || p.coupon).toUpperCase().trim();
-                            if (!['BEMVINDA', 'PRIMEIRACOMPRA', 'FRETEGRATIS', 'BLACKFRIDAY', 'AMOBOAH', 'ESTILOBOAH', '+20OFF', 'NIVERBOAH08', 'NIVERBOAH09'].includes(cStr) && !cStr.includes('MILA')) {
+                            const ehInstitucional = (cfgCom.cuponsInstitucionais || []).some(c => cStr.includes(String(c).toUpperCase()));
+                            const ehAliasOculto = (cfgCom.aliasesVendedora || []).some(al => al.ocultarNoRanking && aliasCasa(al, cStr));
+                            if (!ehInstitucional && !ehAliasOculto) {
                                 rawAgent = cStr;
                             }
                         }
                         if (rawAgent) {
-                            const resolved = resolverVendedora(rawAgent, linxCatalog);
-                            if (resolved && resolved.nome && resolved.nome !== 'Camila (Mila)') {
+                            const resolved = resolverVendedora(rawAgent, linxCatalog, cfgCom);
+                            if (resolved && resolved.nome && !resolved.ocultarNoRanking) {
                                 const key = resolved.nome.toUpperCase();
                                 const valP = parseFloat(p.total) || 0;
                                 if (!vMap.has(key)) {
@@ -6509,18 +6659,10 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                             if (!couponMap.has(cp)) {
                                 let tipoCupom = 'Promoção Geral';
                                 let badge = 'Campanha';
-                                if (cp.includes('MILA')) {
-                                    tipoCupom = 'Influencer Mila (Sócia)';
-                                    badge = 'Influencer';
-                                } else if (cp.includes('BEMVINDA') || cp.includes('PRIMEIRA')) {
-                                    tipoCupom = '1ª Compra / Onboarding';
-                                    badge = 'Boas-Vindas';
-                                } else if (cp.includes('ESTILO') || cp.includes('BOAH')) {
-                                    tipoCupom = 'Branding & Estilo BOAH';
-                                    badge = 'Branding';
-                                } else if (cp.includes('PASSY') || cp.includes('BRU') || cp.includes('LANE') || cp.includes('CLARA')) {
-                                    tipoCupom = 'Consultora Social Selling';
-                                    badge = 'Consultora';
+                                const tipoCfg = (cfgCom.tiposCupom || []).find(t => (t.termos || []).some(x => cp.includes(String(x).toUpperCase())));
+                                if (tipoCfg) {
+                                    tipoCupom = tipoCfg.tipo;
+                                    badge = tipoCfg.badge || 'Campanha';
                                 }
                                 couponMap.set(cp, {
                                     codigo: cp,
@@ -6566,105 +6708,44 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             console.warn('[BI] Aviso ao consultar API Olist Vnda:', eOlist.message);
         }
 
-        // Ajuste dos recortes temporais conforme o período selecionado
-        let multPeriodo = 1.0;
-        let comparativo = {
+        // Recorte temporal real (sem simulacao). Variacoes comparativas nao sao calculadas nesta versao.
+        const multPeriodo = 1.0;
+        const { ini: pIni, fim: pFim } = periodoParaDatas(periodo, req.query);
+        const fmtBR = d => d.split('-').reverse().join('/');
+        const comparativo = {
             periodo,
-            labelPeriodo: 'Novembro 2026 (Mês Vigente)',
-            labelComparativo: 'vs. Outubro 2026 (MoM)',
-            gmvVarPct: '+18.4%',
-            pedidosVarPct: '+14.3%',
-            pecasVarPct: '+12.8%',
-            ticketMedioVarPct: '+2.9%',
-            margemVarPp: '+2.4 p.p.'
+            labelPeriodo: `Período: ${fmtBR(pIni)} a ${fmtBR(pFim)}`,
+            labelComparativo: '',
+            gmvVarPct: null,
+            pedidosVarPct: null,
+            pecasVarPct: null,
+            ticketMedioVarPct: null,
+            margemVarPp: null
         };
+        const timelinePeriodo = timeline
+            .filter(t => t.data >= pIni && t.data <= pFim)
+            .map(t => {
+                const fat = parseFloat(t.faturamento || 0);
+                const nPed = parseInt(t.guias || t.pedidos || 0, 10);
+                return {
+                    ...t,
+                    faturamento: fat,
+                    difal: parseFloat((t.difal || 0).toFixed(2)),
+                    pedidos: nPed,
+                    cuponsValor: 0,
+                    cuponsPedidos: 0,
+                    ticketMedio: nPed > 0 ? parseFloat((fat / nPed).toFixed(2)) : 0
+                };
+            });
 
-        let timelinePeriodo = timeline;
-
-        if (periodo === 'mes_anterior') {
-            multPeriodo = 0.84;
-            comparativo = {
-                periodo,
-                labelPeriodo: 'Outubro 2026 (Mês Fechado)',
-                labelComparativo: 'vs. Setembro 2026 (MoM)',
-                gmvVarPct: '+11.2%',
-                pedidosVarPct: '+8.5%',
-                pecasVarPct: '+7.2%',
-                ticketMedioVarPct: '+1.8%',
-                margemVarPp: '+1.6 p.p.'
-            };
-            timelinePeriodo = [
-                { data: '2026-10-25', faturamento: 1420.00, difal: 54.30, guias: 4 },
-                { data: '2026-10-26', faturamento: 1890.00, difal: 82.10, guias: 6 },
-                { data: '2026-10-27', faturamento: 1650.00, difal: 68.40, guias: 5 },
-                { data: '2026-10-28', faturamento: 2100.00, difal: 95.00, guias: 7 },
-                { data: '2026-10-29', faturamento: 1350.00, difal: 49.20, guias: 4 },
-                { data: '2026-10-30', faturamento: 2480.00, difal: 112.50, guias: 8 },
-                { data: '2026-10-31', faturamento: 1620.00, difal: 61.80, guias: 5 }
-            ];
-        } else if (periodo === '7dias') {
-            multPeriodo = 0.32;
-            comparativo = {
-                periodo,
-                labelPeriodo: 'Últimos 7 Dias (Safra Recente)',
-                labelComparativo: 'vs. 7 dias anteriores (WoW)',
-                gmvVarPct: '+24.5%',
-                pedidosVarPct: '+22.2%',
-                pecasVarPct: '+25.0%',
-                ticketMedioVarPct: '+3.4%',
-                margemVarPp: '+3.1 p.p.'
-            };
-            timelinePeriodo = [
-                { data: '2026-10-28', faturamento: 520.00, difal: 22.10, guias: 2 },
-                { data: '2026-10-29', faturamento: 640.00, difal: 28.40, guias: 2 },
-                { data: '2026-10-30', faturamento: 780.00, difal: 34.00, guias: 3 },
-                { data: '2026-10-31', faturamento: 450.00, difal: 18.50, guias: 1 },
-                { data: '2026-11-01', faturamento: 380.00, difal: 15.00, guias: 1 },
-                { data: '2026-11-02', faturamento: 410.00, difal: 17.20, guias: 1 },
-                { data: '2026-11-03', faturamento: 680.00, difal: 29.80, guias: 2 }
-            ];
-        } else if (periodo === 'personalizado' || (req.query.dataInicial && req.query.dataFim)) {
-            const dtIni = req.query.dataInicial || '2026-11-01';
-            const dtFim = req.query.dataFim || '2026-11-04';
-            multPeriodo = 0.65;
-            comparativo = {
-                periodo: 'personalizado',
-                labelPeriodo: `Período: ${dtIni.split('-').reverse().join('/')} a ${dtFim.split('-').reverse().join('/')}`,
-                labelComparativo: 'Recorte Selecionado',
-                gmvVarPct: '+15.4%',
-                pedidosVarPct: '+12.1%',
-                pecasVarPct: '+10.8%',
-                ticketMedioVarPct: '+2.4%',
-                margemVarPp: '+1.9 p.p.'
-            };
-        }
-
-                // Enriquecimento multidimensional da Timeline (Vendas, DIFAL, Cupons, Pedidos, Ticket Médio para Power BI Switcher)
-        timelinePeriodo = (timelinePeriodo || []).map(t => {
-            const fat = parseFloat(t.faturamento || 0);
-            const nPed = parseInt(t.guias || t.pedidos || 1, 10);
-            const cupValor = t.cuponsValor !== undefined ? parseFloat(t.cuponsValor) : parseFloat((fat * 0.417).toFixed(2));
-            const cupPed = t.cuponsPedidos !== undefined ? parseInt(t.cuponsPedidos, 10) : Math.max(1, Math.round(nPed * 0.417));
-            const tm = nPed > 0 ? parseFloat((fat / nPed).toFixed(2)) : 571.01;
-            return {
-                ...t,
-                faturamento: fat,
-                difal: parseFloat((t.difal || 0).toFixed(2)),
-                pedidos: nPed,
-                cuponsValor: cupValor,
-                cuponsPedidos: cupPed,
-                ticketMedio: tm
-            };
-        });
-
-        const baseGmv = (olistMetrics.gmvAprovado || totalFaturamentoEst || 117628.84);
+        const baseGmv = (olistMetrics.gmvAprovado || 0);
         const gmvCalculado = parseFloat((baseGmv * multPeriodo).toFixed(2));
         const cmvEstimado = parseFloat((gmvCalculado * 0.33).toFixed(2));
-        const difalBase = totalDifal > 0 ? totalDifal : parseFloat((baseGmv * 0.033).toFixed(2));
+        const difalBase = totalDifal;
         const difalCalculado = parseFloat((difalBase * multPeriodo).toFixed(2));
         const taxasGateway = parseFloat((gmvCalculado * 0.032).toFixed(2));
         const margemContribuicao = parseFloat((gmvCalculado - cmvEstimado - difalCalculado - taxasGateway).toFixed(2));
-        const margemContribuicaoPct = gmvCalculado > 0 ? parseFloat(((margemContribuicao / gmvCalculado) * 100).toFixed(1)) : 60.2;
+        const margemContribuicaoPct = gmvCalculado > 0 ? parseFloat(((margemContribuicao / gmvCalculado) * 100).toFixed(1)) : 0;
 
         const comercialMetrics = {
             gmv: gmvCalculado,
@@ -6675,26 +6756,16 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
             gateway: taxasGateway,
             gatewayPct: 3.2,
             margem: margemContribuicao,
-            margemPct: margemContribuicaoPct
+            margemPct: margemContribuicaoPct,
+            estimado: true // CMV (33%) e gateway (3,2%) sao premissas, nao dados reais
         };
-
-                if (multPeriodo !== 1.0) {
-            olistMetrics = {
-                ...olistMetrics,
-                gmvAprovado: gmvCalculado,
-                pedidosAprovados: Math.max(1, Math.round((olistMetrics.pedidosAprovados || 206) * multPeriodo)),
-                totalPedidosRecebidos: Math.max(1, Math.round((olistMetrics.totalPedidosRecebidos || 219) * multPeriodo)),
-                totalPecasOlist: Math.max(1, Math.round((olistMetrics.totalPecasOlist || 312) * multPeriodo)),
-                ticketMedioOlist: olistMetrics.ticketMedioOlist || 571.01
-            };
-        }
 
         return res.json({
             kpis: {
                 totalGuias: allGuides.length,
                 totalFaturamento: gmvCalculado,
                 totalDifal: totalDifal,
-                ticketMedio: olistMetrics.ticketMedioOlist || (allGuides.length > 0 ? (totalFaturamentoEst / allGuides.length) : 571.01),
+                ticketMedio: olistMetrics.ticketMedioOlist || 0,
                 taxaLiberacao: allGuides.length > 0 ? ((totalPagas / allGuides.length) * 100).toFixed(1) : '0.0',
                 totalPagas,
                 totalPendentes,
@@ -6702,17 +6773,14 @@ app.get('/api/bi/metrics', requireAuth, async (req, res) => {
                 cmvPct: 33.0,
                 margemContribuicao,
                 margemContribuicaoPct,
-                leadTimeMedioHoras: '2h 18min'
+                leadTimeMedioHoras: null
             },
             comparativo,
             comercial: comercialMetrics,
             linx: linxMetrics,
             olist: {
                 ...olistMetrics,
-                pedidosAprovados: olistMetrics.pedidosAprovados || 206,
-                totalPedidosRecebidos: olistMetrics.totalPedidosRecebidos || 219,
-                totalPecasOlist: olistMetrics.totalPecasOlist || 312,
-                gmvAprovado: gmvCalculado
+                                gmvAprovado: gmvCalculado
             },
             meiosPagamento,
             topProdutos,
@@ -6760,35 +6828,27 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
         const tenantId = req.tenant.id;
         const { dataInicial, dataFim, periodo } = req.query;
 
-        // Determina intervalo de datas
+        // Determina intervalo de datas (sem datas fixas)
         let dtInicio = dataInicial;
         let dtFim = dataFim;
-        const hojeStr = new Date().toISOString().split('T')[0];
-
         if (!dtInicio || !dtFim) {
             const p = String(periodo || 'mes_atual').toLowerCase();
             if (p === 'hoje') {
-                dtInicio = hojeStr;
-                dtFim = hojeStr;
-            } else if (p === '7dias') {
-                const d = new Date();
-                d.setDate(d.getDate() - 6);
-                dtInicio = d.toISOString().split('T')[0];
-                dtFim = hojeStr;
-            } else if (p === 'mes_anterior') {
-                dtInicio = '2026-10-01';
-                dtFim = '2026-10-31';
+                const hoje = new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
+                dtInicio = hoje;
+                dtFim = hoje;
             } else {
-                dtInicio = '2026-11-01';
-                dtFim = '2026-11-30';
+                const r = periodoParaDatas(p, {});
+                dtInicio = r.ini;
+                dtFim = r.fim;
             }
         }
 
         let pedidosVnda = [];
         try {
             let tokenEncrypted = req.tenant.vnda_token_encrypted;
-            let shopHost = (req.tenant.vnda_shop_host || 'www.boah.com.br').trim();
-            if (!tokenEncrypted) {
+            let shopHost = (req.tenant.vnda_shop_host || '').trim();
+            if (!tokenEncrypted && req.tenant.cnpj === HOLDING_CNPJ) {
                 const { data: boahT } = await supabase
                     .from('tenants')
                     .select('vnda_token_encrypted, vnda_shop_host')
@@ -6823,7 +6883,7 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
 
         if (pedidosVnda.length > 0) {
             pedidosVnda.forEach(p => {
-                const dt = (p.confirmed_at || p.created_at || '').split('T')[0];
+                const dt = (p.confirmed_at || p.received_at || p.created_at || '').split('T')[0];
                 if (dt && dt >= dtInicio && dt <= dtFim) {
                     if (!diasMap.has(dt)) {
                         diasMap.set(dt, { data: dt, pedidos: 0, faturamento: 0, pecas: 0 });
@@ -6846,40 +6906,11 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
                     }
                     const diaObj = diasMap.get(dt);
                     diaObj.pedidos++;
-                    const valV = parseFloat(g.valor_venda || g.invoice_total || (parseFloat(g.value || 0) / 0.08) || 380);
+                    const valV = parseFloat(g.valor_venda || g.invoice_total || (parseFloat(g.value || 0) / 0.08) || 0);
                     diaObj.faturamento += valV;
                     diaObj.pecas += 1;
                 }
             });
-        }
-
-        if (diasMap.size === 0) {
-            const d1 = new Date(dtInicio + 'T12:00:00');
-            const d2 = new Date(dtFim + 'T12:00:00');
-            let cur = new Date(d1);
-            let diaIdx = 1;
-
-            const valoresPadrao = [
-                { p: 18, g: 10420.50, pc: 27 },
-                { p: 24, g: 13890.20, pc: 36 },
-                { p: 31, g: 17850.80, pc: 45 },
-                { p: 26, g: 14780.00, pc: 38 },
-                { p: 15, g: 8640.40, pc: 22 },
-                { p: 13, g: 6973.54, pc: 19 }
-            ];
-
-            while (cur <= d2 && diaIdx <= 31) {
-                const iso = cur.toISOString().split('T')[0];
-                const ref = valoresPadrao[(diaIdx - 1) % valoresPadrao.length];
-                const fator = 0.85 + ((diaIdx * 7) % 30) / 100;
-                const pedidos = Math.max(1, Math.round(ref.p * fator));
-                const faturamento = parseFloat((ref.g * fator).toFixed(2));
-                const pecas = Math.max(pedidos, Math.round(ref.pc * fator));
-                diasMap.set(iso, { data: iso, pedidos, faturamento, pecas });
-                cur.setDate(cur.getDate() + 1);
-                diaIdx++;
-                if (diaIdx > 31) break;
-            }
         }
 
         const diasArray = Array.from(diasMap.values()).sort((a, b) => b.data.localeCompare(a.data));
@@ -6930,18 +6961,19 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
         const pedidosDetalhados = [];
         if (pedidosVnda.length > 0) {
             pedidosVnda.forEach(p => {
-                const dt = (p.confirmed_at || p.created_at || '').split('T')[0];
+                const dt = (p.confirmed_at || p.received_at || p.created_at || '').split('T')[0];
                 if (dt && dt >= dtInicio && dt <= dtFim) {
-                    const hora = (p.confirmed_at || p.created_at || '').includes('T') ? (p.confirmed_at || p.created_at).split('T')[1].slice(0, 5) : '14:20';
+                    const dtHora = (p.confirmed_at || p.received_at || p.created_at || '');
+                    const hora = dtHora.includes('T') ? dtHora.split('T')[1].slice(0, 5) : '';
                     const rawItems = Array.isArray(p.items) ? p.items : [];
                     const itens = rawItems.map(it => ({
-                        nome: it.name || it.product_name || 'Vestido Midi Boah',
-                        sku: it.sku || 'VEST-BOAH-01',
+                        nome: it.name || it.product_name || 'Produto sem nome',
+                        sku: it.sku || '',
                         qtd: parseInt(it.quantity, 10) || 1,
                         valorUnit: parseFloat(it.price || 0)
                     }));
-                    const clienteNome = p.client?.name || p.client_name || 'Cliente Boah Online';
-                    const cidadeUf = p.address ? `${p.address.city || 'São Paulo'} - ${p.address.state || 'SP'}` : 'São Paulo - SP';
+                    const clienteNome = p.client?.name || p.client_name || 'Cliente não identificado';
+                    const cidadeUf = p.address ? [p.address.city, p.address.state].filter(Boolean).join(' - ') : '';
                     pedidosDetalhados.push({
                         id: p.id || p.code,
                         codigo: p.code ? `#${p.code}` : `#VD-${p.id}`,
@@ -6953,72 +6985,7 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
                         itens,
                         pecas: itens.reduce((acc, i) => acc + i.qtd, 0) || 1,
                         total: parseFloat(p.total) || 0,
-                        pagamento: p.payment_method || 'Cartão de Crédito (3x)',
-                        status: 'Faturado VNDA'
-                    });
-                }
-            });
-        }
-
-        // Se não houver pedidos individuais diretos da API VNDA, estruturar pedidos detalhados a partir dos dias formatados
-        if (pedidosDetalhados.length === 0) {
-            const catalogoProdutos = [
-                { nome: 'Vestido Midi Floral Boah', sku: 'VEST-MIDI-FLR', valor: 269.00 },
-                { nome: 'Calça Alfaiataria Linho Cru', sku: 'CALC-ALF-LNH', valor: 389.00 },
-                { nome: 'Regata Seda Pura Vanilla', sku: 'REG-SEDA-VAN', valor: 229.00 },
-                { nome: 'Blazer Linho Rústico Off-White', sku: 'BLZ-LNH-RST', valor: 459.00 },
-                { nome: 'Chemise Algodão Maquinetado', sku: 'CHM-ALG-MAQ', valor: 319.00 },
-                { nome: 'Saia Envelope Estampa Maresia', sku: 'SAI-ENV-MAR', valor: 249.00 },
-                { nome: 'Conjunto Cropped & Pantalona Sol', sku: 'CONJ-SOL-AMR', valor: 498.00 },
-                { nome: 'Vestido Longo Babados Terracota', sku: 'VEST-LNG-TER', valor: 389.00 }
-            ];
-
-            const clientesBase = [
-                { nome: 'Mariana Albuquerque', loc: 'São Paulo - SP' },
-                { nome: 'Camila Sampaio Martins', loc: 'Rio de Janeiro - RJ' },
-                { nome: 'Fernanda Bittencourt', loc: 'Salvador - BA' },
-                { nome: 'Juliana Prado Neves', loc: 'Curitiba - PR' },
-                { nome: 'Beatriz Vasconcelos', loc: 'Belo Horizonte - MG' },
-                { nome: 'Larissa Fontes Ribeiro', loc: 'Brasília - DF' },
-                { nome: 'Patrícia Guimarães', loc: 'Porto Alegre - RS' },
-                { nome: 'Rafaela Montenegro', loc: 'Recife - PE' },
-                { nome: 'Carla Silveira Dias', loc: 'Goiânia - GO' },
-                { nome: 'Amanda Castelo Branco', loc: 'Fortaleza - CE' }
-            ];
-
-            const pagamentos = ['Cartão de Crédito (3x)', 'PIX Instantâneo', 'Cartão de Crédito (1x)', 'PIX Instantâneo', 'Cartão de Crédito (5x)'];
-            let seqPedido = 98410;
-
-            diasFormatados.forEach((diaInfo, dIdx) => {
-                const qtdPedsDia = Math.min(8, Math.max(3, Math.round(diaInfo.pedidos / 4) || 4));
-                for (let k = 0; k < qtdPedsDia; k++) {
-                    seqPedido++;
-                    const cli = clientesBase[(seqPedido + k) % clientesBase.length];
-                    const pag = pagamentos[(seqPedido + k) % pagamentos.length];
-                    const prod1 = catalogoProdutos[(seqPedido * 2 + k) % catalogoProdutos.length];
-                    const prod2 = catalogoProdutos[(seqPedido * 3 + k + 1) % catalogoProdutos.length];
-                    
-                    const itens = [
-                        { nome: prod1.nome, sku: prod1.sku, qtd: 1, valorUnit: prod1.valor }
-                    ];
-                    if (k % 2 === 0) {
-                        itens.push({ nome: prod2.nome, sku: prod2.sku, qtd: 1, valorUnit: prod2.valor });
-                    }
-                    const totalPed = itens.reduce((sum, it) => sum + (it.valorUnit * it.qtd), 0);
-                    const horaMin = `${String(9 + (k * 2) % 12).padStart(2, '0')}:${String((k * 17) % 60).padStart(2, '0')}`;
-
-                    pedidosDetalhados.push({
-                        id: seqPedido,
-                        codigo: `#VD-${seqPedido}`,
-                        dataIso: diaInfo.dataIso,
-                        dataFormatada: diaInfo.dataFormatada,
-                        hora: horaMin,
-                        cliente: cli.nome,
-                        localidade: cli.loc,
-                        itens,
-                        pecas: itens.reduce((sum, it) => sum + it.qtd, 0),
-                        total: totalPed,
-                        pagamento: pag,
+                        pagamento: p.payment_method || '',
                         status: 'Faturado VNDA'
                     });
                 }
@@ -7054,20 +7021,7 @@ app.get('/api/relatorios/vendas-periodo', requireAuth, async (req, res) => {
 // ==========================================
 // MÓDULO: PAINEL FISCAL & SEFAZ (MARCO ZERO CONCILIADO)
 // ==========================================
-const GUIAS_ABERTAS_LINX_FALLBACK = [
-  { "id": "linx-difal-54010", "nf": "54010", "serie": "2", "chave_nfe": "29261010436619000105550020000540101007890327", "uf": "AL", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "26/10/2026", "valor_fatura": 27.86, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Mariana Braga Lages", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54011", "nf": "54011", "serie": "2", "chave_nfe": "29261010436619000105550020000540111007890332", "uf": "CE", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "26/10/2026", "valor_fatura": 23.88, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Aline Costa Barreto", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54012", "nf": "54012", "serie": "2", "chave_nfe": "29261010436619000105550020000540121007890348", "uf": "SP", "tipo": "DARE", "vencto": "05/11/2026", "data_emissao": "26/10/2026", "valor_fatura": 22.85, "valor_nota": 457.00, "carrier_name": "Total Express", "customer_name": "Fabiana Marques Silva", "status": "EM_ABERTO", "situacao_detalhe": "Lote DARE-SP Pendente" },
-  { "id": "linx-difal-54093", "nf": "54093", "serie": "2", "chave_nfe": "29261010436619000105550020000540931007891191", "uf": "MG", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "27/10/2026", "valor_fatura": 33.83, "valor_nota": 483.33, "carrier_name": "Total Express", "customer_name": "Renata Viana Souza", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54118", "nf": "54118", "serie": "2", "chave_nfe": "29261010436619000105550020000541181007891444", "uf": "DF", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "28/10/2026", "valor_fatura": 27.86, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Patricia M. Carvalho", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54120", "nf": "54120", "serie": "2", "chave_nfe": "29261010436619000105550020000541201007891465", "uf": "RJ", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "28/10/2026", "valor_fatura": 19.90, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Camila Guimaraes Leite", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54129", "nf": "54129", "serie": "2", "chave_nfe": "29261010436619000105550020000541291007891550", "uf": "GO", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "28/10/2026", "valor_fatura": 25.87, "valor_nota": 369.57, "carrier_name": "Total Express", "customer_name": "Luciana Ribeiro Duarte", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54130", "nf": "54130", "serie": "2", "chave_nfe": "29261010436619000105550020000541301007891565", "uf": "PR", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "28/10/2026", "valor_fatura": 17.91, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Fernanda Lima Prado", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54131", "nf": "54131", "serie": "2", "chave_nfe": "29261010436619000105550020000541311007891570", "uf": "RS", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "28/10/2026", "valor_fatura": 19.90, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Tatiana Nogueira Silva", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54148", "nf": "54148", "serie": "2", "chave_nfe": "29261010436619000105550020000541481007891748", "uf": "PE", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "29/10/2026", "valor_fatura": 27.86, "valor_nota": 398.00, "carrier_name": "Correios", "customer_name": "Juliana Barbosa Dias", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54149", "nf": "54149", "serie": "2", "chave_nfe": "29261010436619000105550020000541491007891753", "uf": "ES", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "29/10/2026", "valor_fatura": 23.88, "valor_nota": 398.00, "carrier_name": "Total Express", "customer_name": "Vanessa Moreira Castro", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" },
-  { "id": "linx-difal-54151", "nf": "54151", "serie": "2", "chave_nfe": "29261010436619000105550020000541511007891774", "uf": "SC", "tipo": "GNRE", "vencto": "05/11/2026", "data_emissao": "29/10/2026", "valor_fatura": 25.87, "valor_nota": 369.57, "carrier_name": "Total Express", "customer_name": "Beatriz F. Albuquerque", "status": "EM_ABERTO", "situacao_detalhe": "Aguardando Emissão SEFAZ" }
-];
+const GUIAS_ABERTAS_LINX_FALLBACK = [];
 
 let guiasPagasOficiaisCache = null;
 function obterGuiasPagasOficiais() {
@@ -7133,17 +7087,100 @@ function obterGuiasAbertasLinx() {
 const baixasManuaisDIFAL = new Map();
 let ultimaConsultaLinxDifal = 0;
 
+// Tenant "holding" enxerga a conta operacional da BOAH; demais tenants usam apenas o proprio cadastro.
+async function resolverTenantDifal(tenant) {
+    if (tenant && tenant.cnpj === HOLDING_CNPJ) {
+        try {
+            const { data } = await supabase.from('tenants').select('*').eq('cnpj', BOAH_CNPJ).limit(1);
+            if (data && data.length > 0) return data[0];
+        } catch (e) {}
+    }
+    return tenant;
+}
+
+const STATUS_GUIA_PAGA = new Set(['pago', 'paga', 'liquidado', 'comprovada', 'pagamento_autorizado']);
+
+function fmtDataBR(iso) {
+    const p = String(iso || '').slice(0, 10).split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : '';
+}
+
+// Painel DIFAL a partir das guias do proprio tenant (sem arquivos ou totais globais).
+async function montarPainelDifalDoBanco(tenant) {
+    const { data } = await supabase
+        .from('guides')
+        .select('*')
+        .eq('tenant_id', tenant.id)
+        .order('created_at', { ascending: false })
+        .limit(5000);
+    const guias = data || [];
+    const emAberto = [];
+    const pagas = [];
+    guias.forEach(g => {
+        const status = String(g.status || '').toLowerCase();
+        const uf = (g.uf || '').toUpperCase();
+        const valor = parseFloat(g.value || 0);
+        const base = {
+            id: g.id,
+            nf: g.nf_number,
+            serie: g.serie || '',
+            uf,
+            tipo: uf === 'SP' ? 'DARE' : 'GNRE',
+            valor_fatura: valor,
+            valor_nota: parseFloat(g.valor_venda || g.invoice_total || 0),
+            juros: 0,
+            desconto: 0,
+            carrier_name: g.carrier_name || '',
+            customer_name: g.customer_name || '',
+            data_emissao: fmtDataBR(g.nf_issue_date || g.created_at)
+        };
+        if (STATUS_GUIA_PAGA.has(status) || g.paid_at) {
+            pagas.push({ ...base, status: 'PAGA', pagto: fmtDataBR(g.paid_at), valor_pago: valor, origem: 'Sistema', estornado: false });
+        } else {
+            emAberto.push({ ...base, status: 'EM_ABERTO', vencto: '', valor_pago: 0, situacao_detalhe: g.status || '' });
+        }
+    });
+    const totalPagas = parseFloat(pagas.reduce((a, g) => a + g.valor_fatura, 0).toFixed(2));
+    const totalEmAberto = parseFloat(emAberto.reduce((a, g) => a + g.valor_fatura, 0).toFixed(2));
+    const qtdTotal = pagas.length + emAberto.length;
+    const ufs = Array.from(new Set([...pagas, ...emAberto].map(g => g.uf).filter(Boolean))).sort();
+    return {
+        resumo: {
+            totalPagas,
+            qtdPagas: pagas.length,
+            totalEmAberto,
+            qtdEmAberto: emAberto.length,
+            totalGeral: parseFloat((totalPagas + totalEmAberto).toFixed(2)),
+            qtdTotal,
+            taxaLiquidacao: qtdTotal > 0 ? parseFloat(((pagas.length / qtdTotal) * 100).toFixed(1)) : 0,
+            dataMarcoZero: '',
+            origemOficial: 'Guias registradas no sistema'
+        },
+        emAberto,
+        pagas,
+        ufs
+    };
+}
+
+function montarCsvDifal(pagas, abertas) {
+    const n = v => (parseFloat(v) || 0).toFixed(2).replace('.', ',');
+    let csv = '\uFEFF';
+    csv += 'Status;NF-e;Série;UF;Tipo;Vencimento;Data Pagamento;Valor Nominal (R$);Juros/Multa (R$);Desconto (R$);Valor Pago (R$);Origem/Observação\r\n';
+    pagas.forEach(g => {
+        csv += `PAGA;${g.nf};${g.serie || ''};${g.uf};${g.tipo || 'GNRE'};${g.vencto || ''};${g.pagto || ''};${n(g.valor_fatura)};${n(g.juros)};${n(g.desconto)};${n(g.valor_pago)};${g.origem || ''}\r\n`;
+    });
+    abertas.forEach(g => {
+        csv += `EM ABERTO;${g.nf};${g.serie || ''};${g.uf};${g.tipo || 'GNRE'};${g.vencto || ''};;${n(g.valor_fatura)};0,00;0,00;0,00;${g.situacao_detalhe || 'Aguardando SEFAZ'}\r\n`;
+    });
+    return csv;
+}
+
 app.get('/api/difal/painel-unificado', requireAuth, async (req, res) => {
     try {
-        // Resolve tenant para LALUA caso esteja logado como grupo ou holding
-        let tenant = req.tenant;
-        if (tenant.cnpj === '00000000000191' || !tenant.microvix_key) {
-            try {
-                const { data: lalua } = await supabase.from('tenants').select('*').eq('cnpj', '10436619000105').limit(1);
-                if (lalua && lalua.length > 0) {
-                    tenant = lalua[0];
-                }
-            } catch (tErr) {}
+        const tenant = await resolverTenantDifal(req.tenant);
+        if (tenant.cnpj !== BOAH_CNPJ) {
+            // Demais clientes: apenas as guias do proprio tenant
+            return res.json(await montarPainelDifalDoBanco(tenant));
         }
 
         const guiasOficiais = obterGuiasPagasOficiais();
@@ -7170,7 +7207,7 @@ app.get('/api/difal/painel-unificado', requireAuth, async (req, res) => {
                     pass = decrypt(pass, getEncryptionKey(process.env.ENCRYPTION_KEY));
                 }
                 const creds = {
-                    user: tenant.microvix_user || 'linx_b2c',
+                    user: getTenantMicrovixUser(tenant),
                     password: pass,
                     chave: tenant.microvix_key,
                     cnpjEmp: tenant.microvix_cnpj
@@ -7319,6 +7356,23 @@ app.post('/api/difal/baixar-guia', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Número da NF é obrigatório.' });
         }
         const nfStr = String(nf).trim();
+        const tenantDifal = await resolverTenantDifal(req.tenant);
+        if (tenantDifal.cnpj !== BOAH_CNPJ) {
+            // Demais clientes: baixa apenas na guia do proprio tenant
+            const { data: upd, error: upErr } = await supabase
+                .from('guides')
+                .update({
+                    status: 'paga',
+                    paid_at: new Date().toISOString(),
+                    bank_authentication: autenticacao || 'BAIXA_MANUAL'
+                })
+                .eq('tenant_id', tenantDifal.id)
+                .eq('nf_number', nfStr)
+                .select('id');
+            if (upErr) return res.status(500).json({ error: upErr.message });
+            if (!upd || upd.length === 0) return res.status(404).json({ error: `Guia da NF ${nfStr} não encontrada.` });
+            return res.json({ success: true, message: `Guia NF ${nfStr} liquidada com sucesso.` });
+        }
         baixasManuaisDIFAL.set(nfStr, {
             id: `paga-manual-${nfStr}`,
             nf: nfStr,
@@ -7346,7 +7400,7 @@ app.post('/api/difal/baixar-guia', requireAuth, async (req, res) => {
                     paid_at: new Date().toISOString(),
                     bank_authentication: autenticacao || 'BAIXA_MANUAL' 
                 })
-                .eq('tenant_id', req.tenant.id)
+                .eq('tenant_id', tenantDifal.id)
                 .eq('nf_number', nfStr);
         } catch (dbErr) {
             console.warn('[DIFAL Unificado] Aviso ao atualizar guide no banco:', dbErr.message);
@@ -7361,6 +7415,13 @@ app.post('/api/difal/baixar-guia', requireAuth, async (req, res) => {
 // Exportação CSV formatada para Excel (com UTF-8 BOM)
 app.get('/api/difal/exportar-csv', requireAuth, async (req, res) => {
     try {
+        const tenantCsv = await resolverTenantDifal(req.tenant);
+        if (tenantCsv.cnpj !== BOAH_CNPJ) {
+            const painel = await montarPainelDifalDoBanco(tenantCsv);
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename="painel_unificado_difal_${new Date().toISOString().split('T')[0]}.csv"`);
+            return res.send(montarCsvDifal(painel.pagas, painel.emAberto));
+        }
         const guiasOficiais = obterGuiasPagasOficiais();
         let csv = '\uFEFF'; // BOM para Excel abrir acentos perfeitamente
         csv += 'Status;NF-e;Série;UF;Tipo;Vencimento;Data Pagamento;Valor Nominal (R$);Juros/Multa (R$);Desconto (R$);Valor Pago (R$);Origem/Observação\r\n';
@@ -7375,13 +7436,10 @@ app.get('/api/difal/exportar-csv', requireAuth, async (req, res) => {
         });
 
         // 2. Em aberto
-        const abertas = [
-            { nf: '53985', serie: '1', uf: 'BA', tipo: 'GNRE', vencto: '04/11/2026', val: 42.50 },
-            { nf: '53801', serie: '1', uf: 'SP', tipo: 'DARE', vencto: '04/11/2026', val: 38.12 },
-            { nf: '53567', serie: '1', uf: 'DF', tipo: 'GNRE', vencto: '03/11/2026', val: 51.20 },
-            { nf: '53500', serie: '1', uf: 'MG', tipo: 'GNRE', vencto: '03/11/2026', val: 44.15 },
-            { nf: '53336', serie: '1', uf: 'RJ', tipo: 'GNRE', vencto: '03/11/2026', val: 35.00 }
-        ];
+        const nfPagas = new Set(guiasOficiais.map(g => String(g.nf).trim()));
+        const abertas = obterGuiasAbertasLinx()
+            .filter(g => !nfPagas.has(String(g.nf).trim()) && !baixasManuaisDIFAL.has(String(g.nf).trim()))
+            .map(g => ({ nf: g.nf, serie: g.serie || '2', uf: g.uf, tipo: g.tipo || 'GNRE', vencto: g.vencto || '', val: parseFloat(g.valor_fatura || 0) }));
         abertas.forEach(g => {
             const vNom = g.val.toFixed(2).replace('.', ',');
             csv += `EM ABERTO;${g.nf};${g.serie};${g.uf};${g.tipo};${g.vencto};;${vNom};0,00;0,00;0,00;Aguardando SEFAZ\r\n`;
@@ -7405,16 +7463,8 @@ app.get('/api/difal/danfe/:nf', requireAuth, async (req, res) => {
             return res.status(400).send('Número de NF inválido.');
         }
 
-        // 1. Resolve tenant (LALUA caso logado como grupo)
-        let tenant = req.tenant;
-        if (tenant.cnpj === '00000000000191' || !tenant.microvix_key) {
-            try {
-                const { data: lalua } = await supabase.from('tenants').select('*').eq('cnpj', '10436619000105').limit(1);
-                if (lalua && lalua.length > 0) {
-                    tenant = lalua[0];
-                }
-            } catch (tErr) {}
-        }
+        // 1. Resolve tenant (holding enxerga a conta BOAH)
+        const tenant = await resolverTenantDifal(req.tenant);
 
         // 2. Busca se existe registro na tabela guides
         let guide = null;
@@ -7491,7 +7541,7 @@ app.get('/api/difal/danfe/:nf', requireAuth, async (req, res) => {
                     pass = decrypt(pass, getEncryptionKey(process.env.ENCRYPTION_KEY));
                 }
                 const creds = {
-                    user: tenant.microvix_user || 'linx_b2c',
+                    user: getTenantMicrovixUser(tenant),
                     password: pass,
                     chave: tenant.microvix_key,
                     cnpjEmp: tenant.microvix_cnpj
@@ -7974,7 +8024,7 @@ function stageBatchForApproval(batchId, tenant, filesData, paymentDate, source =
                     status: 'aguardando_aprovacao',
                     file_count: notasValidas.length
                 })
-                .eq('id', batchId);
+                .eq('id', batchId).eq('tenant_id', tenant.id);
 
             log(`\n==================================================`);
             log(`📋 PRÉ-VALIDAÇÃO CONCLUÍDA COM SUCESSO!`);
@@ -7993,7 +8043,7 @@ function stageBatchForApproval(batchId, tenant, filesData, paymentDate, source =
             await supabase
                 .from('batches')
                 .update({ status: 'erro', error_message: err.message })
-                .eq('id', batchId);
+                .eq('id', batchId).eq('tenant_id', tenant.id);
         }
     });
 }
@@ -8016,7 +8066,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
         };
 
         try {
-            await supabase.from('batches').update({ status: 'processando' }).eq('id', batchId);
+            await supabase.from('batches').update({ status: 'processando' }).eq('id', batchId).eq('tenant_id', tenant.id);
 
             // Busca as notas deste lote (ou as selecionadas)
             let gQuery = supabase
@@ -8123,7 +8173,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                     task.remessa = remPreservPayload;
                     task.progress = 100;
                     task.status = 'sucesso';
-                    await supabase.from('batches').update({ status: 'sucesso', error_message: null }).eq('id', batchId);
+                    await supabase.from('batches').update({ status: 'sucesso', error_message: null }).eq('id', batchId).eq('tenant_id', tenant.id);
                     broadcastDockEvent({
                         type: 'LOTE_ATUALIZADO',
                         batchId,
@@ -8423,7 +8473,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             // Preserva recibos anteriores de outras UFs no mesmo lote ao atualizar
             let reciboFinal = recibosEfetuados.join(', ');
             try {
-                const { data: batchAtual } = await supabase.from('batches').select('receipt').eq('id', batchId).single();
+                const { data: batchAtual } = await supabase.from('batches').select('receipt').eq('id', batchId).eq('tenant_id', tenant.id).single();
                 if (batchAtual && batchAtual.receipt) {
                     const mapaRec = {};
                     String(batchAtual.receipt).split(',').map(s => s.trim()).filter(Boolean).forEach(par => {
@@ -8450,7 +8500,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
                     receipt: reciboFinal,
                     error_message: resumoParcialErros
                 })
-                .eq('id', batchId);
+                .eq('id', batchId).eq('tenant_id', tenant.id);
 
             const syncRemAuto = await sincronizarRemessaAutomaticaLote(batchId, tenant, dataAlvo).catch(e => {
                 console.warn('[CNAB Auto] Aviso ao sincronizar remessa automática:', e.message);
@@ -8492,7 +8542,7 @@ function transmitStagedBatchToSefaz(batchId, tenant, paymentDate, guideIds = nul
             await supabase
                 .from('batches')
                 .update({ status: 'erro', error_message: err.message })
-                .eq('id', batchId);
+                .eq('id', batchId).eq('tenant_id', tenant.id);
 
             broadcastDockEvent({
                 type: 'LOTE_ATUALIZADO',

@@ -4,6 +4,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verifica login e carrega dados atuais
     await carregarDados();
+    await carregarConfigComercial();
+    inicializarEventosComercial();
 
     // 2. Lógica do Formulário de Configurações Cadastrais
     const settingsForm = document.getElementById('settings-form');
@@ -418,5 +420,171 @@ async function carregarDados() {
         }
     } catch (e) {
         showToast("Erro ao carregar dados do assinante: " + e.message, 'error');
+    }
+}
+
+
+// ==========================================
+// MÓDULO: CONFIGURAÇÕES COMERCIAIS & SOCIAL SELLING
+// ==========================================
+function renderAliasRow(alias = {}) {
+    const container = document.getElementById('aliases-container');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'alias-item-row';
+    row.style = 'display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-line); border-radius: 6px;';
+    
+    const termosVal = (alias.termos || []).join(', ');
+    const nomeVal = alias.nome || '';
+    const codVal = alias.codigoLinx || '';
+    const ocultarVal = alias.ocultarNoRanking ? 'checked' : '';
+
+    row.innerHTML = `
+        <div>
+            <input type="text" class="form-input alias-nome" placeholder="Nome Vendedora" value="${nomeVal}" style="padding: 6px 10px; font-size: 12px;" required>
+        </div>
+        <div>
+            <input type="text" class="form-input alias-termos" placeholder="Termos/Cupons (ex: MILA, MILA15)" value="${termosVal}" style="padding: 6px 10px; font-size: 12px;" required>
+        </div>
+        <div>
+            <input type="text" class="form-input alias-cod" placeholder="Cód Linx" value="${codVal}" style="padding: 6px 10px; font-size: 12px;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-secondary);">
+            <input type="checkbox" class="alias-ocultar" ${ocultarVal}>
+            <label>Ocultar Ranking</label>
+        </div>
+        <div>
+            <button type="button" class="btn-action secondary" onclick="this.closest('.alias-item-row').remove()" style="padding: 4px 8px; font-size: 12px; color: #ef4444; border-color: #fca5a5;">✕</button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+function renderTipoCupomRow(tipo = {}) {
+    const container = document.getElementById('tipos-cupom-container');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'tipo-cupom-row';
+    row.style = 'display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-line); border-radius: 6px;';
+
+    const termosVal = (tipo.termos || []).join(', ');
+    const tipoVal = tipo.tipo || '';
+    const badgeVal = tipo.badge || '';
+
+    row.innerHTML = `
+        <div>
+            <input type="text" class="form-input tipo-termos" placeholder="Termos gatilho (ex: BEMVINDA, NOVO)" value="${termosVal}" style="padding: 6px 10px; font-size: 12px;" required>
+        </div>
+        <div>
+            <input type="text" class="form-input tipo-nome" placeholder="Nome Categoria (ex: 1ª Compra)" value="${tipoVal}" style="padding: 6px 10px; font-size: 12px;" required>
+        </div>
+        <div>
+            <input type="text" class="form-input tipo-badge" placeholder="Badge" value="${badgeVal}" style="padding: 6px 10px; font-size: 12px;">
+        </div>
+        <div>
+            <button type="button" class="btn-action secondary" onclick="this.closest('.tipo-cupom-row').remove()" style="padding: 4px 8px; font-size: 12px; color: #ef4444; border-color: #fca5a5;">✕</button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+async function carregarConfigComercial() {
+    try {
+        const res = await fetch('/api/tenant/comercial-config');
+        if (!res.ok) return;
+        const data = await res.json();
+        const cfg = data.config || {};
+        
+        const badgeEl = document.getElementById('comercial-status-badge');
+        if (badgeEl) {
+            badgeEl.innerText = data.personalizada ? 'Personalizada' : 'Padrão Ativo';
+            badgeEl.className = data.personalizada ? 'badge success' : 'badge info';
+        }
+
+        const cuponsEl = document.getElementById('comercial_cupons_inst');
+        if (cuponsEl) {
+            cuponsEl.value = (cfg.cuponsInstitucionais || []).join(', ');
+        }
+
+        const vendaOnlineEl = document.getElementById('comercial_venda_online');
+        if (vendaOnlineEl) {
+            vendaOnlineEl.value = cfg.codigoVendaOnline || '';
+        }
+
+        const aliasContainer = document.getElementById('aliases-container');
+        if (aliasContainer) {
+            aliasContainer.innerHTML = '';
+            (cfg.aliasesVendedora || []).forEach(a => renderAliasRow(a));
+        }
+
+        const tiposContainer = document.getElementById('tipos-cupom-container');
+        if (tiposContainer) {
+            tiposContainer.innerHTML = '';
+            (cfg.tiposCupom || []).forEach(t => renderTipoCupomRow(t));
+        }
+    } catch (e) {
+        console.warn('Aviso ao carregar config comercial:', e);
+    }
+}
+
+function inicializarEventosComercial() {
+    const btnAddAlias = document.getElementById('btn-add-alias');
+    if (btnAddAlias) {
+        btnAddAlias.addEventListener('click', () => renderAliasRow());
+    }
+
+    const btnAddTipo = document.getElementById('btn-add-tipo-cupom');
+    if (btnAddTipo) {
+        btnAddTipo.addEventListener('click', () => renderTipoCupomRow());
+    }
+
+    const form = document.getElementById('comercial-config-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cuponsRaw = (document.getElementById('comercial_cupons_inst')?.value || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+            const codigoVendaOnline = document.getElementById('comercial_venda_online')?.value?.trim() || null;
+
+            const aliasesVendedora = [];
+            document.querySelectorAll('.alias-item-row').forEach(row => {
+                const nome = row.querySelector('.alias-nome')?.value?.trim();
+                const termos = (row.querySelector('.alias-termos')?.value || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                const codigoLinx = row.querySelector('.alias-cod')?.value?.trim() || null;
+                const ocultarNoRanking = !!row.querySelector('.alias-ocultar')?.checked;
+                if (nome && termos.length > 0) {
+                    aliasesVendedora.push({ nome, termos, codigoLinx, ocultarNoRanking });
+                }
+            });
+
+            const tiposCupom = [];
+            document.querySelectorAll('.tipo-cupom-row').forEach(row => {
+                const tipo = row.querySelector('.tipo-nome')?.value?.trim();
+                const termos = (row.querySelector('.tipo-termos')?.value || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                const badge = row.querySelector('.tipo-badge')?.value?.trim() || 'Campanha';
+                if (tipo && termos.length > 0) {
+                    tiposCupom.push({ tipo, termos, badge });
+                }
+            });
+
+            try {
+                showToast("Salvando configurações comerciais...", "warning");
+                const res = await fetch('/api/tenant/comercial-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cuponsInstitucionais: cuponsRaw,
+                        codigoVendaOnline,
+                        aliasesVendedora,
+                        tiposCupom
+                    })
+                });
+                const resp = await res.json();
+                if (!res.ok) throw new Error(resp.error || "Erro ao salvar.");
+                showToast("Configurações comerciais salvas com sucesso!");
+                await carregarConfigComercial();
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+        });
     }
 }

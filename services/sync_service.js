@@ -1,3 +1,5 @@
+const BOAH_CNPJ = '10436619000105';
+const HOLDING_CNPJ = '00000000000191';
 // services/sync_service.js
 // Serviço centralizado de sincronização automática com Linx Microvix e Olist Vnda
 // Busca pedidos faturados do dia, deduplica, emite GNRE e atualiza transportadoras/clientes.
@@ -83,7 +85,7 @@ async function sincronizarTenant(tenant, supabase, runBatchProcessFn, options = 
             }
 
             const credentials = {
-                user: tenant.microvix_user || 'linx_b2c',
+                user: tenant.microvix_user || ((tenant.cnpj === BOAH_CNPJ || tenant.cnpj === HOLDING_CNPJ) ? 'linx_b2c' : ''),
                 password: microvixPassword,
                 chave: tenant.microvix_key,
                 cnpjEmp: tenant.microvix_cnpj

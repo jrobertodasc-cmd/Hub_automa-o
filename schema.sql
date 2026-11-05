@@ -318,3 +318,6 @@ END $$;
 --   - [tenant_id]/comprovantes/ (Comprovantes de quitação bancária Asaas)
 --   - [tenant_id]/remessas/     (Arquivos CNAB 240 remessa.txt)
 -- ========================================================
+
+-- 11. Configuracoes por tenant (cupons institucionais, vendedoras, etc.)
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}'::jsonb;
