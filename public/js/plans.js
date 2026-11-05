@@ -80,10 +80,10 @@ async function selecionarPlano(plan) {
     try {
         showToast("Processando alteração de plano...", "warning");
         
-        const res = await fetch('/api/tenant/plan', {
+        const res = await fetch('/api/billing/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan })
+            body: JSON.stringify({ plan, cycle: 'mensal', billingType: 'PIX' })
         });
 
         const data = await res.json();
