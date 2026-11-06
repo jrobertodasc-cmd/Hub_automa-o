@@ -4,6 +4,38 @@
 
 window._DIFAL_ABERTAS_FALLBACK = window._DIFAL_ABERTAS_FALLBACK || [];
 
+// Telemetria & Monitoramento de Exceções do Frontend (Sentry Bridge)
+(function initFrontendTelemetry() {
+    let lastReportedTime = 0;
+    function reportError(msg, stack) {
+        const now = Date.now();
+        if (now - lastReportedTime < 3000) return; // Limita a 1 reporte a cada 3s
+        lastReportedTime = now;
+        try {
+            const tenantId = window.currentUserProfile?.tenant_id || localStorage.getItem('sb_tenant_id');
+            navigator.sendBeacon?.('/api/telemetry/report', JSON.stringify({
+                message: String(msg),
+                stack: String(stack || ''),
+                url: window.location.href,
+                tenantId: tenantId
+            })) || fetch('/api/telemetry/report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: String(msg), stack: String(stack || ''), url: window.location.href, tenantId: tenantId }),
+                keepalive: true
+            }).catch(() => {});
+        } catch {}
+    }
+
+    window.addEventListener('error', (event) => {
+        reportError(event.message || event.error?.message, event.error?.stack);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        reportError(event.reason?.message || event.reason, event.reason?.stack);
+    });
+})();
+
 
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';

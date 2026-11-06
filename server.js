@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const path = require('path');
 
 const supabase = require('./src/config/supabase');
+const { initSentry, setupSentryErrorHandler, captureException } = require('./src/config/sentry');
 const { apiLimiter, authLimiter } = require('./src/middlewares/rateLimiter');
 const { broadcastDockEvent } = require('./src/utils/events');
 const syncService = require('./services/sync_service');
@@ -31,6 +32,9 @@ const expedicaoRoutes = require('./src/routes/expedicao.routes');
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
+
+// Inicialização da Observabilidade em Tempo Real (Sentry)
+initSentry(app);
 
 // Configuração de Segurança: Helmet
 app.use(helmet({
@@ -65,12 +69,38 @@ app.use('/api', erpRoutes);
 app.use('/api', batchRoutes);
 app.use('/api', expedicaoRoutes);
 
+// Telemetria do Frontend para Captura de Erros do Navegador
+app.post('/api/telemetry/report', (req, res) => {
+    try {
+        const { error, message, stack, url, tenantId } = req.body || {};
+        captureException(new Error(message || error || 'Erro de Frontend'), {
+            tenant: tenantId ? { id: tenantId } : null,
+            extra: { stack, url, clientTimestamp: new Date().toISOString() },
+            tags: { source: 'frontend' }
+        });
+        res.status(200).json({ ok: true });
+    } catch {
+        res.status(200).json({ ok: false });
+    }
+});
+
 // Fallback SPA (rotas frontend servem login.html se não autenticado)
 app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/download')) {
         return next();
     }
     return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Captura e Tratamento Centralizado de Erros (Sentry + Formatação JSON)
+setupSentryErrorHandler(app);
+
+app.use((err, req, res, next) => {
+    console.error('[API Error]', err.message);
+    res.status(err.status || 500).json({
+        error: process.env.NODE_ENV === 'production' ? 'Ocorreu um erro interno no servidor.' : err.message,
+        referenceId: res.sentry || undefined
+    });
 });
 
 // Inicialização do Servidor Express
