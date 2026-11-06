@@ -1,7 +1,7 @@
 const Sentry = require('@sentry/node');
 
 /**
- * Módulo de Observabilidade & Monitoramento em Tempo Real (Sentry)
+ * Módulo de Observabilidade & Monitoramento em Tempo Real (Sentry v11)
  * expedi HUB Enterprise
  */
 
@@ -18,18 +18,8 @@ function initSentry(app) {
         Sentry.init({
             dsn: dsn,
             environment: process.env.NODE_ENV || 'production',
-            tracesSampleRate: 1.0,
-            integrations: [
-                // Adiciona tracing automático para Express
-                new Sentry.Integrations.Http({ tracing: true }),
-                new Sentry.Integrations.Express({ app })
-            ]
+            tracesSampleRate: 1.0
         });
-
-        // RequestHandler cria um escopo separado para cada requisição
-        app.use(Sentry.Handlers.requestHandler());
-        // TracingHandler cria traces de performance para cada endpoint
-        app.use(Sentry.Handlers.tracingHandler());
 
         isSentryInitialized = true;
         console.log('✓ [Observabilidade] Sentry inicializado com sucesso para captura de exceções em tempo real.');
@@ -71,9 +61,8 @@ function captureMessage(msg, level = 'info', context = {}) {
 }
 
 function setupSentryErrorHandler(app) {
-    if (isSentryInitialized) {
-        // O error handler do Sentry DEVE vir antes de qualquer outro error middleware
-        app.use(Sentry.Handlers.errorHandler());
+    if (isSentryInitialized && typeof Sentry.setupExpressErrorHandler === 'function') {
+        Sentry.setupExpressErrorHandler(app);
     }
 }
 
